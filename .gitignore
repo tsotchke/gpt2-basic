@@ -1,0 +1,51 @@
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Build artifacts
+*.o
+*.obj
+*.exe
+*.bas~
+*.out
+*.bin
+*.lib
+*.a
+*.dll
+*.so
+*.dylib
+
+# Generated files
+*.pdf
+*.html
+*.tex
+*.aux
+*.log
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.synctex(busy)
+to_latex.sh
+
+# FreeBASIC specific
+*.dbg
+*.map
+*.pdb
+
+# Exclude FreeBASIC bootstrapping files
+fbc_build/
+fbc_win_binary/
+
+# Exclude Memory Bank
+memory-bank/
+
+# Backup files
+*.bak
