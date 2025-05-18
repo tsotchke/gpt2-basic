@@ -1074,4 +1074,3 @@ SUB TestMemoryManager_Main()
     ' Run the test
     TestMemoryManager()
 END SUB
-

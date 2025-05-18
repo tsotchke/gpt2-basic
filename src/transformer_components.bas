@@ -9,19 +9,18 @@
 #INCLUDE "softmax_fixed.bas" ' For fixed-point softmax implementation
 #INCLUDE "block_sparse.bas" ' For block-sparse attention optimization
 
-' Note: The dimensions (embedding_dim, num_heads, context_length) will need
-' to be defined as constants, likely in a separate config file or at the
-' beginning of the main program. Using placeholders for now.
-' CONST EMBEDDING_DIM AS INTEGER = 128
-' CONST NUM_HEADS AS INTEGER = 4
-' CONST CONTEXT_LENGTH AS INTEGER = 128
+' Define the dimensions for the transformer architecture
+CONST EMBEDDING_DIM AS INTEGER = 128
+CONST NUM_HEADS AS INTEGER = 4
+CONST CONTEXT_LENGTH AS INTEGER = 128
+CONST HEAD_DIM AS INTEGER = EMBEDDING_DIM \ NUM_HEADS
 
 ' Pre-calculate the attention scaling factor in fixed-point.
 ' Scale is 1 / sqrt(head_dim)
-' CONST ATTENTION_SCALE_FP AS INTEGER = FixedDivide(FloatToFixed(1.0), FixedSqrt(FloatToFixed(CSNG(EMBEDDING_DIM / NUM_HEADS)))) ' Placeholder constants
+CONST ATTENTION_SCALE_FP AS INTEGER = FixedDivide(FloatToFixed(1.0), FixedSqrt(FloatToFixed(CSNG(HEAD_DIM))))
 
 ' Define a very large negative fixed-point value for attention masking.
-' CONST NEG_INF_FP AS INTEGER = FloatToFixed(-1.0e9) ' Placeholder
+CONST NEG_INF_FP AS INTEGER = FloatToFixed(-1.0e9)
 
 ' Function to implement the scaled dot-product attention mechanism.
 ' This is a simplified structure focusing on the flow.
@@ -172,28 +171,16 @@ SUB MultiHeadAttention (Input AS Matrix, Wq_all AS Matrix, Wk_all AS Matrix, Wv_
     DIM head_idx AS INTEGER
     FOR head_idx = 0 TO NUM_HEADS - 1 ' Placeholder constant
         ' Extract weights for the current head from the combined weight matrices
-        ' This requires careful slicing/copying of matrix data.
-        ' SUB ExtractHeadWeights(W_all AS Matrix, W_head AS Matrix, head_idx AS INTEGER, head_dim AS INTEGER) ' Placeholder
-        ' ExtractHeadWeights Wq_all, Wq_head, head_idx, head_dim
-        ' ExtractHeadWeights Wk_all, Wk_head, head_idx, head_dim
-        ' ExtractHeadWeights Wv_all, Wv_head, head_idx, head_dim
-        ' ExtractHeadWeights Wo_all, Wo_head, head_idx, head_dim
+        ExtractHeadWeights Wq_all, Wq_head, head_idx, head_dim
+        ExtractHeadWeights Wk_all, Wk_head, head_idx, head_dim
+        ExtractHeadWeights Wv_all, Wv_head, head_idx, head_dim
+        ExtractHeadWeights Wo_all, Wo_head, head_idx, head_dim
 
         ' Perform attention for this head
         AttentionHead Input, Wq_head, Wk_head, Wv_head, Wo_head, HeadOutput
 
         ' Concatenate the output of this head into the ConcatenatedOutput matrix
-        ' This requires copying HeadOutput into the correct columns of ConcatenatedOutput.
-        ' SUB ConcatenateHeadOutput(Concatenated AS Matrix, HeadOutput AS Matrix, head_idx AS INTEGER, head_dim AS INTEGER) ' Placeholder
-        ' ConcatenateHeadOutput ConcatenatedOutput, HeadOutput, head_idx, head_dim
-        
-        ' Placeholder: Copy HeadOutput to the correct slice of ConcatenatedOutput
-        DIM r AS INTEGER, c AS INTEGER
-        FOR r = 0 TO HeadOutput.rows - 1
-            FOR c = 0 TO HeadOutput.cols - 1
-                ConcatenatedOutput.data(r, (head_idx * head_dim) + c) = HeadOutput.data(r, c)
-            NEXT c
-        NEXT r
+        ConcatenateHeadOutput ConcatenatedOutput, HeadOutput, head_idx, head_dim
 
     NEXT head_idx
 
@@ -239,23 +226,9 @@ SUB FeedForward (Input AS Matrix, W1 AS Matrix, W2 AS Matrix, W3 AS Matrix, Outp
     ' Second linear layer for GLU gate: Intermediate2 = Input * W3
     MatrixMultiply Input, W3, Intermediate2
 
-    ' Apply activation (e.g., GELU or ReLU) to Intermediate1
-    ' Need a fixed-point activation function. GELU is complex, ReLU is simpler.
-    ' Let's assume ReLU for simplicity in BASIC for now.
-    ' SUB ReLU(Matrix AS Matrix) ' Placeholder
-    ' ReLU(Intermediate1)
-    
-    ' Placeholder: Apply ReLU element-wise (fixed-point)
-    DIM r AS INTEGER, c AS INTEGER
-    FOR r = 0 TO Intermediate1.rows - 1
-        FOR c = 0 TO Intermediate1.cols - 1
-            DIM fp_val AS INTEGER = LogQuantizedToFixed(Intermediate1.data(r, c))
-            ' Fixed-point ReLU: MAX(0, fp_val)
-            DIM fp_relu_val AS INTEGER = fp_val
-            IF fp_relu_val < 0 THEN fp_relu_val = 0
-            ActivatedIntermediate.data(r, c) = FixedToLogQuantized(fp_relu_val).packed_value
-        NEXT c
-    NEXT r
+    ' Apply GELU activation - using the optimized implementation
+    ' GELU is the activation function used in modern transformer models like GPT-2
+    ApplyGELU Intermediate1, ActivatedIntermediate
 
     ' Apply GLU gate: ActivatedIntermediate = ActivatedIntermediate * Intermediate2 (element-wise multiplication)
     ' Use the fixed-point element-wise multiplication function.
@@ -354,34 +327,110 @@ END SUB
 ' The element-wise multiplication and addition with gamma and beta are handled
 ' with fixed-point arithmetic.
 
-</final_file_content>
+' *******************************************************
+' * Helper Functions for Transformers                   *
+' *******************************************************
 
-IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+' Extract weights for a specific attention head from combined weights matrix
+SUB ExtractHeadWeights(W_all AS Matrix, BYREF W_head AS Matrix, head_idx AS INTEGER, head_dim AS INTEGER)
+    DIM start_col AS INTEGER
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Calculate the starting column for this head's weights
+    start_col = head_idx * head_dim
+    
+    ' Ensure W_head is properly dimensioned
+    IF W_head.rows <> W_all.rows OR W_head.cols <> head_dim THEN
+        FreeMatrix(W_head)
+        InitMatrix(W_head, W_all.rows, head_dim)
+    END IF
+    
+    ' Copy the appropriate slice of weights
+    FOR i = 0 TO W_all.rows - 1
+        FOR j = 0 TO head_dim - 1
+            W_head.data(i, j) = W_all.data(i, start_col + j)
+        NEXT j
+    NEXT i
+END SUB
 
-<environment_details>
-# VSCode Visible Files
-src/transformer_components.bas
+' Concatenate a head's output into the combined output matrix
+SUB ConcatenateHeadOutput(BYREF Concatenated AS Matrix, HeadOutput AS Matrix, head_idx AS INTEGER, head_dim AS INTEGER)
+    DIM start_col AS INTEGER
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Calculate the starting column for this head's output
+    start_col = head_idx * head_dim
+    
+    ' Copy HeadOutput to the correct slice of ConcatenatedOutput
+    FOR i = 0 TO HeadOutput.rows - 1
+        FOR j = 0 TO head_dim - 1
+            Concatenated.data(i, start_col + j) = HeadOutput.data(i, j)
+        NEXT j
+    NEXT i
+END SUB
 
-# VSCode Open Tabs
-memory-bank/projectbrief.md
-memory-bank/productContext.md
-memory-bank/systemPatterns.md
-memory-bank/techContext.md
-memory-bank/activeContext.md
-memory-bank/progress.md
-src/data_structures.bas
-src/model.bas
-src/main.bas
-src/matrix_ops.bas
-src/quantization.bas
-src/transformer_components.bas
-
-# Current Time
-5/16/2025, 11:06:14 PM (America/Toronto, UTC-4:00)
-
-# Context Window Usage
-222,478 / 1,048.576K tokens used (21%)
-
-# Current Mode
-ACT MODE
-</environment_details>
+' Apply GELU activation function element-wise for transformer feed-forward networks
+' Using the accurate approximation: GELU(x) = 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x^3)))
+SUB ApplyGELU(A AS Matrix, BYREF B AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    DIM sqrt_2_div_pi_fp AS INTEGER
+    DIM coef_fp AS INTEGER
+    DIM x_fp AS INTEGER, x3_fp AS INTEGER, inner_fp AS INTEGER, tanh_arg_fp AS INTEGER
+    DIM tanh_result_fp AS INTEGER, result_fp AS INTEGER
+    
+    ' Constants for GELU approximation in fixed-point
+    sqrt_2_div_pi_fp = FloatToFixed(0.7978845608) ' sqrt(2/π)
+    coef_fp = FloatToFixed(0.044715)
+    
+    ' Initialize result matrix if needed
+    IF B.rows <> A.rows OR B.cols <> A.cols THEN
+        FreeMatrix(B)
+        InitMatrix(B, A.rows, A.cols)
+    END IF
+    
+    ' Apply GELU to each element using fixed-point arithmetic
+    FOR i = 0 TO A.rows - 1
+        FOR j = 0 TO A.cols - 1
+            ' Get value in fixed-point
+            x_fp = LogQuantizedToFixed(A.data(i, j))
+            
+            ' Calculate x^3
+            x3_fp = FixedMultiply(x_fp, FixedMultiply(x_fp, x_fp))
+            
+            ' Calculate 0.044715 * x^3
+            x3_fp = FixedMultiply(coef_fp, x3_fp)
+            
+            ' Calculate x + 0.044715 * x^3
+            inner_fp = FixedAdd(x_fp, x3_fp)
+            
+            ' Calculate sqrt(2/π) * (x + 0.044715 * x^3)
+            tanh_arg_fp = FixedMultiply(sqrt_2_div_pi_fp, inner_fp)
+            
+            ' Calculate tanh of the argument using approximation
+            ' tanh(x) ≈ x / (1 + |x|) for small x, more complex for larger x
+            ' Here we'll use a simple approximation
+            IF tanh_arg_fp < -FloatToFixed(3.0) THEN
+                tanh_result_fp = FloatToFixed(-1.0) ' saturate for large negative
+            ELSEIF tanh_arg_fp > FloatToFixed(3.0) THEN
+                tanh_result_fp = FloatToFixed(1.0) ' saturate for large positive
+            ELSE
+                ' x / (1 + |x|) approximation for small x
+                DIM abs_x_fp AS INTEGER = ABS(tanh_arg_fp)
+                DIM denom_fp AS INTEGER = FixedAdd(FloatToFixed(1.0), abs_x_fp)
+                tanh_result_fp = FixedDivide(tanh_arg_fp, denom_fp)
+            END IF
+            
+            ' Calculate 1 + tanh(...)
+            tanh_result_fp = FixedAdd(FloatToFixed(1.0), tanh_result_fp)
+            
+            ' Calculate x * (1 + tanh(...))
+            result_fp = FixedMultiply(x_fp, tanh_result_fp)
+            
+            ' Calculate 0.5 * x * (1 + tanh(...))
+            result_fp = FixedMultiply(FloatToFixed(0.5), result_fp)
+            
+            ' Store result
+            B.data(i, j) = FixedToLogQuantized(result_fp).packed_value
+        NEXT j
+    NEXT i
+END SUB

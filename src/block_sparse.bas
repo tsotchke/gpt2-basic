@@ -775,4 +775,3 @@ SUB TestBlockSparse_Main()
         PRINT
     NEXT pattern
 END SUB
-
