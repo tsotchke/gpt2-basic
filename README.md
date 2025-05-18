@@ -1,25 +1,25 @@
 ```
-########################################################
-#     ________  _________     ___  ___   ____________  #
-#    / ___/ _ \/_  __/_  |   / _ )/ _ | / __/  _/ ___/ #
-#   / (_ / ___/ / / / __/   / _  / __ |_\ \_/ // /__   #
-#   \___/_/    /_/ /____/  /____/_/ |_/___/___/\___/   #
-#  ____ ___  ____   ___________  __  ______  ___ ______#
-# / / /( _ )/ __/ _/_/ ___/ __ \/  |/  / _ \/ _ /_  __/#
-#/_  _/ _  / _ \_/_// /__/ /_/ / /|_/ / ___/ __ |/ /   #
-# /_/ \___/\___/_/  \___/\____/_/  /_/_/  /_/ |_/_/    #
-########################################################
+#####################################################################
+#      _____ ___  ______      ___     ___   ___    ____ ____ _____  #
+#     / ___// _ \/_  __/____ |_  |   / _ ) / _ |  / __//  _// ___/  #
+#    / (_ // ___/ / /  /___// __/   / _  |/ __ | _\ \ _/ / / /__    #
+#    \___//_/    /_/       /____/  /____//_/ |_|/___//___/ \___/    #
+#    ____  ___   ____    __ _____ ____   __  ___ ___   ___  ______  #
+#   / / / ( _ ) / __/  _/_// ___// __ \ /  |/  // _ \ / _ |/_  __/  #
+#  /_  _// _  |/ _ \ _/_/ / /__ / /_/ // /|_/ // ___// __ | / /     #
+#   /_/  \___/ \___//_/   \___/ \____//_/  /_//_/   /_/ |_|/_/      #
+#####################################################################
 ```
 
 # 🖥️ GPT-2 in BASIC: AI Meets Retrocomputing
 
 *What if transformer models had been invented during the 486 era?*
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
-## ► Project Overview
+## ► Project Status
 
-We have successfully implemented a scaled-down GPT-2 transformer model in BASIC that runs on 486-era hardware constraints. All components have been fully implemented and integrated into a working system including:
+**COMPLETED!** We have successfully implemented a scaled-down GPT-2 transformer model in BASIC that runs on 486-era hardware constraints. All components have been fully implemented and integrated into a working system including:
 
 - Memory management system with tracking and streaming capabilities
 - SIMD-like bit manipulation operations for parallel processing
@@ -41,14 +41,12 @@ Think of it as *digital archaeology in reverse* - building tomorrow's technology
 ### ■ Why This Matters
 
 ```
-╔════════════════════════════════════╗
-║ "We were so busy asking if LLMs    ║
-║   could run on a 486, we didn't    ║
-║   stop to think if they should.    ║
-║   The answer, by the way, is yes." ║
-║                                    ║
-║     — Anonymous DOS Enthusiast     ║
-╚════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════╗
+║ "We were so busy asking if LLMs could run on a 486, we didn't    ║
+║  stop to think if they should. The answer, by the way, is yes."  ║
+║                                                                  ║
+║                       — Anonymous DOS Enthusiast                 ║
+╚══════════════════════════════════════════════════════════════════╝
 ```
 
 This project serves multiple purposes:
@@ -82,32 +80,32 @@ This extensive documentation includes:
 
 The paper bridges technical implementation details with historical analysis to provide both practical insights and thought-provoking exploration of an alternate AI timeline.
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► System Requirements
 
 ```
-╔═════════════════════════════════════════════════════════╗
-║ MINIMUM SYSTEM REQUIREMENTS (THEORETICAL)               ║
-║                                                         ║
-║ ■ Processor: 486DX4/100MHz                              ║
-║ ■ Memory:    32MB RAM                                   ║
-║ ■ Storage:   10MB free disk space + swap file           ║
-║ ■ OS:        MS-DOS 6.22 or compatible                  ║
-║ ■ Display:   VGA display (text mode)                    ║
-║                                                         ║
-║ RECOMMENDED SYSTEM                                      ║
-║                                                         ║
-║ ■ Processor: Pentium 166MHz with FPU                    ║
-║ ■ Memory:    64MB RAM                                   ║
-║ ■ Storage:   20MB free disk space                       ║
-║ ■ OS:        MS-DOS 6.22 with HIMEM.SYS and EMM386.EXE  ║
-║                                                         ║
-║ DEVELOPMENT SYSTEM                                      ║
-║                                                         ║
-║ ■ FreeBASIC compiler or compatible BASIC variant        ║
-║ ■ DOSBox or 486-era hardware for testing                ║
-╚═════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════╗
+║ MINIMUM SYSTEM REQUIREMENTS (THEORETICAL)                      ║
+║                                                                ║
+║ ■ Processor: 486DX4/100MHz                                     ║
+║ ■ Memory:    32MB RAM                                          ║
+║ ■ Storage:   10MB free disk space + swap file                  ║
+║ ■ OS:        MS-DOS 6.22 or compatible                         ║
+║ ■ Display:   VGA display (text mode)                           ║
+║                                                                ║
+║ RECOMMENDED SYSTEM                                             ║
+║                                                                ║
+║ ■ Processor: Pentium 166MHz with FPU                           ║
+║ ■ Memory:    64MB RAM                                          ║
+║ ■ Storage:   20MB free disk space                              ║
+║ ■ OS:        MS-DOS 6.22 with HIMEM.SYS and EMM386.EXE         ║
+║                                                                ║
+║ DEVELOPMENT SYSTEM                                             ║
+║                                                                ║
+║ ■ FreeBASIC compiler or compatible BASIC variant               ║
+║ ■ DOSBox or 486-era hardware for testing                       ║
+╚════════════════════════════════════════════════════════════════╝
 ```
 
 **Actual Measured Performance:**
@@ -118,7 +116,7 @@ The paper bridges technical implementation details with historical analysis to p
 - Pentium 60: 0.09-0.15 tokens per second (11-18 minutes for 100 tokens)
 - Pentium 133: 0.20-0.33 tokens per second (5-8 minutes for 100 tokens)
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Technical Innovations
 
@@ -270,7 +268,7 @@ Key optimizations include:
 - Loop unrolling for matrix operations
 - Block-based processing for cache efficiency
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Historical Context
 
@@ -308,7 +306,7 @@ This project employs many techniques that were cutting-edge in the 486 era:
 
 The difference is that we're applying these vintage techniques to a modern AI architecture, creating a bridge between computing eras.
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Architecture & Implementation
 
@@ -416,7 +414,7 @@ Our model follows the GPT-2 architecture with several modifications for efficien
 - Gated Linear Units instead of standard FFN
 - Fixed context length (64-128 tokens)
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Educational Value
 
@@ -461,7 +459,7 @@ The project also teaches valuable lessons in optimization:
    - Memory management
    - Resource streaming
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Usage Guide
 
@@ -519,7 +517,7 @@ core=dynamic
 cycles=max
 ```
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Performance Analysis
 
@@ -587,13 +585,8 @@ Several limitations have been identified during implementation:
 
 - **Generation Speed:** While functional, generation speed remains slow (0.04-0.1 tokens per second on a 486DX2/66)
 - **Context Length:** Attention computation becomes memory-intensive at longer contexts, limiting practical use to 64-128 tokens
-- **Vocabulary Size:** Memory constraints limit practical vocabulary size to 1,000-5,000 tokens
-- **Model Size:** Even with optimizations, model size is limited to ~1 million parameters
-- **FPU Dependency:** Performance on 486SX systems (without FPU) is significantly slower despite fixed-point optimizations
-- **DOS Extender Compatibility:** Some DOS extenders may have compatibility issues with the memory management approach
-
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Citation and License
 
@@ -613,7 +606,7 @@ This project is released under the MIT License. If you use this code or concepts
 
 This project is released under the MIT License. See the [LICENSE](LICENSE) file for details.
 ```
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 ## ► Conclusion
 
