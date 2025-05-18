@@ -415,24 +415,34 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
             NEXT i
             
         CASE PRECISION_4BIT:
-            ' Similar to 8-bit but with 4-bit precision
-            ' Implementation would be similar but with 4-bit packing
-            ' For now, fall back to 8-bit implementation
-            ' TODO: Implement native 4-bit version
+            ' Implement native 4-bit version for 486-class systems
+            ' This version packs 2 4-bit values per byte for memory efficiency
             
-            ' Convert matrices to 8-bit precision
-            DIM A_8bit() AS BYTE, B_8bit() AS BYTE, C_8bit() AS BYTE
-            REDIM A_8bit(0 TO A.rows * A.cols - 1)
-            REDIM B_8bit(0 TO B.rows * B.cols - 1)
-            REDIM C_8bit(0 TO A.rows * B.cols - 1)
+            ' Convert matrices to 4-bit precision
+            DIM A_4bit() AS BYTE, B_4bit() AS BYTE, C_4bit() AS BYTE
+            ' Each byte holds 2 4-bit values, so we need half the storage
+            REDIM A_4bit(0 TO (A.rows * A.cols + 1) \ 2 - 1)
+            REDIM B_4bit(0 TO (B.rows * B.cols + 1) \ 2 - 1)
+            REDIM C_4bit(0 TO (A.rows * B.cols + 1) \ 2 - 1)
             
-            ' Fill 8-bit matrices (simplified quantization)
-            DIM idx AS INTEGER
+            ' Fill 4-bit matrices (quantization)
+            DIM idx AS INTEGER, packed_idx AS INTEGER
             idx = 0
             FOR i = 0 TO A.rows - 1
                 FOR j = 0 TO A.cols - 1
-                    ' Convert float to byte (0-255)
-                    A_8bit(idx) = MAX(0, MIN(255, INT((A.data(i, j) + 1.0) * 127.5)))
+                    ' Convert float to 4-bit value (0-15)
+                    DIM val4bit AS BYTE
+                    val4bit = MAX(0, MIN(15, INT((A.data(i, j) + 1.0) * 7.5)))
+                    
+                    ' Pack 2 values per byte
+                    packed_idx = idx \ 2
+                    IF idx MOD 2 = 0 THEN
+                        ' First 4-bit value goes in the lower bits
+                        A_4bit(packed_idx) = val4bit
+                    ELSE
+                        ' Second 4-bit value goes in the upper bits
+                        A_4bit(packed_idx) = A_4bit(packed_idx) OR (val4bit << 4)
+                    END IF
                     idx = idx + 1
                 NEXT j
             NEXT i
@@ -440,21 +450,43 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
             idx = 0
             FOR i = 0 TO B.rows - 1
                 FOR j = 0 TO B.cols - 1
-                    ' Convert float to byte (0-255)
-                    B_8bit(idx) = MAX(0, MIN(255, INT((B.data(i, j) + 1.0) * 127.5)))
+                    ' Convert float to 4-bit value (0-15)
+                    DIM val4bit AS BYTE
+                    val4bit = MAX(0, MIN(15, INT((B.data(i, j) + 1.0) * 7.5)))
+                    
+                    ' Pack 2 values per byte
+                    packed_idx = idx \ 2
+                    IF idx MOD 2 = 0 THEN
+                        ' First 4-bit value goes in the lower bits
+                        B_4bit(packed_idx) = val4bit
+                    ELSE
+                        ' Second 4-bit value goes in the upper bits
+                        B_4bit(packed_idx) = B_4bit(packed_idx) OR (val4bit << 4)
+                    END IF
                     idx = idx + 1
                 NEXT j
             NEXT i
             
-            ' Use 8-bit SIMD matrix multiplication
-            MatrixMultiplySIMD_8bit(A_8bit(), B_8bit(), C_8bit(), A.rows, A.cols, B.cols)
+            ' Use specialized 4-bit SIMD-like matrix multiplication
+            MatrixMultiplySIMD_4bit(A_4bit(), B_4bit(), C_4bit(), A.rows, A.cols, B.cols)
             
             ' Convert result back to float
             idx = 0
             FOR i = 0 TO A.rows - 1
                 FOR j = 0 TO B.cols - 1
-                    ' Convert byte to float (-1.0 to 1.0)
-                    C.data(i, j) = (C_8bit(idx) / 127.5) - 1.0
+                    ' Extract 4-bit value and convert to float (-1.0 to 1.0)
+                    packed_idx = idx \ 2
+                    DIM val4bit AS BYTE
+                    
+                    IF idx MOD 2 = 0 THEN
+                        ' Extract from lower 4 bits
+                        val4bit = C_4bit(packed_idx) AND &H0F
+                    ELSE
+                        ' Extract from upper 4 bits
+                        val4bit = (C_4bit(packed_idx) >> 4) AND &H0F
+                    END IF
+                    
+                    C.data(i, j) = (val4bit / 7.5) - 1.0
                     idx = idx + 1
                 NEXT j
             NEXT i
@@ -486,18 +518,19 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
                 NEXT j
             NEXT i
             
-            ' TODO: Implement native 16-bit matrix multiplication with SIMD
-            ' For now, use non-SIMD implementation
+            ' Implement native 16-bit matrix multiplication with SIMD-like optimizations
+            ' This provides higher precision while still using SIMD-like techniques
             
+            ' Use optimized dot product for better performance
             idx = 0
             FOR i = 0 TO A.rows - 1
                 FOR j = 0 TO B.cols - 1
-                    DIM sum AS LONG
-                    sum = 0
-                    FOR k = 0 TO A.cols - 1
-                        sum = sum + (CLNG(A_16bit(i * A.cols + k)) * CLNG(B_16bit(k * B.cols + j))) / 32767
-                    NEXT k
-                    C_16bit(idx) = MAX(-32768, MIN(32767, sum))
+                    ' Use specialized SIMD-like dot product function for 16-bit values
+                    DIM result AS LONG
+                    result = DotProduct_16bit(A_16bit, B_16bit, i * A.cols, j, A.cols)
+                    
+                    ' Scale result appropriately (result is already normalized by the dot product function)
+                    C_16bit(idx) = MAX(-32768, MIN(32767, result))
                     idx = idx + 1
                 NEXT j
             NEXT i

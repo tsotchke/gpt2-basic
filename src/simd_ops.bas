@@ -441,6 +441,124 @@ FUNCTION DotProduct_4bit(a() AS BYTE, b() AS BYTE, a_offset AS INTEGER, b_offset
     RETURN sum
 END FUNCTION
 
+' Matrix multiplication using SIMD-like 4-bit operations
+' This operates on integer matrices where each byte stores two 4-bit values
+SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTEGER, cols1 AS INTEGER, cols2 AS INTEGER)
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM a_idx AS INTEGER, b_idx AS INTEGER, c_idx AS INTEGER
+    DIM a_packed AS LONG, b_packed AS LONG, product AS LONG
+    DIM a_val AS BYTE, b_val AS BYTE, c_val AS BYTE
+    
+    ' Process each element of the result matrix
+    FOR i = 0 TO rows1 - 1
+        FOR j = 0 TO cols2 - 1
+            ' For each output element, compute dot product of row i from A and column j from B
+            DIM sum AS INTEGER = 0
+            
+            ' Process packed 4-bit values (2 values per byte)
+            FOR k = 0 TO cols1 - 2 STEP 2
+                ' Get byte index and bit positions
+                a_idx = (i * cols1 + k) \ 2
+                b_idx = (k * cols2 + j) \ 2
+                
+                ' Extract first 4-bit values
+                a_val = A(a_idx)
+                IF (i * cols1 + k) MOD 2 = 0 THEN
+                    ' Lower 4 bits
+                    a_val = a_val AND &H0F
+                ELSE
+                    ' Upper 4 bits
+                    a_val = (a_val >> 4) AND &H0F
+                END IF
+                
+                b_val = B(b_idx)
+                IF (k * cols2 + j) MOD 2 = 0 THEN
+                    ' Lower 4 bits
+                    b_val = b_val AND &H0F
+                ELSE
+                    ' Upper 4 bits
+                    b_val = (b_val >> 4) AND &H0F
+                END IF
+                
+                ' Multiply and accumulate
+                sum = sum + a_val * b_val
+                
+                ' Get next byte/value positions
+                a_idx = (i * cols1 + k + 1) \ 2
+                b_idx = ((k + 1) * cols2 + j) \ 2
+                
+                ' Extract second 4-bit values
+                a_val = A(a_idx)
+                IF (i * cols1 + k + 1) MOD 2 = 0 THEN
+                    ' Lower 4 bits
+                    a_val = a_val AND &H0F
+                ELSE
+                    ' Upper 4 bits
+                    a_val = (a_val >> 4) AND &H0F
+                END IF
+                
+                b_val = B(b_idx)
+                IF ((k + 1) * cols2 + j) MOD 2 = 0 THEN
+                    ' Lower 4 bits
+                    b_val = b_val AND &H0F
+                ELSE
+                    ' Upper 4 bits
+                    b_val = (b_val >> 4) AND &H0F
+                END IF
+                
+                ' Multiply and accumulate
+                sum = sum + a_val * b_val
+            NEXT k
+            
+            ' Handle odd column count if necessary
+            IF cols1 MOD 2 = 1 THEN
+                k = cols1 - 1
+                
+                ' Get byte index and bit positions
+                a_idx = (i * cols1 + k) \ 2
+                b_idx = (k * cols2 + j) \ 2
+                
+                ' Extract 4-bit values
+                a_val = A(a_idx)
+                IF (i * cols1 + k) MOD 2 = 0 THEN
+                    ' Lower 4 bits
+                    a_val = a_val AND &H0F
+                ELSE
+                    ' Upper 4 bits
+                    a_val = (a_val >> 4) AND &H0F
+                END IF
+                
+                b_val = B(b_idx)
+                IF (k * cols2 + j) MOD 2 = 0 THEN
+                    ' Lower 4 bits
+                    b_val = b_val AND &H0F
+                ELSE
+                    ' Upper 4 bits
+                    b_val = (b_val >> 4) AND &H0F
+                END IF
+                
+                ' Multiply and accumulate
+                sum = sum + a_val * b_val
+            END IF
+            
+            ' Store result in C
+            c_idx = (i * cols2 + j) \ 2
+            c_val = C(c_idx)
+            
+            ' Store the 4-bit result in the appropriate position
+            IF (i * cols2 + j) MOD 2 = 0 THEN
+                ' Store in lower 4 bits
+                c_val = (c_val AND &HF0) OR (sum AND &H0F)
+            ELSE
+                ' Store in upper 4 bits
+                c_val = (c_val AND &H0F) OR ((sum AND &H0F) << 4)
+            END IF
+            
+            C(c_idx) = c_val
+        NEXT j
+    NEXT i
+END SUB
+
 ' *******************************************************
 ' * 16-bit SIMD-like Operations                         *
 ' *******************************************************
