@@ -1,253 +1,703 @@
-' BASIC implementation of matrix operations for the GPT-2-like model.
-' This file contains functions for matrix addition and multiplication,
-' designed to work with the 4-bit logarithmic quantized data,
-' using fixed-point arithmetic and aiming for 486 optimization.
+' *******************************************************
+' * Matrix Operations for GPT-2 BASIC                   *
+' *******************************************************
+' * This module implements optimized matrix operations  *
+' * for the GPT-2 model, designed for 486-era hardware  *
+' * constraints.                                        *
+' *                                                     *
+' * It provides basic and advanced matrix operations,   *
+' * with performance optimizations to maximize speed    *
+' * while minimizing memory usage.                      *
+' *******************************************************
 
-' Include necessary files
-#INCLUDE "data_structures.bas"
-#INCLUDE "quantization.bas"
+#INCLUDE "src/data_structures.bas"
+#INCLUDE "src/simd_ops.bas"
 
-' Define the fixed-point format: Q16.16 (16 integer bits, 16 fractional bits)
-' Assuming INTEGER is 32 bits in FreeBASIC.
-CONST FRAC_BITS AS INTEGER = 16
-CONST FIXED_POINT_SCALE AS INTEGER = 2 ^ FRAC_BITS
+' *******************************************************
+' * Configuration and Performance Tracking              *
+' *******************************************************
 
-' Function to convert a SINGLE floating-point value to fixed-point (Q16.16)
-FUNCTION FloatToFixed (f AS SINGLE) AS INTEGER
-    FUNCTION = INT(f * FIXED_POINT_SCALE)
-END FUNCTION
+' Optimization level (0=none, 1=basic, 2=advanced, 3=max)
+DIM SHARED g_optimization_level AS INTEGER
 
-' Function to convert a fixed-point (Q16.16) value to SINGLE floating-point
-FUNCTION FixedToFloat (fp AS INTEGER) AS SINGLE
-    FUNCTION = CSNG(fp) / FIXED_POINT_SCALE
-END FUNCTION
+' Matrix operation count for performance tracking
+DIM SHARED g_matrix_mul_count AS LONG
+DIM SHARED g_matrix_add_count AS LONG
+DIM SHARED g_matrix_scale_count AS LONG
+DIM SHARED g_matrix_dot_count AS LONG
 
-' Function to convert LogQuantized to fixed-point (Q16.16)
-FUNCTION LogQuantizedToFixed (lq AS LogQuantized) AS INTEGER
-    ' Dequantize to float first, then convert to fixed-point
-    ' TODO: Optimize this conversion to work directly on packed_value if possible,
-    ' using the dequantization lookup table to get a fixed-point value directly.
-    DIM f AS SINGLE = DequantizeLog(lq)
-    FUNCTION = FloatToFixed(f)
-END FUNCTION
-
-' Function to convert fixed-point (Q16.16) to LogQuantized
-FUNCTION FixedToLogQuantized (fp AS INTEGER) AS LogQuantized
-    ' Convert fixed-point to float, then quantize
-    ' TODO: Optimize this conversion to work directly on fixed-point value if possible,
-    ' using a quantization lookup table for fixed-point values.
-    DIM f AS SINGLE = FixedToFloat(fp)
-    FUNCTION = QuantizeLog(f)
-END FUNCTION
-
-' Fixed-point addition (Q16.16 + Q16.16)
-FUNCTION FixedAdd (fp1 AS INTEGER, fp2 AS INTEGER) AS INTEGER
-    ' Simple integer addition. Assumes no overflow beyond INTEGER capacity.
-    FUNCTION = fp1 + fp2
-END FUNCTION
-
-' Fixed-point subtraction (Q16.16 - Q16.16)
-FUNCTION FixedSubtract (fp1 AS INTEGER, fp2 AS INTEGER) AS INTEGER
-    ' Simple integer subtraction. Assumes no underflow beyond INTEGER capacity.
-    FUNCTION = fp1 - fp2
-END FUNCTION
-
-' Fixed-point multiplication (Q16.16 * Q16.16)
-' Result needs to be scaled back down by FIXED_POINT_SCALE
-FUNCTION FixedMultiply (fp1 AS INTEGER, fp2 AS INTEGER) AS INTEGER
-    ' Perform multiplication using 64-bit integer (LONGINT in FreeBASIC) to avoid overflow
-    ' before scaling back down.
-    DIM result AS LONGINT = CLNG(fp1) * CLNG(fp2)
-    FUNCTION = CLNG(result \ FIXED_POINT_SCALE) ' Scale back down using integer division
-END FUNCTION
-
-' Fixed-point division (Q16.16 / Q16.16)
-' Need to scale the numerator up before division.
-FUNCTION FixedDivide (fp1 AS INTEGER, fp2 AS INTEGER) AS INTEGER
-    ' Handle division by zero
-    IF fp2 = 0 THEN
-        ' TODO: Implement proper error handling or return a specific value
-        PRINT "Error: Fixed-point division by zero!"
-        END ' Simple error handling
+' Initialize the matrix operations system
+SUB InitMatrixOps()
+    ' Reset operation counters
+    g_matrix_mul_count = 0
+    g_matrix_add_count = 0
+    g_matrix_scale_count = 0
+    g_matrix_dot_count = 0
+    
+    ' Set default optimization level
+    g_optimization_level = 2 ' Default to advanced optimizations
+    
+    ' Adjust optimization level based on CPU capabilities
+    IF NOT g_cpu_detected THEN
+        DetectCPU()
     END IF
-    ' Scale numerator up by FIXED_POINT_SCALE before division
-    DIM num_scaled AS LONGINT = CLNG(fp1) * FIXED_POINT_SCALE
-    FUNCTION = CLNG(num_scaled \ fp2) ' Perform division using integer division
-END FUNCTION
-
-' Fixed-point square root (sqrt(Q16.16))
-' This is complex to implement efficiently in fixed-point.
-' A simple approach is to convert to float, take sqrt, and convert back.
-' TODO: Implement an optimized fixed-point square root algorithm (e.g., using Newton's method or a lookup table).
-FUNCTION FixedSqrt (fp AS INTEGER) AS INTEGER
-    ' Handle negative input
-    IF fp < 0 THEN
-        ' TODO: Implement proper error handling for sqrt of negative number
-        PRINT "Error: Fixed-point square root of negative number!"
-        END ' Simple error handling
-    END IF
-    ' Convert to float, take sqrt, convert back to fixed-point
-    DIM f AS SINGLE = FixedToFloat(fp)
-    DIM result_f AS SINGLE = SQR(f)
-    FUNCTION = FloatToFixed(result_f)
-END FUNCTION
-
-' Function for matrix addition (Element-wise)
-' C = A + B
-' Assumes matrices A and B have the same dimensions.
-' Operates on LogQuantized data, converting to fixed-point, adding, and converting back.
-SUB MatrixAdd (A AS Matrix, B AS Matrix, C AS Matrix)
-    ' Ensure dimensions match (basic check)
-    IF A.rows <> B.rows OR A.cols <> B.cols OR C.rows <> A.rows OR C.cols <> A.cols THEN
-        PRINT "Error: Matrix dimensions do not match for addition."
-        END ' Simple error handling
-    END IF
-
-    DIM r AS INTEGER
-    DIM c AS INTEGER
-
-    FOR r = 0 TO A.rows - 1
-        FOR c = 0 TO A.cols - 1
-            ' Convert to fixed-point, add, and convert back to LogQuantized
-            DIM fp_A AS INTEGER = LogQuantizedToFixed(A.data(r, c)) ' Assuming data() stores packed_value
-            DIM fp_B AS INTEGER = LogQuantizedToFixed(B.data(r, c)) ' Assuming data() stores packed_value
-            DIM fp_sum AS INTEGER = FixedAdd(fp_A, fp_B)
-            
-            ' Convert the result back to LogQuantized
-            DIM quantized_sum AS LogQuantized = FixedToLogQuantized(fp_sum)
-            
-            ' Store the packed value
-            C.data(r, c) = quantized_sum.packed_value
-        NEXT c
-    NEXT r
+    
+    SELECT CASE g_cpu_type
+        CASE CPU_486SX: g_optimization_level = 1 ' Basic optimizations for 486SX
+        CASE CPU_486DX, CPU_486DX2: g_optimization_level = 2 ' Advanced for 486DX/DX2
+        CASE CPU_486DX4, CPU_PENTIUM: g_optimization_level = 3 ' Maximum for DX4/Pentium
+    END SELECT
+    
+    PRINT "Matrix operations initialized with optimization level "; g_optimization_level
 END SUB
 
-' Function for matrix multiplication (C = A * B)
-' Assumes A is rows_A x cols_A and B is cols_A x cols_B. C will be rows_A x cols_B.
-' Operates on LogQuantized data, converting to fixed-point, multiplying, and accumulating.
-' This implementation uses fixed-point arithmetic.
-' Further optimization is needed (SIMD-like, blocking).
-SUB MatrixMultiply (A AS Matrix, B AS Matrix, C AS Matrix)
-    ' Ensure dimensions are compatible for multiplication (basic check)
-    IF A.cols <> B.rows OR C.rows <> A.rows OR C.cols <> B.cols THEN
-        PRINT "Error: Matrix dimensions do not match for multiplication."
-        END ' Simple error handling
+' Print matrix operations statistics
+SUB PrintMatrixStats()
+    PRINT "Matrix Operations Statistics:"
+    PRINT "  Matrix multiplications: "; g_matrix_mul_count
+    PRINT "  Matrix additions: "; g_matrix_add_count
+    PRINT "  Matrix scaling operations: "; g_matrix_scale_count
+    PRINT "  Dot product operations: "; g_matrix_dot_count
+END SUB
+
+' *******************************************************
+' * Basic Matrix Operations                             *
+' *******************************************************
+
+' Matrix multiplication: C = A * B
+SUB MatrixMultiply(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM sum AS SINGLE
+    
+    ' Ensure dimensions are compatible
+    IF A.cols <> B.rows THEN
+        PRINT "ERROR: Matrix dimensions incompatible for multiplication"
+        RETURN
     END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> B.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, B.cols)
+    END IF
+    
+    ' Choose implementation based on optimization level
+    SELECT CASE g_optimization_level
+        CASE 0: ' No optimization
+            ' Basic implementation
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    sum = 0.0
+                    FOR k = 0 TO A.cols - 1
+                        sum = sum + A.data(i, k) * B.data(k, j)
+                    NEXT k
+                    C.data(i, j) = sum
+                NEXT j
+            NEXT i
+            
+        CASE 1: ' Basic optimization
+            ' Cache-friendly loop ordering (ikj instead of ijk)
+            FOR i = 0 TO A.rows - 1
+                FOR k = 0 TO A.cols - 1
+                    FOR j = 0 TO B.cols - 1
+                        C.data(i, j) = C.data(i, j) + A.data(i, k) * B.data(k, j)
+                    NEXT j
+                NEXT k
+            NEXT i
+            
+        CASE 2, 3: ' Advanced optimization
+            ' Cache blocking for better locality
+            DIM block_size AS INTEGER
+            block_size = 16 ' Adjust based on cache size
+            
+            ' Initialize result matrix to zeros
+            ZeroMatrix(C)
+            
+            ' Blocked matrix multiplication
+            DIM i_block AS INTEGER, j_block AS INTEGER, k_block AS INTEGER
+            
+            FOR i_block = 0 TO A.rows - 1 STEP block_size
+                FOR j_block = 0 TO B.cols - 1 STEP block_size
+                    FOR k_block = 0 TO A.cols - 1 STEP block_size
+                        ' Multiply blocks
+                        DIM i_end AS INTEGER, j_end AS INTEGER, k_end AS INTEGER
+                        i_end = MIN(i_block + block_size - 1, A.rows - 1)
+                        j_end = MIN(j_block + block_size - 1, B.cols - 1)
+                        k_end = MIN(k_block + block_size - 1, A.cols - 1)
+                        
+                        FOR i = i_block TO i_end
+                            FOR k = k_block TO k_end
+                                DIM a_val AS SINGLE
+                                a_val = A.data(i, k)
+                                
+                                FOR j = j_block TO j_end
+                                    C.data(i, j) = C.data(i, j) + a_val * B.data(k, j)
+                                NEXT j
+                            NEXT k
+                        NEXT i
+                    NEXT k_block
+                NEXT j_block
+            NEXT i_block
+    END SELECT
+    
+    ' Track operation count
+    g_matrix_mul_count = g_matrix_mul_count + 1
+END SUB
 
-    DIM r AS INTEGER ' Row index for C
-    DIM c AS INTEGER ' Column index for C
-    DIM k AS INTEGER ' Index for the dot product
+' Matrix multiplication with transposed second matrix: C = A * B^T
+SUB MatrixMultiplyTransposeB(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM sum AS SINGLE
+    
+    ' Ensure dimensions are compatible
+    IF A.cols <> B.cols THEN
+        PRINT "ERROR: Matrix dimensions incompatible for multiplication with transposed B"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> B.rows THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, B.rows)
+    END IF
+    
+    ' Choose implementation based on optimization level
+    SELECT CASE g_optimization_level
+        CASE 0: ' No optimization
+            ' Basic implementation
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO B.rows - 1
+                    sum = 0.0
+                    FOR k = 0 TO A.cols - 1
+                        sum = sum + A.data(i, k) * B.data(j, k)
+                    NEXT k
+                    C.data(i, j) = sum
+                NEXT j
+            NEXT i
+            
+        CASE 1, 2, 3: ' Optimized implementation
+            ' Cache-friendly loop ordering and pre-initialization
+            ZeroMatrix(C)
+            
+            FOR i = 0 TO A.rows - 1
+                FOR k = 0 TO A.cols - 1
+                    DIM a_val AS SINGLE
+                    a_val = A.data(i, k)
+                    
+                    FOR j = 0 TO B.rows - 1
+                        C.data(i, j) = C.data(i, j) + a_val * B.data(j, k)
+                    NEXT j
+                NEXT k
+            NEXT i
+    END SELECT
+    
+    ' Track operation count
+    g_matrix_mul_count = g_matrix_mul_count + 1
+END SUB
 
-    ' Initialize C with zeros (fixed-point zero)
-    DIM fp_zero AS INTEGER = FloatToFixed(0.0)
-    FOR r = 0 TO C.rows - 1
-        FOR c = 0 TO C.cols - 1
-            ' Store the packed value of the quantized zero
-            DIM quantized_zero AS LogQuantized = FixedToLogQuantized(fp_zero)
-            C.data(r, c) = quantized_zero.packed_value
-        NEXT c
-    NEXT r
-
-    ' Perform matrix multiplication using fixed-point arithmetic
-    FOR r = 0 TO A.rows - 1
-        FOR c = 0 TO B.cols - 1
-            DIM fp_dot_product AS INTEGER = 0 ' Accumulate dot product in fixed-point
-
-            FOR k = 0 TO A.cols - 1
-                ' Convert elements to fixed-point, multiply, and accumulate
-                DIM fp_A AS INTEGER = LogQuantizedToFixed(A.data(r, k)) ' Assuming data() stores packed_value
-                DIM fp_B AS INTEGER = LogQuantizedToFixed(B.data(k, c)) ' Assuming data() stores packed_value
-                
-                ' Fixed-point multiplication and addition
-                fp_dot_product = FixedAdd(fp_dot_product, FixedMultiply(fp_A, fp_B))
+' Matrix multiplication with transposed first matrix: C = A^T * B
+SUB MatrixMultiplyTransposeA(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM sum AS SINGLE
+    
+    ' Ensure dimensions are compatible
+    IF A.rows <> B.rows THEN
+        PRINT "ERROR: Matrix dimensions incompatible for multiplication with transposed A"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.cols OR C.cols <> B.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.cols, B.cols)
+    END IF
+    
+    ' Choose implementation based on optimization level
+    SELECT CASE g_optimization_level
+        CASE 0: ' No optimization
+            ' Basic implementation
+            FOR i = 0 TO A.cols - 1
+                FOR j = 0 TO B.cols - 1
+                    sum = 0.0
+                    FOR k = 0 TO A.rows - 1
+                        sum = sum + A.data(k, i) * B.data(k, j)
+                    NEXT k
+                    C.data(i, j) = sum
+                NEXT j
+            NEXT i
+            
+        CASE 1, 2, 3: ' Optimized implementation
+            ' Cache-friendly method
+            ZeroMatrix(C)
+            
+            FOR k = 0 TO A.rows - 1
+                FOR i = 0 TO A.cols - 1
+                    DIM a_val AS SINGLE
+                    a_val = A.data(k, i)
+                    
+                    FOR j = 0 TO B.cols - 1
+                        C.data(i, j) = C.data(i, j) + a_val * B.data(k, j)
+                    NEXT j
+                NEXT i
             NEXT k
-            
-            ' Convert the final fixed-point dot product back to LogQuantized
-            DIM quantized_result AS LogQuantized = FixedToLogQuantized(fp_dot_product)
-            C.data(r, c) = quantized_result.packed_value
-        NEXT c
-    NEXT r
+    END SELECT
+    
+    ' Track operation count
+    g_matrix_mul_count = g_matrix_mul_count + 1
 END SUB
 
-' Function for element-wise matrix addition (C = A + B)
-' Assumes matrices A and B have the same dimensions.
-' Operates on LogQuantized data, converting to fixed-point, adding, and converting back.
-SUB MatrixElementWiseAdd (A AS Matrix, B AS Matrix, C AS Matrix)
-    ' Ensure dimensions match (basic check)
-    IF A.rows <> B.rows OR A.cols <> B.cols OR C.rows <> A.rows OR C.cols <> A.cols THEN
-        PRINT "Error: Matrix dimensions do not match for element-wise addition."
-        END ' Simple error handling
+' Matrix addition: C = A + B
+SUB MatrixAdd(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Ensure dimensions are compatible
+    IF A.rows <> B.rows OR A.cols <> B.cols THEN
+        PRINT "ERROR: Matrix dimensions incompatible for addition"
+        RETURN
     END IF
-
-    DIM r AS INTEGER
-    DIM c AS INTEGER
-
-    FOR r = 0 TO A.rows - 1
-        FOR c = 0 TO A.cols - 1
-            ' Convert to fixed-point, add, and convert back to LogQuantized
-            DIM fp_A AS INTEGER = LogQuantizedToFixed(A.data(r, c)) ' Assuming data() stores packed_value
-            DIM fp_B AS INTEGER = LogQuantizedToFixed(B.data(r, c)) ' Assuming data() stores packed_value
-            DIM fp_sum AS INTEGER = FixedAdd(fp_A, fp_B)
-            
-            ' Convert the result back to LogQuantized
-            DIM quantized_sum AS LogQuantized = FixedToLogQuantized(fp_sum)
-            
-            ' Store the packed value
-            C.data(r, c) = quantized_sum.packed_value
-        NEXT c
-    NEXT r
-END SUB
-
-' Function for element-wise matrix multiplication (C = A * B)
-' Assumes matrices A and B have the same dimensions.
-' Operates on LogQuantized data, converting to fixed-point, multiplying, and converting back.
-SUB MatrixElementWiseMultiply (A AS Matrix, B AS Matrix, C AS Matrix)
-    ' Ensure dimensions match (basic check)
-    IF A.rows <> B.rows OR A.cols <> B.cols OR C.rows <> A.rows OR C.cols <> A.cols THEN
-        PRINT "Error: Matrix dimensions do not match for element-wise multiplication."
-        END ' Simple error handling
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> A.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, A.cols)
     END IF
-
-    DIM r AS INTEGER
-    DIM c AS INTEGER
-
-    FOR r = 0 TO A.rows - 1
-        FOR c = 0 TO A.cols - 1
-            ' Convert to fixed-point, multiply, and convert back to LogQuantized
-            DIM fp_A AS INTEGER = LogQuantizedToFixed(A.data(r, c)) ' Assuming data() stores packed_value
-            DIM fp_B AS INTEGER = LogQuantizedToFixed(B.data(r, c)) ' Assuming data() stores packed_value
-            DIM fp_product AS INTEGER = FixedMultiply(fp_A, fp_B)
-            
-            ' Convert the result back to LogQuantized
-            DIM quantized_product AS LogQuantized = FixedToLogQuantized(fp_product)
-            
-            ' Store the packed value
-            C.data(r, c) = quantized_product.packed_value
-        NEXT c
-    NEXT r
+    
+    ' Add matrices
+    FOR i = 0 TO A.rows - 1
+        FOR j = 0 TO A.cols - 1
+            C.data(i, j) = A.data(i, j) + B.data(i, j)
+        NEXT j
+    NEXT i
+    
+    ' Track operation count
+    g_matrix_add_count = g_matrix_add_count + 1
 END SUB
 
+' Matrix subtraction: C = A - B
+SUB MatrixSubtract(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Ensure dimensions are compatible
+    IF A.rows <> B.rows OR A.cols <> B.cols THEN
+        PRINT "ERROR: Matrix dimensions incompatible for subtraction"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> A.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, A.cols)
+    END IF
+    
+    ' Subtract matrices
+    FOR i = 0 TO A.rows - 1
+        FOR j = 0 TO A.cols - 1
+            C.data(i, j) = A.data(i, j) - B.data(i, j)
+        NEXT j
+    NEXT i
+    
+    ' Track operation count
+    g_matrix_add_count = g_matrix_add_count + 1
+END SUB
 
-' Note on Optimization:
-' The current implementation uses fixed-point arithmetic, which is better than
-' floating-point for 486. However, significant further optimization is needed.
-'
-' SIMD-like Operations:
-' For matrix multiplication, we can process multiple elements in parallel using bit
-' manipulation on packed integers (as discussed in the user's feedback). This requires
-' careful packing and unpacking of 4-bit values and implementing the multiplication/addition
-' logic using bitwise operations. This would replace the inner loop (k loop) or process
-' blocks of the matrices. This is a complex optimization for BASIC.
-'
-' Block Processing:
-' For large matrices, we need to process them in smaller blocks that fit into available
-' memory. This involves loading blocks from disk (if streaming) or processing sub-matrices
-' that fit in RAM. The MatrixMultiply function would need to be modified to iterate
-' over these blocks. This is crucial for handling the 1M parameters within 32MB RAM.
-'
-' Assembly Language:
-' For the most critical inner loops (especially in matrix multiplication), writing
-' assembly language routines and calling them from BASIC (if the compiler supports it,
-' like PowerBASIC) could provide significant speedups by directly utilizing 486
-' instructions and registers.
-</content>
+' Matrix element-wise multiplication (Hadamard product): C = A .* B
+SUB MatrixElementwiseMultiply(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Ensure dimensions are compatible
+    IF A.rows <> B.rows OR A.cols <> B.cols THEN
+        PRINT "ERROR: Matrix dimensions incompatible for element-wise multiplication"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> A.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, A.cols)
+    END IF
+    
+    ' Multiply matrices element-wise
+    FOR i = 0 TO A.rows - 1
+        FOR j = 0 TO A.cols - 1
+            C.data(i, j) = A.data(i, j) * B.data(i, j)
+        NEXT j
+    NEXT i
+    
+    ' Track operation count
+    g_matrix_mul_count = g_matrix_mul_count + 1
+END SUB
+
+' Matrix scaling: B = alpha * A
+SUB MatrixScale(A AS Matrix, alpha AS SINGLE, BYREF B AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Initialize result matrix if needed
+    IF B.rows <> A.rows OR B.cols <> A.cols THEN
+        FreeMatrix(B)
+        InitMatrix(B, A.rows, A.cols)
+    END IF
+    
+    ' Scale matrix
+    FOR i = 0 TO A.rows - 1
+        FOR j = 0 TO A.cols - 1
+            B.data(i, j) = alpha * A.data(i, j)
+        NEXT j
+    NEXT i
+    
+    ' Track operation count
+    g_matrix_scale_count = g_matrix_scale_count + 1
+END SUB
+
+' *******************************************************
+' * Matrix Operations with SIMD-like Optimizations      *
+' *******************************************************
+
+' Matrix multiplication using SIMD-like optimizations
+SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    
+    ' Ensure dimensions are compatible
+    IF A.cols <> B.rows THEN
+        PRINT "ERROR: Matrix dimensions incompatible for multiplication"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> B.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, B.cols)
+    END IF
+    
+    ' Choose precision level based on matrix size
+    DIM precision AS PrecisionLevel
+    precision = DetermineOptimalPrecision(A.rows * A.cols, OPERATION_GENERAL)
+    
+    ' Choose implementation based on precision
+    SELECT CASE precision
+        CASE PRECISION_8BIT:
+            ' Convert matrices to 8-bit precision
+            DIM A_8bit() AS BYTE, B_8bit() AS BYTE, C_8bit() AS BYTE
+            REDIM A_8bit(0 TO A.rows * A.cols - 1)
+            REDIM B_8bit(0 TO B.rows * B.cols - 1)
+            REDIM C_8bit(0 TO A.rows * B.cols - 1)
+            
+            ' Fill 8-bit matrices (simplified quantization)
+            DIM idx AS INTEGER
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO A.cols - 1
+                    ' Convert float to byte (0-255)
+                    A_8bit(idx) = MAX(0, MIN(255, INT((A.data(i, j) + 1.0) * 127.5)))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            idx = 0
+            FOR i = 0 TO B.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    ' Convert float to byte (0-255)
+                    B_8bit(idx) = MAX(0, MIN(255, INT((B.data(i, j) + 1.0) * 127.5)))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            ' Use 8-bit SIMD matrix multiplication
+            MatrixMultiplySIMD_8bit(A_8bit(), B_8bit(), C_8bit(), A.rows, A.cols, B.cols)
+            
+            ' Convert result back to float
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    ' Convert byte to float (-1.0 to 1.0)
+                    C.data(i, j) = (C_8bit(idx) / 127.5) - 1.0
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+        CASE PRECISION_4BIT:
+            ' Similar to 8-bit but with 4-bit precision
+            ' Implementation would be similar but with 4-bit packing
+            ' For now, fall back to 8-bit implementation
+            ' TODO: Implement native 4-bit version
+            
+            ' Convert matrices to 8-bit precision
+            DIM A_8bit() AS BYTE, B_8bit() AS BYTE, C_8bit() AS BYTE
+            REDIM A_8bit(0 TO A.rows * A.cols - 1)
+            REDIM B_8bit(0 TO B.rows * B.cols - 1)
+            REDIM C_8bit(0 TO A.rows * B.cols - 1)
+            
+            ' Fill 8-bit matrices (simplified quantization)
+            DIM idx AS INTEGER
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO A.cols - 1
+                    ' Convert float to byte (0-255)
+                    A_8bit(idx) = MAX(0, MIN(255, INT((A.data(i, j) + 1.0) * 127.5)))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            idx = 0
+            FOR i = 0 TO B.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    ' Convert float to byte (0-255)
+                    B_8bit(idx) = MAX(0, MIN(255, INT((B.data(i, j) + 1.0) * 127.5)))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            ' Use 8-bit SIMD matrix multiplication
+            MatrixMultiplySIMD_8bit(A_8bit(), B_8bit(), C_8bit(), A.rows, A.cols, B.cols)
+            
+            ' Convert result back to float
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    ' Convert byte to float (-1.0 to 1.0)
+                    C.data(i, j) = (C_8bit(idx) / 127.5) - 1.0
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+        CASE PRECISION_16BIT:
+            ' Convert matrices to 16-bit precision (use integers)
+            DIM A_16bit() AS INTEGER, B_16bit() AS INTEGER, C_16bit() AS INTEGER
+            REDIM A_16bit(0 TO A.rows * A.cols - 1)
+            REDIM B_16bit(0 TO B.rows * B.cols - 1)
+            REDIM C_16bit(0 TO A.rows * B.cols - 1)
+            
+            ' Fill 16-bit matrices
+            DIM idx AS INTEGER
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO A.cols - 1
+                    ' Convert float to 16-bit integer (-32768 to 32767)
+                    A_16bit(idx) = MAX(-32768, MIN(32767, INT(A.data(i, j) * 32767.0)))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            idx = 0
+            FOR i = 0 TO B.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    ' Convert float to 16-bit integer
+                    B_16bit(idx) = MAX(-32768, MIN(32767, INT(B.data(i, j) * 32767.0)))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            ' TODO: Implement native 16-bit matrix multiplication with SIMD
+            ' For now, use non-SIMD implementation
+            
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    DIM sum AS LONG
+                    sum = 0
+                    FOR k = 0 TO A.cols - 1
+                        sum = sum + (CLNG(A_16bit(i * A.cols + k)) * CLNG(B_16bit(k * B.cols + j))) / 32767
+                    NEXT k
+                    C_16bit(idx) = MAX(-32768, MIN(32767, sum))
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+            ' Convert result back to float
+            idx = 0
+            FOR i = 0 TO A.rows - 1
+                FOR j = 0 TO B.cols - 1
+                    ' Convert 16-bit integer to float
+                    C.data(i, j) = C_16bit(idx) / 32767.0
+                    idx = idx + 1
+                NEXT j
+            NEXT i
+            
+        CASE PRECISION_32BIT:
+            ' Just use standard matrix multiplication for full precision
+            MatrixMultiply(A, B, C)
+    END SELECT
+    
+    ' Track operation count
+    g_matrix_mul_count = g_matrix_mul_count + 1
+END SUB
+
+' Matrix addition using SIMD-like optimizations
+SUB MatrixAddSIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Ensure dimensions are compatible
+    IF A.rows <> B.rows OR A.cols <> B.cols THEN
+        PRINT "ERROR: Matrix dimensions incompatible for addition"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> A.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, A.cols)
+    END IF
+    
+    ' Determine if we should use SIMD operations
+    IF g_optimization_level >= 2 THEN
+        ' Choose precision level
+        DIM precision AS PrecisionLevel
+        precision = DetermineOptimalPrecision(A.rows * A.cols, OPERATION_GENERAL)
+        
+        SELECT CASE precision
+            CASE PRECISION_8BIT:
+                ' Convert to 8-bit and use SIMD addition
+                DIM A_8bit() AS BYTE, B_8bit() AS BYTE, C_8bit() AS BYTE
+                REDIM A_8bit(0 TO A.rows * A.cols - 1)
+                REDIM B_8bit(0 TO B.rows * B.cols - 1)
+                REDIM C_8bit(0 TO A.rows * B.cols - 1)
+                
+                ' Convert to 8-bit format
+                DIM idx AS INTEGER
+                idx = 0
+                FOR i = 0 TO A.rows - 1
+                    FOR j = 0 TO A.cols - 1
+                        A_8bit(idx) = MAX(0, MIN(255, INT((A.data(i, j) + 1.0) * 127.5)))
+                        B_8bit(idx) = MAX(0, MIN(255, INT((B.data(i, j) + 1.0) * 127.5)))
+                        idx = idx + 1
+                    NEXT j
+                NEXT i
+                
+                ' Process 4 elements at a time with SIMD
+                FOR i = 0 TO (A.rows * A.cols - 1) STEP 4
+                    IF i + 3 < A.rows * A.cols THEN
+                        ' Pack 4 elements
+                        DIM a_packed AS LONG, b_packed AS LONG, sum_packed AS LONG
+                        a_packed = Pack_8bit(A_8bit(i), A_8bit(i+1), A_8bit(i+2), A_8bit(i+3))
+                        b_packed = Pack_8bit(B_8bit(i), B_8bit(i+1), B_8bit(i+2), B_8bit(i+3))
+                        
+                        ' Add using SIMD
+                        sum_packed = SIMD_Add_8bit(a_packed, b_packed)
+                        
+                        ' Unpack results
+                        DIM temp_vals(1 TO 4) AS BYTE
+                        Unpack_8bit(sum_packed, temp_vals(1), temp_vals(2), temp_vals(3), temp_vals(4))
+                        
+                        ' Store results
+                        C_8bit(i) = temp_vals(1)
+                        C_8bit(i+1) = temp_vals(2)
+                        C_8bit(i+2) = temp_vals(3)
+                        C_8bit(i+3) = temp_vals(4)
+                    ELSE
+                        ' Handle remaining elements
+                        FOR j = i TO A.rows * A.cols - 1
+                            C_8bit(j) = (A_8bit(j) + B_8bit(j)) AND &HFF
+                        NEXT j
+                    END IF
+                NEXT i
+                
+                ' Convert back to float
+                idx = 0
+                FOR i = 0 TO A.rows - 1
+                    FOR j = 0 TO A.cols - 1
+                        C.data(i, j) = (C_8bit(idx) / 127.5) - 1.0
+                        idx = idx + 1
+                    NEXT j
+                NEXT i
+                
+            CASE ELSE:
+                ' Standard addition for other precisions
+                FOR i = 0 TO A.rows - 1
+                    FOR j = 0 TO A.cols - 1
+                        C.data(i, j) = A.data(i, j) + B.data(i, j)
+                    NEXT j
+                NEXT i
+        END SELECT
+    ELSE
+        ' Standard matrix addition
+        FOR i = 0 TO A.rows - 1
+            FOR j = 0 TO A.cols - 1
+                C.data(i, j) = A.data(i, j) + B.data(i, j)
+            NEXT j
+        NEXT i
+    END IF
+    
+    ' Track operation count
+    g_matrix_add_count = g_matrix_add_count + 1
+END SUB
+
+' *******************************************************
+' * Advanced Matrix Operations                          *
+' *******************************************************
+
+' Matrix transposition: B = A^T
+SUB MatrixTranspose(A AS Matrix, BYREF B AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    
+    ' Initialize result matrix if needed
+    IF B.rows <> A.cols OR B.cols <> A.rows THEN
+        FreeMatrix(B)
+        InitMatrix(B, A.cols, A.rows)
+    END IF
+    
+    ' Transpose matrix
+    FOR i = 0 TO A.rows - 1
+        FOR j = 0 TO A.cols - 1
+            B.data(j, i) = A.data(i, j)
+        NEXT j
+    NEXT i
+END SUB
+
+' Matrix row-wise softmax: B_ij = exp(A_ij) / sum_k(exp(A_ik))
+SUB MatrixSoftmax(A AS Matrix, BYREF B AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    DIM row_max AS SINGLE, row_sum AS SINGLE
+    
+    ' Initialize result matrix if needed
+    IF B.rows <> A.rows OR B.cols <> A.cols THEN
+        FreeMatrix(B)
+        InitMatrix(B, A.rows, A.cols)
+    END IF
+    
+    ' Apply softmax to each row
+    FOR i = 0 TO A.rows - 1
+        ' Find maximum value in row (for numerical stability)
+        row_max = A.data(i, 0)
+        FOR j = 1 TO A.cols - 1
+            IF A.data(i, j) > row_max THEN
+                row_max = A.data(i, j)
+            END IF
+        NEXT j
+        
+        ' Compute exp(x - max) and row sum
+        row_sum = 0.0
+        FOR j = 0 TO A.cols - 1
+            B.data(i, j) = EXP(A.data(i, j) - row_max)
+            row_sum = row_sum + B.data(i, j)
+        NEXT j
+        
+        ' Normalize by row sum
+        FOR j = 0 TO A.cols - 1
+            B.data(i, j) = B.data(i, j) / row_sum
+        NEXT j
+    NEXT i
+END SUB
+
+' Compute matrix inverse for small matrices (up to 4x4)
+FUNCTION MatrixInverse(A AS Matrix, BYREF B AS Matrix) AS INTEGER
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM determinant AS SINGLE
+    
+    ' Check dimensions
+    IF A.rows <> A.cols THEN
+        PRINT "ERROR: Matrix must be square for inversion"
+        RETURN 0
+    END IF
+    
+    ' Only support small matrices
+    IF A.rows > 4 THEN
+        PRINT "ERROR: Matrix inversion only supported for matrices up to 4x4"
+        RETURN 0
+    END IF
+    
+    ' Initialize result matrix
+    FreeMatrix(B)
+    InitMatrix(B, A.rows, A.cols)
+    
+    ' Special case for 1x1 matrix
+    IF A.rows = 1 THEN
+        IF ABS

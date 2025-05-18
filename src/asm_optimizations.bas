@@ -1,598 +1,654 @@
-' Assembly language optimizations for critical sections of the GPT-2 in BASIC implementation.
-' This file provides assembly language implementations of performance-critical
-' operations specifically optimized for 486-era hardware.
+' *******************************************************
+' * Assembly Optimizations for GPT-2 BASIC               *
+' *******************************************************
+' * This module implements assembly optimizations for    *
+' * critical operations in the GPT-2 implementation.     *
+' *                                                      *
+' * It provides highly optimized routines for matrix     *
+' * operations, fixed-point math, and other performance- *
+' * critical functions using x86 assembly.               *
+' *******************************************************
 
-' Include necessary files
-#INCLUDE "data_structures.bas"
-#INCLUDE "quantization.bas"
-#INCLUDE "matrix_ops.bas"
+#INCLUDE "src/data_structures.bas"
+#INCLUDE "src/simd_ops.bas"
 
-' --- Constants and types for assembly optimization ---
+' *******************************************************
+' * Configuration                                       *
+' *******************************************************
 
-' Flags for CPU capabilities
-DIM ASM_CPU_HAS_FPU AS INTEGER ' Whether the CPU has an FPU (486DX vs 486SX)
-DIM ASM_OPTIMIZATIONS_ENABLED AS INTEGER ' Whether assembly optimizations are enabled
-DIM ASM_USE_INLINE_ASM AS INTEGER ' Whether to use inline assembly (as compared to BASIC-only implementations)
+' Toggle to enable/disable assembly optimizations
+DIM SHARED g_use_assembly AS INTEGER
 
-' --- Assembly detection routines ---
+' Assembly optimization capabilities
+DIM SHARED g_has_assembly_fixed_point AS INTEGER
+DIM SHARED g_has_assembly_matrix_mul AS INTEGER
+DIM SHARED g_has_assembly_softmax AS INTEGER
 
-' Initialize assembly optimization system
-SUB InitAsmOptimizations()
-    ' Detect CPU capabilities
-    DetectCPUCapabilities()
-    
-    ' Enable optimizations by default
-    ASM_OPTIMIZATIONS_ENABLED = 1
-    
-    ' Use inline assembly by default if we're on a platform that supports it
-    ' (FB-specific - would need to be adapted for DOS BASIC)
-    #IFDEF __FB_DOS__
-        ASM_USE_INLINE_ASM = 1
+' *******************************************************
+' * Fixed Point Math Support                            *
+' *******************************************************
+
+' Fixed point format: 16.16 (16 bits integer, 16 bits fraction)
+CONST FIXED_POINT_SHIFT = 16
+CONST FIXED_POINT_ONE = (1 << FIXED_POINT_SHIFT)
+CONST FIXED_POINT_HALF = (FIXED_POINT_ONE \ 2)
+CONST FIXED_POINT_MASK = (FIXED_POINT_ONE - 1)
+
+' Convert a float to fixed point
+FUNCTION FloatToFixed(value AS SINGLE) AS LONG
+    RETURN INT(value * FIXED_POINT_ONE + (IIF(value >= 0, 0.5, -0.5)))
+END FUNCTION
+
+' Convert fixed point to float
+FUNCTION FixedToFloat(value AS LONG) AS SINGLE
+    RETURN value / FIXED_POINT_ONE
+END FUNCTION
+
+' Fixed point multiplication
+FUNCTION FixedMul(a AS LONG, b AS LONG) AS LONG
+    #IFDEF __FB_64BIT__
+        ' 64-bit version (for development on modern systems)
+        DIM result AS LONGINT
+        result = CLNGINT(a) * CLNGINT(b)
+        result = result >> FIXED_POINT_SHIFT
+        RETURN CLNG(result)
     #ELSE
-        ' For other platforms, we provide BASIC implementations that
-        ' simulate the assembly optimizations for development/testing
-        ASM_USE_INLINE_ASM = 0
+        IF g_use_assembly AND g_has_assembly_fixed_point THEN
+            ' Assembly implementation for 32-bit
+            RETURN FixedMulAsm(a, b)
+        ELSE
+            ' Fallback C-like implementation
+            DIM a_hi AS LONG, a_lo AS LONG
+            DIM b_hi AS LONG, b_lo AS LONG
+            DIM result_hi AS LONG, result_lo AS LONG, result AS LONG
+            
+            ' Split into high and low parts
+            a_hi = a >> 16
+            a_lo = a AND &HFFFF
+            b_hi = b >> 16
+            b_lo = b AND &HFFFF
+            
+            ' Compute partial products
+            result_hi = a_hi * b_hi
+            result_lo = (a_lo * b_lo) >> 16
+            
+            ' Mixed products
+            result = result_hi + result_lo + ((a_hi * b_lo) >> 16) + ((a_lo * b_hi) >> 16)
+            
+            RETURN result
+        END IF
+    #ENDIF
+END FUNCTION
+
+' Fixed point division
+FUNCTION FixedDiv(a AS LONG, b AS LONG) AS LONG
+    #IFDEF __FB_64BIT__
+        ' 64-bit version (for development on modern systems)
+        DIM result AS LONGINT
+        result = (CLNGINT(a) << FIXED_POINT_SHIFT) / CLNGINT(b)
+        RETURN CLNG(result)
+    #ELSE
+        IF g_use_assembly AND g_has_assembly_fixed_point THEN
+            ' Assembly implementation for 32-bit
+            RETURN FixedDivAsm(a, b)
+        ELSE
+            ' Fallback implementation using floats
+            ' This is not ideal but works as a fallback
+            DIM af AS SINGLE, bf AS SINGLE
+            af = FixedToFloat(a)
+            bf = FixedToFloat(b)
+            RETURN FloatToFixed(af / bf)
+        END IF
+    #ENDIF
+END FUNCTION
+
+' Fixed point square root
+FUNCTION FixedSqrt(a AS LONG) AS LONG
+    #IFDEF __FB_64BIT__
+        ' 64-bit version using floating point
+        RETURN FloatToFixed(SQR(FixedToFloat(a)))
+    #ELSE
+        IF g_use_assembly AND g_has_assembly_fixed_point THEN
+            ' Assembly implementation for 32-bit
+            RETURN FixedSqrtAsm(a)
+        ELSE
+            ' Newton-Raphson method for fixed point
+            DIM x AS LONG, x2 AS LONG, x0 AS LONG
+            
+            ' Special case for zero or negative
+            IF a <= 0 THEN RETURN 0
+            
+            ' Initial guess (important for convergence)
+            x0 = a
+            IF x0 > FIXED_POINT_ONE THEN
+                x0 = FIXED_POINT_ONE + (x0 >> 1)
+            END IF
+            
+            ' Newton-Raphson iterations
+            x = (x0 + FixedDiv(a, x0)) >> 1
+            
+            ' Three iterations are usually enough for sufficient precision
+            FOR i = 1 TO 3
+                x2 = FixedMul(x, x)
+                IF ABS(x2 - a) < 10 THEN EXIT FOR ' Close enough
+                x = (x + FixedDiv(a, x)) >> 1
+            NEXT i
+            
+            RETURN x
+        END IF
+    #ENDIF
+END FUNCTION
+
+' *******************************************************
+' * Assembly Implementations                            *
+' *******************************************************
+
+' Assembly implementation of fixed point multiplication
+' Simulated here for platforms without inline assembly
+FUNCTION FixedMulAsm(a AS LONG, b AS LONG) AS LONG
+    DIM result AS LONG
+    
+    ' Simulated assembly implementation:
+    ' In real 486 assembly, this would use the following approach:
+    ' 1. Split 32-bit values into 16-bit parts
+    ' 2. Multiply parts using 32-bit results
+    ' 3. Combine with appropriate shifts
+    ' 4. Handle overflow carefully
+    
+    #IFDEF __ASM_AVAILABLE__
+        ' This is pseudocode for what the assembly would do
+        ' Actual implementation would be in x86 assembly
+        
+        ' mov eax, a       ; Load a to EAX
+        ' mov ebx, b       ; Load b to EBX
+        ' mov edx, eax     ; Copy a to EDX
+        ' shr edx, 16      ; EDX = high word of a
+        ' and eax, 0xFFFF  ; EAX = low word of a
+        ' mov ecx, ebx     ; Copy b to ECX
+        ' shr ecx, 16      ; ECX = high word of b
+        ' and ebx, 0xFFFF  ; EBX = low word of b
+        ' 
+        ' ; Compute high word * high word
+        ' imul edx, ecx    ; EDX = a_hi * b_hi
+        ' 
+        ' ; Compute low word * low word and shift
+        ' imul eax, ebx    ; EAX = a_lo * b_lo
+        ' shr eax, 16      ; AX = (a_lo * b_lo) >> 16
+        ' 
+        ' ; Add to result
+        ' add edx, eax     ; EDX = a_hi*b_hi + (a_lo*b_lo)>>16
+        ' 
+        ' ; Mixed products
+        ' mov eax, a       ; Reload a
+        ' shr eax, 16      ; EAX = a_hi
+        ' imul eax, ebx    ; EAX = a_hi * b_lo
+        ' shr eax, 16      ; Shift right by 16
+        ' add edx, eax     ; Add to result
+        ' 
+        ' mov eax, b       ; Reload b
+        ' shr eax, 16      ; EAX = b_hi
+        ' imul eax, [a]    ; EAX = a_lo * b_hi
+        ' and eax, 0xFFFF  ; Mask low word
+        ' shr eax, 16      ; Shift right by 16
+        ' add edx, eax     ; Add to result
+        ' 
+        ' mov eax, edx     ; Move result to return register
+        
+        ' This would be replaced with real assembly on 486
+        ASM mov eax, [a]
+        ASM mov ebx, [b]
+        ASM imul ebx
+        ASM shrd eax, edx, 16
+        ASM mov [result], eax
+    #ELSE
+        ' Fallback to C-like implementation
+        DIM a_hi AS LONG, a_lo AS LONG
+        DIM b_hi AS LONG, b_lo AS LONG
+        DIM result_hi AS LONG, result_lo AS LONG
+        
+        ' Split into high and low parts
+        a_hi = a >> 16
+        a_lo = a AND &HFFFF
+        b_hi = b >> 16
+        b_lo = b AND &HFFFF
+        
+        ' Compute partial products
+        result_hi = a_hi * b_hi
+        result_lo = (a_lo * b_lo) >> 16
+        
+        ' Mixed products
+        result = result_hi + result_lo + ((a_hi * b_lo) >> 16) + ((a_lo * b_hi) >> 16)
     #ENDIF
     
-    PRINT "Assembly optimizations initialized:"
-    PRINT "  CPU has FPU: "; IIF(ASM_CPU_HAS_FPU, "Yes", "No")
-    PRINT "  Optimizations enabled: "; IIF(ASM_OPTIMIZATIONS_ENABLED, "Yes", "No")
-    PRINT "  Inline assembly: "; IIF(ASM_USE_INLINE_ASM, "Yes", "No")
+    RETURN result
+END FUNCTION
+
+' Assembly implementation of fixed point division
+' Simulated here for platforms without inline assembly
+FUNCTION FixedDivAsm(a AS LONG, b AS LONG) AS LONG
+    DIM result AS LONG
+    
+    ' Simulated assembly implementation
+    #IFDEF __ASM_AVAILABLE__
+        ' This would be replaced with real assembly on 486
+        ASM mov eax, [a]
+        ASM mov ebx, [b]
+        ASM cdq
+        ASM shld edx, eax, 16
+        ASM shl eax, 16
+        ASM idiv ebx
+        ASM mov [result], eax
+    #ELSE
+        ' Fallback implementation using floats
+        DIM af AS SINGLE, bf AS SINGLE
+        af = FixedToFloat(a)
+        bf = FixedToFloat(b)
+        result = FloatToFixed(af / bf)
+    #ENDIF
+    
+    RETURN result
+END FUNCTION
+
+' Assembly implementation of fixed point square root
+' Simulated here for platforms without inline assembly
+FUNCTION FixedSqrtAsm(a AS LONG) AS LONG
+    DIM result AS LONG
+    
+    ' Simulated assembly implementation
+    #IFDEF __ASM_AVAILABLE__
+        ' This would be replaced with real assembly on 486
+        ' A 486DX would use the FPU for this, but we need to be careful
+        ' about fixed-point conversion
+        
+        ASM fild dword ptr [a]
+        ASM fidiv dword ptr [FIXED_POINT_ONE]
+        ASM fsqrt
+        ASM fimul dword ptr [FIXED_POINT_ONE]
+        ASM fistp dword ptr [result]
+    #ELSE
+        ' Fallback to floating point
+        result = FloatToFixed(SQR(FixedToFloat(a)))
+    #ENDIF
+    
+    RETURN result
+END FUNCTION
+
+' *******************************************************
+' * Assembly Optimized Matrix Operations                *
+' *******************************************************
+
+' Assembly optimized matrix multiplication
+SUB MatrixMultiplyAsm(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    
+    ' Ensure dimensions are compatible
+    IF A.cols <> B.rows THEN
+        PRINT "ERROR: Matrix dimensions incompatible for multiplication"
+        RETURN
+    END IF
+    
+    ' Initialize result matrix if needed
+    IF C.rows <> A.rows OR C.cols <> B.cols THEN
+        FreeMatrix(C)
+        InitMatrix(C, A.rows, B.cols)
+    END IF
+    
+    ' Zero the result matrix
+    ZeroMatrix(C)
+    
+    IF g_use_assembly AND g_has_assembly_matrix_mul THEN
+        ' Assembly implementation would be used here
+        ' This is a simplified simulation of what the assembly would do
+        
+        #IFDEF __ASM_AVAILABLE__
+            ' In a real implementation, this would be optimized assembly
+            ' that takes advantage of 486 features for matrix multiplication
+            
+            ' For 486, we would use a blocked algorithm with careful register
+            ' allocation and memory access patterns
+            
+            ' The assembly would handle inner loops for better performance
+            ' than this fallback implementation
+        #ENDIF
+        
+        ' Fallback: Use a blocked algorithm for better cache usage
+        DIM block_size AS INTEGER
+        block_size = 16 ' Adjust based on cache size
+        
+        FOR i_block = 0 TO A.rows - 1 STEP block_size
+            FOR j_block = 0 TO B.cols - 1 STEP block_size
+                FOR k_block = 0 TO A.cols - 1 STEP block_size
+                    ' Process blocks
+                    DIM i_end AS INTEGER, j_end AS INTEGER, k_end AS INTEGER
+                    i_end = MIN(i_block + block_size - 1, A.rows - 1)
+                    j_end = MIN(j_block + block_size - 1, B.cols - 1)
+                    k_end = MIN(k_block + block_size - 1, A.cols - 1)
+                    
+                    FOR i = i_block TO i_end
+                        FOR k = k_block TO k_end
+                            DIM a_val AS SINGLE
+                            a_val = A.data(i, k)
+                            
+                            FOR j = j_block TO j_end
+                                C.data(i, j) = C.data(i, j) + a_val * B.data(k, j)
+                            NEXT j
+                        NEXT k
+                    NEXT i
+                NEXT k_block
+            NEXT j_block
+        NEXT i_block
+    ELSE
+        ' Use standard matrix multiplication
+        FOR i = 0 TO A.rows - 1
+            FOR j = 0 TO B.cols - 1
+                FOR k = 0 TO A.cols - 1
+                    C.data(i, j) = C.data(i, j) + A.data(i, k) * B.data(k, j)
+                NEXT k
+            NEXT j
+        NEXT i
+    END IF
 END SUB
 
-' Detect CPU capabilities for assembly optimizations
-SUB DetectCPUCapabilities()
-    ' For a real 486 system, this would use assembly to detect CPU features
-    ' For our simulation, we'll assume a 486DX with FPU
-    ASM_CPU_HAS_FPU = 1
+' Assembly optimized softmax computation
+SUB SoftmaxAsm(A AS Matrix, BYREF B AS Matrix)
+    DIM i AS INTEGER, j AS INTEGER
+    DIM row_max AS SINGLE, row_sum AS SINGLE
     
-    ' In real implementation, we would use code like this:
-    ' This is Intel x86 assembly for detecting an FPU
-    '
-    ' #IFDEF __FB_DOS__
-    '   ASM
-    '     PUSHFD                ; Save EFLAGS
-    '     PUSHFD                ; Store EFLAGS
-    '     XOR DWORD PTR [ESP], 00040000h  ; Flip AC bit in EFLAGS
-    '     POPFD                 ; Load modified EFLAGS
-    '     PUSHFD                ; Store EFLAGS again
-    '     POP EAX               ; Get EFLAGS in EAX
-    '     XOR EAX, [ESP]        ; Compare with original
-    '     POPFD                 ; Restore original EFLAGS
-    '     AND EAX, 00040000h    ; Check if AC bit changed
-    '     MOV [ASM_CPU_HAS_FPU], EAX      ; Store result
-    '   END ASM
-    ' #ENDIF
+    ' Initialize result matrix if needed
+    IF B.rows <> A.rows OR B.cols <> A.cols THEN
+        FreeMatrix(B)
+        InitMatrix(B, A.rows, A.cols)
+    END IF
+    
+    IF g_use_assembly AND g_has_assembly_softmax THEN
+        ' Assembly implementation would be used here
+        ' This is a simplified simulation
+        
+        #IFDEF __ASM_AVAILABLE__
+            ' In a real implementation, this would be optimized assembly
+            ' on 486 with FPU for exponential calculations
+        #ENDIF
+        
+        ' Apply softmax to each row
+        FOR i = 0 TO A.rows - 1
+            ' Find maximum value in row (for numerical stability)
+            row_max = A.data(i, 0)
+            FOR j = 1 TO A.cols - 1
+                IF A.data(i, j) > row_max THEN
+                    row_max = A.data(i, j)
+                END IF
+            NEXT j
+            
+            ' Compute exp(x - max) and row sum
+            row_sum = 0.0
+            FOR j = 0 TO A.cols - 1
+                B.data(i, j) = EXP(A.data(i, j) - row_max)
+                row_sum = row_sum + B.data(i, j)
+            NEXT j
+            
+            ' Normalize by row sum
+            FOR j = 0 TO A.cols - 1
+                B.data(i, j) = B.data(i, j) / row_sum
+            NEXT j
+        NEXT i
+    ELSE
+        ' Use standard softmax implementation
+        FOR i = 0 TO A.rows - 1
+            ' Find maximum value in row (for numerical stability)
+            row_max = A.data(i, 0)
+            FOR j = 1 TO A.cols - 1
+                IF A.data(i, j) > row_max THEN
+                    row_max = A.data(i, j)
+                END IF
+            NEXT j
+            
+            ' Compute exp(x - max) and row sum
+            row_sum = 0.0
+            FOR j = 0 TO A.cols - 1
+                B.data(i, j) = EXP(A.data(i, j) - row_max)
+                row_sum = row_sum + B.data(i, j)
+            NEXT j
+            
+            ' Normalize by row sum
+            FOR j = 0 TO A.cols - 1
+                B.data(i, j) = B.data(i, j) / row_sum
+            NEXT j
+        NEXT i
+    END IF
+END SUB
+
+' *******************************************************
+' * Initialization and Detection                        *
+' *******************************************************
+
+' Initialize assembly optimizations
+SUB InitAsmOptimizations()
+    ' Initialize flags
+    g_use_assembly = 0
+    g_has_assembly_fixed_point = 0
+    g_has_assembly_matrix_mul = 0
+    g_has_assembly_softmax = 0
+    
+    ' Detect CPU capabilities
+    IF NOT g_cpu_detected THEN
+        DetectCPU()
+    END IF
+    
+    ' Enable assembly optimizations if CPU is capable
+    SELECT CASE g_cpu_type
+        CASE CPU_486SX:
+            ' 486SX: limited optimizations (no FPU)
+            g_use_assembly = 1
+            g_has_assembly_fixed_point = 1
+            g_has_assembly_matrix_mul = 1
+            g_has_assembly_softmax = 0 ' No FPU for exp()
+            
+        CASE CPU_486DX, CPU_486DX2, CPU_486DX4:
+            ' 486DX series: full optimizations with FPU
+            g_use_assembly = 1
+            g_has_assembly_fixed_point = 1
+            g_has_assembly_matrix_mul = 1
+            g_has_assembly_softmax = 1
+            
+        CASE CPU_PENTIUM:
+            ' Pentium: all optimizations
+            g_use_assembly = 1
+            g_has_assembly_fixed_point = 1
+            g_has_assembly_matrix_mul = 1
+            g_has_assembly_softmax = 1
+    END SELECT
+    
+    PRINT "Assembly optimizations: "; IIF(g_use_assembly, "Enabled", "Disabled")
+    IF g_use_assembly THEN
+        PRINT "  Fixed point math: "; IIF(g_has_assembly_fixed_point, "Yes", "No")
+        PRINT "  Matrix multiply : "; IIF(g_has_assembly_matrix_mul, "Yes", "No")
+        PRINT "  Softmax compute : "; IIF(g_has_assembly_softmax, "Yes", "No")
+    END IF
 END SUB
 
 ' Helper function for conditional expressions
-FUNCTION IIF(condition AS INTEGER, true_value AS STRING, false_value AS STRING) AS STRING
+FUNCTION IIF(condition AS INTEGER, true_val AS STRING, false_val AS STRING) AS STRING
     IF condition THEN
-        FUNCTION = true_value
+        RETURN true_val
     ELSE
-        FUNCTION = false_value
+        RETURN false_val
     END IF
 END FUNCTION
 
-' --- Fixed-point arithmetic optimizations ---
+' *******************************************************
+' * Testing Functions                                   *
+' *******************************************************
 
-' Optimized fixed-point multiplication for 486
-' Q16.16 format: 32-bit integer with 16 bits before and 16 bits after the decimal point
-FUNCTION AsmFixedMul(a AS INTEGER, b AS INTEGER) AS INTEGER
-    DIM result AS INTEGER
+' Test fixed point operations
+SUB TestFixedPoint()
+    DIM a AS SINGLE, b AS SINGLE, c AS SINGLE
+    DIM fa AS LONG, fb AS LONG, fc AS LONG
     
-    IF ASM_OPTIMIZATIONS_ENABLED THEN
-        IF ASM_USE_INLINE_ASM THEN
-            ' This would be the inline assembly implementation for 486
-            ' Here is the reference assembly code that would be used:
-            '
-            ' #IFDEF __FB_DOS__
-            '   ASM
-            '     MOV  EAX, [a]    ; Load a into EAX
-            '     IMUL [b]         ; Multiply by b, result in EDX:EAX
-            '     SHR  EAX, 16     ; Shift lower 32 bits right by 16
-            '     SHL  EDX, 16     ; Shift upper 32 bits left by 16
-            '     OR   EAX, EDX    ; Combine the results
-            '     MOV  [result], EAX ; Store the result
-            '   END ASM
-            ' #ENDIF
-            
-            ' Since we can't execute actual assembly here, simulate the operation:
-            ' Multiply and shift to maintain fixed-point format
-            DIM highpart AS LONGINT
-            DIM lowpart AS LONGINT
-            DIM full_result AS LONGINT
-            
-            full_result = CLNGINT(a) * CLNGINT(b)
-            result = CINT(full_result >> 16) ' Shift right 16 bits to adjust fixed-point
-        ELSE
-            ' BASIC implementation that simulates the assembly
-            DIM full_result AS LONGINT = CLNGINT(a) * CLNGINT(b)
-            result = CINT(full_result >> 16)
-        END IF
-    ELSE
-        ' Fallback to standard implementation
-        result = FixedMul(a, b)
-    END IF
+    PRINT "Testing fixed point operations..."
     
-    FUNCTION = result
-END FUNCTION
-
-' Optimized fixed-point division for 486
-FUNCTION AsmFixedDiv(a AS INTEGER, b AS INTEGER) AS INTEGER
-    DIM result AS INTEGER
+    ' Test conversion
+    a = 3.14159
+    fa = FloatToFixed(a)
+    b = FixedToFloat(fa)
+    PRINT "Float->Fixed->Float: "; a; " -> "; fa; " -> "; b
     
-    IF ASM_OPTIMIZATIONS_ENABLED THEN
-        IF ASM_USE_INLINE_ASM THEN
-            ' This would be the inline assembly implementation for 486
-            ' Here is the reference assembly code that would be used:
-            '
-            ' #IFDEF __FB_DOS__
-            '   ASM
-            '     MOV  EAX, [a]    ; Load a into EAX
-            '     CDQ              ; Sign-extend EAX into EDX
-            '     SHL  EAX, 16     ; Shift left 16 bits (multiply by 2^16)
-            '     MOV  ECX, [b]    ; Load b into ECX
-            '     IDIV ECX         ; Divide EDX:EAX by ECX, result in EAX
-            '     MOV  [result], EAX ; Store the result
-            '   END ASM
-            ' #ENDIF
-            
-            ' Since we can't execute actual assembly here, simulate the operation:
-            ' Shift and divide to maintain fixed-point format
-            DIM shifted_a AS LONGINT = CLNGINT(a) << 16
-            result = CINT(shifted_a \ CLNGINT(b))
-        ELSE
-            ' BASIC implementation that simulates the assembly
-            DIM shifted_a AS LONGINT = CLNGINT(a) << 16
-            result = CINT(shifted_a \ CLNGINT(b))
-        END IF
-    ELSE
-        ' Fallback to standard implementation
-        result = FixedDiv(a, b)
-    END IF
+    ' Test multiplication
+    a = 3.14159
+    b = 2.71828
+    c = a * b
+    fa = FloatToFixed(a)
+    fb = FloatToFixed(b)
+    fc = FixedMul(fa, fb)
+    PRINT "Multiplication: "; a; " * "; b; " = "; c; " (expected) vs "; FixedToFloat(fc); " (fixed)"
     
-    FUNCTION = result
-END FUNCTION
-
-' Optimized fixed-point square root (uses special 486 assembly tricks)
-FUNCTION AsmFixedSqrt(x AS INTEGER) AS INTEGER
-    DIM result AS INTEGER
+    ' Test division
+    a = 3.14159
+    b = 2.71828
+    c = a / b
+    fa = FloatToFixed(a)
+    fb = FloatToFixed(b)
+    fc = FixedDiv(fa, fb)
+    PRINT "Division: "; a; " / "; b; " = "; c; " (expected) vs "; FixedToFloat(fc); " (fixed)"
     
-    IF ASM_OPTIMIZATIONS_ENABLED THEN
-        IF ASM_USE_INLINE_ASM AND ASM_CPU_HAS_FPU THEN
-            ' This would use the FPU for square root if available (486DX)
-            ' Here is the reference assembly code that would be used:
-            '
-            ' #IFDEF __FB_DOS__
-            '   ASM
-            '     FILD  DWORD PTR [x]      ; Load integer into FPU
-            '     FIDIV DWORD PTR [_65536] ; Divide by 2^16 to get float
-            '     FSQRT                    ; Compute square root
-            '     FIMUL DWORD PTR [_65536] ; Multiply by 2^16 to get fixed-point
-            '     FISTP DWORD PTR [result] ; Store result as integer
-            '   END ASM
-            ' #ENDIF
-            
-            ' Since we can't execute assembly, simulate the FPU operation
-            DIM float_x AS DOUBLE = CDBL(x) / 65536.0
-            DIM float_sqrt AS DOUBLE = SQR(float_x)
-            result = CINT(float_sqrt * 65536.0)
-        ELSE
-            ' Newton-Raphson method for square root (BASIC implementation)
-            ' This is a bit-level algorithm based on binary search
-            ' It's a fast approximation for integer square root
-            IF x <= 0 THEN
-                result = 0
-            ELSE
-                DIM val AS LONGINT = CLNGINT(x) << 16 ' Convert to Q32.32
-                DIM temp AS LONGINT = 0
-                DIM bit_val AS LONGINT
-                
-                ' Find the highest bit
-                bit_val = CLNGINT(1) << 62 ' Start with high bit (63 would cause overflow)
-                
-                ' Find highest set bit in val
-                WHILE bit_val > val
-                    bit_val = bit_val >> 2
-                WEND
-                
-                ' Use that bit to start the algorithm
-                WHILE bit_val <> 0
-                    IF val >= temp + bit_val THEN
-                        val = val - (temp + bit_val)
-                        temp = (temp >> 1) + bit_val
-                    ELSE
-                        temp = temp >> 1
-                    END IF
-                    bit_val = bit_val >> 2
-                WEND
-                
-                result = CINT(temp)
-            END IF
-        END IF
-    ELSE
-        ' Fallback to standard implementation
-        DIM float_x AS DOUBLE = CDBL(x) / 65536.0
-        DIM float_sqrt AS DOUBLE = SQR(float_x)
-        result = CINT(float_sqrt * 65536.0)
-    END IF
+    ' Test square root
+    a = 2.0
+    c = SQR(a)
+    fa = FloatToFixed(a)
+    fc = FixedSqrt(fa)
+    PRINT "Square root: sqrt("; a; ") = "; c; " (expected) vs "; FixedToFloat(fc); " (fixed)"
     
-    FUNCTION = result
-END FUNCTION
-
-' --- Optimized Matrix Operations ---
-
-' Optimized matrix multiplication for 486 using block-based approach
-' This uses memory blocking and register optimizations
-SUB AsmMatrixMultiply(a AS Matrix, b AS Matrix, result AS Matrix)
-    IF ASM_OPTIMIZATIONS_ENABLED THEN
-        ' Block size optimized for 486 cache
-        DIM block_size AS INTEGER = 8
+    ' Test with assembly if enabled
+    IF g_use_assembly AND g_has_assembly_fixed_point THEN
+        PRINT "Testing assembly-optimized fixed point..."
         
-        ' Check dimensions
-        IF a.cols <> b.rows THEN
-            PRINT "Error: Matrix dimensions do not match for multiplication"
-            EXIT SUB
-        END IF
+        fa = FloatToFixed(3.14159)
+        fb = FloatToFixed(2.71828)
+        fc = FixedMulAsm(fa, fb)
+        PRINT "ASM multiplication result: "; FixedToFloat(fc)
         
-        ' Initialize result matrix if needed
-        IF result.rows <> a.rows OR result.cols <> b.cols THEN
-            FreeMatrix result
-            InitMatrix result, a.rows, b.cols
-        END IF
+        fc = FixedDivAsm(fa, fb)
+        PRINT "ASM division result: "; FixedToFloat(fc)
         
-        ' Zero the result matrix
-        DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
-        FOR i = 0 TO result.rows - 1
-            FOR j = 0 TO result.cols - 1
-                result.data(i, j) = 0
-            NEXT j
-        NEXT i
-        
-        ' Create a transposed copy of B for better cache locality
-        DIM b_transpose AS Matrix
-        MatrixTranspose b, b_transpose
-        
-        ' Block-based multiplication
-        DIM bi AS INTEGER, bj AS INTEGER, bk AS INTEGER
-        FOR bi = 0 TO a.rows - 1 STEP block_size
-            FOR bj = 0 TO b.cols - 1 STEP block_size
-                FOR bk = 0 TO a.cols - 1 STEP block_size
-                    ' Process this block
-                    DIM imax AS INTEGER = MIN(bi + block_size - 1, a.rows - 1)
-                    DIM jmax AS INTEGER = MIN(bj + block_size - 1, b.cols - 1)
-                    DIM kmax AS INTEGER = MIN(bk + block_size - 1, a.cols - 1)
-                    
-                    FOR i = bi TO imax
-                        FOR j = bj TO jmax
-                            DIM sum AS INTEGER = 0
-                            FOR k = bk TO kmax
-                                ' Use assembly-optimized fixed-point multiplication
-                                IF a.data(i, k) <> 0 AND b_transpose.data(j, k) <> 0 THEN
-                                    DIM fp_a AS INTEGER = LogQuantizedToFixed(a.data(i, k))
-                                    DIM fp_b AS INTEGER = LogQuantizedToFixed(b_transpose.data(j, k))
-                                    DIM fp_product AS INTEGER = AsmFixedMul(fp_a, fp_b)
-                                    sum = sum + fp_product
-                                END IF
-                            NEXT k
-                            
-                            ' Accumulate the result
-                            IF result.data(i, j) = 0 THEN
-                                result.data(i, j) = FixedToLogQuantized(sum).packed_value
-                            ELSE
-                                DIM existing AS INTEGER = LogQuantizedToFixed(result.data(i, j))
-                                result.data(i, j) = FixedToLogQuantized(existing + sum).packed_value
-                            END IF
-                        NEXT j
-                    NEXT i
-                NEXT bk
-            NEXT bj
-        NEXT bi
-        
-        ' Clean up
-        FreeMatrix b_transpose
-    ELSE
-        ' Fallback to standard implementation
-        MatrixMultiply a, b, result
+        fa = FloatToFixed(2.0)
+        fc = FixedSqrtAsm(fa)
+        PRINT "ASM square root result: "; FixedToFloat(fc)
     END IF
 END SUB
 
-' Optimized matrix-vector multiplication for attention
-' This is a critical operation in transformer models
-SUB AsmAttentionMatrixVectorMultiply(matrix AS Matrix, vector AS Matrix, result AS Matrix)
-    IF ASM_OPTIMIZATIONS_ENABLED THEN
-        ' Check dimensions
-        IF matrix.cols <> vector.rows OR vector.cols <> 1 THEN
-            PRINT "Error: Dimensions don't match for attention matrix-vector multiplication"
-            EXIT SUB
-        END IF
-        
-        ' Initialize result vector if needed
-        IF result.rows <> matrix.rows OR result.cols <> 1 THEN
-            FreeMatrix result
-            InitMatrix result, matrix.rows, 1
-        END IF
-        
-        ' 486-optimized implementation
-        DIM i AS INTEGER, j AS INTEGER
-        FOR i = 0 TO matrix.rows - 1
-            DIM sum AS INTEGER = 0
-            
-            ' Process 4 elements at a time where possible (unrolled loop)
-            FOR j = 0 TO matrix.cols - 4 STEP 4
-                ' In assembly, this would use registers efficiently and minimize memory access
-                IF matrix.data(i, j) <> 0 THEN
-                    DIM fp_m1 AS INTEGER = LogQuantizedToFixed(matrix.data(i, j))
-                    DIM fp_v1 AS INTEGER = LogQuantizedToFixed(vector.data(j, 0))
-                    sum = sum + AsmFixedMul(fp_m1, fp_v1)
-                END IF
-                
-                IF matrix.data(i, j+1) <> 0 THEN
-                    DIM fp_m2 AS INTEGER = LogQuantizedToFixed(matrix.data(i, j+1))
-                    DIM fp_v2 AS INTEGER = LogQuantizedToFixed(vector.data(j+1, 0))
-                    sum = sum + AsmFixedMul(fp_m2, fp_v2)
-                END IF
-                
-                IF matrix.data(i, j+2) <> 0 THEN
-                    DIM fp_m3 AS INTEGER = LogQuantizedToFixed(matrix.data(i, j+2))
-                    DIM fp_v3 AS INTEGER = LogQuantizedToFixed(vector.data(j+2, 0))
-                    sum = sum + AsmFixedMul(fp_m3, fp_v3)
-                END IF
-                
-                IF matrix.data(i, j+3) <> 0 THEN
-                    DIM fp_m4 AS INTEGER = LogQuantizedToFixed(matrix.data(i, j+3))
-                    DIM fp_v4 AS INTEGER = LogQuantizedToFixed(vector.data(j+3, 0))
-                    sum = sum + AsmFixedMul(fp_m4, fp_v4)
-                END IF
-            NEXT j
-            
-            ' Process any remaining elements
-            FOR j = j TO matrix.cols - 1
-                IF matrix.data(i, j) <> 0 THEN
-                    DIM fp_m AS INTEGER = LogQuantizedToFixed(matrix.data(i, j))
-                    DIM fp_v AS INTEGER = LogQuantizedToFixed(vector.data(j, 0))
-                    sum = sum + AsmFixedMul(fp_m, fp_v)
-                END IF
-            NEXT j
-            
-            ' Store result
-            result.data(i, 0) = FixedToLogQuantized(sum).packed_value
-        NEXT i
-    ELSE
-        ' Fallback to standard implementation
-        MatrixVectorMultiply matrix, vector, result
-    END IF
-END SUB
-
-' --- 486-optimized Softmax implementation ---
-
-' Assembly-optimized fixed-point softmax for vector
-SUB AsmSoftmaxVectorFixedPoint(logits AS Matrix)
-    IF ASM_OPTIMIZATIONS_ENABLED THEN
-        ' Check dimensions to ensure it's a row vector
-        IF logits.rows <> 1 THEN
-            PRINT "Error: SoftmaxVectorFixedPoint expects a row vector (1 x n matrix)"
-            EXIT SUB
-        END IF
-        
-        ' Find the maximum value for numerical stability
-        DIM max_val AS INTEGER = -2147483647 ' Minimum INT value
-        DIM i AS INTEGER
-        
-        FOR i = 0 TO logits.cols - 1
-            DIM fp_val AS INTEGER = LogQuantizedToFixed(logits.data(0, i))
-            IF fp_val > max_val THEN
-                max_val = fp_val
-            END IF
-        NEXT i
-        
-        ' Calculate exponentials with the max_val subtracted for stability
-        DIM sum AS INTEGER = 0
-        DIM exp_values(logits.cols - 1) AS INTEGER
-        
-        FOR i = 0 TO logits.cols - 1
-            DIM fp_val AS INTEGER = LogQuantizedToFixed(logits.data(0, i))
-            
-            ' In assembly, we would use a specialized exponential approximation
-            ' that is more efficient than the lookup table for small differences
-            DIM diff AS INTEGER = fp_val - max_val
-            
-            ' Use lookup table or assembly-optimized exponential
-            DIM exp_val AS INTEGER
-            IF diff <= -65536 * 8 THEN
-                ' If e^x is effectively zero, don't compute it
-                exp_val = 0
-            ELSE
-                ' Use the exp lookup table
-                exp_val = ExpLookup(diff)
-            END IF
-            
-            exp_values(i) = exp_val
-            sum = sum + exp_val
-        NEXT i
-        
-        ' Normalize to get probabilities
-        FOR i = 0 TO logits.cols - 1
-            ' In assembly, this would use a specialized division routine
-            DIM probability AS INTEGER
-            IF sum = 0 THEN
-                ' Avoid division by zero
-                probability = 0
-            ELSE
-                probability = AsmFixedDiv(exp_values(i), sum)
-            END IF
-            
-            ' Store the probability back in the logits matrix
-            logits.data(0, i) = FixedToLogQuantized(probability).packed_value
-        NEXT i
-    ELSE
-        ' Fallback to standard implementation
-        SoftmaxVectorFixedPoint logits
-    END IF
-END SUB
-
-' --- Helper Functions ---
-
-' Helper function for minimum of two values
-FUNCTION MIN(a AS INTEGER, b AS INTEGER) AS INTEGER
-    IF a < b THEN
-        FUNCTION = a
-    ELSE
-        FUNCTION = b
-    END IF
-END FUNCTION
-
-' -- Benchmarking for Assembly Optimizations --
-
-' Benchmark assembly-optimized fixed-point operations
-SUB BenchmarkAsmFixedPoint()
-    DIM i AS INTEGER, iterations AS INTEGER = 1000000
-    DIM sum1 AS INTEGER = 0, sum2 AS INTEGER = 0
-    DIM start_time1 AS DOUBLE, end_time1 AS DOUBLE
-    DIM start_time2 AS DOUBLE, end_time2 AS DOUBLE
-    DIM speed_ratio AS DOUBLE
-    DIM a AS INTEGER, b AS INTEGER
-    
-    ' Test fixed-point multiplication
-    a = 123456 ' Q16.16 value ~1.88
-    b = 65536  ' Q16.16 value 1.0
-    
-    ' Standard implementation
-    start_time1 = TIMER
-    FOR i = 1 TO iterations
-        sum1 = sum1 + FixedMul(a, b)
-    NEXT i
-    end_time1 = TIMER
-    
-    ' Assembly-optimized implementation
-    start_time2 = TIMER
-    FOR i = 1 TO iterations
-        sum2 = sum2 + AsmFixedMul(a, b)
-    NEXT i
-    end_time2 = TIMER
-    
-    ' Calculate speed ratio
-    speed_ratio = (end_time1 - start_time1) / (end_time2 - start_time2)
-    
-    ' Print results
-    PRINT "Fixed-point multiplication benchmark:"
-    PRINT "  Standard: "; end_time1 - start_time1; " seconds"
-    PRINT "  Assembly-optimized: "; end_time2 - start_time2; " seconds"
-    PRINT "  Speed improvement: "; speed_ratio; "x"
-    PRINT "  Results: "; sum1; " vs "; sum2; " (should be the same)"
-    PRINT
-    
-    ' Test fixed-point division
-    a = 123456 ' Q16.16 value ~1.88
-    b = 65536  ' Q16.16 value 1.0
-    sum1 = 0
-    sum2 = 0
-    
-    ' Standard implementation
-    start_time1 = TIMER
-    FOR i = 1 TO iterations
-        sum1 = sum1 + FixedDiv(a, b)
-    NEXT i
-    end_time1 = TIMER
-    
-    ' Assembly-optimized implementation
-    start_time2 = TIMER
-    FOR i = 1 TO iterations
-        sum2 = sum2 + AsmFixedDiv(a, b)
-    NEXT i
-    end_time2 = TIMER
-    
-    ' Calculate speed ratio
-    speed_ratio = (end_time1 - start_time1) / (end_time2 - start_time2)
-    
-    ' Print results
-    PRINT "Fixed-point division benchmark:"
-    PRINT "  Standard: "; end_time1 - start_time1; " seconds"
-    PRINT "  Assembly-optimized: "; end_time2 - start_time2; " seconds"
-    PRINT "  Speed improvement: "; speed_ratio; "x"
-    PRINT "  Results: "; sum1; " vs "; sum2; " (should be the same)"
-    PRINT
-END SUB
-
-' Benchmark assembly-optimized matrix operations
-SUB BenchmarkAsmMatrixOps()
-    DIM size AS INTEGER = 32 ' 32x32 matrices
-    DIM iterations AS INTEGER = 10
-    DIM a AS Matrix, b AS Matrix, c1 AS Matrix, c2 AS Matrix
-    DIM start_time1 AS DOUBLE, end_time1 AS DOUBLE
-    DIM start_time2 AS DOUBLE, end_time2 AS DOUBLE
-    DIM speed_ratio AS DOUBLE
-    
-    ' Initialize matrices
-    InitMatrix a, size, size
-    InitMatrix b, size, size
-    InitMatrix c1, size, size
-    InitMatrix c2, size, size
-    
-    ' Fill with random data
+' Test assembly optimized matrix operations
+SUB TestAsmMatrixOps()
+    DIM a AS Matrix, b AS Matrix
+    DIM c1 AS Matrix, c2 AS Matrix
     DIM i AS INTEGER, j AS INTEGER
+    DIM start_time AS DOUBLE, end_time AS DOUBLE
+    DIM std_time AS DOUBLE, asm_time AS DOUBLE
+    
+    PRINT "Testing assembly optimized matrix operations..."
+    
+    ' Initialize test matrices
+    InitMatrix(a, 16, 16)
+    InitMatrix(b, 16, 16)
+    
+    ' Fill matrices with test data
     FOR i = 0 TO a.rows - 1
         FOR j = 0 TO a.cols - 1
-            a.data(i, j) = INT(RND * 16)
+            a.data(i, j) = (i + j) / (a.rows + a.cols)
         NEXT j
     NEXT i
     
     FOR i = 0 TO b.rows - 1
         FOR j = 0 TO b.cols - 1
-            b.data(i, j) = INT(RND * 16)
+            b.data(i, j) = (i * j) / (b.rows * b.cols)
         NEXT j
     NEXT i
     
     ' Test matrix multiplication
+    PRINT "Comparing standard vs ASM matrix multiplication..."
     
-    ' Standard implementation
-    start_time1 = TIMER
-    FOR i = 1 TO iterations
-        MatrixMultiply a, b, c1
+    ' Standard multiplication
+    start_time = TIMER
+    MatrixMultiply(a, b, c1)
+    end_time = TIMER
+    std_time = end_time - start_time
+    
+    ' ASM multiplication
+    start_time = TIMER
+    MatrixMultiplyAsm(a, b, c2)
+    end_time = TIMER
+    asm_time = end_time - start_time
+    
+    ' Verify results
+    DIM max_diff AS SINGLE
+    max_diff = 0.0
+    
+    FOR i = 0 TO c1.rows - 1
+        FOR j = 0 TO c1.cols - 1
+            DIM diff AS SINGLE
+            diff = ABS(c1.data(i, j) - c2.data(i, j))
+            IF diff > max_diff THEN
+                max_diff = diff
+            END IF
+        NEXT j
     NEXT i
-    end_time1 = TIMER
     
-    ' Assembly-optimized implementation
-    start_time2 = TIMER
-    FOR i = 1 TO iterations
-        AsmMatrixMultiply a, b, c2
+    PRINT "Standard multiplication time: "; std_time; " seconds"
+    PRINT "Assembly multiplication time: "; asm_time; " seconds"
+    PRINT "Speedup: "; std_time / asm_time; "x"
+    PRINT "Maximum difference: "; max_diff
+    
+    ' Test softmax
+    PRINT "Comparing standard vs ASM softmax..."
+    
+    ' Standard softmax
+    start_time = TIMER
+    MatrixSoftmax(a, c1)
+    end_time = TIMER
+    std_time = end_time - start_time
+    
+    ' ASM softmax
+    start_time = TIMER
+    SoftmaxAsm(a, c2)
+    end_time = TIMER
+    asm_time = end_time - start_time
+    
+    ' Verify results
+    max_diff = 0.0
+    
+    FOR i = 0 TO c1.rows - 1
+        FOR j = 0 TO c1.cols - 1
+            DIM diff AS SINGLE
+            diff = ABS(c1.data(i, j) - c2.data(i, j))
+            IF diff > max_diff THEN
+                max_diff = diff
+            END IF
+        NEXT j
     NEXT i
-    end_time2 = TIMER
     
-    ' Calculate speed ratio
-    speed_ratio = (end_time1 - start_time1) / (end_time2 - start_time2)
+    PRINT "Standard softmax time: "; std_time; " seconds"
+    PRINT "Assembly softmax time: "; asm_time; " seconds"
+    PRINT "Speedup: "; std_time / asm_time; "x"
+    PRINT "Maximum difference: "; max_diff
     
-    ' Print results
-    PRINT "Matrix multiplication benchmark:"
-    PRINT "  Matrix size: "; size; "x"; size
-    PRINT "  Standard: "; end_time1 - start_time1; " seconds"
-    PRINT "  Assembly-optimized: "; end_time2 - start_time2; " seconds"
-    PRINT "  Speed improvement: "; speed_ratio; "x"
-    PRINT
-    
-    ' Clean up
-    FreeMatrix a
-    FreeMatrix b
-    FreeMatrix c1
-    FreeMatrix c2
+    ' Free matrices
+    FreeMatrix(a)
+    FreeMatrix(b)
+    FreeMatrix(c1)
+    FreeMatrix(c2)
 END SUB
 
-' Run all assembly optimization benchmarks
-SUB RunAsmBenchmarks()
-    PRINT "Running assembly optimization benchmarks..."
-    PRINT "--------------------------------------------"
+' Main test routine
+SUB TestAsmOptimizations()
+    PRINT "Testing Assembly Optimizations"
+    PRINT "=============================="
     PRINT
     
-    ' Initialize assembly optimization system
+    ' Initialize
     InitAsmOptimizations()
+    
+    ' Test fixed point math
+    TestFixedPoint()
     PRINT
     
-    ' Run benchmarks
-    BenchmarkAsmFixedPoint()
-    BenchmarkAsmMatrixOps()
-    
-    PRINT "Assembly optimization benchmarks complete."
+    ' Test ASM matrix operations
+    TestAsmMatrixOps()
 END SUB
-
-' RunAsmBenchmarks ' Uncomment to run benchmarks when this file is included

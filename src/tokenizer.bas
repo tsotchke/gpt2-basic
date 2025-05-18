@@ -1,615 +1,730 @@
-' Tokenizer implementation for the GPT-2-like model.
-' This file provides functions for vocabulary management and text tokenization,
-' optimized for 486-era constraints.
+' *******************************************************
+' * Tokenizer for GPT-2 BASIC                          *
+' *******************************************************
+' * This module implements a simplified tokenizer for   *
+' * the GPT-2 model, adapted for 486-era hardware       *
+' * constraints.                                        *
+' *                                                     *
+' * It provides simplified BPE (Byte-Pair Encoding)     *
+' * functionality and vocabulary management, optimized  *
+' * for lower memory usage.                             *
+' *******************************************************
 
-' Include necessary files
-#INCLUDE "data_structures.bas"
-#INCLUDE "file_io.bas" ' For vocabulary loading
+#INCLUDE "src/data_structures.bas"
 
-' Constants
-CONST MAX_TOKEN_LENGTH AS INTEGER = 32 ' Maximum length of a token in characters
-CONST MAX_VOCAB_SIZE AS INTEGER = 5000 ' Maximum vocabulary size (5K target)
-CONST BPE_MERGES_SIZE AS INTEGER = 10000 ' Maximum number of BPE merges
-CONST SPECIAL_TOKENS_COUNT AS INTEGER = 5 ' Number of special tokens (PAD, UNK, BOS, EOS, etc.)
-CONST BUFFER_SIZE AS INTEGER = 1024 ' Buffer size for tokenization
+' *******************************************************
+' * Constants and Data Structures                       *
+' *******************************************************
 
-' Special token constants
-CONST PAD_TOKEN_ID AS INTEGER = 0
-CONST UNK_TOKEN_ID AS INTEGER = 1
-CONST BOS_TOKEN_ID AS INTEGER = 2
-CONST EOS_TOKEN_ID AS INTEGER = 3
-CONST MASK_TOKEN_ID AS INTEGER = 4
+' Maximum vocabulary size supported
+CONST MAX_VOCAB_SIZE = 16384 ' Reduced from 50257 in original GPT-2
 
-' Type to represent a vocabulary token
-TYPE VocabToken
-    text AS STRING * MAX_TOKEN_LENGTH
-    id AS INTEGER
-    frequency AS INTEGER ' For potential sorting by frequency
+' Maximum merge operations for BPE
+CONST MAX_MERGES = 16384 ' Reduced from ~40000 in original GPT-2
+
+' Maximum token length in bytes
+CONST MAX_TOKEN_LENGTH = 16
+
+' End of text token
+CONST EOT_TOKEN = 0
+' Unknown token
+CONST UNK_TOKEN = 1
+
+' Vocabulary entry structure
+TYPE VocabEntry
+    token AS STRING * MAX_TOKEN_LENGTH
+    token_len AS INTEGER ' Actual length of the token string
+    token_id AS INTEGER
+    count AS LONG ' For frequency-based operations
 END TYPE
 
-' Type to represent a merge rule for BPE (Byte Pair Encoding)
-TYPE BPEMerge
-    first AS STRING * MAX_TOKEN_LENGTH
-    second AS STRING * MAX_TOKEN_LENGTH
-    result AS STRING * MAX_TOKEN_LENGTH
-    priority AS INTEGER ' Lower number = higher priority
+' Merge operation for BPE
+TYPE MergeOp
+    first AS INTEGER ' Index of first token in merge
+    second AS INTEGER ' Index of second token in merge
+    result AS INTEGER ' Index of resulting merged token
+    priority AS INTEGER ' Priority/rank of this merge
 END TYPE
 
-' Global vocabulary and BPE merge rules
-DIM Vocab(MAX_VOCAB_SIZE - 1) AS VocabToken
-DIM BPEMerges(BPE_MERGES_SIZE - 1) AS BPEMerge
-DIM VocabSize AS INTEGER
-DIM BPEMergesCount AS INTEGER
-
-' Flag to track if tokenizer is initialized
-DIM TokenizerInitialized AS INTEGER
-
-' Type for token buffer used during tokenization
-TYPE TokenBuffer
-    tokens(BUFFER_SIZE - 1) AS INTEGER
-    count AS INTEGER
+' Tokenizer structure
+TYPE Tokenizer
+    vocab(0 TO MAX_VOCAB_SIZE - 1) AS VocabEntry
+    vocab_size AS INTEGER
+    merges(0 TO MAX_MERGES - 1) AS MergeOp
+    merge_count AS INTEGER
+    vocab_hash(0 TO 4095) AS INTEGER ' Simple hash table for token lookup
+    use_bpe AS INTEGER ' Whether to use BPE or just byte-level tokenization
+    max_token_length AS INTEGER
+    cache_enabled AS INTEGER
 END TYPE
 
-' Initialize the tokenizer with default special tokens
-SUB InitTokenizer()
-    IF TokenizerInitialized = 1 THEN
-        PRINT "Tokenizer already initialized."
-        EXIT SUB
+' Global tokenizer instance
+DIM SHARED g_tokenizer AS Tokenizer
+
+' *******************************************************
+' * Initialization and Setup                            *
+' *******************************************************
+
+' Initialize a tokenizer
+SUB InitTokenizer(BYREF tokenizer AS Tokenizer)
+    DIM i AS INTEGER
+    
+    ' Clear tokenizer data
+    tokenizer.vocab_size = 0
+    tokenizer.merge_count = 0
+    tokenizer.use_bpe = 1 ' Enable BPE by default
+    tokenizer.max_token_length = MAX_TOKEN_LENGTH
+    tokenizer.cache_enabled = 1 ' Enable cache by default
+    
+    ' Initialize hash table to -1 (empty)
+    FOR i = 0 TO 4095
+        tokenizer.vocab_hash(i) = -1
+    NEXT i
+    
+    ' Initialize with basic tokens (special tokens and ASCII chars)
+    ' Add special tokens
+    AddToken(tokenizer, "<|endoftext|>", EOT_TOKEN)
+    AddToken(tokenizer, "<|unk|>", UNK_TOKEN)
+    
+    ' Add basic ASCII characters (0-255)
+    FOR i = 0 TO 255
+        DIM char_token AS STRING * 2
+        char_token = CHR$(i)
+        AddToken(tokenizer, char_token, i + 2) ' +2 because 0,1 are special
+    NEXT i
+    
+    PRINT "Initialized tokenizer with "; tokenizer.vocab_size; " tokens"
+END SUB
+
+' Add a token to the vocabulary
+FUNCTION AddToken(BYREF tokenizer AS Tokenizer, token AS STRING, token_id AS INTEGER) AS INTEGER
+    DIM i AS INTEGER, hash_val AS INTEGER
+    
+    ' Check if we have room
+    IF tokenizer.vocab_size >= MAX_VOCAB_SIZE THEN
+        PRINT "ERROR: Vocabulary is full"
+        RETURN -1
     END IF
     
-    ' Initialize default special tokens
-    Vocab(PAD_TOKEN_ID).text = "<PAD>"
-    Vocab(PAD_TOKEN_ID).id = PAD_TOKEN_ID
+    ' Check if token already exists
+    hash_val = HashToken(token) MOD 4096
+    i = tokenizer.vocab_hash(hash_val)
     
-    Vocab(UNK_TOKEN_ID).text = "<UNK>"
-    Vocab(UNK_TOKEN_ID).id = UNK_TOKEN_ID
+    WHILE i >= 0
+        IF LEFT$(tokenizer.vocab(i).token, tokenizer.vocab(i).token_len) = token THEN
+            ' Token already exists
+            RETURN i
+        END IF
+        ' Linear probing for collision
+        hash_val = (hash_val + 1) MOD 4096
+        i = tokenizer.vocab_hash(hash_val)
+    WEND
     
-    Vocab(BOS_TOKEN_ID).text = "<BOS>"
-    Vocab(BOS_TOKEN_ID).id = BOS_TOKEN_ID
+    ' Add new token
+    i = tokenizer.vocab_size
+    tokenizer.vocab(i).token = token
+    tokenizer.vocab(i).token_len = LEN(token)
+    tokenizer.vocab(i).token_id = token_id
+    tokenizer.vocab(i).count = 0
     
-    Vocab(EOS_TOKEN_ID).text = "<EOS>"
-    Vocab(EOS_TOKEN_ID).id = EOS_TOKEN_ID
+    ' Update hash table
+    hash_val = HashToken(token) MOD 4096
+    WHILE tokenizer.vocab_hash(hash_val) >= 0
+        ' Linear probing for collision
+        hash_val = (hash_val + 1) MOD 4096
+    WEND
+    tokenizer.vocab_hash(hash_val) = i
     
-    Vocab(MASK_TOKEN_ID).text = "<MASK>"
-    Vocab(MASK_TOKEN_ID).id = MASK_TOKEN_ID
+    ' Increment vocabulary size
+    tokenizer.vocab_size = tokenizer.vocab_size + 1
     
-    VocabSize = SPECIAL_TOKENS_COUNT
-    BPEMergesCount = 0
+    RETURN i
+END FUNCTION
+
+' Simple string hash function
+FUNCTION HashToken(token AS STRING) AS INTEGER
+    DIM hash_val AS LONG, i AS INTEGER
     
-    TokenizerInitialized = 1
+    hash_val = 0
+    FOR i = 1 TO LEN(token)
+        hash_val = (hash_val * 31 + ASC(MID$(token, i, 1))) AND &H7FFFFFFF
+    NEXT i
     
-    PRINT "Tokenizer initialized with default special tokens."
-END SUB
+    RETURN hash_val
+END FUNCTION
+
+' Find a token in the vocabulary
+FUNCTION FindToken(tokenizer AS Tokenizer, token AS STRING) AS INTEGER
+    DIM hash_val AS INTEGER, i AS INTEGER
+    
+    hash_val = HashToken(token) MOD 4096
+    i = tokenizer.vocab_hash(hash_val)
+    
+    WHILE i >= 0
+        IF LEFT$(tokenizer.vocab(i).token, tokenizer.vocab(i).token_len) = token THEN
+            RETURN i
+        END IF
+        ' Linear probing for collision
+        hash_val = (hash_val + 1) MOD 4096
+        i = tokenizer.vocab_hash(hash_val)
+    WEND
+    
+    ' Token not found
+    RETURN -1
+END FUNCTION
+
+' *******************************************************
+' * Vocabulary Management                               *
+' *******************************************************
 
 ' Load vocabulary from a file
-' Format: One token per line, with format "token [tab] id"
-FUNCTION LoadVocabulary(filepath AS STRING) AS INTEGER
-    DIM file_num AS INTEGER
-    DIM line_buffer AS STRING * 512
-    DIM token_text AS STRING
+SUB LoadVocabulary(BYREF tokenizer AS Tokenizer, filename AS STRING)
+    DIM file AS LONG, i AS INTEGER
+    DIM token AS STRING * MAX_TOKEN_LENGTH
+    DIM token_len AS INTEGER
     DIM token_id AS INTEGER
-    DIM token_count AS INTEGER
     
-    IF TokenizerInitialized = 0 THEN
-        InitTokenizer()
-    END IF
+    ' Open vocabulary file
+    file = FREEFILE
+    OPEN filename FOR BINARY AS file
     
-    ' Open the vocabulary file
-    file_num = FREEFILE
+    ' Read the vocabulary size
+    GET #file, , tokenizer.vocab_size
     
-    ON ERROR GOTO LoadError
-    OPEN filepath FOR INPUT AS #file_num
-    ON ERROR GOTO 0
-    
-    token_count = SPECIAL_TOKENS_COUNT ' Start after special tokens
-    
-    ' Read each line
-    WHILE NOT EOF(file_num) AND token_count < MAX_VOCAB_SIZE
-        LINE INPUT #file_num, line_buffer
+    ' Read token_size tokens
+    FOR i = 0 TO tokenizer.vocab_size - 1
+        ' Read token length
+        GET #file, , token_len
         
-        ' Skip empty lines
-        IF LEN(TRIM$(line_buffer)) = 0 THEN
-            CONTINUE WHILE
-        END IF
+        ' Read token string (fixed size)
+        GET #file, , token
         
-        ' Parse line: "token [tab] id"
-        DIM tab_pos AS INTEGER
-        tab_pos = INSTR(line_buffer, CHR$(9)) ' Tab character
+        ' Read token ID
+        GET #file, , token_id
         
-        IF tab_pos > 0 THEN
-            token_text = LEFT$(line_buffer, tab_pos - 1)
-            token_id = VAL(MID$(line_buffer, tab_pos + 1))
-        ELSE
-            ' If no tab, assume just the token and assign sequential ID
-            token_text = TRIM$(line_buffer)
-            token_id = token_count
-        END IF
+        ' Store in vocabulary
+        tokenizer.vocab(i).token = token
+        tokenizer.vocab(i).token_len = token_len
+        tokenizer.vocab(i).token_id = token_id
+        tokenizer.vocab(i).count = 0
         
-        ' Make sure token isn't too long
-        IF LEN(token_text) > MAX_TOKEN_LENGTH THEN
-            token_text = LEFT$(token_text, MAX_TOKEN_LENGTH)
-        END IF
-        
-        ' Store in vocab
-        Vocab(token_count).text = token_text
-        Vocab(token_count).id = token_id
-        
-        token_count = token_count + 1
-    WEND
-    
-    CLOSE #file_num
-    
-    VocabSize = token_count
-    PRINT "Loaded "; token_count; " tokens into vocabulary."
-    
-    FUNCTION = token_count
-    EXIT FUNCTION
-    
-LoadError:
-    PRINT "Error loading vocabulary from "; filepath
-    CLOSE #file_num
-    FUNCTION = 0
-END FUNCTION
-
-' Load BPE merge rules from a file
-' Format: "first second result priority"
-FUNCTION LoadBPEMerges(filepath AS STRING) AS INTEGER
-    DIM file_num AS INTEGER
-    DIM line_buffer AS STRING * 512
-    DIM first AS STRING
-    DIM second AS STRING
-    DIM result AS STRING
-    DIM priority AS INTEGER
-    DIM merge_count AS INTEGER
-    
-    ' Open the BPE merges file
-    file_num = FREEFILE
-    
-    ON ERROR GOTO LoadError
-    OPEN filepath FOR INPUT AS #file_num
-    ON ERROR GOTO 0
-    
-    merge_count = 0
-    
-    ' Read each line
-    WHILE NOT EOF(file_num) AND merge_count < BPE_MERGES_SIZE
-        LINE INPUT #file_num, line_buffer
-        
-        ' Skip empty lines
-        IF LEN(TRIM$(line_buffer)) = 0 THEN
-            CONTINUE WHILE
-        END IF
-        
-        ' Parse line: "first second result priority"
-        DIM tokens(3) AS STRING
-        DIM token_count AS INTEGER
-        DIM current_pos AS INTEGER
-        DIM token_start AS INTEGER
-        
-        token_count = 0
-        current_pos = 1
-        
-        ' Simple tokenizer for the merge rule line
-        WHILE current_pos <= LEN(line_buffer) AND token_count < 4
-            ' Skip whitespace
-            WHILE current_pos <= LEN(line_buffer) AND INSTR(" " + CHR$(9), MID$(line_buffer, current_pos, 1)) > 0
-                current_pos = current_pos + 1
-            WEND
-            
-            ' Break if end of line
-            IF current_pos > LEN(line_buffer) THEN
-                EXIT WHILE
-            END IF
-            
-            ' Find token end
-            token_start = current_pos
-            WHILE current_pos <= LEN(line_buffer) AND INSTR(" " + CHR$(9), MID$(line_buffer, current_pos, 1)) = 0
-                current_pos = current_pos + 1
-            WEND
-            
-            ' Extract token
-            tokens(token_count) = MID$(line_buffer, token_start, current_pos - token_start)
-            token_count = token_count + 1
+        ' Update hash table
+        DIM hash_val AS INTEGER
+        hash_val = HashToken(LEFT$(token, token_len)) MOD 4096
+        WHILE tokenizer.vocab_hash(hash_val) >= 0
+            ' Linear probing for collision
+            hash_val = (hash_val + 1) MOD 4096
         WEND
-        
-        ' Validate we have all required parts
-        IF token_count >= 3 THEN
-            first = tokens(0)
-            second = tokens(1)
-            result = tokens(2)
-            
-            ' Priority is optional, default to merge_count (order in file)
-            IF token_count >= 4 THEN
-                priority = VAL(tokens(3))
-            ELSE
-                priority = merge_count
-            END IF
-            
-            ' Store in BPEMerges
-            BPEMerges(merge_count).first = first
-            BPEMerges(merge_count).second = second
-            BPEMerges(merge_count).result = result
-            BPEMerges(merge_count).priority = priority
-            
-            merge_count = merge_count + 1
-        END IF
-    WEND
-    
-    CLOSE #file_num
-    
-    BPEMergesCount = merge_count
-    PRINT "Loaded "; merge_count; " BPE merge rules."
-    
-    FUNCTION = merge_count
-    EXIT FUNCTION
-    
-LoadError:
-    PRINT "Error loading BPE merges from "; filepath
-    CLOSE #file_num
-    FUNCTION = 0
-END FUNCTION
-
-' Convert token text to token ID
-FUNCTION GetTokenID(token_text AS STRING) AS INTEGER
-    DIM i AS INTEGER
-    
-    ' Linear search for token (could be optimized with a hash map or binary search)
-    FOR i = 0 TO VocabSize - 1
-        IF RTRIM$(Vocab(i).text) = token_text THEN
-            FUNCTION = Vocab(i).id
-            EXIT FUNCTION
-        END IF
+        tokenizer.vocab_hash(hash_val) = i
     NEXT i
     
-    ' Not found, return UNK token
-    FUNCTION = UNK_TOKEN_ID
-END FUNCTION
-
-' Convert token ID to token text
-FUNCTION GetTokenText(token_id AS INTEGER) AS STRING
-    DIM i AS INTEGER
-    
-    ' Linear search for token ID (could be optimized with direct lookup if IDs are sequential)
-    FOR i = 0 TO VocabSize - 1
-        IF Vocab(i).id = token_id THEN
-            FUNCTION = RTRIM$(Vocab(i).text)
-            EXIT FUNCTION
-        END IF
+    ' Read merge operations
+    GET #file, , tokenizer.merge_count
+    FOR i = 0 TO tokenizer.merge_count - 1
+        GET #file, , tokenizer.merges(i).first
+        GET #file, , tokenizer.merges(i).second
+        GET #file, , tokenizer.merges(i).result
+        GET #file, , tokenizer.merges(i).priority
     NEXT i
     
-    ' Not found, return UNK token text
-    FUNCTION = RTRIM$(Vocab(UNK_TOKEN_ID).text)
-END FUNCTION
-
-' Simple character-level tokenization (fallback)
-' This is used when BPE is not available or for unknown tokens
-SUB CharTokenize(text AS STRING, buffer AS TokenBuffer)
-    DIM i AS INTEGER
-    DIM char AS STRING * 1
-    DIM token_id AS INTEGER
+    CLOSE file
     
-    buffer.count = 0
-    
-    ' Process each character
-    FOR i = 1 TO LEN(text)
-        IF buffer.count >= BUFFER_SIZE THEN
-            EXIT SUB ' Buffer full
-        END IF
-        
-        char = MID$(text, i, 1)
-        
-        ' Try to find character in vocabulary
-        token_id = GetTokenID(char)
-        
-        ' Add to buffer
-        buffer.tokens(buffer.count) = token_id
-        buffer.count = buffer.count + 1
-    NEXT i
+    PRINT "Loaded vocabulary with "; tokenizer.vocab_size; " tokens and "; _
+          tokenizer.merge_count; " merges"
 END SUB
 
-' Apply BPE merge rules iteratively until no more merges can be applied
-' This is a simplified version of BPE tokenization
-SUB ApplyBPEMerges(tokens() AS STRING, count AS INTEGER, BYREF merged_count AS INTEGER)
-    DIM merged(BUFFER_SIZE - 1) AS STRING
-    DIM changed AS INTEGER
-    DIM i AS INTEGER, j AS INTEGER
+' Save vocabulary to a file
+SUB SaveVocabulary(tokenizer AS Tokenizer, filename AS STRING)
+    DIM file AS LONG, i AS INTEGER
     
-    ' Copy tokens to merged array
-    FOR i = 0 TO count - 1
-        merged(i) = tokens(i)
-    NEXT i
-    merged_count = count
+    ' Open vocabulary file
+    file = FREEFILE
+    OPEN filename FOR BINARY AS file
     
-    ' Apply merges until no more changes
-    DO
-        changed = 0
+    ' Write the vocabulary size
+    PUT #file, , tokenizer.vocab_size
+    
+    ' Write tokens
+    FOR i = 0 TO tokenizer.vocab_size - 1
+        ' Write token length
+        PUT #file, , tokenizer.vocab(i).token_len
         
-        i = 0
-        WHILE i < merged_count - 1
-            ' Try to find a merge rule for this pair
-            FOR j = 0 TO BPEMergesCount - 1
-                IF merged(i) = RTRIM$(BPEMerges(j).first) AND merged(i + 1) = RTRIM$(BPEMerges(j).second) THEN
-                    ' Apply merge: replace first token with merged token, remove second token
-                    merged(i) = RTRIM$(BPEMerges(j).result)
-                    
-                    ' Shift remaining tokens
-                    FOR j = i + 1 TO merged_count - 2
-                        merged(j) = merged(j + 1)
-                    NEXT j
-                    
-                    merged_count = merged_count - 1
-                    changed = 1
-                    
-                    ' Don't increment i, so we can check for further merges with the new token
-                    EXIT FOR
+        ' Write token string (fixed size)
+        PUT #file, , tokenizer.vocab(i).token
+        
+        ' Write token ID
+        PUT #file, , tokenizer.vocab(i).token_id
+    NEXT i
+    
+    ' Write merge operations
+    PUT #file, , tokenizer.merge_count
+    FOR i = 0 TO tokenizer.merge_count - 1
+        PUT #file, , tokenizer.merges(i).first
+        PUT #file, , tokenizer.merges(i).second
+        PUT #file, , tokenizer.merges(i).result
+        PUT #file, , tokenizer.merges(i).priority
+    NEXT i
+    
+    CLOSE file
+    
+    PRINT "Saved vocabulary with "; tokenizer.vocab_size; " tokens and "; _
+          tokenizer.merge_count; " merges"
+END SUB
+
+' Add a merge operation to the tokenizer
+SUB AddMergeOperation(BYREF tokenizer AS Tokenizer, first AS INTEGER, second AS INTEGER, result AS INTEGER, priority AS INTEGER)
+    ' Check if we have room
+    IF tokenizer.merge_count >= MAX_MERGES THEN
+        PRINT "ERROR: Merge table is full"
+        RETURN
+    END IF
+    
+    ' Add merge operation
+    tokenizer.merges(tokenizer.merge_count).first = first
+    tokenizer.merges(tokenizer.merge_count).second = second
+    tokenizer.merges(tokenizer.merge_count).result = result
+    tokenizer.merges(tokenizer.merge_count).priority = priority
+    
+    ' Increment merge count
+    tokenizer.merge_count = tokenizer.merge_count + 1
+END SUB
+
+' *******************************************************
+' * Tokenization Functions                              *
+' *******************************************************
+
+' Convert bytes to tokens (byte-level tokenization)
+SUB BytesToTokens(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, BYREF tokens() AS INTEGER, BYREF token_count AS INTEGER)
+    DIM i AS INTEGER
+    
+    ' Resize tokens array
+    REDIM tokens(0 TO byte_count)
+    
+    ' For byte-level tokenization, each byte becomes a token
+    token_count = byte_count
+    FOR i = 0 TO byte_count - 1
+        ' Token ID is byte value + 2 (offsets for special tokens)
+        tokens(i) = bytes(i) + 2
+    NEXT i
+    
+    ' Add end-of-text token
+    tokens(token_count) = EOT_TOKEN
+    token_count = token_count + 1
+END SUB
+
+' Convert a string to tokens (including BPE if enabled)
+SUB StringToTokens(tokenizer AS Tokenizer, input_text AS STRING, BYREF tokens() AS INTEGER, BYREF token_count AS INTEGER)
+    DIM bytes() AS BYTE
+    DIM byte_count AS INTEGER
+    DIM i AS INTEGER
+    
+    ' Convert string to bytes
+    byte_count = LEN(input_text)
+    REDIM bytes(0 TO byte_count - 1)
+    
+    FOR i = 1 TO byte_count
+        bytes(i - 1) = ASC(MID$(input_text, i, 1))
+    NEXT i
+    
+    ' Tokenize bytes
+    IF tokenizer.use_bpe THEN
+        ' Use BPE tokenization
+        BPETokenize(tokenizer, bytes(), byte_count, tokens(), token_count)
+    ELSE
+        ' Use byte-level tokenization
+        BytesToTokens(tokenizer, bytes(), byte_count, tokens(), token_count)
+    END IF
+END SUB
+
+' Simplified BPE tokenization algorithm
+SUB BPETokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, BYREF tokens() AS INTEGER, BYREF token_count AS INTEGER)
+    DIM byte_tokens() AS INTEGER
+    DIM byte_token_count AS INTEGER
+    DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM merged AS INTEGER
+    
+    ' Start with byte-level tokens
+    BytesToTokens(tokenizer, bytes(), byte_count, byte_tokens(), byte_token_count)
+    
+    ' Store working copy of tokens
+    DIM working_tokens() AS INTEGER
+    REDIM working_tokens(0 TO byte_token_count - 1)
+    token_count = byte_token_count
+    FOR i = 0 TO byte_token_count - 1
+        working_tokens(i) = byte_tokens(i)
+    NEXT i
+    
+    ' Apply merges repeatedly
+    DO
+        merged = 0
+        
+        ' Find and apply best merge
+        FOR i = 0 TO token_count - 2 ' Check pairs of tokens
+            DIM first AS INTEGER, second AS INTEGER
+            first = working_tokens(i)
+            second = working_tokens(i + 1)
+            
+            ' Look for matching merge operation
+            DIM best_merge AS INTEGER, best_priority AS INTEGER
+            best_merge = -1
+            best_priority = &H7FFFFFFF ' max int
+            
+            FOR j = 0 TO tokenizer.merge_count - 1
+                IF tokenizer.merges(j).first = first AND tokenizer.merges(j).second = second THEN
+                    ' Found a potential merge
+                    IF tokenizer.merges(j).priority < best_priority THEN
+                        best_merge = j
+                        best_priority = tokenizer.merges(j).priority
+                    END IF
                 END IF
             NEXT j
             
-            ' If no merge was applied, move to next position
-            IF changed = 0 THEN
-                i = i + 1
+            ' Apply best merge if found
+            IF best_merge >= 0 THEN
+                ' Apply the merge
+                working_tokens(i) = tokenizer.merges(best_merge).result
+                
+                ' Shift remaining tokens
+                FOR k = i + 1 TO token_count - 2
+                    working_tokens(k) = working_tokens(k + 1)
+                NEXT k
+                
+                ' Decrease token count
+                token_count = token_count - 1
+                
+                ' Mark as merged
+                merged = 1
+                
+                ' Only apply one merge per iteration (for simplicity)
+                EXIT FOR
             END IF
-        WEND
-    LOOP WHILE changed = 1
+        NEXT i
+    LOOP WHILE merged = 1
     
-    ' Copy result back to tokens array
-    FOR i = 0 TO merged_count - 1
-        tokens(i) = merged(i)
-    NEXT i
-END SUB
-
-' Simple space-based tokenization with BPE merges
-SUB TokenizeWithBPE(text AS STRING, buffer AS TokenBuffer)
-    DIM word_buffer AS STRING * 256
-    DIM tokens(BUFFER_SIZE - 1) AS STRING
-    DIM token_count AS INTEGER
-    DIM merged_count AS INTEGER
-    DIM i AS INTEGER, j AS INTEGER
-    DIM char AS STRING * 1
-    DIM in_word AS INTEGER
-    
-    buffer.count = 0
-    token_count = 0
-    in_word = 0
-    
-    ' First pass: split into words
-    FOR i = 1 TO LEN(text)
-        char = MID$(text, i, 1)
-        
-        ' Check if character is a word character or whitespace/punctuation
-        IF INSTR("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", char) > 0 THEN
-            ' Word character
-            IF in_word = 0 THEN
-                ' Starting a new word
-                in_word = 1
-                word_buffer = ""
-            END IF
-            
-            word_buffer = word_buffer + char
-        ELSE
-            ' Whitespace or punctuation
-            IF in_word = 1 THEN
-                ' End of a word, add it to tokens
-                IF token_count < BUFFER_SIZE THEN
-                    tokens(token_count) = RTRIM$(word_buffer)
-                    token_count = token_count + 1
-                END IF
-                in_word = 0
-            END IF
-            
-            ' Add the punctuation/whitespace as its own token
-            IF token_count < BUFFER_SIZE THEN
-                tokens(token_count) = char
-                token_count = token_count + 1
-            END IF
-        END IF
-    NEXT i
-    
-    ' If we ended in a word, add it
-    IF in_word = 1 AND token_count < BUFFER_SIZE THEN
-        tokens(token_count) = RTRIM$(word_buffer)
-        token_count = token_count + 1
-    END IF
-    
-    ' Apply BPE merges if available
-    IF BPEMergesCount > 0 THEN
-        ApplyBPEMerges tokens(), token_count, merged_count
-        token_count = merged_count
-    END IF
-    
-    ' Convert tokens to token IDs
+    ' Copy final tokens to output
+    REDIM tokens(0 TO token_count - 1)
     FOR i = 0 TO token_count - 1
-        IF buffer.count >= BUFFER_SIZE THEN
-            EXIT SUB ' Buffer full
-        END IF
-        
-        buffer.tokens(buffer.count) = GetTokenID(tokens(i))
-        buffer.count = buffer.count + 1
+        tokens(i) = working_tokens(i)
     NEXT i
 END SUB
 
-' Main tokenization function that chooses the appropriate tokenization method
-' and handles special tokens
-FUNCTION Tokenize(text AS STRING, max_length AS INTEGER) AS INTEGER()
-    DIM buffer AS TokenBuffer
-    DIM result(max_length - 1) AS INTEGER
-    DIM context_length AS INTEGER
-    DIM i AS INTEGER
+' Convert tokens back to a string
+FUNCTION TokensToString(tokenizer AS Tokenizer, tokens() AS INTEGER, token_count AS INTEGER) AS STRING
+    DIM result AS STRING
+    DIM i AS INTEGER, token_idx AS INTEGER
     
-    ' Initialize result with padding tokens
-    FOR i = 0 TO max_length - 1
-        result(i) = PAD_TOKEN_ID
-    NEXT i
+    result = ""
     
-    ' Verify tokenizer is initialized
-    IF TokenizerInitialized = 0 THEN
-        InitTokenizer()
-    END IF
-    
-    ' Add BOS token at the beginning
-    result(0) = BOS_TOKEN_ID
-    context_length = 1
-    
-    ' Choose tokenization method based on available resources
-    IF BPEMergesCount > 0 THEN
-        ' Use BPE tokenization
-        TokenizeWithBPE text, buffer
-    ELSE
-        ' Use character-level tokenization
-        CharTokenize text, buffer
-    END IF
-    
-    ' Copy tokens to result, up to max_length - 2 (leave room for EOS)
-    FOR i = 0 TO buffer.count - 1
-        IF context_length >= max_length - 1 THEN
-            EXIT FOR ' Leave room for EOS
+    FOR i = 0 TO token_count - 1
+        ' Skip special tokens
+        IF tokens(i) = EOT_TOKEN THEN
+            ' End of text, stop decoding
+            EXIT FOR
         END IF
         
-        result(context_length) = buffer.tokens(i)
-        context_length = context_length + 1
+        ' Find token in vocabulary
+        token_idx = -1
+        FOR j = 0 TO tokenizer.vocab_size - 1
+            IF tokenizer.vocab(j).token_id = tokens(i) THEN
+                token_idx = j
+                EXIT FOR
+            END IF
+        NEXT j
+        
+        ' Add token to result if found
+        IF token_idx >= 0 THEN
+            result = result + LEFT$(tokenizer.vocab(token_idx).token, tokenizer.vocab(token_idx).token_len)
+        ELSE
+            ' Unknown token, use the unknown token placeholder
+            result = result + "<|unk|>"
+        END IF
     NEXT i
     
-    ' Add EOS token at the end
-    IF context_length < max_length THEN
-        result(context_length) = EOS_TOKEN_ID
-        context_length = context_length + 1
-    END IF
-    
-    FUNCTION = result
+    RETURN result
 END FUNCTION
 
-' Create a more realistic simple vocabulary for testing
-SUB CreateSimpleVocabulary(filepath AS STRING)
-    DIM file_num AS INTEGER
+' *******************************************************
+' * BPE Training (for building vocabulary)              *
+' *******************************************************
+
+' Simplified BPE training from a corpus
+SUB TrainBPE(BYREF tokenizer AS Tokenizer, corpus_filename AS STRING, max_merges AS INTEGER)
+    DIM file AS LONG
+    DIM i AS INTEGER, j AS INTEGER, merge_count AS INTEGER
+    DIM line AS STRING
+    DIM bytes() AS BYTE
+    DIM tokens() AS INTEGER
+    DIM token_count AS INTEGER
+    
+    ' Initialize pair counts
+    DIM pair_count AS LONG
+    DIM pairs(0 TO MAX_VOCAB_SIZE * MAX_VOCAB_SIZE - 1) AS LONG ' Simple for demonstration
+    DIM best_pair_first AS INTEGER, best_pair_second AS INTEGER
+    
+    ' Open corpus file
+    file = FREEFILE
+    OPEN corpus_filename FOR INPUT AS file
+    
+    ' Disable BPE during training
+    tokenizer.use_bpe = 0
+    
+    ' Read all lines and count token pairs
+    PRINT "Counting token pairs..."
+    WHILE NOT EOF(file)
+        LINE INPUT #file, line
+        
+        ' Convert to tokens
+        StringToTokens(tokenizer, line, tokens(), token_count)
+        
+        ' Count pairs
+        FOR i = 0 TO token_count - 2
+            DIM pair_idx AS LONG
+            pair_idx = tokens(i) * MAX_VOCAB_SIZE + tokens(i + 1)
+            IF pair_idx >= 0 AND pair_idx < MAX_VOCAB_SIZE * MAX_VOCAB_SIZE THEN
+                pairs(pair_idx) = pairs(pair_idx) + 1
+            END IF
+        NEXT i
+    WEND
+    
+    CLOSE file
+    
+    ' Now perform merges
+    PRINT "Performing BPE merges..."
+    merge_count = 0
+    
+    WHILE merge_count < max_merges
+        ' Find most frequent pair
+        DIM best_count AS LONG, best_pair AS LONG
+        best_count = 0
+        best_pair = 0
+        
+        FOR i = 0 TO MAX_VOCAB_SIZE - 1
+            FOR j = 0 TO MAX_VOCAB_SIZE - 1
+                DIM pair_idx AS LONG
+                pair_idx = i * MAX_VOCAB_SIZE + j
+                
+                IF pairs(pair_idx) > best_count THEN
+                    best_count = pairs(pair_idx)
+                    best_pair = pair_idx
+                    best_pair_first = i
+                    best_pair_second = j
+                END IF
+            NEXT j
+        NEXT i
+        
+        ' If no pairs left to merge, stop
+        IF best_count = 0 THEN
+            EXIT WHILE
+        END IF
+        
+        ' Create new token for this merge
+        DIM new_token AS STRING
+        DIM token_str1 AS STRING, token_str2 AS STRING
+        DIM idx1 AS INTEGER, idx2 AS INTEGER
+        
+        ' Find the tokens in vocabulary by ID
+        idx1 = -1
+        idx2 = -1
+        FOR i = 0 TO tokenizer.vocab_size - 1
+            IF tokenizer.vocab(i).token_id = best_pair_first THEN
+                idx1 = i
+            END IF
+            IF tokenizer.vocab(i).token_id = best_pair_second THEN
+                idx2 = i
+            END IF
+        NEXT i
+        
+        ' Skip if we can't find the tokens
+        IF idx1 < 0 OR idx2 < 0 THEN
+            ' Clear this pair count to avoid reselecting it
+            pairs(best_pair) = 0
+            CONTINUE WHILE
+        END IF
+        
+        ' Combine tokens
+        token_str1 = LEFT$(tokenizer.vocab(idx1).token, tokenizer.vocab(idx1).token_len)
+        token_str2 = LEFT$(tokenizer.vocab(idx2).token, tokenizer.vocab(idx2).token_len)
+        new_token = token_str1 + token_str2
+        
+        ' Check if combined token is too long
+        IF LEN(new_token) > MAX_TOKEN_LENGTH THEN
+            ' Skip this merge
+            pairs(best_pair) = 0
+            CONTINUE WHILE
+        END IF
+        
+        ' Add new token to vocabulary
+        DIM new_token_id AS INTEGER, new_token_idx AS INTEGER
+        new_token_id = tokenizer.vocab_size + 2 ' +2 to avoid special tokens
+        new_token_idx = AddToken(tokenizer, new_token, new_token_id)
+        
+        ' Add merge operation
+        AddMergeOperation(tokenizer, best_pair_first, best_pair_second, new_token_id, merge_count)
+        
+        ' Clear pair count to avoid selecting it again
+        pairs(best_pair) = 0
+        
+        ' Increment merge count
+        merge_count = merge_count + 1
+        
+        ' Print progress every 100 merges
+        IF merge_count MOD 100 = 0 THEN
+            PRINT "Completed "; merge_count; " merges"
+        END IF
+    WEND
+    
+    ' Re-enable BPE
+    tokenizer.use_bpe = 1
+    
+    PRINT "BPE training complete. Added "; merge_count; " merges."
+END SUB
+
+' *******************************************************
+' * Main Interface Functions                            *
+' *******************************************************
+
+' Initialize the default tokenizer
+SUB InitializeDefaultTokenizer()
+    InitTokenizer(g_tokenizer)
+END SUB
+
+' Encode a string to token IDs
+SUB Encode(input_text AS STRING, BYREF tokens() AS INTEGER, BYREF token_count AS INTEGER)
+    StringToTokens(g_tokenizer, input_text, tokens(), token_count)
+END SUB
+
+' Decode token IDs to a string
+FUNCTION Decode(tokens() AS INTEGER, token_count AS INTEGER) AS STRING
+    RETURN TokensToString(g_tokenizer, tokens(), token_count)
+END FUNCTION
+
+' Load the default vocabulary from a file
+SUB LoadDefaultVocabulary(filename AS STRING)
+    LoadVocabulary(g_tokenizer, filename)
+END SUB
+
+' Save the default vocabulary to a file
+SUB SaveDefaultVocabulary(filename AS STRING)
+    SaveVocabulary(g_tokenizer, filename)
+END SUB
+
+' *******************************************************
+' * Testing Functions                                   *
+' *******************************************************
+
+' Test tokenization
+SUB TestTokenization()
+    DIM tokens() AS INTEGER
+    DIM token_count AS INTEGER
+    DIM decoded AS STRING
     DIM i AS INTEGER
     
-    file_num = FREEFILE
+    ' Initialize tokenizer
+    InitializeDefaultTokenizer()
     
-    ON ERROR GOTO CreateError
-    OPEN filepath FOR OUTPUT AS #file_num
-    ON ERROR GOTO 0
+    ' Test strings
+    DIM test_strings(0 TO 4) AS STRING
+    test_strings(0) = "Hello, world!"
+    test_strings(1) = "This is a test of the tokenizer."
+    test_strings(2) = "GPT-2 BASIC for 486 computers."
+    test_strings(3) = "Artificial intelligence on vintage hardware."
+    test_strings(4) = "The quick brown fox jumps over the lazy dog."
     
-    ' First write special tokens
-    PRINT #file_num, "<PAD>" + CHR$(9) + "0"
-    PRINT #file_num, "<UNK>" + CHR$(9) + "1"
-    PRINT #file_num, "<BOS>" + CHR$(9) + "2"
-    PRINT #file_num, "<EOS>" + CHR$(9) + "3"
-    PRINT #file_num, "<MASK>" + CHR$(9) + "4"
+    ' Test each string
+    FOR i = 0 TO 4
+        PRINT "Testing: '"; test_strings(i); "'"
+        
+        ' Encode
+        Encode(test_strings(i), tokens(), token_count)
+        
+        ' Print tokens
+        PRINT "  Token count: "; token_count
+        PRINT "  Tokens: ";
+        
+        DIM j AS INTEGER
+        FOR j = 0 TO MIN(token_count - 1, 20)
+            PRINT tokens(j);
+            IF j < MIN(token_count - 1, 20) THEN
+                PRINT ", ";
+            END IF
+        NEXT j
+        
+        IF token_count > 20 THEN
+            PRINT "..."
+        ELSE
+            PRINT
+        END IF
+        
+        ' Decode
+        decoded = Decode(tokens(), token_count)
+        PRINT "  Decoded: '"; decoded; "'"
+        
+        ' Check if decoding matched the original
+        IF decoded = test_strings(i) THEN
+            PRINT "  Test PASSED: Decoded text matches original"
+        ELSE
+            PRINT "  Test FAILED: Decoded text differs from original"
+        END IF
+        
+        PRINT
+    NEXT i
+END SUB
+
+' Test simple BPE training
+SUB TestBPETraining()
+    DIM file AS LONG
+    DIM i AS INTEGER
     
-    ' Common English words
-    DIM common_words(95) AS STRING
-    common_words(0) = "the"
-    common_words(1) = "of"
-    common_words(2) = "and"
-    common_words(3) = "to"
-    common_words(4) = "in"
-    common_words(5) = "a"
-    common_words(6) = "is"
-    common_words(7) = "that"
-    common_words(8) = "for"
-    common_words(9) = "it"
-    common_words(10) = "as"
-    common_words(11) = "was"
-    common_words(12) = "with"
-    common_words(13) = "be"
-    common_words(14) = "by"
-    common_words(15) = "on"
-    common_words(16) = "not"
-    common_words(17) = "he"
-    common_words(18) = "I"
-    common_words(19) = "this"
-    common_words(20) = "are"
-    common_words(21) = "or"
-    common_words(22) = "his"
-    common_words(23) = "from"
-    common_words(24) = "at"
-    common_words(25) = "which"
-    common_words(26) = "but"
-    common_words(27) = "have"
-    common_words(28) = "an"
-    common_words(29) = "had"
-    common_words(30) = "they"
-    common_words(31) = "you"
-    common_words(32) = "were"
-    common_words(33) = "there"
-    common_words(34) = "one"
-    common_words(35) = "all"
-    common_words(36) = "we"
-    common_words(37) = "can"
-    common_words(38) = "her"
-    common_words(39) = "has"
-    common_words(40) = "their"
-    common_words(41) = "been"
-    common_words(42) = "if"
-    common_words(43) = "more"
-    common_words(44) = "when"
-    common_words(45) = "will"
-    common_words(46) = "would"
-    common_words(47) = "who"
-    common_words(48) = "so"
-    common_words(49) = "no"
-    common_words(50) = "she"
-    common_words(51) = "how"
-    common_words(52) = "me"
-    common_words(53) = "what"
-    common_words(54) = "up"
-    common_words(55) = "out"
-    common_words(56) = "do"
-    common_words(57) = "time"
-    common_words(58) = "other"
-    common_words(59) = "my"
-    common_words(60) = "into"
-    common_words(61) = "than"
-    common_words(62) = "its"
-    common_words(63) = "only"
-    common_words(64) = "some"
-    common_words(65) = "could"
-    common_words(66) = "new"
-    common_words(67) = "them"
-    common_words(68) = "man"
-    common_words(69) = "about"
-    common_words(70) = "then"
-    common_words(71) = "first"
-    common_words(72) = "also"
-    common_words(73) = "after"
-    common_words(74) = "any"
-    common_words(75) = "like"
-    common_words(76) = "should"
-    common_words(77) = "people"
-    common_words(78) = "now"
-    common_words(79) = "these"
-    common_words(80) = "may"
-    common_words(81) = "such"
-    common_words(82) = "your"
-    common_words(83) = "over"
-    common_words(84) = "most"
-    common_words(85) = "through"
-    common_words(86) = "between"
-    common_words(87) = "before"
-    common_words(88) = "very"
-    common_words(89) = "many"
-    common_words(90) = "just"
-    common_words(91) = "those"
-    common_words(92) = "where"
-    common_words(93) = "here"
-    common_words(94) = "must"
-    common_words(95) = "way"
+    ' Initialize tokenizer
+    InitializeDefaultTokenizer()
     
-    ' Write common words
-    FOR i = 0 TO 95
-        PRINT #file_num, common_words(i) + CHR$(9) + STR$(i + SPECIAL_TOKENS_COUNT)
+    ' Create a test corpus
+    file = FREEFILE
+    OPEN "test_corpus.txt" FOR OUTPUT AS file
+    PRINT #file, "Hello world! This is a test corpus for BPE training."
+    PRINT #file, "The goal is to see if we can learn simple merges."
+    PRINT #file, "Words like 'the', 'and', 'ing' should be merged."
+    PRINT #file, "Let's repeat some patterns to make them more frequent:"
+    PRINT #file, "the the the the the"
+    PRINT #file, "and and and and and"
+    PRINT #file, "ing ing ing ing ing"
+    PRINT #file, "test test test test test"
+    CLOSE file
+    
+    ' Train BPE on the corpus
+    PRINT "Training BPE on test corpus..."
+    TrainBPE(g_tokenizer, "test_corpus.txt", 20) ' Just do a few merges for testing
+    
+    ' Print the vocabulary after training
+    PRINT "Vocabulary after training:"
+    FOR i = 0 TO MIN(g_tokenizer.vocab_size - 1, 50)
+        PRINT i; ": '"; LEFT$(g_tokenizer.vocab(i).token, g_tokenizer.vocab(i).token_len); _
+              "' (ID: "; g_tokenizer.vocab(i).token_id; ")"
     NEXT i
     
-    ' Add ASCII characters
-    FOR i = 32 TO 126
-        PRINT #file_num, CHR$(i) + CHR$(9) + STR$(i + SPECIAL_TOKENS_COUNT + 96)
+    ' Print the merges
+    PRINT "Merge operations:"
+    FOR i = 0 TO MIN(g_tokenizer.merge_count - 1, 20)
+        PRINT i; ": "; g_tokenizer.merges(i).first; " + "; _
+              g_tokenizer.merges(i).second; " -> "; _
+              g_tokenizer.merges(i).result; " (priority: "; _
+              g_tokenizer.merges(i).priority; ")"
     NEXT i
     
-    CLOSE #file_num
-    PRINT "Created simple vocabulary with "; SPECIAL_TOKENS_COUNT + 96 + 95; " tokens at "; filepath
-    EXIT SUB
+    ' Clean up
+    KILL "test_corpus.txt"
+END SUB
+
+' Main tokenizer test routine
+SUB TestTokenizer()
+    PRINT "Testing Tokenizer Module"
+    PRINT "========================"
+    PRINT
     
-CreateError:
-    PRINT "Error creating vocabulary file: "; filepath
-    CLOSE #file_num
+    ' Test basic tokenization
+    TestTokenization()
+    PRINT
+    
+    ' Test BPE training
+    TestBPETraining()
 END SUB
