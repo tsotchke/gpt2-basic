@@ -537,6 +537,7 @@ For a more comprehensive performance analysis, see our [detailed benchmarking me
 │ Forward Pass      │ 310.4 ms          │ 92.7 ms (3.3x) │
 │ Full Generation   │ 32.5 ms/token     │ 9.8 ms/token   │
 └───────────────────┴───────────────────┴────────────────┘
+```
 
 ### ■ 486 Performance
 
@@ -553,7 +554,6 @@ Based on relative MIPS and accounting for memory/IO constraints:
 │ Pentium 60        │ 0.09-0.15          │ 11-18 minutes     │
 │ Pentium 133       │ 0.20-0.33          │ 5-8 minutes       │
 └───────────────────┴────────────────────┴───────────────────┘
-```
 ```
 
 ### ■ Memory Usage
