@@ -39,6 +39,7 @@ Verified production surface:
 - rolling fixed decode once prompt-plus-output exceeds the exported context window
 - deterministic greedy decode for evidence runs, plus fixed-point temperature/top-k/top-p sampling for interactive runs
 - machine-readable DOS educational trace mode with prompt-token and generation-step records
+- DOS non-greedy sampling matrix for temperature/top-k/top-p release evidence
 - optional DOS-emitted kernel-stage timing with `--kernel-perf`
 - parity vectors, DOS quality logs, and DOS-emitted `PERF_*` timing records
 
@@ -57,7 +58,7 @@ suite at 10/10, average 0.960. DOS evidence for the same checkpoint is 10/10,
 average 0.961 after the prompt-aware starter prior. Physical hardware timing is
 still required for board-specific speed claims.
 
-The slim production build currently compiles to a 302,592-byte `GPT2.EXE`.
+The slim production build currently compiles to a 307,712-byte `GPT2.EXE`.
 The optional compressed release candidate,
 `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`, keeps the same 4096-token
 lexicon and checkpoint behavior while replacing the resident token embedding
@@ -254,6 +255,18 @@ context length into `qemu/evidence/trace_486.log`. This is the implemented
 step-through teaching surface; richer VGA visualizations remain optional lab
 work on top of the same runtime.
 
+Run the non-greedy sampling matrix with:
+
+```sh
+bash qemu/run_sampling_486.sh
+```
+
+That boots `GPT2.EXE --sampling-matrix` and writes
+`qemu/evidence/sampling_486.log`. The matrix compares greedy, top-k, and
+nucleus-style settings with fixed seeds and records generated-token counts,
+timing, byte fallback, alphabetic byte fallback, sentence ending, and decoded
+text for each row.
+
 Rank exported checkpoints against held-out quality, memory, and available QEMU
 `--perf` measurements with:
 
@@ -353,7 +366,8 @@ Current quality evidence for the promoted lexicon default is in
 `qemu/evidence/quality_report_default_model_all.md`,
 `qemu/evidence/quality_report_default_model_fixed_all.md`, and
 `qemu/evidence/quality_report_dos_all.md`. The DOS educational trace evidence
-is in `qemu/evidence/trace_486.log`. These are emulator and host measurements
+is in `qemu/evidence/trace_486.log`, and the non-greedy sampling evidence is
+in `qemu/evidence/sampling_486.log`. These are emulator and host measurements
 until we can repeat the same commands on a physical PC.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -875,7 +889,7 @@ Several limitations have been identified during implementation:
 - **Prompt coverage:** The current checkpoint passes the measured DOS held-out and runtime suites, but broader open-ended prompts still need product testing.
 - **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.45 tokens/sec for the full-resident default, 2.12 tokens/sec for the q4/log token+head release mode, and 0.81 tokens/sec for the q4/log streamed-head fallback.
 - **Context length:** Generation rolls forward after the exported context window, but attention remains limited to the active 192-token window.
-- **Sampling:** Evidence runs intentionally use greedy temperature-0 decode. Interactive fixed-point decode now supports temperature, top-k, and top-p, but non-greedy quality still needs a dedicated product test matrix.
+- **Sampling:** Greedy evidence remains the deterministic release gate. Interactive fixed-point decode supports temperature, top-k, and top-p, and `qemu/evidence/sampling_486.log` now provides the DOS-side non-greedy product matrix.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```

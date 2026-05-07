@@ -176,6 +176,27 @@ The log is intentionally machine-readable. It records `TRACE_MODEL`,
 each generated `TRACE_STEP`, the final decoded text, and `TRACE_END`. This is
 the implemented DOS teaching surface for step-by-step inference inspection.
 
+## Sampling Matrix
+
+Run the non-greedy sampling matrix through the compiled DOS fixed-point runtime:
+
+```sh
+bash qemu/run_sampling_486.sh
+```
+
+The suite boots FreeDOS, launches `C:\GPT2.EXE --sampling-matrix`, writes
+`C:\SAMPLE.LOG`, and extracts it to:
+
+```text
+qemu/evidence/sampling_486.log
+```
+
+The matrix uses fixed seeds and records greedy, top-k, and nucleus-style rows.
+Each `SAMPLING_RESULT` includes generated-token count, elapsed seconds, byte
+fallback count, alphabetic byte fallback count, sentence-ending flag, last
+token, and decoded text. Greedy quality remains the deterministic release gate;
+this suite is the product evidence surface for interactive sampling settings.
+
 ## Profile Pareto Report
 
 Rank exported checkpoints against held-out quality, runtime memory, and the
@@ -291,6 +312,8 @@ Verified behavior:
   output-head compression load and run in DOS.
 - `GPT2.EXE --trace` emits prompt-token and generation-step records from the
   real fixed-point runtime into `C:\TRACE.LOG`.
+- `GPT2.EXE --sampling-matrix` emits fixed-seed temperature/top-k/top-p rows
+  from the same fixed-point sampler into `C:\SAMPLE.LOG`.
 - The real GPT runtime uses a KV decode cache for normal in-window generation, while preserving the full-prefix path as a fallback.
 - The old quality prior is disabled by default and is not the demo path.
 

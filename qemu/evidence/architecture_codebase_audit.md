@@ -8,8 +8,8 @@ Scope: current `gpt2-basic` workspace, ICC repo `gpt2_basic`, target `gpt2-basic
 
 | Check | Result |
 |---|---|
-| Indexed files | 434 |
-| Indexed lines | 119,982 |
+| Indexed files | 437 |
+| Indexed lines | 120,347 |
 | Contract gaps | 0 |
 | Completion oracle | complete |
 | Runtime evidence | present |
@@ -48,10 +48,13 @@ older baseline rows below. The release state is:
   `VECTOR_CHECK_OK`.
 - Production entrypoint: `src/main_prod.bas`, staged as `GPT2SRC\MAIN.BAS`.
   The old combined driver is staged separately as `LABMAIN.BAS`.
-- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 302,592 bytes.
+- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 307,712 bytes.
 - Educational trace mode: `GPT2.EXE --trace`, launched by
   `qemu/run_trace_486.sh`, emits prompt-token and generation-step `TRACE_*`
   records from the real DOS fixed-point runtime.
+- Non-greedy sampling matrix: `GPT2.EXE --sampling-matrix`, launched by
+  `qemu/run_sampling_486.sh`, emits fixed-seed greedy/top-k/top-p
+  `SAMPLING_*` rows from the real DOS fixed-point sampler.
 - Default production QEMU 486DX2/66 perf after the split: 108 tokens in
   44.00 seconds, 2.45 tok/s.
 - Kernel timing mode: `GPT2.EXE --kernel-perf`, emitted through
@@ -77,7 +80,7 @@ The actual production path is now the trained GPT2-BASIC runtime:
 4. `src/real_gpt.bas:438` prefers Q20.12 fixed weights through `TinyGPTLoadFixedModel`.
 5. `src/real_gpt.bas:1627` runs the fixed-point cached token forward pass.
 6. `src/real_gpt.bas` applies the printable/EOT/tokenizer output mask, greedy temperature-0 selection for evidence, and fixed-point temperature/top-k/top-p sampling for interactive use.
-7. `src/main_prod.bas` exposes `GPT2.EXE --perf`, `--kernel-perf`, `--trace`, `--vectors`, and quality suites with machine-readable evidence records.
+7. `src/main_prod.bas` exposes `GPT2.EXE --perf`, `--kernel-perf`, `--trace`, `--sampling-matrix`, `--vectors`, and quality suites with machine-readable evidence records.
 
 This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L 48D 4H ctx192 hidden192 vocab4096`, with 463,168 parameters and 2,055,940 bytes reported runtime memory.
 
@@ -85,11 +88,12 @@ This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L
 
 | Evidence | Result |
 |---|---|
-| DOS compile | `COMPILE_OK`, `GPT2.EXE` 302,592 bytes |
+| DOS compile | `COMPILE_OK`, `GPT2.EXE` 307,712 bytes |
 | Vector parity | `VECTOR_SUMMARY passed 3 of 3`, `PHASE_SUMMARY passed 39 of 39`, `VECTOR_CHECK_OK` |
 | DOS quality suite | `PASS`, 10/10 prompts, average 0.961 |
 | Held-out DOS quality suite | `PASS`, 5/5 prompts, average 0.973 |
 | DOS educational trace | `TRACE_BEGIN`, prompt token records, 12 generation steps, `TRACE_END` |
+| DOS sampling matrix | greedy/top-k/nucleus rows, finite temperatures, byte-fallback counts |
 | QEMU `486dx2-66 --perf` | 35-token `real_inference`: 14.12 s, 2.48 tok/s |
 | QEMU `486dx2-66 --perf` full suite | 108 tokens in 44.00 s, 2.45 tok/s |
 | QEMU `486dx2-66 --kernel-perf` | final output head: 30.75 s, 73.7% of measured kernel time |
@@ -220,8 +224,11 @@ and implements fixed-point temperature/top-k/top-p sampling when stochastic
 sampling is requested. Perf and vector evidence remain deterministic by using
 temperature 0.
 
-Remaining work: add a non-greedy product quality matrix before making claims
-about interactive sampling defaults.
+Implemented follow-up: `GPT2.EXE --sampling-matrix` now emits fixed-seed
+greedy/top-k/top-p rows through the real DOS fixed-point sampler, with decoded
+text and byte-fallback counters in `qemu/evidence/sampling_486.log`. Greedy
+temperature-0 remains the deterministic quality and parity gate, but interactive
+sampling is no longer an unmeasured release claim.
 
 ### 7. Long Generation Stops At The Context Window Instead Of Rolling For Fixed Cached Decode
 
@@ -294,9 +301,8 @@ The current best architecture is not "larger model" by default. The current best
 
 1. Prototype faster output-head scoring; the first streamed-head mode is implemented and proves the memory floor, but it is too slow to replace resident q4.
 2. Measure any faster output-head variant with kernel timing, not only aggregate perf.
-3. Add a non-greedy interactive quality matrix for temperature/top-k/top-p.
-4. Broaden the product prompt suite beyond the current curated technical answers.
-5. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf` and `GPT2.EXE --trace` contracts.
+3. Broaden the product prompt suite beyond the current curated technical answers.
+4. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf`, `GPT2.EXE --trace`, and `GPT2.EXE --sampling-matrix` contracts.
 
 ## Bottom Line
 

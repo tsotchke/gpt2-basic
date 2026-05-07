@@ -775,7 +775,7 @@ real model" to a narrower release executable:
 - The production executable includes the tokenizer, minimal allocation
   accounting, `real_gpt.bas`, and release entrypoints for demo, quality, vector,
   perf, and kernel-perf runs.
-- DOS compile after trace-mode support: `COMPILE_OK`, `GPT2.EXE` 302,592 bytes.
+- DOS compile after sampling-matrix support: `COMPILE_OK`, `GPT2.EXE` 307,712 bytes.
 - Active model vector parity after the split: 3/3 vectors, 39/39 phases,
   `VECTOR_CHECK_OK`.
 - Default QEMU 486DX2/66 perf after the split: 108 generated tokens in 44.00
@@ -788,6 +788,10 @@ real model" to a narrower release executable:
   `bash qemu/run_trace_486.sh`, emits `TRACE_*` records for model shape,
   tokenizer mode, prompt tokens, each generation step, decoded text, and final
   context length.
+- Non-greedy sampling matrix: `GPT2.EXE --sampling-matrix`, launched by
+  `bash qemu/run_sampling_486.sh`, emits fixed-seed greedy/top-k/top-p rows
+  with decoded text, byte fallback, alphabetic byte fallback, and timing
+  counters.
 
 The fixed-point decode contract also now covers two product gaps from the
 architecture audit. First, `TinyGPTFixedSample` keeps the greedy temperature-0
@@ -803,6 +807,7 @@ Evidence:
 - `qemu/evidence/perf_486_486dx2-66.log`
 - `qemu/evidence/perf_486_486dx2-66_kernel.log`
 - `qemu/evidence/trace_486.log`
+- `qemu/evidence/sampling_486.log`
 - `qemu/evidence/hardware_perf_report.md`
 
 Result: keep as the release runtime baseline. The remaining performance target
@@ -833,6 +838,30 @@ Result: keep as the release teaching/audit surface. VGA attention graphics can
 still be built as an additional lab variant, but the project no longer depends
 on graphical mode support to show a step-by-step inference path on era-accurate
 systems.
+
+## Non-Greedy Sampling Matrix
+
+The fixed-point sampler already supported temperature, top-k, and top-p, but
+the release evidence had only deterministic greedy quality. The production
+runtime now exposes `--sampling-matrix`, and `qemu/run_sampling_486.sh` captures
+the DOS log as `qemu/evidence/sampling_486.log`.
+
+Current matrix:
+
+- Greedy baseline: `temperature=0.000`, `top_p=0.900`, `top_k=40`
+- Top-k rows: `temperature=0.700`, `top_p=0.950`, `top_k=12`
+- Nucleus-style rows: `temperature=0.900`, `top_p=0.900`, `top_k=24`
+- Prompts: `What makes this real inference?` and
+  `Explain why a cache matters for text generation`
+- Metrics: generated tokens, seconds, byte fallback, alphabetic byte fallback,
+  sentence-ending flag, last token, decoded text
+
+Result: keep as product sampling evidence, not as a replacement for deterministic
+quality gates. The current fixed-seed non-greedy rows are mostly identical to
+greedy on the real-inference prompt, which suggests the trained distribution is
+strongly peaked for that learned answer. That is acceptable for release
+stability, but broader product prompts and higher-entropy settings should be
+added before recommending stochastic defaults.
 
 ## Updated Next Architecture
 

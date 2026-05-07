@@ -480,7 +480,7 @@ FUNCTION GenerateText(prompt AS STRING, max_length AS INTEGER, temperature AS SI
 END FUNCTION
 ```
 
-Temperature-based sampling provides control over the randomness of generation, with higher temperatures producing more diverse but potentially less coherent text, and lower temperatures resulting in more deterministic but potentially repetitive output.
+Temperature-based sampling provides control over the randomness of generation, with higher temperatures producing more diverse but potentially less coherent text, and lower temperatures resulting in more deterministic but potentially repetitive output. The DOS release now exposes this as measurable behavior through `GPT2.EXE --sampling-matrix`, captured by `qemu/run_sampling_486.sh` in `qemu/evidence/sampling_486.log`. That evidence keeps greedy decoding as the deterministic gate while recording fixed-seed top-k and nucleus-style rows for interactive sampling.
 
 ## 4. Core Innovations
 

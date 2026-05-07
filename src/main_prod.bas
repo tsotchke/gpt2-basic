@@ -54,6 +54,10 @@ DECLARE SUB PrintActiveModelInfo()
 DECLARE FUNCTION GenerateNextToken(context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
 DECLARE SUB GenerateText(prompt AS STRING, max_length AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER)
 DECLARE SUB RunTraceMode(prompt AS STRING, max_length AS INTEGER)
+DECLARE FUNCTION SamplingMilliText(value_milli AS INTEGER) AS STRING
+DECLARE FUNCTION SamplingTokenIsAlphaByte(token_id AS INTEGER) AS INTEGER
+DECLARE SUB RunSamplingCase(case_name AS STRING, prompt AS STRING, max_length AS INTEGER, temperature_milli AS INTEGER, top_p_milli AS INTEGER, top_k AS INTEGER, seed_value AS INTEGER)
+DECLARE SUB RunSamplingMatrix()
 DECLARE SUB RunQualityPrompt(prompt_name AS STRING, prompt_text AS STRING)
 DECLARE SUB RunAutomatedQualitySuite(suite_name AS STRING)
 DECLARE SUB RunHardwarePerformanceCase(case_name AS STRING, prompt AS STRING, max_length AS INTEGER, BYREF total_runs AS INTEGER, BYREF total_tokens AS LONG, BYREF total_seconds AS DOUBLE)
@@ -367,6 +371,140 @@ SUB RunTraceMode(prompt AS STRING, max_length AS INTEGER)
           "|final_context_len=" + ProdLongText(CLng(context_len))
 END SUB
 
+FUNCTION SamplingMilliText(value_milli AS INTEGER) AS STRING
+    DIM whole AS INTEGER
+    DIM frac_part AS INTEGER
+    DIM frac_text AS STRING
+
+    whole = value_milli \ 1000
+    frac_part = value_milli MOD 1000
+    IF frac_part < 0 THEN frac_part = -frac_part
+
+    frac_text = LTRIM$(STR$(frac_part))
+    WHILE LEN(frac_text) < 3
+        frac_text = "0" + frac_text
+    WEND
+
+    RETURN LTRIM$(STR$(whole)) + "." + frac_text
+END FUNCTION
+
+FUNCTION SamplingTokenIsAlphaByte(token_id AS INTEGER) AS INTEGER
+    DIM byte_value AS INTEGER
+
+    IF token_id < 2 OR token_id >= BYTE_VOCAB_SIZE THEN RETURN 0
+    byte_value = token_id - 2
+    IF byte_value >= ASC("A") AND byte_value <= ASC("Z") THEN RETURN 1
+    IF byte_value >= ASC("a") AND byte_value <= ASC("z") THEN RETURN 1
+    RETURN 0
+END FUNCTION
+
+SUB RunSamplingCase(case_name AS STRING, prompt AS STRING, max_length AS INTEGER, temperature_milli AS INTEGER, top_p_milli AS INTEGER, top_k AS INTEGER, seed_value AS INTEGER)
+    DIM input_tokens() AS INTEGER
+    DIM input_token_count AS INTEGER
+    DIM output_tokens() AS INTEGER
+    DIM output_token_count AS INTEGER
+    DIM i AS INTEGER
+    DIM next_token AS INTEGER
+    DIM generated_text AS STRING
+    DIM generated_tokens AS INTEGER
+    DIM byte_tokens AS INTEGER
+    DIM alpha_byte_tokens AS INTEGER
+    DIM ended_sentence AS INTEGER
+    DIM temperature AS SINGLE
+    DIM top_p AS SINGLE
+    DIM start_time AS DOUBLE
+    DIM end_time AS DOUBLE
+    DIM elapsed AS DOUBLE
+    DIM last_token AS INTEGER
+
+    temperature = CSNG(temperature_milli) / 1000.0
+    top_p = CSNG(top_p_milli) / 1000.0
+
+    Encode prompt, input_tokens(), input_token_count
+    StripTrailingEOT input_tokens(), input_token_count
+    IF input_token_count > GPT2BasicContextLength() THEN input_token_count = GPT2BasicContextLength()
+    IF input_token_count < 1 THEN
+        REDIM input_tokens(0 TO 0)
+        input_tokens(0) = 0
+        input_token_count = 1
+    END IF
+
+    REDIM output_tokens(0 TO input_token_count + max_length - 1)
+    FOR i = 0 TO input_token_count - 1
+        output_tokens(i) = input_tokens(i)
+    NEXT i
+    output_token_count = input_token_count
+
+    RANDOMIZE seed_value
+    GPT2BasicBeginGeneration input_token_count
+    last_token = -1
+
+    PRINT "SAMPLING_CASE_BEGIN|name=" + case_name + _
+          "|prompt=" + TraceSafeText(prompt) + _
+          "|temperature=" + SamplingMilliText(temperature_milli) + _
+          "|top_p=" + SamplingMilliText(top_p_milli) + _
+          "|top_k=" + ProdLongText(CLng(top_k)) + _
+          "|seed=" + ProdLongText(CLng(seed_value))
+
+    start_time = TIMER
+    FOR i = 0 TO max_length - 1
+        next_token = GenerateNextToken(output_tokens(), output_token_count, temperature, top_p, top_k)
+        output_tokens(output_token_count) = next_token
+        output_token_count = output_token_count + 1
+        generated_tokens = generated_tokens + 1
+        last_token = next_token
+
+        IF next_token >= 2 AND next_token < BYTE_VOCAB_SIZE THEN byte_tokens = byte_tokens + 1
+        IF SamplingTokenIsAlphaByte(next_token) <> 0 THEN alpha_byte_tokens = alpha_byte_tokens + 1
+
+        IF next_token = 0 THEN EXIT FOR
+        IF i >= SENTENCE_STOP_MIN_TOKENS THEN
+            IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
+        END IF
+    NEXT i
+    end_time = TIMER
+
+    elapsed = end_time - start_time
+    IF elapsed < 0.0 THEN elapsed = elapsed + 86400.0
+
+    IF last_token >= 0 THEN ended_sentence = TinyGPTTokenEndsSentence(last_token)
+    generated_text = Decode(output_tokens(), output_token_count)
+
+    PRINT "SAMPLING_RESULT|name=" + case_name + _
+          "|generated_tokens=" + ProdLongText(CLng(generated_tokens)) + _
+          "|seconds=" + ProdDoubleText(elapsed) + _
+          "|byte_tokens=" + ProdLongText(CLng(byte_tokens)) + _
+          "|alpha_byte_tokens=" + ProdLongText(CLng(alpha_byte_tokens)) + _
+          "|ended_sentence=" + ProdLongText(CLng(ended_sentence)) + _
+          "|last_token=" + ProdLongText(CLng(last_token)) + _
+          "|text=" + TraceSafeText(generated_text)
+    PRINT "SAMPLING_CASE_END|name=" + case_name
+END SUB
+
+SUB RunSamplingMatrix()
+    PRINT "SAMPLING_BEGIN|suite=gpt2-basic-sampling|version=1"
+
+    IF InitializeModel() = 0 THEN
+        PRINT "SAMPLING_FAILED|stage=initialize_model"
+        PRINT "SAMPLING_END"
+        RETURN
+    END IF
+
+    PRINT "SAMPLING_MODEL|profile=" + GPT2BasicProfileName() + _
+          "|ctx=" + ProdLongText(CLng(GPT2BasicContextLength())) + _
+          "|vocab=" + ProdLongText(CLng(GPT2BasicVocabSize())) + _
+          "|params=" + ProdLongText(GPT2BasicParameterCount()) + _
+          "|runtime_bytes=" + ProdLongText(GPT2BasicRuntimeMemoryBytes())
+
+    RunSamplingCase "greedy_real_inference", "What makes this real inference?", 40, 0, 900, DEFAULT_TOP_K, 486
+    RunSamplingCase "topk_real_inference", "What makes this real inference?", 40, 700, 950, 12, 486
+    RunSamplingCase "nucleus_real_inference", "What makes this real inference?", 40, 900, 900, 24, 486
+    RunSamplingCase "topk_cache", "Explain why a cache matters for text generation", 40, 700, 950, 12, 487
+    RunSamplingCase "nucleus_cache", "Explain why a cache matters for text generation", 40, 900, 900, 24, 487
+
+    PRINT "SAMPLING_END"
+END SUB
+
 SUB RunQualityPrompt(prompt_name AS STRING, prompt_text AS STRING)
     PRINT
     PRINT "QUALITY_PROMPT_BEGIN|"; prompt_name; "|"; prompt_text
@@ -613,6 +751,13 @@ SUB Main()
     IF command_line = "--trace" OR command_line = "--step-trace" OR command_line = "--educational-trace" THEN
         RANDOMIZE 486
         RunTraceMode "What makes this real inference?", 12
+        ShutdownModel
+        RETURN
+    END IF
+
+    IF command_line = "--sampling-matrix" OR command_line = "--sampling-quality" OR command_line = "--sample-matrix" THEN
+        RANDOMIZE 486
+        RunSamplingMatrix
         ShutdownModel
         RETURN
     END IF
