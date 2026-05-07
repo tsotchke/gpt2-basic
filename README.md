@@ -70,8 +70,16 @@ The lower-memory streaming candidate,
 streams packed output-head rows from `GPT2HQ4.BIN` instead of keeping the q4
 codes and decode table resident. It passes DOS vector parity, lowers runtime
 memory to 616,324 bytes, and measures 0.81 tok/s on the QEMU 486DX2/66 gate.
-This is the real parameter-streaming path, but it is a low-memory fallback
-rather than the default speed path.
+This is the real parameter-streaming path. It is deliberately kept as the
+maximum-compatibility fallback rather than the default speed path.
+
+Release mode choice:
+
+| Mode | Model Directory | Runtime Memory | QEMU 486DX2/66 | Use When |
+|---|---|---:|---:|---|
+| Full resident | `assets/gpt2_basic/MODEL` | 2,055,940 B | 2.45 tok/s | best speed and simplest numeric path |
+| q4 token+head | `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE` | 974,724 B | 2.12 tok/s | best low-memory default |
+| q4 streamed head | `assets/gpt2_basic/MODEL_TOKHEADQ4_STREAM_PROD_PROBE` | 616,324 B | 0.81 tok/s | maximum RAM compatibility |
 
 ## ► About This Project
 
@@ -310,23 +318,24 @@ memory.
 ┌──────────────────────────────┬────────────────────┬───────────────────┬───────────────────┐
 │ Configuration                │ Tokens per Second  │ 70-Token Demo     │ 100-Token Equiv.  │
 ├──────────────────────────────┼────────────────────┼───────────────────┼───────────────────┤
-│ 386DX/33-class no-FPU        │ 0.68               │ 103.3 seconds     │ 147.5 seconds     │
-│ 486SX/25 no-FPU              │ 1.36               │ 51.6 seconds      │ 73.8 seconds      │
-│ 486DX/33                     │ 2.71               │ 25.8 seconds      │ 36.9 seconds      │
-│ 486DX2/66                    │ 5.42               │ 12.9 seconds      │ 18.4 seconds      │
-│ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
-│ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
-│ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
+│ QEMU 386dx-33 no-FPU         │ 0.31               │ 228.1 seconds     │ 325.8 seconds     │
+│ QEMU 486sx-25 no-FPU         │ 0.61               │ 114.0 seconds     │ 162.9 seconds     │
+│ QEMU 486dx-33                │ 1.23               │ 57.0 seconds      │ 81.4 seconds      │
 │ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
+│ QEMU 486dx4-100              │ 4.91               │ 14.2 seconds      │ 20.4 seconds      │
+│ QEMU pentium-60              │ 4.92               │ 14.2 seconds      │ 20.3 seconds      │
+│ QEMU pentium-133             │ 9.85               │ 7.1 seconds       │ 10.2 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 streaming  │ 0.81               │ 86.3 seconds      │ 123.5 seconds     │
-│ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
+│ Host-speed QEMU --perf       │ 43.55              │ 1.6 seconds       │ 2.3 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
 
-The first seven rows are retained as historical byte-baseline timing context;
-the QEMU `486dx2-66 --perf` row is refreshed for the promoted lexicon default.
+These rows are now measured DOS `GPT2.EXE --perf` rows under QEMU, not just
+planning estimates. The `386dx-33` row uses QEMU's `486,-fpu` CPU model with
+conservative instruction throttling because this QEMU build does not expose a
+true 386 CPU model.
 Current quality evidence for the promoted lexicon default is in
 `qemu/evidence/quality_report_default_model_all.md`,
 `qemu/evidence/quality_report_default_model_fixed_all.md`, and
@@ -790,19 +799,19 @@ Current fixed-point results for the promoted 4096-token lexicon checkpoint:
 ┌──────────────────────────────┬────────────────────┬───────────────────┬───────────────────┐
 │ Configuration                │ Tokens per Second  │ 70-Token Demo     │ 100-Token Equiv.  │
 ├──────────────────────────────┼────────────────────┼───────────────────┼───────────────────┤
-│ 386DX/33-class no-FPU        │ 0.68               │ 103.3 seconds     │ 147.5 seconds     │
-│ 486SX/25 no-FPU              │ 1.36               │ 51.6 seconds      │ 73.8 seconds      │
-│ 486DX/33                     │ 2.71               │ 25.8 seconds      │ 36.9 seconds      │
-│ 486DX2/66                    │ 5.42               │ 12.9 seconds      │ 18.4 seconds      │
-│ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
-│ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
-│ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
+│ QEMU 386dx-33 no-FPU         │ 0.31               │ 228.1 seconds     │ 325.8 seconds     │
+│ QEMU 486sx-25 no-FPU         │ 0.61               │ 114.0 seconds     │ 162.9 seconds     │
+│ QEMU 486dx-33                │ 1.23               │ 57.0 seconds      │ 81.4 seconds      │
 │ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
-│ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
+│ QEMU 486dx4-100              │ 4.91               │ 14.2 seconds      │ 20.4 seconds      │
+│ QEMU pentium-60              │ 4.92               │ 14.2 seconds      │ 20.3 seconds      │
+│ QEMU pentium-133             │ 9.85               │ 7.1 seconds       │ 10.2 seconds      │
+│ Host-speed QEMU --perf       │ 43.55              │ 1.6 seconds       │ 2.3 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
 
-The era-target rows are planning estimates tied to current fixed-point work counts; the QEMU rows are `GPT2.EXE --perf` measurements from FreeDOS emulation. Measure the target PC directly before quoting board-specific speed.
+These are `GPT2.EXE --perf` measurements from FreeDOS emulation. Measure the
+target PC directly before quoting board-specific speed.
 
 ### ■ Memory Usage
 
@@ -863,7 +872,7 @@ This project is released under the MIT License. See the [LICENSE](LICENSE) file 
 ```
 ## ► Conclusion
 
-This project stands at the fascinating intersection of modern AI and retrocomputing, demonstrating that the fundamental algorithms powering today's most advanced language models could theoretically have been implemented decades earlier. While a 486-era GPT implementation would have been painfully slow by today's standards—taking minutes rather than milliseconds to generate a token—it would have been functionally possible with the right optimization techniques.
+This project stands at the fascinating intersection of modern AI and retrocomputing, demonstrating that the fundamental algorithms powering today's most advanced language models could theoretically have been implemented decades earlier. The current QEMU 486DX2/66 evidence is no longer only theoretical: the promoted fixed-point DOS runtime produces useful short completions at 2.45 tok/s in the full-resident mode, 2.12 tok/s in the low-memory q4/log token+head mode, and 0.81 tok/s in the streamed-head fallback.
 
 The journey of implementing GPT-2 in BASIC reveals several profound insights:
 

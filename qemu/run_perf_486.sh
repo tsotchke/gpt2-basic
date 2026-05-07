@@ -200,7 +200,7 @@ python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     echo "PERF_RUNNER|basis=qemu-emulation|profile=$profile|label=$label|model_dir=$MODEL_DIR|qemu_machine=isapc|qemu_cpu=$cpu_model|icount_shift=${icount_shift:-off}|accel=tcg|mode=$perf_mode"
 } >> "$out_log"
 
-if [[ -z "$suffix" && "$perf_mode" == "perf" ]]; then
+if [[ -z "$suffix" && "$perf_mode" == "perf" && "$profile" == "486dx2-66" ]]; then
     cp "$out_log" "$ROOT/qemu/evidence/perf_486.log"
 fi
 

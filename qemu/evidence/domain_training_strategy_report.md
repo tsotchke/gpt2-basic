@@ -756,12 +756,14 @@ Evidence:
 - `qemu/evidence/perf_486_486dx2-66_model_tokheadq4_stream_prod_probe_kernel.log`
 - `qemu/evidence/hardware_perf_report.md`
 
-Result: keep as an implemented low-memory fallback, not as the preferred
-release mode. It proves the production parameter-streaming contract and cuts
-runtime memory from 974,724 bytes in resident token+head q4 mode to 616,324
+Result: keep as an implemented maximum-compatibility fallback, not as the
+preferred speed mode. It proves the production parameter-streaming contract and
+cuts runtime memory from 974,724 bytes in resident token+head q4 mode to 616,324
 bytes, but it also shows why streaming cannot be hand-waved as a free win on a
 486: final-head time dominates even more strongly, and throughput falls from
-2.12 tok/s to 0.81 tok/s.
+2.12 tok/s to 0.81 tok/s. The release should therefore carry both compressed
+variants: resident q4 token+head for the best low-memory default, and streamed
+q4 output head for machines where RAM compatibility matters more than speed.
 
 ## Production Runtime Realization
 

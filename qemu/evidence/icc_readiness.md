@@ -9,7 +9,7 @@ Contract gaps: `0`  Liveness actions: `0`  Liveness scanned: `0` (skipped)  Stub
 | Status | Severity | Criterion | Evidence | Action |
 |---|---|---|---:|---|
 | PASS | high | `runtime_evidence_present` | 5 | `keep` |
-| PASS | high | `checkpoint` | 2 | `keep` |
+| PASS | high | `checkpoint` | 3 | `keep` |
 | PASS | high | `artifact` | 5 | `keep` |
 | PASS | medium | `completion_condition` | 5 | `keep` |
 | PASS | high | `no_unmarked_stubbed_prod_paths` | 0 | `keep` |

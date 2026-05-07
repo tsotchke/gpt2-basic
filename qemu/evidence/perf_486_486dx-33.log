@@ -18,9 +18,9 @@ Production model initialization complete.
   Arithmetic  : Q20.12 fixed-point
 PERF_MACHINE|cpu_detected=not_probed_in_prod_build|cpu_enum=0|fpu=0|timer=freebasic_TIMER
 PERF_MODEL|profile=486sx-safe|layers=2|emb=48|heads=4|ctx=192|vocab=4096|params=463168|fixed_bytes=1852672|runtime_bytes=2055940|arithmetic=q20.12_fixed
-PERF_RUN|name=real_inference|prompt_tokens=3|generated_tokens=35|seconds=0.8299999237060547|tokens_per_sec=42.16867857495766|last_token=48
-PERF_RUN|name=486_target|prompt_tokens=2|generated_tokens=40|seconds=0.8799998760223389|tokens_per_sec=45.45455185835117|last_token=510
-PERF_RUN|name=basic_runtime|prompt_tokens=4|generated_tokens=33|seconds=0.7699999809265137|tokens_per_sec=42.85714391874695|last_token=313
-PERF_SUMMARY|runs=3|tokens=108|seconds=2.479999780654907|tokens_per_sec=43.54839094843784
+PERF_RUN|name=real_inference|prompt_tokens=3|generated_tokens=35|seconds=28.23000001907349|tokens_per_sec=1.239815797957931|last_token=48
+PERF_RUN|name=486_target|prompt_tokens=2|generated_tokens=40|seconds=32.07999992370605|tokens_per_sec=1.246882795982843|last_token=510
+PERF_RUN|name=basic_runtime|prompt_tokens=4|generated_tokens=33|seconds=27.61999988555908|tokens_per_sec=1.194786391626808|last_token=313
+PERF_SUMMARY|runs=3|tokens=108|seconds=87.92999982833862|tokens_per_sec=1.228249746512488
 PERF_END
-PERF_RUNNER|basis=qemu-emulation|profile=host|label=host-speed emulator baseline|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=off|accel=tcg|mode=perf
+PERF_RUNNER|basis=qemu-emulation|profile=486dx-33|label=486DX/33-era throttle|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=5|accel=tcg|mode=perf

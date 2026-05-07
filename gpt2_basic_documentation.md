@@ -1054,15 +1054,31 @@ END SUB
 
 #### Performance Optimization
 
-To minimize the impact of disk access on performance, we implemented several optimizations:
+The current release implements disk streaming in the measured production path
+for the vocabulary-sized output head. A streamed checkpoint includes
+`GPT2HQS.ON`; DOS then keeps `GPT2HQ4.BIN` open, keeps only q4/log levels,
+scales, and one packed row buffer resident, and reads the output-head row needed
+for each embedding dimension during final-logit scoring. This is intentionally
+narrower than the original whole-model streaming design because QEMU evidence
+shows that the output head is the real 4096-token hot tensor.
 
-1. **Buffer Management**: We use optimal buffer sizes (typically 4-8KB) for disk operations to balance memory usage and I/O efficiency.
+Measured behavior is now explicit:
 
-2. **Parameter Ordering**: Model parameters are ordered in the file to match their access pattern during inference, minimizing seek operations.
+1. **Resident Q20.12 default**: fastest current default, highest runtime memory.
 
-3. **Predictive Loading**: When possible, we start loading the next layer's parameters while still processing the current layer.
+2. **Resident q4/log token+head mode**: loads `GPT2TQ4.BIN` and `GPT2HQ4.BIN`,
+   keeps compact token/head tensors resident, and cuts runtime memory below
+   1 MB with only a modest speed loss.
 
-4. **Memory-Aware Operation**: The system detects available memory and can switch between streaming and in-memory modes based on available resources.
+3. **Streamed q4/log output-head fallback**: uses `GPT2HQS.ON` and streams
+   packed head rows from disk. It lowers runtime memory further, to roughly
+   616 KB in the current evidence, but falls to about 0.81 tok/s on the QEMU
+   486DX2/66 gate because the final head becomes dominated by disk-row reads.
+
+The original ideas of whole-layer parameter ordering and predictive loading
+remain historical design goals rather than production claims. The release code
+keeps the streaming contract attached to a validated artifact, vector parity,
+quality evidence, and direct DOS `--perf` timing.
 
 #### Historical Context
 
@@ -2491,7 +2507,7 @@ These future directions represent opportunities for further research and develop
 
 ## A. Modern Quantization Connections
 
-While our 4-bit logarithmic quantization scheme was developed for 486-era constraints, it bears remarkable similarities to quantization approaches now gaining prominence in modern AI hardware. This connection highlights how solutions developed under extreme constraints often anticipate future mainstream techniques.
+While our 4-bit logarithmic quantization scheme was developed for 486-era constraints, it bears remarkable similarities to quantization approaches now gaining prominence in modern AI hardware. In the current release this is not just a paper design: optional q4/log token-embedding and output-head artifacts are loaded by DOS, checked by host validators, and covered by vector parity and timing evidence.
 
 ### A.1 Connections to Modern Neural Network Quantization
 

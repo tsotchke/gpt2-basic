@@ -284,23 +284,34 @@ Current performance baseline:
 ┌──────────────────────────────┬────────────────────┬───────────────────┬───────────────────┐
 │ Configuration                │ Tokens per Second  │ 70-Token Demo     │ 100-Token Equiv.  │
 ├──────────────────────────────┼────────────────────┼───────────────────┼───────────────────┤
-│ 386DX/33-class no-FPU        │ 0.68               │ 103.3 seconds     │ 147.5 seconds     │
-│ 486SX/25 no-FPU              │ 1.36               │ 51.6 seconds      │ 73.8 seconds      │
-│ 486DX/33                     │ 2.71               │ 25.8 seconds      │ 36.9 seconds      │
-│ 486DX2/66                    │ 5.42               │ 12.9 seconds      │ 18.4 seconds      │
-│ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
-│ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
-│ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
+│ QEMU 386dx-33 no-FPU         │ 0.31               │ 228.1 seconds     │ 325.8 seconds     │
+│ QEMU 486sx-25 no-FPU         │ 0.61               │ 114.0 seconds     │ 162.9 seconds     │
+│ QEMU 486dx-33                │ 1.23               │ 57.0 seconds      │ 81.4 seconds      │
 │ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
+│ QEMU 486dx4-100              │ 4.91               │ 14.2 seconds      │ 20.4 seconds      │
+│ QEMU pentium-60              │ 4.92               │ 14.2 seconds      │ 20.3 seconds      │
+│ QEMU pentium-133             │ 9.85               │ 7.1 seconds       │ 10.2 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 streaming  │ 0.81               │ 86.3 seconds      │ 123.5 seconds     │
-│ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
+│ Host-speed QEMU --perf       │ 43.55              │ 1.6 seconds       │ 2.3 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
 
-The first seven rows come from the current code-count performance model in `qemu/evidence/era_performance_report.md`; the QEMU `486dx2-66 --perf` rows come from the promoted 4096-token lexicon default and q4/log release candidates running inside FreeDOS. Real hardware timing is still required before making claims about a specific PC. This QEMU build does not expose a true 386 CPU model, so the `386DX/33-class` row remains a conservative target estimate, not a true 386 compatibility proof.
+All rows in this table are `GPT2.EXE --perf` measurements from the promoted
+4096-token lexicon default and q4/log release candidates running inside
+FreeDOS. Real hardware timing is still required before making claims about a
+specific PC. This QEMU build does not expose a true 386 CPU model, so the
+`386dx-33` row uses QEMU's `486,-fpu` CPU model with conservative instruction
+throttling; it is a no-FPU class timing gate, not a true 386 compatibility
+proof.
 
 Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory. The q4/log token+head candidate uses 974,724 runtime bytes and reaches about 0.93 MB peak memory while still passing 3/3 vectors and 39/39 phase checks. The q4/log streamed-head candidate uses 616,324 runtime bytes and passes the same vector gate, but slows to 0.81 tok/s on the QEMU 486DX2/66 profile.
+
+Keep both resident and streamed compressed checkpoints. Resident q4 token+head
+mode is the preferred low-memory release profile because it stays close to the
+full-head speed. Streamed q4 output-head mode is the maximum-compatibility
+fallback for tighter RAM budgets; its lower throughput is the cost of replacing
+resident output-head codes and decode tables with disk-row reads.
 
 QEMU's curses display can emit CP437 conversion warnings on macOS terminals. They are display-backend noise, not DOS program failures.
