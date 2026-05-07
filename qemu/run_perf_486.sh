@@ -7,10 +7,11 @@ HDD_IMAGE="$ROOT/qemu/gpt2hdd.img"
 
 profile="${1:-486dx2-66}"
 requested_model_dir="${2:-}"
+perf_mode="${3:-perf}"
 
 usage() {
     cat <<'USAGE'
-Usage: bash qemu/run_perf_486.sh [profile] [model_dir]
+Usage: bash qemu/run_perf_486.sh [profile] [model_dir] [perf|kernel]
 
 Profiles:
   386dx-33     Conservative 386-class throttle, QEMU 486,-fpu CPU model, icount shift=7
@@ -22,11 +23,22 @@ Profiles:
   pentium-133  Pentium-era throttle, QEMU pentium CPU model, icount shift=2
   host         No icount throttle, useful as a fast emulator baseline
 
-The DOS executable emits PERF_* records. QEMU icount is repeatable
+The DOS executable emits PERF_* records. The kernel mode also emits
+KERNEL_PERF_* records from inside the fixed decode loop. QEMU icount is repeatable
 instruction-count throttling, not cycle-accurate board emulation.
 If model_dir is omitted, assets/gpt2_basic/MODEL is used.
 USAGE
 }
+
+case "$perf_mode" in
+    perf|kernel)
+        ;;
+    *)
+        echo "unknown perf mode: $perf_mode" >&2
+        usage >&2
+        exit 1
+        ;;
+esac
 
 cpu_model="486"
 icount_shift=""
@@ -127,8 +139,14 @@ else
     suffix="_$model_key"
 fi
 
+if [[ "$perf_mode" == "kernel" ]]; then
+    boot_auto="$ROOT/qemu/fdauto_kernel_perf.bat"
+else
+    boot_auto="$ROOT/qemu/fdauto_perf.bat"
+fi
+
 python3 "$ROOT/qemu/fat_image_put.py" "$BOOT_IMAGE" \
-    --put "$ROOT/qemu/fdauto_perf.bat" FDAUTO.BAT
+    --put "$boot_auto" FDAUTO.BAT
 
 qemu_args=(
     -machine isapc
@@ -151,6 +169,7 @@ if [[ -n "$icount_shift" ]]; then
 fi
 
 echo "Running GPT2-BASIC performance suite under QEMU: $label"
+echo "Performance mode: $perf_mode"
 echo "QEMU CPU model: $cpu_model"
 echo "Model directory: $MODEL_DIR"
 if [[ -n "$icount_shift" ]]; then
@@ -169,15 +188,19 @@ if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 143 ]]; then
 fi
 
 mkdir -p "$ROOT/qemu/evidence"
-out_log="$ROOT/qemu/evidence/perf_486_${profile}${suffix}.log"
+if [[ "$perf_mode" == "kernel" ]]; then
+    out_log="$ROOT/qemu/evidence/perf_486_${profile}${suffix}_kernel.log"
+else
+    out_log="$ROOT/qemu/evidence/perf_486_${profile}${suffix}.log"
+fi
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     --get PERF.LOG "$out_log"
 
 {
-    echo "PERF_RUNNER|basis=qemu-emulation|profile=$profile|label=$label|model_dir=$MODEL_DIR|qemu_machine=isapc|qemu_cpu=$cpu_model|icount_shift=${icount_shift:-off}|accel=tcg"
+    echo "PERF_RUNNER|basis=qemu-emulation|profile=$profile|label=$label|model_dir=$MODEL_DIR|qemu_machine=isapc|qemu_cpu=$cpu_model|icount_shift=${icount_shift:-off}|accel=tcg|mode=$perf_mode"
 } >> "$out_log"
 
-if [[ -z "$suffix" ]]; then
+if [[ -z "$suffix" && "$perf_mode" == "perf" ]]; then
     cp "$out_log" "$ROOT/qemu/evidence/perf_486.log"
 fi
 

@@ -23,6 +23,7 @@ class PerfLog:
     runner: dict[str, str]
     summary: dict[str, str]
     runs: list[dict[str, str]]
+    kernel: list[dict[str, str]]
 
 
 def parse_record(line: str) -> tuple[str, dict[str, str]]:
@@ -40,12 +41,13 @@ def parse_record(line: str) -> tuple[str, dict[str, str]]:
 def parse_log(path: Path) -> PerfLog:
     records: dict[str, dict[str, str]] = {}
     runs: list[dict[str, str]] = []
+    kernel: list[dict[str, str]] = []
     saw_begin = False
     saw_end = False
 
     for raw_line in path.read_text(encoding="ascii", errors="ignore").splitlines():
         line = raw_line.strip()
-        if not line.startswith("PERF_"):
+        if not line.startswith("PERF_") and not line.startswith("KERNEL_PERF"):
             continue
         kind, values = parse_record(line)
         if kind == "PERF_BEGIN":
@@ -55,6 +57,8 @@ def parse_log(path: Path) -> PerfLog:
             saw_end = True
         elif kind == "PERF_RUN":
             runs.append(values)
+        elif kind == "KERNEL_PERF":
+            kernel.append(values)
         else:
             records[kind] = values
 
@@ -74,6 +78,7 @@ def parse_log(path: Path) -> PerfLog:
         runner=records.get("PERF_RUNNER", {}),
         summary=records.get("PERF_SUMMARY", {}),
         runs=runs,
+        kernel=kernel,
     )
 
 
@@ -86,6 +91,15 @@ def fmt_float(value: str, digits: int = 2) -> str:
         return f"{float(value):.{digits}f}"
     except ValueError:
         return value
+
+
+def fmt_percent(numerator: str, denominator: float) -> str:
+    try:
+        if denominator <= 0.0:
+            return "0.0%"
+        return f"{(float(numerator) / denominator) * 100.0:.1f}%"
+    except ValueError:
+        return numerator
 
 
 def format_profile(log: PerfLog) -> str:
@@ -141,6 +155,31 @@ def markdown(logs: list[PerfLog]) -> str:
                 f"{fmt_float(num(run, 'tokens_per_sec', '0'))} | {num(run, 'last_token', '0')} |"
             )
 
+    if any(log.kernel for log in logs):
+        lines.extend(
+            [
+                "",
+                "## Kernel Stage Details",
+                "",
+                "| Evidence | Stage | Calls | Seconds | Share |",
+                "|---|---|---:|---:|---:|",
+            ]
+        )
+        for log in logs:
+            if not log.kernel:
+                continue
+            total_kernel_seconds = 0.0
+            for row in log.kernel:
+                try:
+                    total_kernel_seconds += float(num(row, "seconds", "0"))
+                except ValueError:
+                    pass
+            for row in log.kernel:
+                lines.append(
+                    f"| `{log.path.name}` | `{num(row, 'stage', 'unknown')}` | {num(row, 'calls', '0')} | "
+                    f"{fmt_float(num(row, 'seconds', '0'), 4)} | {fmt_percent(num(row, 'seconds', '0'), total_kernel_seconds)} |"
+                )
+
     lines.extend(
         [
             "",
@@ -173,6 +212,7 @@ def self_test(input_path: Path) -> None:
     print("trace parse_log")
     print("trace markdown")
     print(f"PROBE_OK parse_log runs={len(log.runs)}")
+    print(f"PROBE_OK kernel_perf rows={len(log.kernel)}")
     print(f"PROBE_OK hardware_perf_report bytes={len(report)}")
     print("PROBE_OK hardware_perf_report self_test=1")
     print("PROBE_OK main cli_entry=available")

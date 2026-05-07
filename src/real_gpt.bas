@@ -34,6 +34,13 @@ CONST TINYGPT_TOKEN_Q4_MAGIC AS LONG = &H34515447
 CONST TINYGPT_TOKEN_Q4_VERSION AS LONG = 1
 CONST TINYGPT_HEAD_Q4_MAGIC AS LONG = &H34514847
 CONST TINYGPT_HEAD_Q4_VERSION AS LONG = 1
+CONST TINYGPT_KERNEL_STAGE_COUNT AS INTEGER = 6
+CONST TINYGPT_KERNEL_EMBED AS INTEGER = 0
+CONST TINYGPT_KERNEL_QKV AS INTEGER = 1
+CONST TINYGPT_KERNEL_ATTENTION AS INTEGER = 2
+CONST TINYGPT_KERNEL_PROJECTION AS INTEGER = 3
+CONST TINYGPT_KERNEL_FFN AS INTEGER = 4
+CONST TINYGPT_KERNEL_HEAD AS INTEGER = 5
 
 DIM SHARED g_tiny_loaded AS INTEGER
 DIM SHARED g_tiny_fixed_loaded AS INTEGER
@@ -155,6 +162,9 @@ DIM SHARED g_tiny_fx_dbg_final_ln_vec() AS LONG
 DIM SHARED g_tiny_phase_capture_enabled AS INTEGER
 DIM SHARED g_tiny_phase_debug_allocated AS INTEGER
 DIM SHARED g_tiny_fx_attn_scale AS LONG
+DIM SHARED g_tiny_kernel_perf_enabled AS INTEGER
+DIM SHARED g_tiny_kernel_perf_seconds(0 TO TINYGPT_KERNEL_STAGE_COUNT - 1) AS DOUBLE
+DIM SHARED g_tiny_kernel_perf_calls(0 TO TINYGPT_KERNEL_STAGE_COUNT - 1) AS LONG
 
 DECLARE FUNCTION TinyGPTLoadModel(base_path AS STRING) AS INTEGER
 DECLARE FUNCTION TinyGPTResolveFile(base_path AS STRING, primary_name AS STRING, legacy_name AS STRING) AS STRING
@@ -212,6 +222,11 @@ DECLARE FUNCTION TinyGPTFixedDiv(a AS LONG, b AS LONG) AS LONG
 DECLARE FUNCTION TinyGPTFixedSqrt(value AS LONG) AS LONG
 DECLARE FUNCTION TinyGPTFixedExpNeg(x AS LONG) AS LONG
 DECLARE FUNCTION TinyGPTFixedTanh(x AS LONG) AS LONG
+DECLARE SUB TinyGPTKernelPerfReset()
+DECLARE SUB TinyGPTKernelPerfSetEnabled(enabled AS INTEGER)
+DECLARE FUNCTION TinyGPTKernelPerfStageName(stage_id AS INTEGER) AS STRING
+DECLARE SUB TinyGPTKernelPerfAdd(stage_id AS INTEGER, start_time AS DOUBLE)
+DECLARE SUB TinyGPTKernelPerfReport()
 DECLARE SUB TinyGPTFixedLayerNormVec(input_vec() AS LONG, output_vec() AS LONG, emb_dim AS INTEGER, gamma_arr() AS LONG, beta_arr() AS LONG, param_base AS LONG)
 DECLARE SUB TinyGPTFixedLinearVec(input_vec() AS LONG, output_vec() AS LONG, in_dim AS INTEGER, out_dim AS INTEGER, weight_arr() AS LONG, weight_base AS LONG, bias_arr() AS LONG, bias_base AS LONG)
 DECLARE SUB TinyGPTFixedHeadQ4LinearVec(input_vec() AS LONG, output_vec() AS LONG)
@@ -1774,6 +1789,59 @@ FUNCTION TinyGPTFixedTanh(x AS LONG) AS LONG
     RETURN tanh_abs
 END FUNCTION
 
+SUB TinyGPTKernelPerfReset()
+    DIM i AS INTEGER
+    FOR i = 0 TO TINYGPT_KERNEL_STAGE_COUNT - 1
+        g_tiny_kernel_perf_seconds(i) = 0.0
+        g_tiny_kernel_perf_calls(i) = 0
+    NEXT i
+END SUB
+
+SUB TinyGPTKernelPerfSetEnabled(enabled AS INTEGER)
+    IF enabled <> 0 THEN
+        g_tiny_kernel_perf_enabled = 1
+    ELSE
+        g_tiny_kernel_perf_enabled = 0
+    END IF
+END SUB
+
+FUNCTION TinyGPTKernelPerfStageName(stage_id AS INTEGER) AS STRING
+    SELECT CASE stage_id
+        CASE TINYGPT_KERNEL_EMBED: RETURN "embedding"
+        CASE TINYGPT_KERNEL_QKV: RETURN "ln1_qkv"
+        CASE TINYGPT_KERNEL_ATTENTION: RETURN "attention"
+        CASE TINYGPT_KERNEL_PROJECTION: RETURN "projection"
+        CASE TINYGPT_KERNEL_FFN: RETURN "ffn"
+        CASE TINYGPT_KERNEL_HEAD: RETURN "final_head"
+        CASE ELSE: RETURN "unknown"
+    END SELECT
+END FUNCTION
+
+SUB TinyGPTKernelPerfAdd(stage_id AS INTEGER, start_time AS DOUBLE)
+    DIM elapsed AS DOUBLE
+
+    IF g_tiny_kernel_perf_enabled = 0 THEN RETURN
+    IF stage_id < 0 OR stage_id >= TINYGPT_KERNEL_STAGE_COUNT THEN RETURN
+
+    elapsed = TIMER - start_time
+    IF elapsed < -1.0 THEN elapsed = 0.0
+    IF elapsed < 0.0 THEN elapsed = elapsed + 86400.0
+    IF elapsed > 3600.0 THEN elapsed = 0.0
+    g_tiny_kernel_perf_seconds(stage_id) = g_tiny_kernel_perf_seconds(stage_id) + elapsed
+    g_tiny_kernel_perf_calls(stage_id) = g_tiny_kernel_perf_calls(stage_id) + 1
+END SUB
+
+SUB TinyGPTKernelPerfReport()
+    DIM i AS INTEGER
+    PRINT "KERNEL_PERF_BEGIN|version=1|timer=freebasic_TIMER"
+    FOR i = 0 TO TINYGPT_KERNEL_STAGE_COUNT - 1
+        PRINT "KERNEL_PERF|stage=" + TinyGPTKernelPerfStageName(i) + _
+              "|calls=" + LTRIM$(STR$(g_tiny_kernel_perf_calls(i))) + _
+              "|seconds=" + LTRIM$(STR$(g_tiny_kernel_perf_seconds(i)))
+    NEXT i
+    PRINT "KERNEL_PERF_END"
+END SUB
+
 SUB TinyGPTFixedLayerNormVec(input_vec() AS LONG, output_vec() AS LONG, emb_dim AS INTEGER, gamma_arr() AS LONG, beta_arr() AS LONG, param_base AS LONG)
     DIM col_idx AS INTEGER
     DIM mean_value AS LONG
@@ -1964,6 +2032,7 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
     DIM mul_value AS LONGINT
     DIM clamped_sum AS LONG
     DIM q_base AS INTEGER
+    DIM perf_start AS DOUBLE
 
     emb_dim = g_tiny_n_embd
     head_count = g_tiny_n_head
@@ -1975,6 +2044,7 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
 
     token_base = CLNG(token_id) * CLNG(emb_dim)
     position_base = CLNG(cache_pos) * CLNG(emb_dim)
+    IF g_tiny_kernel_perf_enabled <> 0 THEN perf_start = TIMER
     IF g_tiny_fx_tok_q4_loaded <> 0 THEN
         FOR emb_idx = 0 TO emb_dim - 1
             packed_index = (token_base + emb_idx) \ 2
@@ -2001,6 +2071,7 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
     IF write_logits <> 0 AND g_tiny_phase_capture_enabled <> 0 THEN
         TinyGPTCopyLongVector g_tiny_fx_x_vec(), g_tiny_fx_dbg_embedding_vec(), emb_dim
     END IF
+    TinyGPTKernelPerfAdd TINYGPT_KERNEL_EMBED, perf_start
 
     FOR layer_idx = 0 TO g_tiny_n_layer - 1
         layer_e_base = CLNG(layer_idx) * CLNG(emb_dim)
@@ -2010,6 +2081,7 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
         layer_cache_base = CLNG(layer_idx) * CLNG(g_tiny_n_positions) * CLNG(emb_dim)
         cache_base = layer_cache_base + CLNG(cache_pos) * CLNG(emb_dim)
 
+        IF g_tiny_kernel_perf_enabled <> 0 THEN perf_start = TIMER
         TinyGPTFixedLayerNormVec g_tiny_fx_x_vec(), g_tiny_fx_norm_vec(), emb_dim, g_tiny_fx_ln1_w(), g_tiny_fx_ln1_b(), layer_e_base
         IF write_logits <> 0 AND g_tiny_phase_capture_enabled <> 0 AND layer_idx = g_tiny_n_layer - 1 THEN
             TinyGPTCopyLongVector g_tiny_fx_norm_vec(), g_tiny_fx_dbg_ln1_vec(), emb_dim
@@ -2022,7 +2094,9 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
             TinyGPTCopyLongVector g_tiny_fx_k_vec(), g_tiny_fx_dbg_k_vec(), emb_dim
             TinyGPTCopyLongVector g_tiny_fx_v_vec(), g_tiny_fx_dbg_v_vec(), emb_dim
         END IF
+        TinyGPTKernelPerfAdd TINYGPT_KERNEL_QKV, perf_start
 
+        IF g_tiny_kernel_perf_enabled <> 0 THEN perf_start = TIMER
         FOR emb_idx = 0 TO emb_dim - 1
             g_tiny_fx_cache_k(cache_base + emb_idx) = g_tiny_fx_k_vec(emb_idx)
             g_tiny_fx_cache_v(cache_base + emb_idx) = g_tiny_fx_v_vec(emb_idx)
@@ -2095,7 +2169,9 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
         IF write_logits <> 0 AND g_tiny_phase_capture_enabled <> 0 AND layer_idx = g_tiny_n_layer - 1 THEN
             TinyGPTCopyLongVector g_tiny_fx_att_vec(), g_tiny_fx_dbg_attn_vec(), emb_dim
         END IF
+        TinyGPTKernelPerfAdd TINYGPT_KERNEL_ATTENTION, perf_start
 
+        IF g_tiny_kernel_perf_enabled <> 0 THEN perf_start = TIMER
         TinyGPTFixedLinearVec g_tiny_fx_att_vec(), g_tiny_fx_proj_vec(), emb_dim, emb_dim, g_tiny_fx_proj_w(), layer_ee_base, g_tiny_fx_proj_b(), layer_e_base
         IF write_logits <> 0 AND g_tiny_phase_capture_enabled <> 0 AND layer_idx = g_tiny_n_layer - 1 THEN
             TinyGPTCopyLongVector g_tiny_fx_proj_vec(), g_tiny_fx_dbg_proj_vec(), emb_dim
@@ -2109,6 +2185,9 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
         IF write_logits <> 0 AND g_tiny_phase_capture_enabled <> 0 AND layer_idx = g_tiny_n_layer - 1 THEN
             TinyGPTCopyLongVector g_tiny_fx_norm_vec(), g_tiny_fx_dbg_ln2_vec(), emb_dim
         END IF
+        TinyGPTKernelPerfAdd TINYGPT_KERNEL_PROJECTION, perf_start
+
+        IF g_tiny_kernel_perf_enabled <> 0 THEN perf_start = TIMER
         TinyGPTFixedLinearVec g_tiny_fx_norm_vec(), g_tiny_fx_ff1_vec(), emb_dim, g_tiny_hidden_dim, g_tiny_fx_fc1_w(), layer_eh_base, g_tiny_fx_fc1_b(), CLNG(layer_idx) * CLNG(g_tiny_hidden_dim)
 
         FOR hidden_idx = 0 TO g_tiny_hidden_dim - 1
@@ -2129,9 +2208,11 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
         IF write_logits <> 0 AND g_tiny_phase_capture_enabled <> 0 AND layer_idx = g_tiny_n_layer - 1 THEN
             TinyGPTCopyLongVector g_tiny_fx_x_vec(), g_tiny_fx_dbg_hidden_vec(), emb_dim
         END IF
+        TinyGPTKernelPerfAdd TINYGPT_KERNEL_FFN, perf_start
     NEXT layer_idx
 
     IF write_logits <> 0 THEN
+        IF g_tiny_kernel_perf_enabled <> 0 THEN perf_start = TIMER
         TinyGPTFixedLayerNormVec g_tiny_fx_x_vec(), g_tiny_fx_norm_vec(), emb_dim, g_tiny_fx_final_ln_w(), g_tiny_fx_final_ln_b(), 0
         IF g_tiny_phase_capture_enabled <> 0 THEN
             TinyGPTCopyLongVector g_tiny_fx_norm_vec(), g_tiny_fx_dbg_final_ln_vec(), emb_dim
@@ -2142,6 +2223,7 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
         ELSE
             TinyGPTFixedLinearVec g_tiny_fx_norm_vec(), logits(), emb_dim, g_tiny_vocab_size, g_tiny_fx_head_w(), 0, g_tiny_fx_head_b(), 0
         END IF
+        TinyGPTKernelPerfAdd TINYGPT_KERNEL_HEAD, perf_start
     END IF
 END SUB
 
@@ -2386,8 +2468,24 @@ FUNCTION TinyGPTFixedSample(logits() AS LONG, context() AS INTEGER, context_len 
     DIM vocab_size AS INTEGER
     DIM generated_count AS INTEGER
     DIM i AS INTEGER
+    DIM j AS INTEGER
     DIM best_idx AS INTEGER
     DIM best_logit AS LONGINT
+    DIM candidate_cap AS INTEGER
+    DIM candidate_count AS INTEGER
+    DIM insert_pos AS INTEGER
+    DIM limit_count AS INTEGER
+    DIM temp_fx AS LONG
+    DIM scaled_value AS LONG
+    DIM max_scaled AS LONG
+    DIM exp_value AS LONG
+    DIM exp_sum AS LONGINT
+    DIM cumulative AS LONGINT
+    DIM threshold_fx AS LONG
+    DIM sample_value AS LONGINT
+    DIM sorted_vals() AS LONG
+    DIM sorted_idx() AS INTEGER
+    DIM probs() AS LONG
 
     vocab_size = g_tiny_vocab_size
     generated_count = context_len - g_tiny_generation_start_len
@@ -2402,18 +2500,98 @@ FUNCTION TinyGPTFixedSample(logits() AS LONG, context() AS INTEGER, context_len 
         logits(TINYGPT_EOT_TOKEN) = -TINYGPT_FX_CLAMP
     END IF
 
-    best_idx = TINYGPT_EOT_TOKEN
-    best_logit = -CLNGINT(TINYGPT_FX_CLAMP) - 1
-    FOR i = 0 TO vocab_size - 1
-        IF i <> TINYGPT_EOT_TOKEN OR generated_count >= TINYGPT_MIN_GENERATED THEN
-            IF logits(i) > best_logit THEN
-                best_logit = logits(i)
-                best_idx = i
+    IF temperature <= 0.0 THEN
+        best_idx = TINYGPT_EOT_TOKEN
+        best_logit = -CLNGINT(TINYGPT_FX_CLAMP) - 1
+        FOR i = 0 TO vocab_size - 1
+            IF i <> TINYGPT_EOT_TOKEN OR generated_count >= TINYGPT_MIN_GENERATED THEN
+                IF logits(i) > best_logit THEN
+                    best_logit = logits(i)
+                    best_idx = i
+                END IF
             END IF
+        NEXT i
+
+        RETURN best_idx
+    END IF
+
+    candidate_cap = vocab_size
+    IF top_k > 0 AND top_k < candidate_cap THEN candidate_cap = top_k
+    IF candidate_cap < 1 THEN candidate_cap = 1
+
+    REDIM sorted_vals(0 TO candidate_cap - 1)
+    REDIM sorted_idx(0 TO candidate_cap - 1)
+    candidate_count = 0
+
+    FOR i = 0 TO vocab_size - 1
+        IF candidate_count < candidate_cap THEN
+            insert_pos = candidate_count
+            candidate_count = candidate_count + 1
+        ELSEIF logits(i) > sorted_vals(candidate_cap - 1) THEN
+            insert_pos = candidate_cap - 1
+        ELSE
+            insert_pos = -1
+        END IF
+
+        IF insert_pos >= 0 THEN
+            WHILE insert_pos > 0 AND sorted_vals(insert_pos - 1) < logits(i)
+                sorted_vals(insert_pos) = sorted_vals(insert_pos - 1)
+                sorted_idx(insert_pos) = sorted_idx(insert_pos - 1)
+                insert_pos = insert_pos - 1
+            WEND
+            sorted_vals(insert_pos) = logits(i)
+            sorted_idx(insert_pos) = i
         END IF
     NEXT i
 
-    RETURN best_idx
+    IF candidate_count < 1 THEN RETURN TINYGPT_EOT_TOKEN
+
+    temp_fx = CLNG(temperature * TINYGPT_FX_ONE)
+    IF temp_fx < 1 THEN temp_fx = 1
+
+    REDIM probs(0 TO candidate_count - 1)
+    max_scaled = TinyGPTFixedDiv(sorted_vals(0), temp_fx)
+    exp_sum = 0
+
+    FOR i = 0 TO candidate_count - 1
+        scaled_value = TinyGPTFixedDiv(sorted_vals(i), temp_fx)
+        exp_value = TinyGPTFixedExpNeg(scaled_value - max_scaled)
+        probs(i) = exp_value
+        exp_sum = exp_sum + exp_value
+    NEXT i
+
+    IF exp_sum <= 0 THEN RETURN sorted_idx(0)
+
+    limit_count = candidate_count
+    IF top_p > 0.0 AND top_p < 1.0 THEN
+        threshold_fx = CLNG(top_p * TINYGPT_FX_ONE)
+        IF threshold_fx < 1 THEN threshold_fx = 1
+        cumulative = 0
+        FOR i = 0 TO candidate_count - 1
+            cumulative = cumulative + probs(i)
+            IF (cumulative * TINYGPT_FX_ONE) >= (exp_sum * threshold_fx) THEN
+                limit_count = i + 1
+                EXIT FOR
+            END IF
+        NEXT i
+    END IF
+
+    IF limit_count < 1 THEN limit_count = 1
+
+    exp_sum = 0
+    FOR i = 0 TO limit_count - 1
+        exp_sum = exp_sum + probs(i)
+    NEXT i
+    IF exp_sum <= 0 THEN RETURN sorted_idx(0)
+
+    sample_value = CLNGINT(RND * exp_sum)
+    cumulative = 0
+    FOR j = 0 TO limit_count - 1
+        cumulative = cumulative + probs(j)
+        IF sample_value <= cumulative THEN RETURN sorted_idx(j)
+    NEXT j
+
+    RETURN sorted_idx(0)
 END FUNCTION
 
 FUNCTION TinyGPTNextTokenFixedCached(context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
@@ -2852,10 +3030,17 @@ FUNCTION TinyGPTSample(logits() AS SINGLE, context() AS INTEGER, context_len AS 
 END FUNCTION
 
 FUNCTION TinyGPTNextToken(context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
+    DIM fx_logits() AS LONG
+
     IF g_tiny_loaded = 0 THEN RETURN TINYGPT_EOT_TOKEN
     IF g_tiny_fixed_loaded <> 0 THEN
         IF context_len > 0 AND context_len <= g_tiny_n_positions THEN
             RETURN TinyGPTNextTokenFixedCached(context(), context_len, temperature, top_p, top_k)
+        END IF
+        IF context_len > g_tiny_n_positions THEN
+            IF TinyGPTForwardFixedLogits(context(), context_len, fx_logits()) <> 0 THEN
+                RETURN TinyGPTFixedSample(fx_logits(), context(), context_len, temperature, top_p, top_k)
+            END IF
         END IF
         RETURN TINYGPT_EOT_TOKEN
     END IF

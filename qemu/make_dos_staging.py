@@ -7,7 +7,8 @@ SRC = ROOT / "src"
 OUT = ROOT / "qemu" / "staging" / "GPT2SRC"
 
 NAME_MAP = {
-    "main.bas": "MAIN.BAS",
+    "main_prod.bas": "MAIN.BAS",
+    "main.bas": "LABMAIN.BAS",
     "data_structures.bas": "DATASTR.BAS",
     "matrix_ops.bas": "MATOPS.BAS",
     "simd_ops.bas": "SIMD.BAS",
@@ -59,7 +60,7 @@ def main() -> None:
         text = INCLUDE_RE.sub(convert_include, text)
         text = compat_rewrites(long_name, text)
 
-        if long_name != "main.bas":
+        if short_name != "MAIN.BAS":
             guard = guard_name(short_name)
             text = f"#IFNDEF {guard}\n#DEFINE {guard}\n{text}\n#ENDIF\n"
 

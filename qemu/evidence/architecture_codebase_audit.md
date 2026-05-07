@@ -1,6 +1,6 @@
 # GPT2-BASIC Architectural and Codebase Audit
 
-Audit date: 2026-05-06
+Audit date: 2026-05-07
 
 Scope: current `gpt2-basic` workspace, ICC repo `gpt2_basic`, target `gpt2-basic-486-production`, evidence directory `qemu/evidence`.
 
@@ -32,7 +32,7 @@ older baseline rows below. The release state is:
 - Shape: `2L 48D 4H ctx192 hidden192 vocab4096`, 463,168 parameters.
 - Tokenizer: DOS-loadable 4096-token lexicon vocabulary with byte fallback.
 - Default DOS runtime memory: 2,055,940 bytes.
-- Default QEMU 486DX2/66 perf: 2.46 tok/s.
+- Default QEMU 486DX2/66 perf: 2.45 tok/s.
 - Default DOS all-suite quality: 10/10 average 0.961.
 - Optional compressed release mode: `MODEL_TOKHEADQ4_PROD_PROBE` with
   `GPT2TQ4.BIN` q4/log token-embedding artifact and `GPT2HQ4.BIN` q4/log
@@ -41,36 +41,49 @@ older baseline rows below. The release state is:
 - Q4 token+head mode QEMU 486DX2/66 perf: 2.12 tok/s.
 - Q4 token+head mode vector parity: 3/3 vectors, 39/39 phases,
   `VECTOR_CHECK_OK`.
+- Production entrypoint: `src/main_prod.bas`, staged as `GPT2SRC\MAIN.BAS`.
+  The old combined driver is staged separately as `LABMAIN.BAS`.
+- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 294,912 bytes.
+- Default production QEMU 486DX2/66 perf after the split: 108 tokens in
+  44.00 seconds, 2.45 tok/s.
+- Kernel timing mode: `GPT2.EXE --kernel-perf`, emitted through
+  `qemu/run_perf_486.sh ... kernel`.
+- Current kernel hot spot: the 4096-token final output head accounts for about
+  73.7% of measured decode time on the QEMU 486DX2/66 profile.
+- Fixed decode now has rolling-window continuation after the exported context
+  window, and interactive fixed-point sampling supports temperature, top-k, and
+  top-p. Evidence runs keep temperature 0 for deterministic parity.
 
 The stale findings below are retained as the historical audit trail. Their
 resolved items are superseded by `qemu/evidence/domain_training_strategy_report.md`,
-`qemu/evidence/hardware_perf_report.md`, and the current ICC readiness report.
+`qemu/evidence/hardware_perf_report.md`, the current slim production build, and
+the current ICC readiness report.
 
 ## Current Production Architecture
 
 The actual production path is now the trained GPT2-BASIC runtime:
 
-1. Host training/export writes `GPT2CFG.TXT`, `GPT2WT.BIN`, `GPT2FX.BIN`, `GPT2EXP.BIN`, and `PROFILE.TXT` from `scripts/train_tiny_gpt.py`.
-2. DOS `GPT2.EXE` initializes the byte fallback tokenizer in `src/tokenizer.bas` and loads `VOCAB.BIN` from the executable directory or `MODEL\` when a BPE checkpoint provides one.
-3. `src/main.bas:193` loads `C:\MODEL` through `GPT2BasicLoadModel`.
+1. Host training/export writes `GPT2CFG.TXT`, `GPT2WT.BIN`, `GPT2FX.BIN`, `GPT2EXP.BIN`, `VOCAB.BIN`, and `PROFILE.TXT` from `scripts/train_tiny_gpt.py`.
+2. DOS `GPT2.EXE` initializes the byte fallback tokenizer in `src/tokenizer.bas` and loads `VOCAB.BIN` from the executable directory or `MODEL\` when a BPE or lexicon checkpoint provides one.
+3. `src/main_prod.bas` loads `C:\MODEL` through `GPT2BasicLoadModel`.
 4. `src/real_gpt.bas:438` prefers Q20.12 fixed weights through `TinyGPTLoadFixedModel`.
 5. `src/real_gpt.bas:1627` runs the fixed-point cached token forward pass.
-6. `src/real_gpt.bas:1816` applies the printable/EOT/BPE token mask and greedy fixed-point token selection.
-7. `src/main.bas:1222` and `src/main.bas:1301` expose `GPT2.EXE --perf` with machine-readable `PERF_*` records.
+6. `src/real_gpt.bas` applies the printable/EOT/tokenizer output mask, greedy temperature-0 selection for evidence, and fixed-point temperature/top-k/top-p sampling for interactive use.
+7. `src/main_prod.bas` exposes `GPT2.EXE --perf`, `--kernel-perf`, `--vectors`, and quality suites with machine-readable evidence records.
 
-This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L 48D 4H ctx192 hidden192 vocab258`, with 90,882 parameters and 520,740 bytes reported runtime memory.
+This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L 48D 4H ctx192 hidden192 vocab4096`, with 463,168 parameters and 2,055,940 bytes reported runtime memory.
 
 ## Evidence Baseline
 
 | Evidence | Result |
 |---|---|
-| DOS compile | `COMPILE_OK`, `GPT2.EXE` 486,400 bytes |
+| DOS compile | `COMPILE_OK`, `GPT2.EXE` 294,912 bytes |
 | Vector parity | `VECTOR_SUMMARY passed 3 of 3`, `PHASE_SUMMARY passed 39 of 39`, `VECTOR_CHECK_OK` |
-| DOS quality suite | `PASS`, 5/5 prompts, average 0.890 |
-| Held-out DOS quality suite | `NEEDS_TRAINING`, 0/5 prompts, average 0.685 |
-| Host-speed QEMU `--perf` | 70-token `real_inference`: 0.55 s, 127.27 tok/s |
-| QEMU `486dx2-66 --perf` | 70-token `real_inference`: 11.64 s, 6.01 tok/s |
-| QEMU `486dx2-66 --perf` full suite | 250 tokens in 38.55 s, 6.49 tok/s |
+| DOS quality suite | `PASS`, 10/10 prompts, average 0.961 |
+| Held-out DOS quality suite | `PASS`, 5/5 prompts, average 0.973 |
+| QEMU `486dx2-66 --perf` | 35-token `real_inference`: 14.12 s, 2.48 tok/s |
+| QEMU `486dx2-66 --perf` full suite | 108 tokens in 44.00 s, 2.45 tok/s |
+| QEMU `486dx2-66 --kernel-perf` | final output head: 30.75 s, 73.7% of measured kernel time |
 
 The new `--perf` contract is a major improvement over host-side stopwatch claims because timing is emitted by the DOS executable itself. QEMU `-icount` remains emulator evidence, not physical-board proof.
 
@@ -96,7 +109,10 @@ Implemented next step: quality is now split into two tiers:
 1. Runtime-golden suite: the current prompts, explicitly labeled as memorization/regression probes.
 2. Held-out quality suite: prompts excluded from `CURATED_DOCUMENTS`, repo docs, and quality-prior data, scored separately.
 
-Current held-out DOS result: `NEEDS_TRAINING`, 0/5 prompts, average 0.685 in `qemu/evidence/quality_report_dos_heldout.md`.
+Historical held-out DOS result before the lexicon/gold-corpus promotion:
+`NEEDS_TRAINING`, 0/5 prompts, average 0.685. The current slim production
+entrypoint passes the held-out DOS suite at 5/5 prompts, average 0.973 in
+`qemu/evidence/quality_report_dos_heldout.md`.
 
 ### 2. Documentation Still Contains Obsolete Architecture Claims
 
@@ -113,9 +129,12 @@ Required fix: rewrite the README status section around the real production path:
 
 ### 3. Production EXE Includes Too Much Legacy/Experimental Surface
 
-Severity: medium-high
+Severity: resolved
 
-`src/main.bas:13` through `src/main.bas:26` includes production runtime files plus legacy matrix, sparse, file I/O, benchmark, and optimization modules. The trained path disables legacy matrix fallback at `src/main.bas:54` and refuses to generate without model files at `src/main.bas:216` through `src/main.bas:219`, which is good. But the old modules are still compiled into the production executable.
+The release build now stages `src/main_prod.bas` as `GPT2SRC\MAIN.BAS`. It
+includes `tokenizer.bas`, minimal allocation accounting, and `real_gpt.bas`;
+the old combined `src/main.bas` driver is staged as `LABMAIN.BAS` instead of
+being compiled into the release executable.
 
 This creates audit and maintenance risk:
 
@@ -123,7 +142,7 @@ This creates audit and maintenance risk:
 - random benchmark/test paths remain in `src/benchmark.bas`, `src/block_sparse.bas`, and `src/softmax_fixed.bas`
 - old quantization claims remain adjacent to the real fixed-point runtime
 
-Required fix: split the build into:
+Implemented split:
 
 - production `GPT2.EXE`: tokenizer, `real_gpt.bas`, minimal platform/memory utilities, quality/perf/vector entrypoints
 - lab/legacy executable: matrix runtime, block sparse experiments, benchmarks, diagnostic random models
@@ -176,31 +195,43 @@ Required experiment: train real BPE checkpoints such as vocab 512 and 1024, then
 
 ### 6. Fixed-Point Sampling Ignores Temperature/Top-p/Top-k In Production Fixed Path
 
-Severity: medium
+Severity: resolved
 
-`TinyGPTFixedSample` at `src/real_gpt.bas:1815` masks non-printable tokens and then returns argmax. It accepts `temperature`, `top_p`, and `top_k`, but does not use them. This is fine for deterministic perf and quality probes, but the user-facing UI exposes sampling controls through `GenerateText`.
+`TinyGPTFixedSample` now preserves the exact greedy path when `temperature <= 0`
+and implements fixed-point temperature/top-k/top-p sampling when stochastic
+sampling is requested. Perf and vector evidence remain deterministic by using
+temperature 0.
 
-Required fix: either label fixed-point production decode as greedy-only, or implement measured fixed-point top-k/top-p sampling without regressing `--perf`.
+Remaining work: add a non-greedy product quality matrix before making claims
+about interactive sampling defaults.
 
 ### 7. Long Generation Stops At The Context Window Instead Of Rolling For Fixed Cached Decode
 
-Severity: medium
+Severity: resolved
 
-`TinyGPTNextToken` returns EOT for fixed-point generation when `context_len > g_tiny_n_positions` at `src/real_gpt.bas:2292` through `src/real_gpt.bas:2299`. `TinyGPTForwardFixedLogits` can crop to the active window at `src/real_gpt.bas:1906` through `src/real_gpt.bas:1911`, but the normal fixed cached token path does not use that behavior.
+`TinyGPTNextToken` now uses the cached token path while the sequence is within
+the exported context window, then switches to the existing fixed full-window
+logit path that crops to the active tail. Generation can continue beyond the
+prompt-plus-output context count, while attention remains limited to the
+exported window.
 
-For the current 90-token demos this is acceptable. For real user sessions, it means the fixed path has a hard total prompt-plus-output ceiling instead of rolling context.
+Remaining work: benchmark longer interactive sessions and decide whether a
+rolling KV-cache compaction path is worth the extra DOS complexity.
 
 ### 8. Perf Contract Is Good, But It Needs More Profiles And Kernel-Level Timing
 
-Severity: medium
+Severity: partially resolved
 
-`GPT2.EXE --perf` is the right evidence mechanism. The current report has host-speed QEMU and one `486dx2-66` QEMU profile. The architecture still lacks:
+`GPT2.EXE --perf` is the right evidence mechanism. `GPT2.EXE --kernel-perf`
+now adds DOS-emitted timing rows for embedding, ln1/qkv, attention, projection,
+FFN, and final head. The current report shows the 4096-token final head as the
+dominant hot spot.
+
+The architecture still lacks:
 
 - `386dx-33` and `486sx-25` no-FPU emulator logs
 - `486dx-33`, `486dx4-100`, and Pentium emulator logs
-- per-kernel timing inside the DOS executable: layernorm, QKV, attention score, attention weighted sum, projection, FFN, GELU, final head
-
-Without kernel timing, architecture decisions are still inferred from aggregate speed.
+- physical-board timing on at least one real machine
 
 ### 9. Host-Side Probe Coverage Is Now Adequate For ICC
 
@@ -213,25 +244,31 @@ ICC readiness was reduced mainly because host helpers were not traced. Focused p
 The current best architecture is not "larger model" by default. The current best architecture is:
 
 1. Keep the real DOS fixed-point transformer path as the production baseline.
-2. Treat `486sx-safe` as the measured baseline, not the final answer.
-3. Build a Pareto harness that runs train/export, model report, vector parity, DOS quality, DOS `--perf`, and report generation for every candidate profile.
-4. Replace the current quality pass with held-out prompts before increasing model size.
+2. Treat `486sx-safe` plus the 4096-token lexicon as the measured release baseline, not the final ceiling.
+3. Continue to use the Pareto harness that runs train/export, model report, vector parity, DOS quality, DOS `--perf`, and report generation for candidate profiles.
+4. Keep held-out prompts and runtime-regression prompts as separate release gates.
 5. Evaluate tokenizer alternatives by time-to-useful-output, not token/sec alone.
 6. Evaluate weight formats by measured kernel speed and memory pressure:
    - Q20.12 LONG baseline: simple and verified, but memory-heavy
    - int16 fixed weights: likely best next compromise
    - packed int8 or int4: memory win only if dequant overhead does not dominate 386/486 inner loops
-7. Split production and lab builds so old experimental code cannot blur claims about the real runtime.
+7. Prioritize output-head speed, because kernel timing shows it dominates the current 4096-token release.
 
 ## Immediate Next Work
 
-1. Rewrite docs to remove obsolete 4-bit/block-sparse production claims.
-2. Train measured BPE checkpoints now that the tokenizer contract is wired.
-3. Run `qemu/run_perf_486.sh` for all QEMU profiles and regenerate `hardware_perf_report.md`.
-4. Add DOS kernel-level timing counters behind a `--kernel-perf` flag.
-5. Extend the profile sweep so it trains or loads each tokenizer/profile candidate, runs vectors/quality/perf, and emits a Pareto table.
-6. Split production and lab builds so experimental modules cannot blur runtime claims.
+1. Run `qemu/run_perf_486.sh` for the remaining QEMU profiles and regenerate `hardware_perf_report.md`.
+2. Measure the q4/log token+head release mode with kernel timing, not only aggregate perf.
+3. Prototype faster output-head scoring or streaming for the 4096-token vocabulary, then prove it with vector parity and `--kernel-perf`.
+4. Add a non-greedy interactive quality matrix for temperature/top-k/top-p.
+5. Broaden the product prompt suite beyond the current curated technical answers.
+6. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf` contract.
 
 ## Bottom Line
 
-The restored system is now honest about inference and has a real DOS timing contract. The main architectural weakness is not the runtime path; it is that quality evidence is still weak, docs still need periodic pruning as the architecture moves, and tokenizer/profile selection must be measured as a system. The next improvements should be BPE training sweeps, held-out quality, tokenizer/quantization experiments, and kernel timing, not line-count simplification.
+The restored system is now honest about inference, has a slim production
+executable, passes the current DOS quality gates, and has a real DOS timing
+contract. The main architectural weakness is now performance concentration in
+the vocabulary-sized output head, plus the absence of physical-board timing.
+The next improvements should be measured output-head compression/streaming,
+broader prompt coverage, and real-machine perf, not another unmeasured size
+increase.

@@ -648,7 +648,7 @@ Candidate: `assets/gpt2_basic/MODEL_HEADQ4_PROD_PROBE`
 - Host fixed runtime-regression: 5/5 average 0.940
 - Host fixed all-suite: 10/10 average 0.956
 - DOS vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
-- QEMU 486DX2/66 perf: 2.12 tok/s versus 2.46 tok/s for the full-head default
+- QEMU 486DX2/66 perf: 2.12 tok/s versus 2.45 tok/s for the full-head default
 - DOS compile after q4 loader/table path: `COMPILE_OK`, `GPT2.EXE` 499,712 bytes
 
 Evidence:
@@ -704,7 +704,7 @@ Candidate: `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`
 - Host fixed runtime-regression: 5/5 average 0.948
 - Host fixed all-suite: 10/10 average 0.960
 - DOS vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
-- QEMU 486DX2/66 perf: 2.12 tok/s versus 2.46 tok/s for the full-resident default
+- QEMU 486DX2/66 perf: 2.12 tok/s versus 2.45 tok/s for the full-resident default
 - DOS compile after token+head q4 loader path: `COMPILE_OK`, `GPT2.EXE` 502,272 bytes
 - Active default checkpoint still passes vector parity after the loader change:
   3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
@@ -728,6 +728,47 @@ head-only q4 mode because the token embedding path dequantizes only one short
 row per generated token; the output head remains the dominant compressed hot
 loop.
 
+## Production Runtime Realization
+
+The next implementation pass moved GPT2-BASIC from "the lab driver can run the
+real model" to a narrower release executable:
+
+- `src/main_prod.bas` is now staged as `GPT2SRC\MAIN.BAS`.
+- The old combined driver is staged as `LABMAIN.BAS` for experiments.
+- The production executable includes the tokenizer, minimal allocation
+  accounting, `real_gpt.bas`, and release entrypoints for demo, quality, vector,
+  perf, and kernel-perf runs.
+- DOS compile after the split: `COMPILE_OK`, `GPT2.EXE` 294,912 bytes.
+- Active model vector parity after the split: 3/3 vectors, 39/39 phases,
+  `VECTOR_CHECK_OK`.
+- Default QEMU 486DX2/66 perf after the split: 108 generated tokens in 44.00
+  seconds, 2.45 tok/s.
+- Kernel timing mode: `GPT2.EXE --kernel-perf`, launched by
+  `bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL kernel`.
+- Kernel result: the 4096-token final output head accounts for about 73.7% of
+  measured kernel time.
+
+The fixed-point decode contract also now covers two product gaps from the
+architecture audit. First, `TinyGPTFixedSample` keeps the greedy temperature-0
+path for deterministic evidence but implements fixed-point temperature/top-k/
+top-p sampling for interactive runs. Second, long generation no longer ends
+when prompt-plus-output exceeds the exported context count; it rolls forward by
+using the existing fixed full-window logit path over the active tail.
+
+Evidence:
+
+- `qemu/evidence/compile_main_486.log`
+- `qemu/evidence/vector_486.log`
+- `qemu/evidence/perf_486_486dx2-66.log`
+- `qemu/evidence/perf_486_486dx2-66_kernel.log`
+- `qemu/evidence/hardware_perf_report.md`
+
+Result: keep as the release runtime baseline. The remaining performance target
+is no longer ambiguous: for the 4096-token vocabulary, the output head is the
+dominant hot loop. Further compression or streaming work should prioritize that
+path first and measure the speed/memory tradeoff inside DOS before expanding
+the model again.
+
 ## Updated Next Architecture
 
 The production tokenizer path is now wired and verified: host training/export
@@ -741,10 +782,14 @@ that feeding measured results back into the curriculum is productive. The q4/log
 token+head path proves that compression can be added to the actual DOS
 inference contract when it is measured end to end, and that vocabulary-sized
 tensors can be pushed below 1 MB runtime memory without losing the current
-quality gate. The boundary cleanup, gold-corpus sweeps, and post-training
-repair show the same tradeoff from different directions: clean data reduces
-malformed text, while a small sampler prior can fix deterministic first-token
-boundary failures without destabilizing the trained weights.
+quality gate. The production split proves the release executable can stay
+narrow while the lab driver remains available for experiments. The fixed
+sampler, rolling-window decode, and kernel timing pass close the most obvious
+runtime gaps and identify the output head as the measured hot loop. The
+boundary cleanup, gold-corpus sweeps, and post-training repair show the same
+tradeoff from different directions: clean data reduces malformed text, while a
+small sampler prior can fix deterministic first-token boundary failures without
+destabilizing the trained weights.
 
 The next serious improvement should keep the large lexicon path, the gold v2
 corpus base, the corrected boundary audit, and the 30-token lexicon-aware stop

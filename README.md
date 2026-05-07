@@ -26,7 +26,8 @@ FreeBASIC fixed-point transformer runtime.
 
 Verified production surface:
 
-- DOS FreeBASIC build of `src/main.bas`
+- DOS FreeBASIC build of `src/main_prod.bas` staged as `C:\GPT2SRC\MAIN.BAS`
+- slim production executable, with legacy/lab modules staged separately as `LABMAIN.BAS`
 - 4096-token longest-match lexicon tokenizer with printable byte fallback
 - learned token and position embeddings
 - causal attention, feed-forward blocks, layer norms, and output head
@@ -35,15 +36,18 @@ Verified production surface:
 - optional q4/log compressed token-embedding artifact in `GPT2TQ4.BIN`
 - optional q4/log compressed output-head artifact in `GPT2HQ4.BIN`
 - KV decode cache for in-window generation
+- rolling fixed decode once prompt-plus-output exceeds the exported context window
+- deterministic greedy decode for evidence runs, plus fixed-point temperature/top-k/top-p sampling for interactive runs
+- optional DOS-emitted kernel-stage timing with `--kernel-perf`
 - parity vectors, DOS quality logs, and DOS-emitted `PERF_*` timing records
 
 Legacy matrix, block-sparse, synthetic benchmark, and diagnostic smoke-test
-modules remain in the repository as lab code. They should not be treated as the
-current production inference architecture unless a specific build path wires
-them into `GPT2.EXE`. The q4/log vocabulary-tensor path is no longer just lab
-code: token embeddings and the output head are wired through host export, DOS
-loading, vector parity, host quality, and QEMU `--perf` as a low-memory release
-mode.
+modules remain in the repository as lab code. The release build now avoids
+compiling them into `GPT2.EXE`; the QEMU staging script keeps the old combined
+driver available as `LABMAIN.BAS` for experiments. The q4/log vocabulary-tensor
+path is no longer just lab code: token embeddings and the output head are wired
+through host export, DOS loading, vector parity, host quality, and QEMU `--perf`
+as a low-memory release mode.
 
 The default checkpoint is a 2-layer, 48-dimensional, 4-head, 192-context model
 with 463,168 parameters, Q20.12 fixed-point weights, and a DOS-loadable
@@ -52,12 +56,13 @@ suite at 10/10, average 0.960. DOS evidence for the same checkpoint is 10/10,
 average 0.961 after the prompt-aware starter prior. Physical hardware timing is
 still required for board-specific speed claims.
 
+The slim production build currently compiles to a 294,912-byte `GPT2.EXE`.
 The optional compressed release candidate,
 `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`, keeps the same 4096-token
 lexicon and checkpoint behavior while replacing the resident token embedding
 and output head with `GPT2TQ4.BIN` and `GPT2HQ4.BIN`. It passes DOS vector
 parity and host fixed quality, reduces DOS runtime memory from 2,055,940 to
-974,724 bytes, and measures 2.12 tok/s on the QEMU 486DX2/66 gate versus 2.46
+974,724 bytes, and measures 2.12 tok/s on the QEMU 486DX2/66 gate versus 2.45
 tok/s for the full-resident default.
 
 ## ► About This Project
@@ -138,7 +143,10 @@ The paper bridges technical implementation details with historical analysis to p
 
 ## ► Current QEMU 486 Runtime
 
-The QEMU path now targets the full GPT2-BASIC program rooted at [`src/main.bas`](src/main.bas), staged for DOS as `GPT2SRC\MAIN.BAS` and compiled inside FreeDOS with DOS FreeBASIC.
+The QEMU release path now targets the slim production program rooted at
+[`src/main_prod.bas`](src/main_prod.bas), staged for DOS as `GPT2SRC\MAIN.BAS`
+and compiled inside FreeDOS with DOS FreeBASIC. The older combined driver is
+staged as `GPT2SRC\LABMAIN.BAS` for experiments.
 
 Train and export a baseline GPT2-BASIC checkpoint on the host with:
 
@@ -247,6 +255,17 @@ bash qemu/run_perf_486.sh 486dx2-66
 
 This boots FreeDOS, runs `C:\GPT2.EXE --perf`, extracts `C:\PERF.LOG`, and writes a parseable report to `qemu/evidence/hardware_perf_report.md`. Pass a model directory as the second argument to stage a non-active profile, for example `bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL_PROFILE_386_MIN`. The same `--perf` mode is what we will run on a real PC later; under QEMU it is emulated CPU-profile evidence.
 
+To emit the per-kernel timing breakdown from inside the DOS executable, pass
+`kernel` as the third argument:
+
+```sh
+bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL kernel
+```
+
+The current kernel row shows the 4096-token output head taking about 73.7% of
+the measured decode time, making vocabulary-head compression and faster head
+scoring the main performance target for the large-vocabulary release.
+
 For an approximate era-speed run, use an instruction-count throttled profile:
 
 ```sh
@@ -269,7 +288,7 @@ a 4096-token lexicon vocabulary. The primary DOS path uses fixed-point weights
 and integer inference kernels. The model has 463,168 parameters, fixed weights
 of 1,852,672 bytes, and measured DOS runtime memory of about 2,055,940 bytes.
 The current QEMU `486dx2-66 --perf` run for this promoted model generated 108
-tokens in 43.94 seconds, or 2.46 tokens/sec.
+tokens in 44.00 seconds, or 2.45 tokens/sec.
 
 The q4/log low-memory release mode keeps the same fixed checkpoint but stores
 both 196,608-value vocabulary tensors compactly: token embeddings in
@@ -290,7 +309,7 @@ memory.
 │ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
 │ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
 │ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
-│ QEMU 486dx2-66 --perf        │ 2.46               │ 28.5 seconds      │ 40.7 seconds      │
+│ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
@@ -504,7 +523,11 @@ The difference is that we're applying these vintage techniques to a modern AI ar
 
 ### ■ Core Components
 
-The production executable still includes several older modules, but the verified GPT2-BASIC path is narrower than the full repository:
+The production executable is intentionally narrower than the full repository:
+`src/main_prod.bas` stages as `GPT2SRC\MAIN.BAS` and includes only the
+tokenizer, minimal allocation accounting, the fixed-point GPT2 runtime, and the
+release entrypoints. The older combined driver is still staged as `LABMAIN.BAS`
+for experiments.
 
 ```
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
@@ -673,12 +696,12 @@ The project also teaches valuable lessons in optimization:
 Compile the project using FreeBASIC:
 
 ```
-fbc -lang fb src/main.bas -o gpt2_basic.exe
+fbc -lang fb src/main_prod.bas -o gpt2_basic.exe
 ```
 
 For optimized build (with inline assembly):
 ```
-fbc -lang fb -O 2 src/main.bas -o gpt2_basic.exe
+fbc -lang fb -O 2 src/main_prod.bas -o gpt2_basic.exe
 ```
 
 ### ■ Running the Program
@@ -760,7 +783,7 @@ Current fixed-point results for the promoted 4096-token lexicon checkpoint:
 │ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
 │ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
 │ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
-│ QEMU 486dx2-66 --perf        │ 2.46               │ 28.5 seconds      │ 40.7 seconds      │
+│ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
 │ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
@@ -798,9 +821,9 @@ Several limitations have been identified during implementation:
 
 - **Physical hardware evidence:** QEMU `-icount` measurements are repeatable emulator evidence, not cycle-accurate proof for a specific motherboard.
 - **Prompt coverage:** The current checkpoint passes the measured DOS held-out and runtime suites, but broader open-ended prompts still need product testing.
-- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.46 tokens/sec for the full-resident default and 2.12 tokens/sec for the q4/log token+head release mode.
-- **Context length:** The fixed cached decode path has a hard prompt-plus-output ceiling at the exported context window.
-- **Sampling:** The production fixed-point path is currently greedy even though the UI exposes temperature/top-p/top-k controls.
+- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.45 tokens/sec for the full-resident default and 2.12 tokens/sec for the q4/log token+head release mode.
+- **Context length:** Generation rolls forward after the exported context window, but attention remains limited to the active 192-token window.
+- **Sampling:** Evidence runs intentionally use greedy temperature-0 decode. Interactive fixed-point decode now supports temperature, top-k, and top-p, but non-greedy quality still needs a dedicated product test matrix.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```

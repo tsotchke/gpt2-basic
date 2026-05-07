@@ -1,16 +1,10 @@
 GPT2-BASIC fixed-point parity vector check
 
-Initializing GPT-2 BASIC model...
-Memory Manager Initialized. Maximum memory:  32MB
-Matrix operations initialized with optimization level  3
-Assembly optimizations: Enabled
-  Fixed point math: Yes
-  Matrix multiply : Yes
-  Softmax compute : Yes
+Initializing GPT2-BASIC production runtime...
 Initialized tokenizer with  258 tokens
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
-Loaded fixed-point GPT2-BASIC model from MODEL
-Model initialization complete!
+Production model initialization complete.
+  Build       : production fixed-point runtime
   Profile     : 486sx-safe
   Layers      :  2
   Embed dim   :  48
@@ -66,8 +60,3 @@ PHASE_OK dos_language_models_need logits
 VECTOR_SUMMARY passed  3 of  3
 PHASE_SUMMARY passed  39 of  39
 VECTOR_CHECK_OK
-Shutting down model...
-Memory Manager Shutdown. Peak memory usage:  1.960697174072266MB
-Matrix allocations:  0, Frees:  0
-Cache hits:  0, Misses:  0
-Disk reads:  0, Writes:  0
