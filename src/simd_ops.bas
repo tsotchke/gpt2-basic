@@ -45,6 +45,9 @@ DIM SHARED g_cpu_type AS CPUType ' CPU type detected
 DIM SHARED g_has_fpu AS INTEGER ' Whether FPU is available
 DIM SHARED g_cpu_detected AS INTEGER ' Whether detection has been performed
 
+DECLARE FUNCTION TestForFPU() AS INTEGER
+DECLARE FUNCTION EstimateCPUSpeed() AS INTEGER
+
 ' *******************************************************
 ' * CPU Detection Functions                             *
 ' *******************************************************
@@ -162,55 +165,55 @@ END FUNCTION
 ' Pack 4 8-bit values into a single 32-bit integer
 FUNCTION Pack_8bit(v1 AS BYTE, v2 AS BYTE, v3 AS BYTE, v4 AS BYTE) AS LONG
     FUNCTION = ((CLNG(v1) AND &HFF)) OR _
-               ((CLNG(v2) AND &HFF) << 8) OR _
-               ((CLNG(v3) AND &HFF) << 16) OR _
-               ((CLNG(v4) AND &HFF) << 24)
+               ((CLNG(v2) AND &HFF) SHL 8) OR _
+               ((CLNG(v3) AND &HFF) SHL 16) OR _
+               ((CLNG(v4) AND &HFF) SHL 24)
 END FUNCTION
 
 ' Unpack 4 8-bit values from a single 32-bit integer
 SUB Unpack_8bit(packed AS LONG, BYREF v1 AS BYTE, BYREF v2 AS BYTE, BYREF v3 AS BYTE, BYREF v4 AS BYTE)
     v1 = packed AND &HFF
-    v2 = (packed >> 8) AND &HFF
-    v3 = (packed >> 16) AND &HFF
-    v4 = (packed >> 24) AND &HFF
+    v2 = (packed SHR 8) AND &HFF
+    v3 = (packed SHR 16) AND &HFF
+    v4 = (packed SHR 24) AND &HFF
 END SUB
 
 ' Pack 8 4-bit values into a single 32-bit integer
 FUNCTION Pack_4bit(v1 AS BYTE, v2 AS BYTE, v3 AS BYTE, v4 AS BYTE, _
                    v5 AS BYTE, v6 AS BYTE, v7 AS BYTE, v8 AS BYTE) AS LONG
     FUNCTION = ((CLNG(v1) AND &HF)) OR _
-               ((CLNG(v2) AND &HF) << 4) OR _
-               ((CLNG(v3) AND &HF) << 8) OR _
-               ((CLNG(v4) AND &HF) << 12) OR _
-               ((CLNG(v5) AND &HF) << 16) OR _
-               ((CLNG(v6) AND &HF) << 20) OR _
-               ((CLNG(v7) AND &HF) << 24) OR _
-               ((CLNG(v8) AND &HF) << 28)
+               ((CLNG(v2) AND &HF) SHL 4) OR _
+               ((CLNG(v3) AND &HF) SHL 8) OR _
+               ((CLNG(v4) AND &HF) SHL 12) OR _
+               ((CLNG(v5) AND &HF) SHL 16) OR _
+               ((CLNG(v6) AND &HF) SHL 20) OR _
+               ((CLNG(v7) AND &HF) SHL 24) OR _
+               ((CLNG(v8) AND &HF) SHL 28)
 END FUNCTION
 
 ' Unpack 8 4-bit values from a single 32-bit integer
 SUB Unpack_4bit(packed AS LONG, BYREF v1 AS BYTE, BYREF v2 AS BYTE, BYREF v3 AS BYTE, BYREF v4 AS BYTE, _
                 BYREF v5 AS BYTE, BYREF v6 AS BYTE, BYREF v7 AS BYTE, BYREF v8 AS BYTE)
     v1 = packed AND &HF
-    v2 = (packed >> 4) AND &HF
-    v3 = (packed >> 8) AND &HF
-    v4 = (packed >> 12) AND &HF
-    v5 = (packed >> 16) AND &HF
-    v6 = (packed >> 20) AND &HF
-    v7 = (packed >> 24) AND &HF
-    v8 = (packed >> 28) AND &HF
+    v2 = (packed SHR 4) AND &HF
+    v3 = (packed SHR 8) AND &HF
+    v4 = (packed SHR 12) AND &HF
+    v5 = (packed SHR 16) AND &HF
+    v6 = (packed SHR 20) AND &HF
+    v7 = (packed SHR 24) AND &HF
+    v8 = (packed SHR 28) AND &HF
 END SUB
 
 ' Pack 2 16-bit values into a single 32-bit integer
 FUNCTION Pack_16bit(v1 AS INTEGER, v2 AS INTEGER) AS LONG
     FUNCTION = ((CLNG(v1) AND &HFFFF)) OR _
-               ((CLNG(v2) AND &HFFFF) << 16)
+               ((CLNG(v2) AND &HFFFF) SHL 16)
 END FUNCTION
 
 ' Unpack 2 16-bit values from a single 32-bit integer
 SUB Unpack_16bit(packed AS LONG, BYREF v1 AS INTEGER, BYREF v2 AS INTEGER)
     v1 = packed AND &HFFFF
-    v2 = (packed >> 16) AND &HFFFF
+    v2 = (packed SHR 16) AND &HFFFF
 END SUB
 
 ' *******************************************************
@@ -468,7 +471,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                     a_val = a_val AND &H0F
                 ELSE
                     ' Upper 4 bits
-                    a_val = (a_val >> 4) AND &H0F
+                    a_val = (a_val SHR 4) AND &H0F
                 END IF
                 
                 b_val = B(b_idx)
@@ -477,7 +480,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                     b_val = b_val AND &H0F
                 ELSE
                     ' Upper 4 bits
-                    b_val = (b_val >> 4) AND &H0F
+                    b_val = (b_val SHR 4) AND &H0F
                 END IF
                 
                 ' Multiply and accumulate
@@ -494,7 +497,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                     a_val = a_val AND &H0F
                 ELSE
                     ' Upper 4 bits
-                    a_val = (a_val >> 4) AND &H0F
+                    a_val = (a_val SHR 4) AND &H0F
                 END IF
                 
                 b_val = B(b_idx)
@@ -503,7 +506,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                     b_val = b_val AND &H0F
                 ELSE
                     ' Upper 4 bits
-                    b_val = (b_val >> 4) AND &H0F
+                    b_val = (b_val SHR 4) AND &H0F
                 END IF
                 
                 ' Multiply and accumulate
@@ -525,7 +528,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                     a_val = a_val AND &H0F
                 ELSE
                     ' Upper 4 bits
-                    a_val = (a_val >> 4) AND &H0F
+                    a_val = (a_val SHR 4) AND &H0F
                 END IF
                 
                 b_val = B(b_idx)
@@ -534,7 +537,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                     b_val = b_val AND &H0F
                 ELSE
                     ' Upper 4 bits
-                    b_val = (b_val >> 4) AND &H0F
+                    b_val = (b_val SHR 4) AND &H0F
                 END IF
                 
                 ' Multiply and accumulate
@@ -551,7 +554,7 @@ SUB MatrixMultiplySIMD_4bit(A() AS BYTE, B() AS BYTE, C() AS BYTE, rows1 AS INTE
                 c_val = (c_val AND &HF0) OR (sum AND &H0F)
             ELSE
                 ' Store in upper 4 bits
-                c_val = (c_val AND &H0F) OR ((sum AND &H0F) << 4)
+                c_val = (c_val AND &H0F) OR ((sum AND &H0F) SHL 4)
             END IF
             
             C(c_idx) = c_val
@@ -744,7 +747,7 @@ FUNCTION DetermineOptimalPrecision(rows AS INTEGER, cols AS INTEGER, operation_t
     DIM precision AS PrecisionLevel
     
     ' Get CPU capabilities if not already detected
-    IF NOT g_cpu_detected THEN
+    IF g_cpu_detected = 0 THEN
         DetectCPU()
     END IF
     
@@ -924,7 +927,7 @@ SUB BenchmarkSIMD_Operations()
     DIM start_time AS DOUBLE, end_time AS DOUBLE
     DIM std_time AS DOUBLE, simd_time AS DOUBLE
     DIM iterations AS LONG
-    DIM i AS LONG, j AS LONG
+    DIM i AS LONG, j AS LONG, k AS LONG, iter AS LONG
     
     PRINT "Benchmarking SIMD-like operations vs standard operations..."
     PRINT "--------------------------------------------------------"
@@ -1089,7 +1092,7 @@ SUB BenchmarkSIMD_Operations()
     
     ' Report CPU capabilities
     PRINT "CPU Capabilities:"
-    IF NOT g_cpu_detected THEN
+    IF g_cpu_detected = 0 THEN
         DetectCPU()
     END IF
     

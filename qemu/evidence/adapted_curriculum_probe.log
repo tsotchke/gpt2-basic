@@ -1,0 +1,13 @@
+trace_scope adapted_curriculum_contract
+trace normalize_artifacts
+trace malformed_word_count
+trace boundary_error_count
+trace meta_instruction_filter
+trace span_is_clean
+trace sentence_chunks
+trace extract_markdown_text_blocks
+trace load_source_spans
+trace topic_docs
+trace build_adapted_corpus
+PROBE_OK adapted_curriculum docs=268
+PROBE_OK main cli_entry=available

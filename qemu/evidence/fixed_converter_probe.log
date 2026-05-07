@@ -1,0 +1,4 @@
+PROBE_OK existing_model_file path=GPT2WT.BIN
+PROBE_OK convert_model input_values=90882
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

@@ -13,11 +13,59 @@
 ' * Matrix Structure and Basic Operations               *
 ' *******************************************************
 
+' DOS FreeBASIC is stricter about helper declarations than newer dialects.
+DECLARE FUNCTION MIN(a AS DOUBLE, b AS DOUBLE) AS DOUBLE
+DECLARE FUNCTION MAX(a AS DOUBLE, b AS DOUBLE) AS DOUBLE
+DECLARE FUNCTION CEILING(value AS DOUBLE) AS INTEGER
+DECLARE FUNCTION TANH(value AS DOUBLE) AS DOUBLE
+DECLARE FUNCTION CompatFormat(value AS DOUBLE, pattern AS STRING) AS STRING
+DECLARE FUNCTION IIFString(condition AS INTEGER, true_val AS STRING, false_val AS STRING) AS STRING
+
+CONST NULL = 0
+
+FUNCTION MIN(a AS DOUBLE, b AS DOUBLE) AS DOUBLE
+    IF a < b THEN RETURN a
+    RETURN b
+END FUNCTION
+
+FUNCTION MAX(a AS DOUBLE, b AS DOUBLE) AS DOUBLE
+    IF a > b THEN RETURN a
+    RETURN b
+END FUNCTION
+
+FUNCTION CEILING(value AS DOUBLE) AS INTEGER
+    DIM int_part AS INTEGER
+    int_part = INT(value)
+    IF value > int_part THEN RETURN int_part + 1
+    RETURN int_part
+END FUNCTION
+
+FUNCTION TANH(value AS DOUBLE) AS DOUBLE
+    IF value > 20.0 THEN RETURN 1.0
+    IF value < -20.0 THEN RETURN -1.0
+
+    DIM exp_value AS DOUBLE
+    exp_value = EXP(2.0 * value)
+    RETURN (exp_value - 1.0) / (exp_value + 1.0)
+END FUNCTION
+
+FUNCTION CompatFormat(value AS DOUBLE, pattern AS STRING) AS STRING
+    RETURN LTRIM$(STR$(value))
+END FUNCTION
+
+FUNCTION IIFString(condition AS INTEGER, true_val AS STRING, false_val AS STRING) AS STRING
+    IF condition THEN
+        RETURN true_val
+    END IF
+
+    RETURN false_val
+END FUNCTION
+
 ' Basic matrix structure
 TYPE Matrix
     rows AS INTEGER         ' Number of rows
     cols AS INTEGER         ' Number of columns
-    data() AS SINGLE        ' Matrix data (row-major order)
+    data(ANY, ANY) AS SINGLE ' Matrix data (row-major order)
 END TYPE
 
 ' Initialize a matrix with specified dimensions
@@ -78,10 +126,10 @@ SUB ScaleMatrix(BYREF mat AS Matrix, scale_factor AS SINGLE)
 END SUB
 
 ' Print a matrix (for debugging)
-SUB PrintMatrix(mat AS Matrix, name AS STRING)
+SUB PrintMatrix(mat AS Matrix, matrix_name AS STRING)
     DIM i AS INTEGER, j AS INTEGER
     
-    PRINT "Matrix "; name; " ("; mat.rows; "x"; mat.cols; "):"
+    PRINT "Matrix "; matrix_name; " ("; mat.rows; "x"; mat.cols; "):"
     
     ' For large matrices, only print a subset
     DIM max_rows AS INTEGER, max_cols AS INTEGER
@@ -90,7 +138,7 @@ SUB PrintMatrix(mat AS Matrix, name AS STRING)
     
     FOR i = 0 TO max_rows - 1
         FOR j = 0 TO max_cols - 1
-            PRINT FORMAT(mat.data(i, j), "0.000"); " ";
+            PRINT CompatFormat(mat.data(i, j), "0.000"); " ";
         NEXT j
         
         ' If we truncated columns, indicate it
@@ -174,7 +222,7 @@ TYPE Tensor
     dims(0 TO 3) AS INTEGER   ' Dimensions (up to 4D tensor)
     n_dims AS INTEGER         ' Number of dimensions (1-4)
     size AS INTEGER           ' Total number of elements
-    data() AS SINGLE          ' Flattened tensor data
+    data(ANY) AS SINGLE       ' Flattened tensor data
 END TYPE
 
 ' Initialize a tensor with specified dimensions
@@ -279,7 +327,13 @@ SUB ExtractMatrixFromTensor(tensor AS Tensor, BYREF mat AS Matrix, dim1_idx AS I
     SELECT CASE tensor.n_dims
         CASE 2:
             ' The tensor is already a matrix
-            CopyMatrix(tensor, mat)
+            InitMatrix(mat, tensor.dims(0), tensor.dims(1))
+            FOR i = 0 TO tensor.dims(0) - 1
+                FOR j = 0 TO tensor.dims(1) - 1
+                    tensor_idx = TensorIndex(tensor, i, j, 0, 0)
+                    mat.data(i, j) = tensor.data(tensor_idx)
+                NEXT j
+            NEXT i
             
         CASE 3:
             ' Extract a matrix by fixing one dimension
@@ -334,6 +388,11 @@ TYPE ModelConfig
     attention_window AS INTEGER   ' Local attention window size
 END TYPE
 
+DECLARE FUNCTION EstimateModelMemory(config AS ModelConfig) AS LONG
+
+' Global model configuration shared by transformer/model modules.
+DIM SHARED g_config AS ModelConfig
+
 ' Initialize model configuration with default values
 SUB InitModelConfig(BYREF config AS ModelConfig)
     ' Small GPT-2 defaults with 486-era optimizations
@@ -361,7 +420,7 @@ SUB PrintModelConfig(config AS ModelConfig)
     PRINT "Layers           : "; config.n_layer
     PRINT "Attention heads  : "; config.n_head
     PRINT "Precision        : "; config.precision; "-bit"
-    PRINT "Block-sparse     : "; IIF(config.use_block_sparse, "Enabled", "Disabled")
+    PRINT "Block-sparse     : "; IIFString(config.use_block_sparse, "Enabled", "Disabled")
     IF config.use_block_sparse THEN
         PRINT "Block size       : "; config.block_size; "x"; config.block_size
     END IF
@@ -420,15 +479,6 @@ FUNCTION EstimateModelMemory(config AS ModelConfig) AS LONG
     memory = memory + 2 * 1024 * 1024 ' 2MB overhead
     
     RETURN memory
-END FUNCTION
-
-' Helper function for conditional expressions
-FUNCTION IIF(condition AS INTEGER, true_val AS STRING, false_val AS STRING) AS STRING
-    IF condition THEN
-        RETURN true_val
-    ELSE
-        RETURN false_val
-    END IF
 END FUNCTION
 
 ' *******************************************************

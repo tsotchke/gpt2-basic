@@ -1,0 +1,22 @@
+model_dir: /private/tmp/gpt2_basic_bpe_smoke
+profile: 386-min
+shape: layers=1 emb=32 heads=4 ctx=32 hidden=64 vocab=280
+parameters: 27832
+fixed_weight_bytes: 111328
+config: GPT2CFG.TXT
+fixed_weights: GPT2FX.BIN
+exp_table: GPT2EXP.BIN
+float_reference: GPT2WT.BIN
+profile_metadata: PROFILE.TXT
+artifact GPT2CFG.TXT: OK (127 bytes)
+artifact GPT2WT.BIN: OK (111328 bytes)
+artifact GPT2FX.BIN: OK (111328 bytes)
+artifact GPT2EXP.BIN: OK (2052 bytes)
+artifact PROFILE.TXT: OK profile=386-min
+artifact VOCAB.BIN: OK vocab=280 merges=22 (7080 bytes)
+artifact GPT2VEC.TXT: OK vectors=3 expected_logits=24 phases=39 expected_phase_values=312
+artifact TINYCFG.TXT: absent optional legacy alias
+artifact TINYWT.BIN: absent optional legacy alias
+artifact TINYFX.BIN: absent optional legacy alias
+artifact TINYEXP.BIN: absent optional legacy alias
+status: OK

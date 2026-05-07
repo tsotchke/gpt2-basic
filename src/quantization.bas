@@ -29,6 +29,11 @@ CONST EXPONENT_BIAS = 8
 DIM SHARED DequantFixedLookup(0 TO 510) AS INTEGER ' Fixed-point values for dequantization
 DIM SHARED QuantFixedLookup(-32768 TO 32767) AS INTEGER ' Quantized values for fixed-point inputs
 
+DECLARE FUNCTION FixedPow2(n AS INTEGER) AS INTEGER
+DECLARE FUNCTION FixedToLogQuantized(fp AS INTEGER) AS LogQuantized
+DECLARE FUNCTION LogQuantizedToFixed(lq AS LogQuantized) AS INTEGER
+DECLARE FUNCTION DequantizeLogToFixed(value AS SINGLE) AS INTEGER
+
 ' *******************************************************
 ' * Initialization Functions                             *
 ' *******************************************************
@@ -36,7 +41,7 @@ DIM SHARED QuantFixedLookup(-32768 TO 32767) AS INTEGER ' Quantized values for f
 ' Initialize lookup tables for efficient quantization/dequantization
 SUB InitQuantizationTables()
     DIM i AS INTEGER, packed_val AS INTEGER, fixed_val AS INTEGER
-    DIM lookup_index AS INTEGER, sgn AS INTEGER, abs_packed_val AS INTEGER
+    DIM lookup_index AS INTEGER, sign_value AS INTEGER, abs_packed_val AS INTEGER
     DIM mantissa AS INTEGER, exponent AS INTEGER
     DIM fp_power_of_2 AS INTEGER, fp_mantissa_scale AS INTEGER, fp_result AS INTEGER
     DIM fixed_min AS INTEGER, fixed_max AS INTEGER, bucket_size AS INTEGER
@@ -52,14 +57,14 @@ SUB InitQuantizationTables()
             DequantFixedLookup(lookup_index) = 0
         ELSE
             ' Determine the sign
-            IF packed_val > 0 THEN sgn = 1 ELSE sgn = -1
+            IF packed_val > 0 THEN sign_value = 1 ELSE sign_value = -1
             
             ' Get the absolute packed value
             abs_packed_val = ABS(packed_val)
             
             ' Extract mantissa and exponent from the absolute packed value
             mantissa = abs_packed_val AND MANTISSA_MASK
-            exponent = (abs_packed_val AND EXPONENT_MASK) >> EXPONENT_SHIFT
+            exponent = (abs_packed_val AND EXPONENT_MASK) SHR EXPONENT_SHIFT
             
             ' Calculate 2^(exponent-bias) in fixed-point
             fp_power_of_2 = FixedPow2(exponent - EXPONENT_BIAS)
@@ -71,7 +76,7 @@ SUB InitQuantizationTables()
             fp_result = FixedMultiply(fp_mantissa_scale, fp_power_of_2)
             
             ' Apply sign
-            IF sgn = -1 THEN fp_result = -fp_result
+            IF sign_value = -1 THEN fp_result = -fp_result
             
             ' Store in lookup table
             DequantFixedLookup(lookup_index) = fp_result
@@ -165,7 +170,7 @@ FUNCTION FixedPow2(n AS INTEGER) AS INTEGER
         IF n > 15 THEN
             RETURN &H7FFFFFFF ' Maximum INTEGER value
         ELSE
-            RETURN FIXED_POINT_ONE << n
+            RETURN FIXED_POINT_ONE SHL n
         END IF
     ' For negative exponents: right shift
     ELSE
@@ -173,7 +178,7 @@ FUNCTION FixedPow2(n AS INTEGER) AS INTEGER
         IF n < -15 THEN
             RETURN 0
         ELSE
-            RETURN FIXED_POINT_ONE >> ABS(n)
+            RETURN FIXED_POINT_ONE SHR ABS(n)
         END IF
     END IF
 END FUNCTION
@@ -223,11 +228,11 @@ FUNCTION FixedLog2(x AS INTEGER) AS INTEGER
     ' Find the position of the highest bit to get integer part of log2
     DIM bit_pos AS INTEGER = 31
     DIM int_part AS INTEGER = 0
-    DIM val AS INTEGER = x
+    DIM fixed_work AS INTEGER = x
     
     ' Find most significant bit
     WHILE bit_pos >= 0
-        IF (val AND (1 << bit_pos)) <> 0 THEN
+        IF (fixed_work AND (1 SHL bit_pos)) <> 0 THEN
             int_part = bit_pos - FIXED_POINT_SHIFT
             EXIT WHILE
         END IF
@@ -235,11 +240,11 @@ FUNCTION FixedLog2(x AS INTEGER) AS INTEGER
     WEND
     
     ' Normalize x to range [1, 2) in fixed-point
-    val = val >> int_part
+    fixed_work = fixed_work SHR int_part
     
     ' Use table or polynomial approximation for fractional part
     ' For simplicity, using a first-order approximation
-    DIM frac_part AS INTEGER = FixedMultiply(FloatToFixed(0.5), (val - FIXED_POINT_ONE))
+    DIM frac_part AS INTEGER = FixedMultiply(FloatToFixed(0.5), (fixed_work - FIXED_POINT_ONE))
     
     ' Combine integer and fractional parts
     RETURN FloatToFixed(CSNG(int_part)) + frac_part
@@ -272,6 +277,12 @@ FUNCTION LogQuantizedToFixed(lq AS LogQuantized) AS INTEGER
     IF lookup_index > 510 THEN lookup_index = 510
     
     FUNCTION = DequantFixedLookup(lookup_index)
+END FUNCTION
+
+FUNCTION DequantizeLogToFixed(value AS SINGLE) AS INTEGER
+    DIM lq AS LogQuantized
+    lq.packed_value = CINT(value)
+    RETURN LogQuantizedToFixed(lq)
 END FUNCTION
 
 ' *******************************************************
@@ -322,10 +333,10 @@ END SUB
 
 ' Test the quantization accuracy
 SUB TestQuantization()
-    DIM i AS INTEGER
+    DIM i AS INTEGER, j AS INTEGER
     DIM f AS SINGLE, fp AS INTEGER, re_fp AS INTEGER
     DIM lq AS LogQuantized
-    DIM max_error AS SINGLE, avg_error AS SINGLE
+    DIM max_error AS SINGLE, avg_error AS SINGLE, delta AS SINGLE
     
     PRINT "Testing LogQuantized Quantization..."
     PRINT "-----------------------------------"
@@ -350,18 +361,17 @@ SUB TestQuantization()
         re_fp = LogQuantizedToFixed(lq)
         
         ' Calculate error
-        DIM error AS SINGLE
-        error = ABS(FixedToFloat(fp) - FixedToFloat(re_fp))
+        delta = ABS(FixedToFloat(fp) - FixedToFloat(re_fp))
         
         ' Update statistics
-        avg_error = avg_error + error
-        IF error > max_error THEN max_error = error
+        avg_error = avg_error + delta
+        IF delta > max_error THEN max_error = delta
         
         ' Print select results
         IF i MOD 5 = 0 THEN
             PRINT "Original: "; f; " Fixed: "; FixedToFloat(fp); _
                   " Packed: "; lq.packed_value; " Reconstructed: "; FixedToFloat(re_fp); _
-                  " Error: "; error
+                  " Error: "; delta
         END IF
     NEXT i
     
@@ -394,9 +404,9 @@ SUB TestQuantization()
     
     FOR i = 0 TO test_mat.rows - 1
         FOR j = 0 TO test_mat.cols - 1
-            error = ABS(FixedToFloat(test_mat.data(i, j)) - FixedToFloat(dequant_mat.data(i, j)))
-            avg_error = avg_error + error
-            IF error > max_error THEN max_error = error
+            delta = ABS(FixedToFloat(test_mat.data(i, j)) - FixedToFloat(dequant_mat.data(i, j)))
+            avg_error = avg_error + delta
+            IF delta > max_error THEN max_error = delta
         NEXT j
     NEXT i
     

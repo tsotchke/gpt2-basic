@@ -6,10 +6,13 @@ desktop.ini
 # Editor files
 .vscode/
 .idea/
+.venv*/
 *.swp
 *~
 
 # Build artifacts
+__pycache__/
+*.py[cod]
 *.o
 *.obj
 *.exe
@@ -39,6 +42,24 @@ to_latex.sh
 *.dbg
 *.map
 *.pdb
+
+# QEMU/FreeDOS local runtime artifacts
+qemu/*.img
+qemu/staging/
+third_party/
+
+# Release artifacts that must stay versioned despite generic build ignores.
+!assets/**/*.BIN
+!assets/**/*.bin
+!qemu/evidence/*.log
+
+# Online corpus fetch outputs
+data/online_corpus/raw/
+data/online_corpus/clean/
+data/online_corpus/online_training_corpus.txt
+data/online_corpus/SOURCE_MANIFEST.json
+data/domain_curriculum/domain_curriculum.txt
+data/domain_curriculum/SOURCE_MANIFEST.json
 
 # Exclude FreeBASIC bootstrapping files
 fbc_build/

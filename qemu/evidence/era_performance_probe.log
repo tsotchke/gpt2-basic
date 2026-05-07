@@ -1,0 +1,15 @@
+PROBE_OK parse_config profile=486sx-safe
+trace parse_host_run_log
+trace parse_perf_record
+trace parse_perf_log
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available
+PROBE_OK parameter_count params=90882
+PROBE_OK estimate_runtime_memory bytes=520740
+PROBE_OK estimate_phase_debug_memory bytes=2880
+PROBE_OK parse_perf_log count=2
+PROBE_OK work_counts saved_divisions=444400
+PROBE_OK work_counts gelu_inlined_mul_helpers=230400
+PROBE_OK seconds_for machine=486dx2-66 seconds=12.91
+PROBE_OK markdown_report bytes=2142
+PROBE_OK html_report bytes=6337

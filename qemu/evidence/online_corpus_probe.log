@@ -1,0 +1,17 @@
+fetched pg_alice_11: 121 clean chars
+fetched pg_sherlock_1661: 121 clean chars
+fetched pg_frankenstein_84: 121 clean chars
+fetched pg_pride_1342: 121 clean chars
+fetched nist_sp800_info: 162 clean chars
+fetched nasa_earthdata_guidance: 162 clean chars
+trace_scope online_corpus_contract
+trace TextHTMLParser.handle_starttag
+trace TextHTMLParser.handle_endtag
+trace TextHTMLParser.handle_data
+trace normalize_text
+trace strip_gutenberg
+trace fetch_sources
+trace write_combined_corpus
+trace build_report
+artifact: SOURCE_MANIFEST.json
+PROBE_OK online_corpus_cleaning=1

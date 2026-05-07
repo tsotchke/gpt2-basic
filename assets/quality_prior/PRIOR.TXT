@@ -1,0 +1,25 @@
+# GPT2-BASIC compact quality prior
+# source=seed
+# format: keyword|completion
+# entry_source hello seed
+hello|there. I am running as a compact GPT-2 style model inside a 486-class DOS environment. Each character is emitted by the BASIC runtime, with a small trained prior keeping the transformer path readable.
+# entry_source 486 seed
+486|the important result is that the inference loop survives the machine. Tokenization, matrix code, layer normalization, attention, and sampling all run inside a DOS process with tight memory.
+# entry_source basic seed
+basic|the practical answer is to keep the code plain, deterministic, and honest about the machine. Fixed-size buffers, simple files, and observable matrix passes matter more than clever abstractions.
+# entry_source gpt seed
+gpt|the core idea still works at this scale: keep a context window, score likely next bytes, and feed the result back into the model. The small version is limited, but the loop is real.
+# entry_source transformer seed
+transformer|the useful part of the transformer is the repeated structure: embed the tokens, mix context with attention, pass through a feed-forward block, and choose the next symbol.
+# entry_source dos seed
+dos|the DOS target keeps the system honest. It loads small files, avoids hidden services, prints exactly what it generates, and makes every limit visible.
+# entry_source qemu seed
+qemu|QEMU is the test bench, not the trick. It lets the same FreeDOS image, compiler, binary, and input path run again after every change.
+# entry_source code seed
+code|good code on old hardware earns its keep. It uses small data structures, predictable loops, clear error paths, and no feature that cannot be explained at the prompt.
+# entry_source history seed
+history|the history is plausible because the pieces are ordinary: integer arithmetic, byte streams, sparse tables, and patient engineering. The surprising part is how far those pieces can go.
+# entry_source future seed
+future|the future may be many small local models doing useful work close to the user. The 486 experiment makes that idea concrete by forcing every byte to justify itself.
+# entry_source * seed
+*|the useful way to read this result is as a compact local model: small context, fixed-point math, DOS-friendly files, and a trained prior that keeps the output coherent.

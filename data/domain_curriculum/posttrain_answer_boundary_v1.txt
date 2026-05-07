@@ -1,0 +1,79 @@
+DOS language models need compact weights, predictable memory, simple model files, honest diagnostics, and a tokenizer shared by host tools and the DOS runtime.
+
+DOS language models need prompt tokens, trained weights, fixed-point arithmetic, measured timing, and local generated output from the checkpoint.
+
+DOS language models need short context, fixed buffers, reproducible timing, vector parity, and clear failures when required files are absent.
+
+DOS language models need enough vocabulary to say technical phrases cleanly without making the output head too expensive.
+
+DOS language models need plain file formats, repeatable measurements, and readable continuations chosen from model logits.
+
+A BASIC transformer runtime uses arrays for weights, tokens, cache vectors, hidden states, logits, and fixed-point work buffers.
+
+A BASIC transformer runtime loads the checkpoint, encodes the prompt, runs attention, applies feed-forward layers, and decodes sampled tokens.
+
+A BASIC transformer runtime keeps memory behavior visible because arrays, loops, and file formats are explicit.
+
+A BASIC transformer runtime is useful when it can be inspected, timed, and compared against host vector references.
+
+A BASIC transformer runtime produces local generated text from trained weights instead of a canned response.
+
+To improve performance on real hardware, reduce repeated work, reuse cache data, keep memory access predictable, and time the decode loop.
+
+To improve performance on real hardware, choose a compact profile and compare quality against speed, memory, and vector parity.
+
+To improve performance on real hardware, preserve fixed-point correctness while replacing slow operations with predictable integer work.
+
+To improve performance on real hardware, use vocabulary pieces that reduce token count without making every logit step too expensive.
+
+To improve performance on real hardware, measure generated tokens per second on the target path before promoting a checkpoint.
+
+What makes this real inference? The DOS program encodes the prompt, runs transformer layers, computes logits, and samples from trained weights.
+
+What makes this real inference? Changing the prompt changes the hidden state and the next-token distribution inside the DOS run.
+
+What makes this real inference? The text is produced by the exported checkpoint and fixed-point runtime, not by a table of canned responses.
+
+GPT2 BASIC on a 486 needs fixed-point arithmetic, predictable memory, a compact checkpoint, short context, and measured local generation.
+
+GPT2 BASIC on a 486 is credible when it loads trained weights, runs transformer layers, and prints text chosen from logits.
+
+GPT2 BASIC on a 486 should be judged by memory use, tokens per second, vector parity, and readable technical completions.
+
+Explain why a cache matters for text generation. A cache reuses earlier key and value vectors so the next token does not rebuild the full attention history.
+
+Explain why a cache matters for text generation. Cache reuse trades predictable memory for fewer repeated attention operations in the decode loop.
+
+Explain why a cache matters for text generation. On old hardware, cached attention data can keep the decode loop practical when the memory budget still fits.
+
+How should a DOS model report timing? It should report generated tokens, elapsed seconds, tokens per second, model profile, context length, and measurement source.
+
+How should a DOS model report timing? The timed section belongs around generation, not around boot, file loading, or setup.
+
+How should a DOS model report timing? A useful result says whether the timing came from QEMU or physical hardware.
+
+What limits a tiny transformer on old PCs? Memory, context length, integer arithmetic, cache size, vocabulary size, and output-head cost set the practical limit.
+
+What limits a tiny transformer on old PCs? A larger checkpoint helps only when readable quality improves enough to justify slower generation.
+
+What limits a tiny transformer on old PCs? The whole runtime matters because weights, activations, logits, tokens, and buffers all need memory.
+
+Describe fixed point inference in one sentence. It is transformer inference using scaled integers, clamps, lookup tables, and logits checked against the host reference.
+
+Describe fixed point inference in one sentence. Fixed-point inference lets the DOS runtime run transformer math without requiring floating point hardware.
+
+Why compare model profiles before choosing one? Profiles expose the tradeoff between quality, speed, memory, context length, and vocabulary size.
+
+Why compare model profiles before choosing one? The default should be the smallest checkpoint that passes quality and runtime evidence.
+
+Why compare model profiles before choosing one? A larger model earns its cost only when measurements improve on the target machine.
+
+Real inference comes from prompt tokens, trained weights, transformer layers, output logits, and a sampler running in the DOS program.
+
+Cache reuse matters because earlier key and value vectors can be stored instead of rebuilt for every generated token.
+
+Fixed-point inference is credible only when vector checks show the integer path still matches the trained model closely enough.
+
+Profile comparison exposes the tradeoff between quality, speed, memory, context length, vocabulary size, and parameter count.
+
+The default profile is the smallest checkpoint that passes host quality, DOS vector parity, DOS quality, and runtime evidence.

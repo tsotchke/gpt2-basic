@@ -1,0 +1,42 @@
+trace_scope tokenizer_contract
+trace clean_ascii
+trace GPT2BasicTokenizer.vocab_size
+trace GPT2BasicTokenizer.uses_bpe
+trace default_output_allowed
+trace GPT2BasicTokenizer.write_vocab_bin
+trace GPT2BasicTokenizer.read_vocab_bin
+trace GPT2BasicTokenizer.token_allowed
+trace GPT2BasicTokenizer.token_can_begin_output
+trace GPT2BasicTokenizer.prompt_start_starters
+trace GPT2BasicTokenizer._starter_piece_matches
+trace GPT2BasicTokenizer.prompt_start_allowed_tokens
+trace GPT2BasicTokenizer.token_can_start_prompt
+trace GPT2BasicTokenizer.token_ends_sentence
+trace GPT2BasicTokenizer.generated_alpha_suffix_len
+trace GPT2BasicTokenizer.token_can_follow_generated
+trace GPT2BasicTokenizer.token_follow_penalty
+trace GPT2BasicTokenizer.encode_output_safe
+trace GPT2BasicTokenizer._apply_lexicon
+trace GPT2BasicTokenizer._lexicon_piece_boundary_ok
+trace GPT2BasicTokenizer._lexicon_word_byte
+trace GPT2BasicTokenizer._apply_dos_merges
+trace complete_piece_inventory
+trace complete_output_allowed
+trace lexicon_candidates
+trace build_lexicon_tokenizer
+trace ranked_bpe_merge_order
+trace GPT2BasicTokenizer.validate_contract
+trace GPT2BasicTokenizer.validate_for_vocab_size
+trace load_tokenizer_for_model
+artifact: VOCAB.BIN
+PROBE_OK build_bpe_tokenizer vocab=280 merges=22
+PROBE_OK complete_output_allowed allowed=98
+PROBE_OK build_lexicon_tokenizer vocab=280
+PROBE_OK encode tokens=9
+PROBE_OK encode_output_safe tokens=26
+PROBE_OK encode_lexicon tokens=4
+PROBE_OK encode_lexicon_boundary tokens=3
+PROBE_OK ranked_bpe tokens=[99, 258]
+PROBE_OK decode text=the transformer tokenizer
+PROBE_OK vocab_bin roundtrip=1
+PROBE_OK self_test exercised=1

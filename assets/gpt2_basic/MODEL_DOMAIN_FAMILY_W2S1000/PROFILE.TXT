@@ -1,0 +1,11 @@
+GPT2-BASIC model export
+profile=486sx-safe
+vocab_size=258
+n_positions=192
+n_embd=48
+n_head=4
+n_layer=2
+hidden_dim=192
+weights=GPT2WT.BIN
+fixed_weights=GPT2FX.BIN
+exp_table=GPT2EXP.BIN

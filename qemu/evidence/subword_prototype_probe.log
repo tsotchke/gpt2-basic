@@ -1,0 +1,11 @@
+trace_scope subword_prototype_contract
+trace mask_logits
+trace generate_completion
+trace prototype_export_tokenizer
+trace mark_host_only_export
+trace report_text
+artifact: SUBWORDVOCAB.json
+artifact: HOST_ONLY_NOT_DOS_READY.txt
+artifact: quality_heldout.md
+artifact: quality_runtime.md
+PROBE_OK subword_prototype_tokenizer=1

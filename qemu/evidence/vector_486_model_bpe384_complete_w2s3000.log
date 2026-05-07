@@ -1,0 +1,73 @@
+GPT2-BASIC fixed-point parity vector check
+
+Initializing GPT-2 BASIC model...
+Memory Manager Initialized. Maximum memory:  32MB
+Matrix operations initialized with optimization level  3
+Assembly optimizations: Enabled
+  Fixed point math: Yes
+  Matrix multiply : Yes
+  Softmax compute : Yes
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  384 tokens and  126 merges
+Loaded fixed-point GPT2-BASIC model from MODEL
+Model initialization complete!
+  Profile     : 486sx-safe
+  Layers      :  2
+  Embed dim   :  48
+  Heads       :  4
+  Vocab size  :  384
+  Max tokens  :  192
+  Parameters  :  103104
+  Fixed bytes :  412416
+  Runtime mem :  571140
+  Arithmetic  : Q20.12 fixed-point
+VECTOR_OK what_makes_this_real_inf
+PHASE_OK what_makes_this_real_inf embedding
+PHASE_OK what_makes_this_real_inf ln1
+PHASE_OK what_makes_this_real_inf q
+PHASE_OK what_makes_this_real_inf k
+PHASE_OK what_makes_this_real_inf v
+PHASE_OK what_makes_this_real_inf attn
+PHASE_OK what_makes_this_real_inf proj
+PHASE_OK what_makes_this_real_inf ln2
+PHASE_OK what_makes_this_real_inf ff1
+PHASE_OK what_makes_this_real_inf ff2
+PHASE_OK what_makes_this_real_inf hidden
+PHASE_OK what_makes_this_real_inf final_ln
+PHASE_OK what_makes_this_real_inf logits
+VECTOR_OK gpt2_basic_on_a_486
+PHASE_OK gpt2_basic_on_a_486 embedding
+PHASE_OK gpt2_basic_on_a_486 ln1
+PHASE_OK gpt2_basic_on_a_486 q
+PHASE_OK gpt2_basic_on_a_486 k
+PHASE_OK gpt2_basic_on_a_486 v
+PHASE_OK gpt2_basic_on_a_486 attn
+PHASE_OK gpt2_basic_on_a_486 proj
+PHASE_OK gpt2_basic_on_a_486 ln2
+PHASE_OK gpt2_basic_on_a_486 ff1
+PHASE_OK gpt2_basic_on_a_486 ff2
+PHASE_OK gpt2_basic_on_a_486 hidden
+PHASE_OK gpt2_basic_on_a_486 final_ln
+PHASE_OK gpt2_basic_on_a_486 logits
+VECTOR_OK dos_language_models_need
+PHASE_OK dos_language_models_need embedding
+PHASE_OK dos_language_models_need ln1
+PHASE_OK dos_language_models_need q
+PHASE_OK dos_language_models_need k
+PHASE_OK dos_language_models_need v
+PHASE_OK dos_language_models_need attn
+PHASE_OK dos_language_models_need proj
+PHASE_OK dos_language_models_need ln2
+PHASE_OK dos_language_models_need ff1
+PHASE_OK dos_language_models_need ff2
+PHASE_OK dos_language_models_need hidden
+PHASE_OK dos_language_models_need final_ln
+PHASE_OK dos_language_models_need logits
+VECTOR_SUMMARY passed  3 of  3
+PHASE_SUMMARY passed  39 of  39
+VECTOR_CHECK_OK
+Shutting down model...
+Memory Manager Shutdown. Peak memory usage:  0.5446815490722656MB
+Matrix allocations:  0, Frees:  0
+Cache hits:  0, Misses:  0
+Disk reads:  0, Writes:  0

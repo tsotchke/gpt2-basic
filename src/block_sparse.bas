@@ -39,6 +39,8 @@ TYPE SparseBlockMatrix
     last_block AS SparseBlock PTR  ' Pointer to last block for faster appends
 END TYPE
 
+DECLARE SUB DenseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output_matrix AS Matrix, use_causal_mask AS INTEGER)
+
 ' Memory tracking
 DIM SHARED g_blocks_allocated AS INTEGER
 DIM SHARED g_blocks_freed AS INTEGER
@@ -160,7 +162,7 @@ SUB DenseToSparseBlockMatrix(dense_matrix AS Matrix, BYREF sbm AS SparseBlockMat
     PRINT block_count; " blocks stored out of "; 
     PRINT CEILING(dense_matrix.rows / block_size) * CEILING(dense_matrix.cols / block_size);
     PRINT " possible blocks ("; 
-    PRINT FORMAT(sbm.density * 100, "0.00"); "% density)."
+    PRINT CompatFormat(sbm.density * 100, "0.00"); "% density)."
 END SUB
 
 ' Convert block-sparse matrix back to dense format
@@ -374,7 +376,7 @@ END SUB
 ' Block-sparse matrix scaled dot-product attention
 ' Q, K, V are dense matrices, output is dense
 ' This computes Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) * V
-SUB BlockSparseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output AS Matrix, use_causal_mask AS INTEGER)
+SUB BlockSparseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output_matrix AS Matrix, use_causal_mask AS INTEGER)
     DIM qk_transpose AS SparseBlockMatrix
     DIM temp_result AS Matrix
     DIM d_k AS SINGLE
@@ -409,7 +411,7 @@ SUB BlockSparseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF 
     SoftmaxBlockSparse(qk_transpose)
     
     ' Multiply with V using block-sparse * dense multiplication
-    MultiplyBlockSparseWithDense(qk_transpose, value, output)
+    MultiplyBlockSparseWithDense(qk_transpose, value, output_matrix)
     
     ' Free matrices
     FreeMatrix(dense_qkt)
@@ -458,10 +460,15 @@ END FUNCTION
 
 ' Determine optimal block size based on matrix pattern
 FUNCTION DetermineOptimalBlockSize(dense_matrix AS Matrix) AS INTEGER
-    DIM block_sizes() AS INTEGER = {16, 32, 64, 128}
+    DIM block_sizes(0 TO 3) AS INTEGER
     DIM best_size AS INTEGER = g_default_block_size
     DIM best_memory_usage AS LONG = &H7FFFFFFF ' Max integer
     DIM i AS INTEGER
+
+    block_sizes(0) = 16
+    block_sizes(1) = 32
+    block_sizes(2) = 64
+    block_sizes(3) = 128
     
     FOR i = 0 TO UBOUND(block_sizes)
         DIM test_sbm AS SparseBlockMatrix
@@ -525,14 +532,15 @@ SUB GenerateTestMatrix(BYREF mat AS Matrix, rows AS INTEGER, cols AS INTEGER, pa
                 ' Each row attends to a few random blocks
                 DIM num_blocks AS INTEGER = 3 + INT(RND * 3) ' 3-5 blocks per row
                 
-                FOR block = 1 TO num_blocks
+                DIM block_idx AS INTEGER
+                FOR block_idx = 1 TO num_blocks
                     DIM block_start AS INTEGER = INT(RND * cols)
                     DIM block_width AS INTEGER = 5 + INT(RND * 15) ' 5-20 width
                     
                     FOR j = block_start TO MIN(block_start + block_width, cols - 1)
                         mat.data(i, j) = RND
                     NEXT j
-                NEXT block
+                NEXT block_idx
             NEXT i
             
         CASE 3: ' Causal attention mask (lower triangular)
@@ -595,9 +603,9 @@ SUB TestBlockSparseAttention()
     
     FOR i = 0 TO seq_len - 1
         FOR j = 0 TO embed_dim - 1
-            DIM error AS SINGLE = ABS(output_dense.data(i, j) - output_sparse.data(i, j))
-            avg_error = avg_error + error
-            IF error > max_error THEN max_error = error
+            DIM delta AS SINGLE = ABS(output_dense.data(i, j) - output_sparse.data(i, j))
+            avg_error = avg_error + delta
+            IF delta > max_error THEN max_error = delta
         NEXT j
     NEXT i
     
@@ -640,7 +648,7 @@ SUB TestBlockSparseAttention()
     
     DIM sparse_size AS LONG = GetSparseMatrixMemoryUsage(sparse_qkt)
     PRINT "QK^T sparse memory     : "; sparse_size / 1024; " KB"
-    PRINT "Memory reduction       : "; FORMAT((1.0 - (sparse_size / qk_size)) * 100, "0.00"); "%"
+    PRINT "Memory reduction       : "; CompatFormat((1.0 - (sparse_size / qk_size)) * 100, "0.00"); "%"
     
     ' Clean up
     FreeMatrix(query)
@@ -653,7 +661,7 @@ SUB TestBlockSparseAttention()
 END SUB
 
 ' Dense attention implementation for comparison
-SUB DenseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output AS Matrix, use_causal_mask AS INTEGER)
+SUB DenseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output_matrix AS Matrix, use_causal_mask AS INTEGER)
     DIM qkt AS Matrix
     DIM softmax_qkt AS Matrix
     DIM d_k AS SINGLE
@@ -709,8 +717,8 @@ SUB DenseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output
     NEXT i
     
     ' Compute softmax(QK^T) * V
-    InitMatrix(output, query.rows, value.cols)
-    MatrixMultiply(softmax_qkt, value, output)
+    InitMatrix(output_matrix, query.rows, value.cols)
+    MatrixMultiply(softmax_qkt, value, output_matrix)
     
     ' Clean up
     FreeMatrix(qkt)
@@ -749,11 +757,12 @@ SUB TestBlockSparse_Main()
     pattern_types(2) = "Attention-like"
     pattern_types(3) = "Causal mask"
     
-    FOR pattern = 0 TO 3
-        PRINT pattern_types(pattern); " pattern:"
+    DIM pattern_idx AS INTEGER
+    FOR pattern_idx = 0 TO 3
+        PRINT pattern_types(pattern_idx); " pattern:"
         
         ' Generate test matrix with this pattern
-        GenerateTestMatrix(test_mat, 256, 256, pattern)
+        GenerateTestMatrix(test_mat, 256, 256, pattern_idx)
         
         ' Find optimal block size
         DIM optimal_size AS INTEGER = DetermineOptimalBlockSize(test_mat)
@@ -767,11 +776,11 @@ SUB TestBlockSparse_Main()
         
         ' Calculate memory savings
         DIM savings AS SINGLE = CalculateMemorySavings(sparse_mat)
-        PRINT "  Memory savings    : "; FORMAT(savings, "0.00"); "%"
+        PRINT "  Memory savings    : "; CompatFormat(savings, "0.00"); "%"
         
         ' Clean up
         FreeMatrix(test_mat)
         FreeSparseBlockMatrix(sparse_mat)
         PRINT
-    NEXT pattern
+    NEXT pattern_idx
 END SUB

@@ -1,0 +1,12 @@
+trace_scope architecture_profile_contract
+trace same_shape
+trace find_export_dir
+trace preferred_quality
+trace to_era_config
+trace refresh_heldout_reports
+trace run_training
+trace train_command
+PROBE_OK architecture_profiles count=5
+PROBE_OK architecture_rows count=2
+PROBE_OK architecture_report bytes=1773
+PROBE_OK architecture_profile_sweep self_test=1

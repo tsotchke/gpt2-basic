@@ -38,7 +38,7 @@ SUB InitMatrixOps()
     g_optimization_level = 2 ' Default to advanced optimizations
     
     ' Adjust optimization level based on CPU capabilities
-    IF NOT g_cpu_detected THEN
+    IF g_cpu_detected = 0 THEN
         DetectCPU()
     END IF
     
@@ -370,7 +370,7 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
     
     ' Choose precision level based on matrix size
     DIM precision AS PrecisionLevel
-    precision = DetermineOptimalPrecision(A.rows * A.cols, OPERATION_GENERAL)
+    precision = DetermineOptimalPrecision(A.rows, A.cols, OPERATION_GENERAL)
     
     ' Choose implementation based on precision
     SELECT CASE precision
@@ -441,7 +441,7 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
                         A_4bit(packed_idx) = val4bit
                     ELSE
                         ' Second 4-bit value goes in the upper bits
-                        A_4bit(packed_idx) = A_4bit(packed_idx) OR (val4bit << 4)
+                        A_4bit(packed_idx) = A_4bit(packed_idx) OR (val4bit SHL 4)
                     END IF
                     idx = idx + 1
                 NEXT j
@@ -461,7 +461,7 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
                         B_4bit(packed_idx) = val4bit
                     ELSE
                         ' Second 4-bit value goes in the upper bits
-                        B_4bit(packed_idx) = B_4bit(packed_idx) OR (val4bit << 4)
+                        B_4bit(packed_idx) = B_4bit(packed_idx) OR (val4bit SHL 4)
                     END IF
                     idx = idx + 1
                 NEXT j
@@ -483,7 +483,7 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
                         val4bit = C_4bit(packed_idx) AND &H0F
                     ELSE
                         ' Extract from upper 4 bits
-                        val4bit = (C_4bit(packed_idx) >> 4) AND &H0F
+                        val4bit = (C_4bit(packed_idx) SHR 4) AND &H0F
                     END IF
                     
                     C.data(i, j) = (val4bit / 7.5) - 1.0
@@ -527,7 +527,7 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
                 FOR j = 0 TO B.cols - 1
                     ' Use specialized SIMD-like dot product function for 16-bit values
                     DIM result AS LONG
-                    result = DotProduct_16bit(A_16bit, B_16bit, i * A.cols, j, A.cols)
+                    result = DotProduct_16bit(A_16bit(), B_16bit(), i * A.cols, j, A.cols)
                     
                     ' Scale result appropriately (result is already normalized by the dot product function)
                     C_16bit(idx) = MAX(-32768, MIN(32767, result))
@@ -574,7 +574,7 @@ SUB MatrixAddSIMD(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
     IF g_optimization_level >= 2 THEN
         ' Choose precision level
         DIM precision AS PrecisionLevel
-        precision = DetermineOptimalPrecision(A.rows * A.cols, OPERATION_GENERAL)
+        precision = DetermineOptimalPrecision(A.rows, A.cols, OPERATION_GENERAL)
         
         SELECT CASE precision
             CASE PRECISION_8BIT:

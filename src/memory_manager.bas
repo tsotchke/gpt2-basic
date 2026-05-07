@@ -58,7 +58,7 @@ TYPE LayerCache
     is_loaded AS INTEGER
     size AS LONG
     last_used AS DOUBLE
-    weights() AS Matrix
+    weights(ANY) AS Matrix
     next AS LayerCache PTR
 END TYPE
 
@@ -66,6 +66,9 @@ DIM SHARED g_layer_cache_head AS LayerCache PTR
 DIM SHARED g_layer_cache_count AS INTEGER
 DIM SHARED g_max_cached_layers AS INTEGER = 3 ' Number of layers to keep in memory
 DIM SHARED g_model_path AS STRING
+
+DECLARE SUB FreeMatrixPool(BYREF pool_head AS MatrixPoolEntry PTR)
+DECLARE SUB FreeAllLayerCache()
 
 ' *******************************************************
 ' * Memory Manager Initialization                       *
@@ -159,9 +162,9 @@ SUB PrintMemoryStats()
     PRINT "Memory Usage Statistics:"
     PRINT "------------------------"
     PRINT "Current usage: "; g_current_memory_usage / 1024; "KB ("; _
-          FORMAT(g_current_memory_usage * 100.0 / MAX_MEMORY_USAGE, "0.00"); "%)"
+          CompatFormat(g_current_memory_usage * 100.0 / MAX_MEMORY_USAGE, "0.00"); "%)"
     PRINT "Peak usage   : "; g_peak_memory_usage / 1024; "KB ("; _
-          FORMAT(g_peak_memory_usage * 100.0 / MAX_MEMORY_USAGE, "0.00"); "%)"
+          CompatFormat(g_peak_memory_usage * 100.0 / MAX_MEMORY_USAGE, "0.00"); "%)"
     PRINT "Available    : "; GetAvailableMemory() / 1024; "KB"
     PRINT "Matrix allocs: "; g_matrix_allocs; ", Frees: "; g_matrix_frees
     PRINT "Cache hits   : "; g_cache_hits; ", Misses: "; g_cache_misses
@@ -326,38 +329,19 @@ END SUB
 
 ' Enhanced matrix allocation that uses pooling
 SUB AllocateMatrix(BYREF mat AS Matrix, rows AS INTEGER, cols AS INTEGER)
-    DIM matrix_ptr AS Matrix PTR
-    
-    ' Get a pooled matrix
-    matrix_ptr = GetPooledMatrix(rows, cols)
-    
-    ' Copy the matrix data to the output parameter
-    mat.rows = matrix_ptr->rows
-    mat.cols = matrix_ptr->cols
-    mat.data = matrix_ptr->data
-    
-    ' Note: This leaves matrix_ptr->data pointing to the same memory
-    ' This is intentional - we're just copying the pointer, not the data
-    ' When ReturnMatrixToPool is called, it will reference this same memory
+    InitMatrix(mat, rows, cols)
+    TrackAllocation(rows * cols * 4)
+    g_matrix_allocs = g_matrix_allocs + 1
 END SUB
 
 ' Enhanced matrix deallocation that uses pooling
 SUB DeallocateMatrix(BYREF mat AS Matrix)
-    DIM matrix_ptr AS Matrix PTR
-    
-    ' Create a temporary matrix structure to hold the data
-    matrix_ptr = NEW Matrix
-    matrix_ptr->rows = mat.rows
-    matrix_ptr->cols = mat.cols
-    matrix_ptr->data = mat.data
-    
-    ' Return the matrix to the pool
-    ReturnMatrixToPool(matrix_ptr)
-    
-    ' Clear the original matrix structure
-    mat.rows = 0
-    mat.cols = 0
-    mat.data = NULL
+    IF mat.rows > 0 AND mat.cols > 0 THEN
+        TrackDeallocation(mat.rows * mat.cols * 4)
+        g_matrix_frees = g_matrix_frees + 1
+    END IF
+
+    FreeMatrix(mat)
 END SUB
 
 ' *******************************************************
@@ -436,9 +420,10 @@ SUB LoadLayerFromDisk(BYREF cache AS LayerCache PTR, layer_idx AS INTEGER)
     DIM file AS LONG
     DIM i AS INTEGER, num_weights AS INTEGER
     DIM rows AS INTEGER, cols AS INTEGER
+    DIM r AS INTEGER, c AS INTEGER
     
     ' Generate the layer filename
-    filename = g_model_path + "/layer_" + LTRIM(STR(layer_idx)) + ".bin"
+    filename = g_model_path + "\L" + LTRIM(STR(layer_idx)) + ".BIN"
     
     ' Open the file
     file = FREEFILE
@@ -497,14 +482,15 @@ SUB SaveLayerToDisk(cache AS LayerCache PTR)
     DIM filename AS STRING
     DIM file AS LONG
     DIM i AS INTEGER, num_weights AS INTEGER
+    DIM r AS INTEGER, c AS INTEGER
     
     ' Only save if loaded and modified
-    IF NOT cache->is_loaded THEN
+    IF cache->is_loaded = 0 THEN
         RETURN
     END IF
     
     ' Generate the layer filename
-    filename = g_model_path + "/layer_" + LTRIM(STR(cache->layer_idx)) + ".bin"
+    filename = g_model_path + "\L" + LTRIM(STR(cache->layer_idx)) + ".BIN"
     
     ' Open the file
     file = FREEFILE
@@ -589,7 +575,7 @@ SUB EnsureCacheSpace(needed_size AS LONG)
     END IF
     
     ' Keep evicting layers until we have enough space
-    WHILE NOT CanAllocate(needed_size) AND g_layer_cache_count > 0
+    WHILE CanAllocate(needed_size) = 0 AND g_layer_cache_count > 0
         ' Find the least recently used layer
         lru = FindLRULayer()
         
@@ -625,7 +611,7 @@ SUB EnsureCacheSpace(needed_size AS LONG)
     WEND
     
     ' If we still don't have enough space, that's a problem
-    IF NOT CanAllocate(needed_size) THEN
+    IF CanAllocate(needed_size) = 0 THEN
         PRINT "ERROR: Cannot allocate "; needed_size / 1024; "KB even after evicting layers"
         PRINT "Try increasing MAX_MEMORY_USAGE or reducing model size"
     END IF
@@ -709,14 +695,14 @@ SUB MemoryAwareMatrixMultiply(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
     needed_memory = rows * cols * 4 ' 4 bytes per float
     
     ' Check if we have enough memory
-    IF NOT CanAllocate(needed_memory) THEN
+    IF CanAllocate(needed_memory) = 0 THEN
         PRINT "WARNING: Not enough memory for result matrix. Attempting to free space..."
         
         ' Try to free some space
         EnsureCacheSpace(needed_memory)
         
         ' Check again
-        IF NOT CanAllocate(needed_memory) THEN
+        IF CanAllocate(needed_memory) = 0 THEN
             PRINT "ERROR: Cannot allocate memory for matrix multiplication result"
             RETURN
         END IF
@@ -730,7 +716,7 @@ SUB MemoryAwareMatrixMultiply(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
 END SUB
 
 ' Perform block-sparse attention with memory constraints
-SUB MemoryAwareBlockSparseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output AS Matrix, use_causal_mask AS INTEGER)
+SUB MemoryAwareBlockSparseAttention(query AS Matrix, key AS Matrix, value AS Matrix, BYREF output_matrix AS Matrix, use_causal_mask AS INTEGER)
     ' First check if we have enough memory for the QK^T matrix
     ' This is usually the largest temporary allocation
     DIM qkt_memory AS LONG
@@ -739,7 +725,7 @@ SUB MemoryAwareBlockSparseAttention(query AS Matrix, key AS Matrix, value AS Mat
     ' Check if we can do it directly
     IF CanAllocate(qkt_memory) THEN
         ' We have enough memory, use standard implementation
-        BlockSparseAttention(query, key, value, output, use_causal_mask)
+        BlockSparseAttention(query, key, value, output_matrix, use_causal_mask)
         RETURN
     END IF
     
@@ -758,12 +744,13 @@ SUB MemoryAwareBlockSparseAttention(query AS Matrix, key AS Matrix, value AS Mat
     IF block_rows < 1 THEN block_rows = 1
     
     ' Initialize output matrix
-    InitMatrix(output, query.rows, value.cols)
-    ZeroMatrix(output)
+    InitMatrix(output_matrix, query.rows, value.cols)
+    ZeroMatrix(output_matrix)
     
     ' Process attention in blocks
     DIM start_row AS INTEGER, end_row AS INTEGER
     DIM query_block AS Matrix, output_block AS Matrix
+    DIM i AS INTEGER, j AS INTEGER
     
     FOR start_row = 0 TO query.rows - 1 STEP block_rows
         ' Calculate end row for this block
@@ -784,7 +771,7 @@ SUB MemoryAwareBlockSparseAttention(query AS Matrix, key AS Matrix, value AS Mat
         ' Copy results to output matrix
         FOR i = 0 TO output_block.rows - 1
             FOR j = 0 TO output_block.cols - 1
-                output.data(start_row + i, j) = output_block.data(i, j)
+                output_matrix.data(start_row + i, j) = output_block.data(i, j)
             NEXT j
         NEXT i
         
@@ -800,7 +787,8 @@ END SUB
 
 ' Test the memory manager with a simulated model
 SUB TestMemoryManager()
-    DIM i AS INTEGER, j AS INTEGER, success AS INTEGER
+    DIM i AS INTEGER, j AS INTEGER, r AS INTEGER, c AS INTEGER
+    DIM success AS INTEGER, test_pass AS INTEGER, size_idx AS INTEGER
     DIM layer_cache AS LayerCache PTR
     DIM start_time AS DOUBLE, end_time AS DOUBLE
     
@@ -811,8 +799,8 @@ PRINT "Testing Memory Manager with simulated transformer model..."
     InitMemoryManager()
     
     ' Create temporary directory for model files
-    MKDIR "temp_model"
-    SetModelPath("temp_model")
+    MKDIR "TEMPMOD"
+    SetModelPath("TEMPMOD")
     
     ' Generate some simulated layer files
     PRINT "Generating test layer files..."
@@ -829,7 +817,7 @@ PRINT "Testing Memory Manager with simulated transformer model..."
         ' Simulate layer file creation
         DIM file AS LONG
         DIM filename AS STRING
-        filename = g_model_path + "/layer_" + LTRIM(STR(i)) + ".bin"
+        filename = g_model_path + "\L" + LTRIM(STR(i)) + ".BIN"
         
         file = FREEFILE
         OPEN filename FOR BINARY AS file
@@ -852,11 +840,11 @@ PRINT "Testing Memory Manager with simulated transformer model..."
             PUT #file, , cols
             
             ' Write data
-            DIM val AS SINGLE
+            DIM test_value AS SINGLE
             FOR r = 0 TO rows - 1
                 FOR c = 0 TO cols - 1
-                    val = (r * c * i * j) / 1000.0 ' Deterministic but varies
-                    PUT #file, , val
+                    test_value = (r * c * i * j) / 1000.0 ' Deterministic but varies
+                    PUT #file, , test_value
                 NEXT c
             NEXT r
             
@@ -936,9 +924,9 @@ PRINT "Testing Memory Manager with simulated transformer model..."
     ' Access layers in a pattern that will cause cache evictions
     PRINT "Accessing layers in sequence to test LRU cache:"
     
-    FOR test = 1 TO 2
+    FOR test_pass = 1 TO 2
         ' First pass should be all misses, second should have some hits
-        PRINT "Pass "; test; ":"
+        PRINT "Pass "; test_pass; ":"
         
         ' Access layers in various orders to test LRU
         DIM access_sequence(1 TO 15) AS INTEGER
@@ -979,7 +967,7 @@ PRINT "Testing Memory Manager with simulated transformer model..."
                 PRINT "  Memory usage: "; g_current_memory_usage / 1024; "KB, Cache hits: "; g_cache_hits
             END IF
         NEXT i
-    NEXT test
+    NEXT test_pass
     
     end_time = TIMER
     PRINT "Layer cache test completed in "; end_time - start_time; " seconds"
@@ -1003,8 +991,8 @@ PRINT "Testing Memory Manager with simulated transformer model..."
     sizes(2) = 512  ' Medium
     sizes(3) = 1024 ' Large - should require memory adaptation
     
-    FOR t = 1 TO 3
-        size = sizes(t)
+    FOR size_idx = 1 TO 3
+        size = sizes(size_idx)
         
         PRINT "Testing with matrices of size "; size; "x"; size
         
@@ -1042,7 +1030,7 @@ PRINT "Testing Memory Manager with simulated transformer model..."
         FreeMatrix(big_mat1)
         FreeMatrix(big_mat2)
         FreeMatrix(result_mat)
-    NEXT t
+    NEXT size_idx
     
     end_time = TIMER
     PRINT "Memory-aware operations test completed in "; end_time - start_time; " seconds"
@@ -1059,8 +1047,8 @@ PRINT "Testing Memory Manager with simulated transformer model..."
     
     ' Cleanup test files
     PRINT "Removing test files..."
-    SYSTEM("DEL /Q temp_model\\*.*")
-    SYSTEM("RMDIR temp_model")
+    SHELL "DEL /Q TEMPMOD\*.*"
+    SHELL "RMDIR TEMPMOD"
     
     PRINT "Memory manager test complete!"
 END SUB

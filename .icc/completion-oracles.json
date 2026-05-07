@@ -1,0 +1,51 @@
+{
+  "oracles": [
+    {
+      "name": "gpt2-basic-486-production",
+      "aliases": [
+        "gpt2-basic",
+        "gpt2_basic",
+        "fixed-point language model",
+        "486",
+        "gpt2-basic-486",
+        "dos-gpt2-basic"
+      ],
+      "requires": [
+        {
+          "runtime_check": "runtime_evidence_present",
+          "severity": "high",
+          "label": "Runtime evidence is present",
+          "action": "keep_runtime_evidence_current"
+        },
+        {
+          "runtime_event": "checkpoint",
+          "severity": "high",
+          "label": "Promoted checkpoint evidence exists",
+          "action": "emit_model_report_and_checkpoint_evidence"
+        },
+        {
+          "runtime_event": "artifact",
+          "severity": "high",
+          "label": "Release artifacts and evidence exist",
+          "action": "refresh_compile_vector_quality_perf_artifacts"
+        },
+        {
+          "runtime_event": "completion_condition",
+          "severity": "medium",
+          "label": "Completion criteria and evidence are recorded",
+          "action": "update_strategy_and_readiness_evidence"
+        },
+        {
+          "no_stubbed_paths": [
+            "production_fallback",
+            "synthetic_model_only",
+            "test_stub"
+          ],
+          "severity": "high",
+          "label": "No fake production generation paths",
+          "action": "wire_real_inference_or_mark_diagnostic"
+        }
+      ]
+    }
+  ]
+}

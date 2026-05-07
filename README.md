@@ -19,18 +19,30 @@
 ```
 ## ► Project Status
 
-**COMPLETED!** We have successfully implemented a scaled-down GPT-2 transformer model in BASIC that runs on 486-era hardware constraints. All components have been fully implemented and integrated into a working system including:
+The current production path is the promoted `MODEL_LEXICON_GOLD_V2_S3000`
+checkpoint running inside the DOS `GPT2.EXE` program. The model is
+trained/exported on the host, copied into `C:\MODEL`, and executed by the
+FreeBASIC fixed-point transformer runtime.
 
-- Memory management system with tracking and streaming capabilities
-- SIMD-like bit manipulation operations for parallel processing
-- Block-sparse attention for memory-efficient computation
-- 4-bit logarithmic quantization for compact weight representation
-- Fixed-point arithmetic with assembly optimizations
-- Comprehensive tokenizer with simplified BPE capabilities
-- Complete transformer architecture with self-attention and feed-forward networks
-- User interfaces for text completion and chat applications
+Verified production surface:
 
-The implementation generates coherent text at a rate of approximately 0.04-0.1 tokens per second on a 486DX2/66, which while slow by modern standards, is viable for demonstration purposes.
+- DOS FreeBASIC build of `src/main.bas`
+- 4096-token longest-match lexicon tokenizer with printable byte fallback
+- learned token and position embeddings
+- causal attention, feed-forward blocks, layer norms, and output head
+- Q20.12 fixed-point weights in `GPT2FX.BIN`
+- fixed-point attention exp table in `GPT2EXP.BIN`
+- KV decode cache for in-window generation
+- parity vectors, DOS quality logs, and DOS-emitted `PERF_*` timing records
+
+Legacy matrix, block-sparse, 4-bit quantization, synthetic benchmark, and diagnostic smoke-test modules remain in the repository as lab code. They should not be treated as the current production inference architecture unless a specific build path wires them into `GPT2.EXE`.
+
+The default checkpoint is a 2-layer, 48-dimensional, 4-head, 192-context model
+with 463,168 parameters, Q20.12 fixed-point weights, and a DOS-loadable
+`VOCAB.BIN`. Host float and host fixed quality both pass the full 10-prompt
+suite at 10/10, average 0.960. DOS evidence for the same checkpoint is 10/10,
+average 0.961 after the prompt-aware starter prior. Physical hardware timing is
+still required for board-specific speed claims.
 
 ## ► About This Project
 
@@ -108,13 +120,164 @@ The paper bridges technical implementation details with historical analysis to p
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
-**Actual Measured Performance:**
-- 486SX/25: 0.01-0.02 tokens per second (83-166 minutes for 100 tokens)
-- 486DX/33: 0.02-0.03 tokens per second (55-83 minutes for 100 tokens)
-- 486DX2/66: 0.04-0.07 tokens per second (23-41 minutes for 100 tokens)
-- 486DX4/100: 0.06-0.10 tokens per second (16-27 minutes for 100 tokens)
-- Pentium 60: 0.09-0.15 tokens per second (11-18 minutes for 100 tokens)
-- Pentium 133: 0.20-0.33 tokens per second (5-8 minutes for 100 tokens)
+## ► Current QEMU 486 Runtime
+
+The QEMU path now targets the full GPT2-BASIC program rooted at [`src/main.bas`](src/main.bas), staged for DOS as `GPT2SRC\MAIN.BAS` and compiled inside FreeDOS with DOS FreeBASIC.
+
+Train and export a baseline GPT2-BASIC checkpoint on the host with:
+
+```sh
+python3 scripts/train_gpt2_basic.py --profile 486sx-safe
+```
+
+Byte-level checkpoints remain supported for compatibility. The promoted default
+uses a DOS-loadable lexicon vocabulary. To train a new lexicon checkpoint:
+
+```sh
+python3 scripts/train_gpt2_basic.py --profile 486sx-safe --tokenizer lexicon --vocab-size 4096 --include-docs --corpus-file data/domain_curriculum/gold_curriculum_v2.txt --output assets/gpt2_basic/MODEL_LEXICON_NEW
+```
+
+Lexicon and BPE exports include `MODEL/VOCAB.BIN`. The DOS runtime loads
+`VOCAB.BIN` from the executable directory or from `MODEL\`, validates that its
+vocabulary size matches `GPT2CFG.TXT`, and then uses the same tokenizer mode for
+prompt encoding and output decoding.
+
+The original embedded trainer corpus is intentionally tiny and is no longer the
+production data source. The best current default was trained from the audited
+hand-curated gold curriculum:
+
+```sh
+python3 scripts/build_gold_curriculum.py
+```
+
+The gold-curriculum result is documented in
+`qemu/evidence/gold_curriculum_v2_report.md`. The conservative online corpus is
+still available as warmup/provenance-tracked background text:
+
+```sh
+python3 scripts/fetch_online_training_corpus.py
+python3 scripts/train_gpt2_basic.py --profile 486sx-safe --include-docs --corpus-file data/online_corpus/online_training_corpus.txt --corpus-weight 1 --output assets/gpt2_basic/MODEL_ONLINE_PRETRAIN
+```
+
+The fetcher writes `data/online_corpus/SOURCE_MANIFEST.json` and
+`qemu/evidence/online_training_data_audit.md`. Its default sources are
+conservative public-domain/government/open-data text. Use
+`--include-sharealike` only when the checkpoint distribution plan can carry the
+required attribution and ShareAlike/GFDL obligations.
+The first online-only candidate and the later domain/lexicon sweeps are
+documented in `qemu/evidence/domain_training_strategy_report.md`. The current
+default is the large-vocabulary gold v2 checkpoint because it beats the older
+byte-domain candidate on both held-out and all-suite quality.
+
+This writes `assets/gpt2_basic/MODEL/GPT2CFG.TXT`, `GPT2WT.BIN`, `GPT2FX.BIN`, and `GPT2EXP.BIN`. `GPT2FX.BIN` contains the Q20.12 fixed-point weights and `GPT2EXP.BIN` contains the fixed-point attention exp lookup table. The DOS executable loads them from `C:\MODEL` and runs its own tokenizer plus decoder-only transformer forward pass.
+
+The trainer has named hardware profiles: `386-min`, `486sx-safe`, `486dx2-usable`, `486dx4-plus`, and `pentium-best`. These profiles are checkpoint shapes for host training and DOS inference; they still need QEMU and real-board timing before being quoted as final performance claims.
+
+Validate the checkpoint before staging it into QEMU:
+
+```sh
+python3 scripts/model_report.py --model-dir assets/gpt2_basic/MODEL --strict
+```
+
+The QEMU helpers run this validation automatically and refuse to stage malformed model files.
+
+Compile it under QEMU's 486 CPU model with:
+
+```sh
+bash qemu/compile_main_486.sh
+```
+
+The successful in-VM build prints `COMPILE_OK` and produces `C:\GPT2.EXE`. The compile helper also copies the exported `MODEL` directory into the DOS hard disk image.
+
+Run the compiled program with:
+
+```sh
+bash qemu/run_main_486.sh
+```
+
+Run the full fixed-point quality prompt suite with:
+
+```sh
+bash qemu/run_quality_486.sh
+```
+
+Rank exported checkpoints against held-out quality, memory, and available QEMU
+`--perf` measurements with:
+
+```sh
+python3 scripts/profile_pareto_report.py --refresh-heldout-float
+```
+
+The active `MODEL` row uses DOS fixed-point held-out evidence when available;
+non-active checkpoint rows use host float held-out probes until they are staged
+and run through DOS.
+
+Rank actual trainer architecture profiles with:
+
+```sh
+python3 scripts/architecture_profile_sweep.py
+```
+
+This report includes missing profiles as explicit planning rows and uses
+profile-specific DOS `--quality-all` and `--perf` evidence when available. The
+current promoted default is still the `486sx-safe` shape, but now with the
+4096-token lexicon vocabulary selected from measured quality evidence.
+
+Run the dedicated DOS performance contract with:
+
+```sh
+bash qemu/run_perf_486.sh 486dx2-66
+```
+
+This boots FreeDOS, runs `C:\GPT2.EXE --perf`, extracts `C:\PERF.LOG`, and writes a parseable report to `qemu/evidence/hardware_perf_report.md`. Pass a model directory as the second argument to stage a non-active profile, for example `bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL_PROFILE_386_MIN`. The same `--perf` mode is what we will run on a real PC later; under QEMU it is emulated CPU-profile evidence.
+
+For an approximate era-speed run, use an instruction-count throttled profile:
+
+```sh
+bash qemu/run_main_486_era.sh 486dx2-66
+```
+
+The era-speed runner supports `386dx-33`, `486sx-25`, `486dx-33`, `486dx2-66`, `486dx4-100`, `pentium-60`, `pentium-133`, and `host`. These are repeatable QEMU `-icount` approximations, not cycle-accurate models of specific boards.
+
+The run script boots FreeDOS and launches the real `C:\GPT2.EXE`. Text completion now requires trained model files in `C:\MODEL`; if they are missing, the program refuses to present fake generated output.
+
+The older [`src/dos_gpt2_basic.bas`](src/dos_gpt2_basic.bas) target remains in the repository only as a small diagnostic smoke test for the FreeDOS/FreeBASIC/QEMU toolchain.
+
+The old compact prompt prior is disabled by default. The primary demo path is a trained GPT2-BASIC model exported from PyTorch and executed by the DOS BASIC runtime.
+
+**Current Trained-Model Default:**
+
+The current real-inference demo uses the promoted lexicon GPT2-BASIC checkpoint
+with 2 layers, 48 embedding dimensions, 4 heads, a 192-token context window, and
+a 4096-token lexicon vocabulary. The primary DOS path uses fixed-point weights
+and integer inference kernels. The model has 463,168 parameters, fixed weights
+of 1,852,672 bytes, and measured DOS runtime memory of about 2,055,940 bytes.
+The current QEMU `486dx2-66 --perf` run for this promoted model generated 108
+tokens in 43.94 seconds, or 2.46 tokens/sec.
+
+```
+┌──────────────────────────────┬────────────────────┬───────────────────┬───────────────────┐
+│ Configuration                │ Tokens per Second  │ 70-Token Demo     │ 100-Token Equiv.  │
+├──────────────────────────────┼────────────────────┼───────────────────┼───────────────────┤
+│ 386DX/33-class no-FPU        │ 0.68               │ 103.3 seconds     │ 147.5 seconds     │
+│ 486SX/25 no-FPU              │ 1.36               │ 51.6 seconds      │ 73.8 seconds      │
+│ 486DX/33                     │ 2.71               │ 25.8 seconds      │ 36.9 seconds      │
+│ 486DX2/66                    │ 5.42               │ 12.9 seconds      │ 18.4 seconds      │
+│ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
+│ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
+│ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
+│ QEMU 486dx2-66 --perf        │ 2.46               │ 28.5 seconds      │ 40.7 seconds      │
+│ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
+└──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
+```
+
+The first seven rows are retained as historical byte-baseline timing context;
+the QEMU `486dx2-66 --perf` row is refreshed for the promoted lexicon default.
+Current quality evidence for the promoted lexicon default is in
+`qemu/evidence/quality_report_default_model_all.md`,
+`qemu/evidence/quality_report_default_model_fixed_all.md`, and
+`qemu/evidence/quality_report_dos_all.md`. These are emulator and host
+measurements until we can repeat the same command on a physical PC.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
@@ -122,25 +285,20 @@ The paper bridges technical implementation details with historical analysis to p
 
 Our implementation includes several innovative techniques that would have been considered groundbreaking optimizations in the 486 era. For complete technical details, see the [core innovations section](gpt2_basic_documentation.md#4-core-innovations) in our technical documentation:
 
-### ■ 4-bit Logarithmic Quantization
+### ■ Current Fixed-Point Weight Format
 
 ```
-+--------+--------+--------+--------+--------+--------+--------+--------+
-| Range  | 0.0625 | 0.125  | 0.25   | 0.5    | 1.0    | 2.0    | 4.0    |
-| 4-bit  | 0001   | 0010   | 0011   | 0100   | 0101   | 0110   | 0111   |
-+--------+--------+--------+--------+--------+--------+--------+--------+
+GPT2CFG.TXT   checkpoint shape and file contract
+GPT2WT.BIN    float32 host reference weights
+GPT2FX.BIN    Q20.12 signed fixed-point weights, 4 bytes/value
+GPT2EXP.BIN   fixed-point exp lookup table for attention softmax
 ```
 
-Rather than using 32-bit floating point values (which would be extraordinarily slow on a 486SX), we store weights in 4-bit logarithmic format. This is similar to techniques used in early computer graphics for color compression, but applied to neural network weights.
+The verified production checkpoint currently stores weights as signed Q20.12 `LONG` values. This is larger than packed int8/int4 formats, but it keeps the DOS runtime simple, deterministic, and parity-checkable against the host fixed-point reference.
 
-The quantization scheme uses:
-- 1 bit for sign
-- 3 bits for logarithmic magnitude
-- Lookup tables for fast conversion
+Packed int16, int8, and 4-bit formats are valid next architecture experiments, but they need measured DOS kernel timing. A smaller file is not automatically faster on a 386/486 if dequantization adds work inside the decode loop.
 
-This reduces memory usage by 8x compared to 32-bit floats, with minimal accuracy loss!
-
-### ■ Fixed-Point Arithmetic (Q16.16)
+### ■ Fixed-Point Arithmetic (Q20.12)
 
 Inspired by techniques from early 3D engines like Doom and Quake, we use fixed-point arithmetic throughout. This provides:
 
@@ -152,14 +310,14 @@ Inspired by techniques from early 3D engines like Doom and Quake, we use fixed-p
 For example, multiplying two fixed-point numbers looks like:
 
 ```basic
-FUNCTION FixedMul(a AS INTEGER, b AS INTEGER) AS INTEGER
+FUNCTION FixedMul(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONGINT
-    result = (CLNGINT(a) * CLNGINT(b)) >> 16
-    RETURN CINT(result)
+    result = (CLNGINT(a) * CLNGINT(b)) \ 4096
+    RETURN CLNG(result)
 END FUNCTION
 ```
 
-### ■ Block-Sparse Attention Mechanism
+### ■ Experimental Block-Sparse Attention Mechanism
 
 ```
 ┌─────────┬─────────┬─────────┐     ┌─────────┬─────────┬─────────┐
@@ -181,7 +339,7 @@ END FUNCTION
    Dense Attention Matrix              Sparse Block Representation
 ```
 
-Attention matrices in transformers require O(n²) memory for context length n. On a 486 with just 32MB RAM, this becomes prohibitive rapidly. Our solution:
+Attention matrices in transformers require O(n²) memory for context length n. On a 486 with just 32MB RAM, this becomes prohibitive rapidly. The repository includes block-sparse lab code for this direction:
 
 - Divide attention matrices into fixed-sized blocks
 - Use a linked-list structure to store only non-zero blocks
@@ -189,7 +347,7 @@ Attention matrices in transformers require O(n²) memory for context length n. O
 - Automatically detect when to use sparse vs. dense representation
 - Achieve 50-80% memory reduction for typical patterns
 
-This technique was inspired by sparse matrix methods used in early scientific computing and CAD software of the era.
+This technique was inspired by sparse matrix methods used in early scientific computing and CAD software of the era. It is not the current production GPT2-BASIC decode path.
 
 ### ■ Disk Streaming Parameter System
 
@@ -312,33 +470,33 @@ The difference is that we're applying these vintage techniques to a modern AI ar
 
 ### ■ Core Components
 
-The implementation consists of several modules that work together:
+The production executable still includes several older modules, but the verified GPT2-BASIC path is narrower than the full repository:
 
 ```
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
-│ Data          │  │ Matrix           │  │ Quantization      │
-│ Structures    │◀─┤ Operations       │◀─┤ System            │
+│ Tokenizer     │  │ Fixed-Point      │  │ Model Files       │
+│ byte vocab    │◀─┤ GPT Runtime      │◀─┤ GPT2FX/EXP        │
 └───────────────┘  └──────────────────┘  └───────────────────┘
        ▲                    ▲                      ▲
        │                    │                      │
        ▼                    ▼                      ▼
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
-│ Transformer   │  │ Block-Sparse     │  │ Softmax           │
-│ Components    │◀─┤ Attention        │◀─┤ Fixed-Point       │
+│ KV Cache      │  │ Causal           │  │ Greedy            │
+│ decode state  │◀─┤ Attention        │◀─┤ Sampling          │
 └───────────────┘  └──────────────────┘  └───────────────────┘
        ▲                    ▲                      ▲
        │                    │                      │
        ▼                    ▼                      ▼
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
-│ File I/O      │  │ Assembly         │  │ SIMD-like         │
-│ Streaming     │◀─┤ Optimizations    │◀─┤ Operations        │
+│ Quality       │  │ Vector           │  │ PERF_*            │
+│ suites        │◀─┤ parity           │◀─┤ timing logs       │
 └───────────────┘  └──────────────────┘  └───────────────────┘
        ▲                    ▲                      ▲
        │                    │                      │
        ▼                    ▼                      ▼
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
-│ Tokenizer     │  │ Benchmark        │  │ Model             │
-│ & Vocabulary  │◀─┤ System           │◀─┤ Integration       │
+│ QEMU/FreeDOS  │  │ Host export      │  │ Evidence          │
+│ runners       │◀─┤ scripts          │◀─┤ reports           │
 └───────────────┘  └──────────────────┘  └───────────────────┘
 ```
 
@@ -346,22 +504,25 @@ The implementation consists of several modules that work together:
 
 ```
 /src
-  ├── data_structures.bas     # Matrix data structures
-  ├── quantization.bas        # 4-bit logarithmic quantization
-  ├── matrix_ops.bas          # Fixed-point matrix operations
-  ├── transformer_components.bas # Attention and feed-forward components
-  ├── softmax_fixed.bas       # Fixed-point softmax implementation
-  ├── block_sparse.bas        # Sparse matrix operations
-  ├── file_io.bas             # Model parameter I/O
-  ├── tokenizer.bas           # Text tokenization
-  ├── model.bas               # Full transformer model
-  ├── simd_ops.bas            # SIMD-like bit manipulation operations
-  ├── asm_optimizations.bas   # Assembly optimizations
-  ├── benchmark.bas           # Performance benchmarking
-  └── main.bas                # Main program entry point
-/model_data                   # Directory for model parameters
-  ├── vocabulary.txt          # Tokenizer vocabulary
-  └── ...                     # Model weights (when generated)
+  ├── main.bas                # DOS entry point, quality/perf/vector modes
+  ├── real_gpt.bas            # verified trained GPT2-BASIC fixed-point runtime
+  ├── tokenizer.bas           # byte fallback plus DOS-loadable BPE vocabulary support
+  ├── quality_prior.bas       # disabled prompt-prior legacy path
+  ├── data_structures.bas     # shared data/config structures
+  ├── simd_ops.bas            # CPU detection and platform helpers
+  ├── memory_manager.bas      # memory accounting helpers
+  ├── model.bas               # legacy matrix transformer path
+  ├── quantization.bas        # lab 4-bit/log quantization code
+  ├── block_sparse.bas        # lab sparse attention code
+  ├── benchmark.bas           # synthetic benchmark code
+  └── dos_gpt2_basic.bas      # small diagnostic smoke target
+/assets/gpt2_basic/MODEL      # host-exported production checkpoint
+  ├── GPT2CFG.TXT             # model shape
+  ├── GPT2WT.BIN              # float32 reference weights
+  ├── GPT2FX.BIN              # Q20.12 fixed-point weights
+  ├── GPT2EXP.BIN             # fixed-point exp lookup table
+  ├── VOCAB.BIN               # DOS tokenizer vocabulary and mode
+  └── GPT2VEC.TXT             # parity vectors
 ```
 
 ### ■ Transformer Architecture
@@ -407,12 +568,13 @@ Input Text
 ```
 
 Our model follows the GPT-2 architecture with several modifications for efficiency:
-- Reduced embedding dimension (64-128)
-- Fewer layers (2-4)
-- Fewer attention heads (2-4)
-- Smaller vocabulary (1,000-5,000 tokens)
-- Gated Linear Units instead of standard FFN
-- Fixed context length (64-128 tokens)
+- byte or DOS-loadable BPE/lexicon tokenizer, with the default using 4096 lexicon tokens
+- 2-4 transformer layers depending on exported profile
+- 32-96 embedding dimensions depending on exported profile
+- 4-6 attention heads depending on exported profile
+- learned position embeddings
+- standard GELU feed-forward blocks
+- fixed context windows from 128 to 256 tokens depending on profile
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
@@ -501,11 +663,12 @@ From the main menu, select option 3 to run a suite of benchmarks testing various
 
 ### ■ Configuration
 
-The model can be configured by modifying constants in the source files or by using the model initialization options in the user interface. The system supports multiple model configurations:
-1. Tiny (4 layers, 128 embedding)
-2. Small (6 layers, 256 embedding)
-3. Medium (8 layers, 512 embedding)
-4. Custom configuration from file
+Production model shape is controlled by the exported fixed-point checkpoint in `C:\MODEL`. Use the host trainer profiles for repeatable checkpoint builds:
+1. `386-min`
+2. `486sx-safe`
+3. `486dx2-usable`
+4. `486dx4-plus`
+5. `pentium-best`
 
 ### ■ DOSBox Configuration
 
@@ -521,9 +684,9 @@ cycles=max
 ```
 ## ► Performance Analysis
 
-### ■ Benchmarks on Modern Hardware
+### ■ Historical Synthetic Benchmarks
 
-For a more comprehensive performance analysis, see our [detailed benchmarking methodology and results](gpt2_basic_documentation.md#6-performance-analysis) in the technical documentation.
+The older repository documentation includes synthetic component benchmarks for the lab matrix/runtime code. They are useful for background, but they are not the current production GPT2-BASIC performance claim. Current production timing should come from `GPT2.EXE --perf` and `qemu/evidence/hardware_perf_report.md`.
 
 ```
 ┌───────────────────┬───────────────────┬────────────────┐
@@ -541,22 +704,29 @@ For a more comprehensive performance analysis, see our [detailed benchmarking me
 
 ### ■ 486 Performance
 
-Based on relative MIPS and accounting for memory/IO constraints:
+Current fixed-point results for the promoted 4096-token lexicon checkpoint:
 
 ```
-┌───────────────────┬────────────────────┬───────────────────┐
-│ Configuration     │ Tokens per Second  │ 100-Token Prompt  │
-├───────────────────┼────────────────────┼───────────────────┤
-│ 486SX/25          │ 0.01-0.02          │ 83-166 minutes    │
-│ 486DX/33          │ 0.02-0.03          │ 55-83 minutes     │
-│ 486DX2/66         │ 0.04-0.07          │ 23-41 minutes     │
-│ 486DX4/100        │ 0.06-0.10          │ 16-27 minutes     │
-│ Pentium 60        │ 0.09-0.15          │ 11-18 minutes     │
-│ Pentium 133       │ 0.20-0.33          │ 5-8 minutes       │
-└───────────────────┴────────────────────┴───────────────────┘
+┌──────────────────────────────┬────────────────────┬───────────────────┬───────────────────┐
+│ Configuration                │ Tokens per Second  │ 70-Token Demo     │ 100-Token Equiv.  │
+├──────────────────────────────┼────────────────────┼───────────────────┼───────────────────┤
+│ 386DX/33-class no-FPU        │ 0.68               │ 103.3 seconds     │ 147.5 seconds     │
+│ 486SX/25 no-FPU              │ 1.36               │ 51.6 seconds      │ 73.8 seconds      │
+│ 486DX/33                     │ 2.71               │ 25.8 seconds      │ 36.9 seconds      │
+│ 486DX2/66                    │ 5.42               │ 12.9 seconds      │ 18.4 seconds      │
+│ 486DX4/100                   │ 8.14               │ 8.6 seconds       │ 12.3 seconds      │
+│ Pentium 60                   │ 7.91               │ 8.9 seconds       │ 12.6 seconds      │
+│ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
+│ QEMU 486dx2-66 --perf        │ 2.46               │ 28.5 seconds      │ 40.7 seconds      │
+│ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
+└──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
+
+The era-target rows are planning estimates tied to current fixed-point work counts; the QEMU rows are `GPT2.EXE --perf` measurements from FreeDOS emulation. Measure the target PC directly before quoting board-specific speed.
 
 ### ■ Memory Usage
+
+The verified `486sx-safe` production checkpoint currently reports 2,055,940 bytes of DOS runtime memory. The older planning table below is retained as historical design context for larger matrix/runtime configurations, not as the current measured production footprint.
 
 ```
 ┌───────────────────────────┬─────────────────┬────────────────┐
@@ -583,8 +753,11 @@ Based on relative MIPS and accounting for memory/IO constraints:
 
 Several limitations have been identified during implementation:
 
-- **Generation Speed:** While functional, generation speed remains slow (0.04-0.1 tokens per second on a 486DX2/66)
-- **Context Length:** Attention computation becomes memory-intensive at longer contexts, limiting practical use to 64-128 tokens
+- **Physical hardware evidence:** QEMU `-icount` measurements are repeatable emulator evidence, not cycle-accurate proof for a specific motherboard.
+- **Prompt coverage:** The current checkpoint passes the measured DOS held-out and runtime suites, but broader open-ended prompts still need product testing.
+- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.46 tokens/sec across the three-prompt performance suite.
+- **Context length:** The fixed cached decode path has a hard prompt-plus-output ceiling at the exported context window.
+- **Sampling:** The production fixed-point path is currently greedy even though the UI exposes temperature/top-p/top-k controls.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```

@@ -70,16 +70,88 @@ SUB CloseFile(handle AS FileHandle)
     END IF
 END SUB
 
+FUNCTION ModelDirectoryHasGPT2BasicCheckpoint(base_path AS STRING) AS INTEGER
+    IF DIR(base_path + "\GPT2CFG.TXT") <> "" THEN
+        IF DIR(base_path + "\GPT2FX.BIN") <> "" AND DIR(base_path + "\GPT2EXP.BIN") <> "" THEN RETURN 1
+        IF DIR(base_path + "\GPT2WT.BIN") <> "" THEN RETURN 1
+    END IF
+
+    IF DIR(base_path + "\TINYCFG.TXT") <> "" THEN
+        IF DIR(base_path + "\TINYFX.BIN") <> "" AND DIR(base_path + "\TINYEXP.BIN") <> "" THEN RETURN 1
+        IF DIR(base_path + "\TINYWT.BIN") <> "" THEN RETURN 1
+    END IF
+
+    RETURN 0
+END FUNCTION
+
+SUB InitGPT2BasicModelFiles(model AS ModelFileInfo, base_path AS STRING)
+    DIM cfg_name AS STRING
+    DIM fixed_name AS STRING
+    DIM exp_name AS STRING
+    DIM float_name AS STRING
+    DIM profile_name AS STRING
+    DIM file_num AS INTEGER
+    DIM line_buffer AS STRING
+    DIM eq_pos AS INTEGER
+    DIM key_text AS STRING
+    DIM value_text AS STRING
+
+    cfg_name = "GPT2CFG.TXT"
+    fixed_name = "GPT2FX.BIN"
+    exp_name = "GPT2EXP.BIN"
+    float_name = "GPT2WT.BIN"
+    profile_name = "PROFILE.TXT"
+
+    IF DIR(base_path + "\" + cfg_name) = "" THEN cfg_name = "TINYCFG.TXT"
+    IF DIR(base_path + "\" + fixed_name) = "" THEN fixed_name = "TINYFX.BIN"
+    IF DIR(base_path + "\" + exp_name) = "" THEN exp_name = "TINYEXP.BIN"
+    IF DIR(base_path + "\" + float_name) = "" THEN float_name = "TINYWT.BIN"
+
+    InitFileHandle model.token_embed_file, base_path + "\" + fixed_name
+    InitFileHandle model.pos_embed_file, base_path + "\" + exp_name
+    InitFileHandle model.output_file, base_path + "\" + float_name
+    InitFileHandle model.vocab_file, base_path + "\" + profile_name
+    InitFileHandle model.config_file, base_path + "\" + cfg_name
+
+    model.num_layers = 1
+    file_num = FREEFILE
+    ON ERROR GOTO cfg_done
+    OPEN base_path + "\" + cfg_name FOR INPUT AS #file_num
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_buffer
+        line_buffer = TRIM$(line_buffer)
+        IF line_buffer <> "" AND LEFT$(line_buffer, 1) <> "#" THEN
+            eq_pos = INSTR(line_buffer, "=")
+            IF eq_pos > 0 THEN
+                key_text = LCASE$(TRIM$(LEFT$(line_buffer, eq_pos - 1)))
+                value_text = TRIM$(MID$(line_buffer, eq_pos + 1))
+                IF key_text = "n_layer" THEN model.num_layers = VAL(value_text)
+            END IF
+        END IF
+    WEND
+    CLOSE #file_num
+
+cfg_done:
+    ON ERROR GOTO 0
+    IF model.num_layers < 1 THEN model.num_layers = 1
+END SUB
+
 ' Initialize the model file information
 SUB InitModelFiles(model AS ModelFileInfo, base_path AS STRING)
     DIM layer_idx AS INTEGER
+
+    IF ModelDirectoryHasGPT2BasicCheckpoint(base_path) <> 0 THEN
+        InitGPT2BasicModelFiles model, base_path
+        RETURN
+    END IF
     
     ' Initialize file handles with proper paths
-    InitFileHandle model.token_embed_file, base_path + "/token_embed.bin"
-    InitFileHandle model.pos_embed_file, base_path + "/pos_embed.bin"
-    InitFileHandle model.output_file, base_path + "/output_layer.bin"
-    InitFileHandle model.vocab_file, base_path + "/vocabulary.txt"
-    InitFileHandle model.config_file, base_path + "/config.bin"
+    InitFileHandle model.token_embed_file, base_path + "\TOKEMB.BIN"
+    InitFileHandle model.pos_embed_file, base_path + "\POSEMB.BIN"
+    InitFileHandle model.output_file, base_path + "\OUTPUT.BIN"
+    InitFileHandle model.vocab_file, base_path + "\VOCAB.TXT"
+    InitFileHandle model.config_file, base_path + "\CONFIG.BIN"
     
     ' Read configuration file to get number of layers
     model.num_layers = 2 ' Default value if config file can't be read
@@ -106,7 +178,7 @@ SUB InitModelFiles(model AS ModelFileInfo, base_path AS STRING)
     
     ' Initialize layer files
     FOR layer_idx = 0 TO model.num_layers - 1
-        InitFileHandle model.layer_files(layer_idx), base_path + "/layer_" + LTRIM$(STR$(layer_idx)) + ".bin"
+        InitFileHandle model.layer_files(layer_idx), base_path + "\L" + LTRIM$(STR$(layer_idx)) + ".BIN"
     NEXT layer_idx
 END SUB
 
@@ -127,8 +199,8 @@ END SUB
 
 ' Read matrix dimensions from a file
 SUB ReadMatrixDimensions(handle AS FileHandle, rows AS INTEGER, cols AS INTEGER)
-    IF NOT handle.is_open THEN
-        IF NOT OpenReadFile(handle) THEN
+    IF handle.is_open = 0 THEN
+        IF OpenReadFile(handle) = 0 THEN
             rows = 0
             cols = 0
             RETURN
@@ -153,8 +225,8 @@ FUNCTION StreamMatrixRows(handle AS FileHandle, matrix AS Matrix, start_row AS I
     DIM value AS INTEGER
     
     ' Make sure file is open
-    IF NOT handle.is_open THEN
-        IF NOT OpenReadFile(handle) THEN RETURN 0
+    IF handle.is_open = 0 THEN
+        IF OpenReadFile(handle) = 0 THEN RETURN 0
     END IF
     
     ' Read matrix dimensions if not already known
@@ -233,8 +305,8 @@ SUB StreamLayerWeights(model AS ModelFileInfo, layer_idx AS INTEGER, Wq AS Matri
     handle = model.layer_files(layer_idx)
     
     ' Make sure file is open
-    IF NOT handle.is_open THEN
-        IF NOT OpenReadFile(handle) THEN 
+    IF handle.is_open = 0 THEN
+        IF OpenReadFile(handle) = 0 THEN
             PRINT "Error: Could not open layer file for layer "; layer_idx
             RETURN
         END IF
@@ -266,84 +338,84 @@ SUB StreamLayerWeights(model AS ModelFileInfo, layer_idx AS INTEGER, Wq AS Matri
     
     ' 1. Load Wq
     success = LoadMatrix(handle, Wq)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading Wq for layer "; layer_idx
         RETURN
     END IF
     
     ' 2. Load Wk
     success = LoadMatrix(handle, Wk)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading Wk for layer "; layer_idx
         RETURN
     END IF
     
     ' 3. Load Wv
     success = LoadMatrix(handle, Wv)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading Wv for layer "; layer_idx
         RETURN
     END IF
     
     ' 4. Load Wo
     success = LoadMatrix(handle, Wo)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading Wo for layer "; layer_idx
         RETURN
     END IF
     
     ' 5. Load W1
     success = LoadMatrix(handle, W1)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading W1 for layer "; layer_idx
         RETURN
     END IF
     
     ' 6. Load W2
     success = LoadMatrix(handle, W2)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading W2 for layer "; layer_idx
         RETURN
     END IF
     
     ' 7. Load W3
     success = LoadMatrix(handle, W3)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading W3 for layer "; layer_idx
         RETURN
     END IF
     
     ' 8. Load LayerNorm1_gamma
     success = LoadMatrix(handle, LayerNorm1_gamma)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading LayerNorm1_gamma for layer "; layer_idx
         RETURN
     END IF
     
     ' 9. Load LayerNorm1_beta
     success = LoadMatrix(handle, LayerNorm1_beta)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading LayerNorm1_beta for layer "; layer_idx
         RETURN
     END IF
     
     ' 10. Load LayerNorm2_gamma
     success = LoadMatrix(handle, LayerNorm2_gamma)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading LayerNorm2_gamma for layer "; layer_idx
         RETURN
     END IF
     
     ' 11. Load LayerNorm2_beta
     success = LoadMatrix(handle, LayerNorm2_beta)
-    IF NOT success THEN
+    IF success = 0 THEN
         PRINT "Error loading LayerNorm2_beta for layer "; layer_idx
         RETURN
     END IF
 END SUB
 
 ' Load vocabulary from file
-FUNCTION LoadVocabulary(model AS ModelFileInfo, vocab() AS STRING) AS INTEGER
+FUNCTION LoadModelVocabulary(model AS ModelFileInfo, vocab() AS STRING) AS INTEGER
     DIM handle AS FileHandle
     DIM token_idx AS INTEGER
     DIM line_buffer AS STRING * 256
@@ -352,8 +424,8 @@ FUNCTION LoadVocabulary(model AS ModelFileInfo, vocab() AS STRING) AS INTEGER
     handle = model.vocab_file
     
     ' Make sure file is open
-    IF NOT handle.is_open THEN
-        IF NOT OpenReadFile(handle) THEN RETURN 0
+    IF handle.is_open = 0 THEN
+        IF OpenReadFile(handle) = 0 THEN RETURN 0
     END IF
     
     ' First line should contain vocabulary size
@@ -378,14 +450,70 @@ FUNCTION LoadVocabulary(model AS ModelFileInfo, vocab() AS STRING) AS INTEGER
 END FUNCTION
 
 ' Load model configuration from file
-SUB LoadModelConfig(model AS ModelFileInfo, embedding_dim AS INTEGER, num_heads AS INTEGER, num_layers AS INTEGER, _
-                    context_length AS INTEGER, vocab_size AS INTEGER)
+SUB LoadModelConfig(model AS ModelFileInfo, BYREF cfg_embedding_dim AS INTEGER, BYREF cfg_num_heads AS INTEGER, BYREF cfg_num_layers AS INTEGER, _
+                    BYREF cfg_context_length AS INTEGER, BYREF cfg_vocab_size AS INTEGER)
     DIM handle AS FileHandle
+    DIM cfg_filename AS STRING
     handle = model.config_file
+
+    cfg_filename = RTRIM$(handle.filename)
+    IF INSTR(UCASE$(cfg_filename), "GPT2CFG.TXT") > 0 OR INSTR(UCASE$(cfg_filename), "TINYCFG.TXT") > 0 THEN
+        DIM text_file AS INTEGER
+        DIM line_buffer AS STRING
+        DIM eq_pos AS INTEGER
+        DIM key_text AS STRING
+        DIM value_text AS STRING
+
+        cfg_embedding_dim = 0
+        cfg_num_heads = 0
+        cfg_num_layers = 0
+        cfg_context_length = 0
+        cfg_vocab_size = 0
+
+        text_file = FREEFILE
+        ON ERROR GOTO text_config_done
+        OPEN cfg_filename FOR INPUT AS #text_file
+
+        WHILE EOF(text_file) = 0
+            LINE INPUT #text_file, line_buffer
+            line_buffer = TRIM$(line_buffer)
+            IF line_buffer <> "" AND LEFT$(line_buffer, 1) <> "#" THEN
+                eq_pos = INSTR(line_buffer, "=")
+                IF eq_pos > 0 THEN
+                    key_text = LCASE$(TRIM$(LEFT$(line_buffer, eq_pos - 1)))
+                    value_text = TRIM$(MID$(line_buffer, eq_pos + 1))
+
+                    SELECT CASE key_text
+                        CASE "n_embd", "embedding_dim"
+                            cfg_embedding_dim = VAL(value_text)
+                        CASE "n_head", "num_heads"
+                            cfg_num_heads = VAL(value_text)
+                        CASE "n_layer", "num_layers"
+                            cfg_num_layers = VAL(value_text)
+                        CASE "n_positions", "context_length"
+                            cfg_context_length = VAL(value_text)
+                        CASE "vocab_size"
+                            cfg_vocab_size = VAL(value_text)
+                    END SELECT
+                END IF
+            END IF
+        WEND
+        CLOSE #text_file
+
+text_config_done:
+        ON ERROR GOTO 0
+        IF cfg_embedding_dim < 1 THEN cfg_embedding_dim = 48
+        IF cfg_num_heads < 1 THEN cfg_num_heads = 4
+        IF cfg_num_layers < 1 THEN cfg_num_layers = model.num_layers
+        IF cfg_context_length < 1 THEN cfg_context_length = 192
+        IF cfg_vocab_size < 1 THEN cfg_vocab_size = 258
+        model.num_layers = cfg_num_layers
+        RETURN
+    END IF
     
     ' Make sure file is open
-    IF NOT handle.is_open THEN
-        IF NOT OpenReadFile(handle) THEN 
+    IF handle.is_open = 0 THEN
+        IF OpenReadFile(handle) = 0 THEN
             PRINT "Error: Could not open config file"
             RETURN
         END IF
@@ -395,33 +523,33 @@ SUB LoadModelConfig(model AS ModelFileInfo, embedding_dim AS INTEGER, num_heads 
     SEEK #handle.file_num, 1 ' 1-based indexing
     
     ' Read configuration parameters
-    GET #handle.file_num, , embedding_dim
-    GET #handle.file_num, , num_heads
-    GET #handle.file_num, , num_layers
-    GET #handle.file_num, , context_length
-    GET #handle.file_num, , vocab_size
+    GET #handle.file_num, , cfg_embedding_dim
+    GET #handle.file_num, , cfg_num_heads
+    GET #handle.file_num, , cfg_num_layers
+    GET #handle.file_num, , cfg_context_length
+    GET #handle.file_num, , cfg_vocab_size
     
     ' Update the model's num_layers
-    model.num_layers = num_layers
+    model.num_layers = cfg_num_layers
 END SUB
 
 ' Write a model configuration file (for saving trained models)
-SUB WriteModelConfig(base_path AS STRING, embedding_dim AS INTEGER, num_heads AS INTEGER, num_layers AS INTEGER, _
-                     context_length AS INTEGER, vocab_size AS INTEGER)
+SUB WriteModelConfig(base_path AS STRING, cfg_embedding_dim AS INTEGER, cfg_num_heads AS INTEGER, cfg_num_layers AS INTEGER, _
+                     cfg_context_length AS INTEGER, cfg_vocab_size AS INTEGER)
     DIM file_num AS INTEGER
     file_num = FREEFILE
     
     ' Create the config file
     ON ERROR GOTO WriteError
-    OPEN base_path + "/config.bin" FOR BINARY AS #file_num
+    OPEN base_path + "\CONFIG.BIN" FOR BINARY AS #file_num
     ON ERROR GOTO 0
     
     ' Write configuration parameters
-    PUT #file_num, , embedding_dim
-    PUT #file_num, , num_heads
-    PUT #file_num, , num_layers
-    PUT #file_num, , context_length
-    PUT #file_num, , vocab_size
+    PUT #file_num, , cfg_embedding_dim
+    PUT #file_num, , cfg_num_heads
+    PUT #file_num, , cfg_num_layers
+    PUT #file_num, , cfg_context_length
+    PUT #file_num, , cfg_vocab_size
     
     CLOSE #file_num
     RETURN
@@ -462,10 +590,10 @@ SaveError:
     CLOSE #file_num
 END SUB
 
-' Creates a model from scratch with randomized weights
-' This is useful for testing without an actual trained model
-SUB CreateDummyModel(base_path AS STRING, embedding_dim AS INTEGER, num_heads AS INTEGER, num_layers AS INTEGER, _
-                     context_length AS INTEGER, vocab_size AS INTEGER)
+' Creates a diagnostic model from scratch with randomized weights
+' This is useful for file-format checks without touching the production checkpoint
+SUB CreateDiagnosticModel(base_path AS STRING, cfg_embedding_dim AS INTEGER, cfg_num_heads AS INTEGER, cfg_num_layers AS INTEGER, _
+                          cfg_context_length AS INTEGER, cfg_vocab_size AS INTEGER)
     DIM layer_idx AS INTEGER
     DIM cmd AS STRING
     
@@ -474,51 +602,52 @@ SUB CreateDummyModel(base_path AS STRING, embedding_dim AS INTEGER, num_heads AS
     SHELL cmd                                      ' Execute command (will fail silently if directory exists)
     
     ' Write configuration
-    WriteModelConfig base_path, embedding_dim, num_heads, num_layers, context_length, vocab_size
+    WriteModelConfig base_path, cfg_embedding_dim, cfg_num_heads, cfg_num_layers, cfg_context_length, cfg_vocab_size
     
-    ' Create dummy vocabulary file
+    ' Create diagnostic vocabulary file
     DIM vocab_file AS INTEGER
     vocab_file = FREEFILE
-    OPEN base_path + "/vocabulary.txt" FOR OUTPUT AS #vocab_file
-    PRINT #vocab_file, vocab_size
+    OPEN base_path + "\VOCAB.TXT" FOR OUTPUT AS #vocab_file
+    PRINT #vocab_file, cfg_vocab_size
     
     DIM i AS INTEGER
-    FOR i = 0 TO vocab_size - 1
+    FOR i = 0 TO cfg_vocab_size - 1
         PRINT #vocab_file, "token_" + LTRIM$(STR$(i))
     NEXT i
     CLOSE #vocab_file
     
-    ' Create dummy weight matrices and save them
+    ' Create diagnostic weight matrices and save them
     ' Token embeddings
     DIM token_embed AS Matrix
-    InitMatrix token_embed, vocab_size, embedding_dim
+    InitMatrix token_embed, cfg_vocab_size, cfg_embedding_dim
     ' Fill with random values
-    FOR i = 0 TO (vocab_size * embedding_dim) - 1
-        DIM row AS INTEGER = i \ embedding_dim
-        DIM col AS INTEGER = i MOD embedding_dim
+    FOR i = 0 TO (cfg_vocab_size * cfg_embedding_dim) - 1
+        DIM row AS INTEGER = i \ cfg_embedding_dim
+        DIM col AS INTEGER = i MOD cfg_embedding_dim
         ' Generate values between -1 and 1, then quantize
-        DIM val AS SINGLE = (RND - 0.5) * 2
-        token_embed.data(row, col) = QuantizeLog(val).packed_value
+        DIM random_value AS SINGLE = (RND - 0.5) * 2
+        token_embed.data(row, col) = QuantizeLog(random_value).packed_value
     NEXT i
-    SaveMatrixToFile token_embed, base_path + "/token_embed.bin"
+    SaveMatrixToFile token_embed, base_path + "\TOKEMB.BIN"
     FreeMatrix token_embed
     
     ' Positional embeddings
     DIM pos_embed AS Matrix
-    InitMatrix pos_embed, context_length, embedding_dim
+    InitMatrix pos_embed, cfg_context_length, cfg_embedding_dim
     ' Fill with random values
-    FOR i = 0 TO (context_length * embedding_dim) - 1
-        DIM row AS INTEGER = i \ embedding_dim
-        DIM col AS INTEGER = i MOD embedding_dim
-        DIM val AS SINGLE = (RND - 0.5) * 2
-        pos_embed.data(row, col) = QuantizeLog(val).packed_value
+    FOR i = 0 TO (cfg_context_length * cfg_embedding_dim) - 1
+        DIM row AS INTEGER = i \ cfg_embedding_dim
+        DIM col AS INTEGER = i MOD cfg_embedding_dim
+        DIM random_value AS SINGLE = (RND - 0.5) * 2
+        pos_embed.data(row, col) = QuantizeLog(random_value).packed_value
     NEXT i
-    SaveMatrixToFile pos_embed, base_path + "/pos_embed.bin"
+    SaveMatrixToFile pos_embed, base_path + "\POSEMB.BIN"
     FreeMatrix pos_embed
     
     ' For each layer, create all required weight matrices
-    FOR layer_idx = 0 TO num_layers - 1
-        DIM layer_path AS STRING = base_path + "/layer_" + LTRIM$(STR$(layer_idx)) + ".bin"
+    FOR layer_idx = 0 TO cfg_num_layers - 1
+        DIM layer_stem AS STRING = base_path + "\L" + LTRIM$(STR$(layer_idx))
+        DIM layer_path AS STRING = layer_stem + ".BIN"
         DIM layer_file AS INTEGER = FREEFILE
         
         ' Create the layer file
@@ -533,186 +662,186 @@ SUB CreateDummyModel(base_path AS STRING, embedding_dim AS INTEGER, num_heads AS
         
         ' Create all the weight matrices for this layer with random values
         ' Attention weights
-        DIM head_dim AS INTEGER = embedding_dim \ num_heads
+        DIM head_width AS INTEGER = cfg_embedding_dim \ cfg_num_heads
         
         ' Query weights
         DIM Wq AS Matrix
-        InitMatrix Wq, embedding_dim, embedding_dim
-        FOR i = 0 TO (embedding_dim * embedding_dim) - 1
-            DIM row AS INTEGER = i \ embedding_dim
-            DIM col AS INTEGER = i MOD embedding_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            Wq.data(row, col) = QuantizeLog(val).packed_value
+        InitMatrix Wq, cfg_embedding_dim, cfg_embedding_dim
+        FOR i = 0 TO (cfg_embedding_dim * cfg_embedding_dim) - 1
+            DIM row AS INTEGER = i \ cfg_embedding_dim
+            DIM col AS INTEGER = i MOD cfg_embedding_dim
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            Wq.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile Wq, layer_path + ".wq" ' Temporary file
+        SaveMatrixToFile Wq, layer_stem + ".WQ" ' Temporary file
         FreeMatrix Wq
         
         ' Key weights
         DIM Wk AS Matrix
-        InitMatrix Wk, embedding_dim, embedding_dim
-        FOR i = 0 TO (embedding_dim * embedding_dim) - 1
-            DIM row AS INTEGER = i \ embedding_dim
-            DIM col AS INTEGER = i MOD embedding_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            Wk.data(row, col) = QuantizeLog(val).packed_value
+        InitMatrix Wk, cfg_embedding_dim, cfg_embedding_dim
+        FOR i = 0 TO (cfg_embedding_dim * cfg_embedding_dim) - 1
+            DIM row AS INTEGER = i \ cfg_embedding_dim
+            DIM col AS INTEGER = i MOD cfg_embedding_dim
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            Wk.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile Wk, layer_path + ".wk" ' Temporary file
+        SaveMatrixToFile Wk, layer_stem + ".WK" ' Temporary file
         FreeMatrix Wk
         
         ' Value weights
         DIM Wv AS Matrix
-        InitMatrix Wv, embedding_dim, embedding_dim
-        FOR i = 0 TO (embedding_dim * embedding_dim) - 1
-            DIM row AS INTEGER = i \ embedding_dim
-            DIM col AS INTEGER = i MOD embedding_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            Wv.data(row, col) = QuantizeLog(val).packed_value
+        InitMatrix Wv, cfg_embedding_dim, cfg_embedding_dim
+        FOR i = 0 TO (cfg_embedding_dim * cfg_embedding_dim) - 1
+            DIM row AS INTEGER = i \ cfg_embedding_dim
+            DIM col AS INTEGER = i MOD cfg_embedding_dim
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            Wv.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile Wv, layer_path + ".wv" ' Temporary file
+        SaveMatrixToFile Wv, layer_stem + ".WV" ' Temporary file
         FreeMatrix Wv
         
         ' Output projection weights
         DIM Wo AS Matrix
-        InitMatrix Wo, embedding_dim, embedding_dim
-        FOR i = 0 TO (embedding_dim * embedding_dim) - 1
-            DIM row AS INTEGER = i \ embedding_dim
-            DIM col AS INTEGER = i MOD embedding_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            Wo.data(row, col) = QuantizeLog(val).packed_value
+        InitMatrix Wo, cfg_embedding_dim, cfg_embedding_dim
+        FOR i = 0 TO (cfg_embedding_dim * cfg_embedding_dim) - 1
+            DIM row AS INTEGER = i \ cfg_embedding_dim
+            DIM col AS INTEGER = i MOD cfg_embedding_dim
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            Wo.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile Wo, layer_path + ".wo" ' Temporary file
+        SaveMatrixToFile Wo, layer_stem + ".WO" ' Temporary file
         FreeMatrix Wo
         
         ' FFN weights
-        DIM intermediate_dim AS INTEGER = embedding_dim * 4
+        DIM intermediate_dim AS INTEGER = cfg_embedding_dim * 4
         
         ' W1
         DIM W1 AS Matrix
-        InitMatrix W1, embedding_dim, intermediate_dim
-        FOR i = 0 TO (embedding_dim * intermediate_dim) - 1
+        InitMatrix W1, cfg_embedding_dim, intermediate_dim
+        FOR i = 0 TO (cfg_embedding_dim * intermediate_dim) - 1
             DIM row AS INTEGER = i \ intermediate_dim
             DIM col AS INTEGER = i MOD intermediate_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            W1.data(row, col) = QuantizeLog(val).packed_value
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            W1.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile W1, layer_path + ".w1" ' Temporary file
+        SaveMatrixToFile W1, layer_stem + ".W1" ' Temporary file
         FreeMatrix W1
         
         ' W2
         DIM W2 AS Matrix
-        InitMatrix W2, intermediate_dim, embedding_dim
-        FOR i = 0 TO (intermediate_dim * embedding_dim) - 1
-            DIM row AS INTEGER = i \ embedding_dim
-            DIM col AS INTEGER = i MOD embedding_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            W2.data(row, col) = QuantizeLog(val).packed_value
+        InitMatrix W2, intermediate_dim, cfg_embedding_dim
+        FOR i = 0 TO (intermediate_dim * cfg_embedding_dim) - 1
+            DIM row AS INTEGER = i \ cfg_embedding_dim
+            DIM col AS INTEGER = i MOD cfg_embedding_dim
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            W2.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile W2, layer_path + ".w2" ' Temporary file
+        SaveMatrixToFile W2, layer_stem + ".W2" ' Temporary file
         FreeMatrix W2
         
         ' W3 (gate)
         DIM W3 AS Matrix
-        InitMatrix W3, embedding_dim, intermediate_dim
-        FOR i = 0 TO (embedding_dim * intermediate_dim) - 1
+        InitMatrix W3, cfg_embedding_dim, intermediate_dim
+        FOR i = 0 TO (cfg_embedding_dim * intermediate_dim) - 1
             DIM row AS INTEGER = i \ intermediate_dim
             DIM col AS INTEGER = i MOD intermediate_dim
-            DIM val AS SINGLE = (RND - 0.5) * 2
-            W3.data(row, col) = QuantizeLog(val).packed_value
+            DIM random_value AS SINGLE = (RND - 0.5) * 2
+            W3.data(row, col) = QuantizeLog(random_value).packed_value
         NEXT i
-        SaveMatrixToFile W3, layer_path + ".w3" ' Temporary file
+        SaveMatrixToFile W3, layer_stem + ".W3" ' Temporary file
         FreeMatrix W3
         
         ' Layer norm parameters
         ' LN1 gamma
         DIM LN1_gamma AS Matrix
-        InitMatrix LN1_gamma, embedding_dim, 1
-        FOR i = 0 TO embedding_dim - 1
+        InitMatrix LN1_gamma, cfg_embedding_dim, 1
+        FOR i = 0 TO cfg_embedding_dim - 1
             LN1_gamma.data(i, 0) = QuantizeLog(1.0).packed_value ' Initialize with ones
         NEXT i
-        SaveMatrixToFile LN1_gamma, layer_path + ".ln1g" ' Temporary file
+        SaveMatrixToFile LN1_gamma, layer_stem + ".G1" ' Temporary file
         FreeMatrix LN1_gamma
         
         ' LN1 beta
         DIM LN1_beta AS Matrix
-        InitMatrix LN1_beta, embedding_dim, 1
-        FOR i = 0 TO embedding_dim - 1
+        InitMatrix LN1_beta, cfg_embedding_dim, 1
+        FOR i = 0 TO cfg_embedding_dim - 1
             LN1_beta.data(i, 0) = QuantizeLog(0.0).packed_value ' Initialize with zeros
         NEXT i
-        SaveMatrixToFile LN1_beta, layer_path + ".ln1b" ' Temporary file
+        SaveMatrixToFile LN1_beta, layer_stem + ".B1" ' Temporary file
         FreeMatrix LN1_beta
         
         ' LN2 gamma
         DIM LN2_gamma AS Matrix
-        InitMatrix LN2_gamma, embedding_dim, 1
-        FOR i = 0 TO embedding_dim - 1
+        InitMatrix LN2_gamma, cfg_embedding_dim, 1
+        FOR i = 0 TO cfg_embedding_dim - 1
             LN2_gamma.data(i, 0) = QuantizeLog(1.0).packed_value ' Initialize with ones
         NEXT i
-        SaveMatrixToFile LN2_gamma, layer_path + ".ln2g" ' Temporary file
+        SaveMatrixToFile LN2_gamma, layer_stem + ".G2" ' Temporary file
         FreeMatrix LN2_gamma
         
         ' LN2 beta
         DIM LN2_beta AS Matrix
-        InitMatrix LN2_beta, embedding_dim, 1
-        FOR i = 0 TO embedding_dim - 1
+        InitMatrix LN2_beta, cfg_embedding_dim, 1
+        FOR i = 0 TO cfg_embedding_dim - 1
             LN2_beta.data(i, 0) = QuantizeLog(0.0).packed_value ' Initialize with zeros
         NEXT i
-        SaveMatrixToFile LN2_beta, layer_path + ".ln2b" ' Temporary file
+        SaveMatrixToFile LN2_beta, layer_stem + ".B2" ' Temporary file
         FreeMatrix LN2_beta
         
         ' Now combine all these files into one layer file
         ' Use a system command to concatenate files
         ' This is OS-specific and may need adjustment
         cmd = "COPY /B " + layer_path + "+" + _
-              layer_path + ".wq+" + _
-              layer_path + ".wk+" + _
-              layer_path + ".wv+" + _
-              layer_path + ".wo+" + _
-              layer_path + ".w1+" + _
-              layer_path + ".w2+" + _
-              layer_path + ".w3+" + _
-              layer_path + ".ln1g+" + _
-              layer_path + ".ln1b+" + _
-              layer_path + ".ln2g+" + _
-              layer_path + ".ln2b " + _
-              layer_path + ".tmp"
+              layer_stem + ".WQ+" + _
+              layer_stem + ".WK+" + _
+              layer_stem + ".WV+" + _
+              layer_stem + ".WO+" + _
+              layer_stem + ".W1+" + _
+              layer_stem + ".W2+" + _
+              layer_stem + ".W3+" + _
+              layer_stem + ".G1+" + _
+              layer_stem + ".B1+" + _
+              layer_stem + ".G2+" + _
+              layer_stem + ".B2 " + _
+              layer_stem + ".TMP"
         SHELL cmd
         
         ' Rename the tmp file to the final layer file
-        cmd = "MOVE /Y " + layer_path + ".tmp " + layer_path
+        cmd = "MOVE /Y " + layer_stem + ".TMP " + layer_path
         SHELL cmd
         
         ' Delete temporary files
-        cmd = "DEL " + layer_path + ".wq " + _
-              layer_path + ".wk " + _
-              layer_path + ".wv " + _
-              layer_path + ".wo " + _
-              layer_path + ".w1 " + _
-              layer_path + ".w2 " + _
-              layer_path + ".w3 " + _
-              layer_path + ".ln1g " + _
-              layer_path + ".ln1b " + _
-              layer_path + ".ln2g " + _
-              layer_path + ".ln2b"
+        cmd = "DEL " + layer_stem + ".WQ " + _
+              layer_stem + ".WK " + _
+              layer_stem + ".WV " + _
+              layer_stem + ".WO " + _
+              layer_stem + ".W1 " + _
+              layer_stem + ".W2 " + _
+              layer_stem + ".W3 " + _
+              layer_stem + ".G1 " + _
+              layer_stem + ".B1 " + _
+              layer_stem + ".G2 " + _
+              layer_stem + ".B2"
         SHELL cmd
     NEXT layer_idx
     
     ' Create output layer weights
     DIM output_layer AS Matrix
-    InitMatrix output_layer, embedding_dim, vocab_size
+    InitMatrix output_layer, cfg_embedding_dim, cfg_vocab_size
     ' Fill with random values
-    FOR i = 0 TO (embedding_dim * vocab_size) - 1
-        DIM row AS INTEGER = i \ vocab_size
-        DIM col AS INTEGER = i MOD vocab_size
-        DIM val AS SINGLE = (RND - 0.5) * 2
-        output_layer.data(row, col) = QuantizeLog(val).packed_value
+    FOR i = 0 TO (cfg_embedding_dim * cfg_vocab_size) - 1
+        DIM row AS INTEGER = i \ cfg_vocab_size
+        DIM col AS INTEGER = i MOD cfg_vocab_size
+        DIM random_value AS SINGLE = (RND - 0.5) * 2
+        output_layer.data(row, col) = QuantizeLog(random_value).packed_value
     NEXT i
-    SaveMatrixToFile output_layer, base_path + "/output_layer.bin"
+    SaveMatrixToFile output_layer, base_path + "\OUTPUT.BIN"
     FreeMatrix output_layer
     
-    PRINT "Created dummy model in directory: "; base_path
-    PRINT "Embedding dimension: "; embedding_dim
-    PRINT "Number of heads: "; num_heads
-    PRINT "Number of layers: "; num_layers
-    PRINT "Context length: "; context_length
-    PRINT "Vocabulary size: "; vocab_size
+    PRINT "Created diagnostic model in directory: "; base_path
+    PRINT "Embedding dimension: "; cfg_embedding_dim
+    PRINT "Number of heads: "; cfg_num_heads
+    PRINT "Number of layers: "; cfg_num_layers
+    PRINT "Context length: "; cfg_context_length
+    PRINT "Vocabulary size: "; cfg_vocab_size
 END SUB

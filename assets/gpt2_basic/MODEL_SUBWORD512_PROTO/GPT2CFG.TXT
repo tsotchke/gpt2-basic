@@ -1,0 +1,8 @@
+# GPT2-BASIC fixed-point model config
+profile=486sx-safe-subword-prototype
+vocab_size=512
+n_positions=192
+n_embd=48
+n_head=4
+n_layer=2
+hidden_dim=192

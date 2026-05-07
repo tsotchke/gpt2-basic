@@ -1,0 +1,6 @@
+python=3.11.14 arch=arm64
+macos=15.1
+torch=2.4.1
+mps_built=True
+mps_available=True
+MPS_TENSOR_OK sum=8.0

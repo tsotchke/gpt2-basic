@@ -1,0 +1,21 @@
+PROBE_OK parse_config profile=486sx-safe
+PROBE_OK tokenizer mode=lexicon vocab=4096 merges=0
+PROBE_OK unpack_i32 exercised_by=read_weights
+PROBE_OK read_weights exp_table=513
+PROBE_OK fb_idiv value=2
+PROBE_OK clamp value=2000000000
+PROBE_OK fx_mul value=4096
+PROBE_OK fx_div value=4096
+PROBE_OK fx_sqrt value=4096
+PROBE_OK fx_exp_neg value=1507
+PROBE_OK fx_tanh value=3120
+PROBE_OK fx_gelu value=3439
+PROBE_OK layer_norm_vec values=48
+PROBE_OK linear_vec values=4096
+PROBE_OK encode_prompt tokens=3
+PROBE_OK forward_fixed_trace logits=4096 phases=13
+PROBE_OK vector_name name=what_makes_this_real_inf
+PROBE_OK phase_pairs pairs=2972:66039,261:61869,1244:61299,818:59864
+PROBE_OK export_vectors callable=available
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

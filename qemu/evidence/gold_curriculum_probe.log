@@ -1,0 +1,18 @@
+trace_scope gold_curriculum_contract
+trace build_gold_docs
+trace build_gold_docs_v1
+trace build_gold_docs_v2_extra
+trace DIRECT_COMPLETION_REINFORCEMENT_DOCS
+trace FRAGMENT_COMPLETION_REINFORCEMENT_DOCS
+trace topic_answer
+trace display_path
+trace write_outputs
+trace audit_doc
+trace token_distribution
+trace report_text
+PROBE_OK gold_version=v4
+PROBE_OK gold_docs=393
+PROBE_OK gold_chars=85575
+PROBE_OK gold_vocab_probe=4096
+PROBE_OK alpha_byte_share=0.049
+PROBE_OK main cli_entry=available

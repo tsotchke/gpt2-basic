@@ -19,7 +19,7 @@
 
 ' Use 16.16 fixed-point format from asm_optimizations.bas
 ' FIXED_POINT_SHIFT = 16
-' FIXED_POINT_ONE = (1 << FIXED_POINT_SHIFT)
+' FIXED_POINT_ONE = (1 SHL FIXED_POINT_SHIFT)
 
 ' Exponential function approximation constants
 CONST EXP_LOOKUP_SIZE = 8192 ' Size of exponential function lookup table
@@ -99,7 +99,7 @@ FUNCTION FixedExpFast(x AS LONG) AS LONG
     IF x >= FloatToFixed(EXP_MAX) THEN RETURN FloatToFixed(EXP(EXP_MAX)) ' Max value
     
     ' Extract integer and fractional parts of x
-    x_int = x >> FIXED_POINT_SHIFT ' Integer part
+    x_int = x SHR FIXED_POINT_SHIFT ' Integer part
     x_frac = x AND FIXED_POINT_MASK ' Fractional part
     
     ' e^x = e^(x_int + x_frac) = e^x_int * e^x_frac
@@ -147,7 +147,7 @@ FUNCTION FixedExpInteger(x AS LONG) AS LONG
     
     ' Now compute 2^(x_log2e)
     DIM int_part AS LONG, frac_part AS LONG
-    int_part = x_log2e >> FIXED_POINT_SHIFT
+    int_part = x_log2e SHR FIXED_POINT_SHIFT
     frac_part = x_log2e AND FIXED_POINT_MASK
     
     ' Handle integer part with bit shifting (2^n)
@@ -162,9 +162,9 @@ FUNCTION FixedExpInteger(x AS LONG) AS LONG
     
     ' Compute 2^int_part
     IF int_part >= 0 THEN
-        result = FIXED_POINT_ONE << int_part
+        result = FIXED_POINT_ONE SHL int_part
     ELSE
-        result = FIXED_POINT_ONE >> (-int_part)
+        result = FIXED_POINT_ONE SHR (-int_part)
     END IF
     
     ' Approximate 2^frac_part using a degree-3 polynomial
@@ -176,10 +176,10 @@ FUNCTION FixedExpInteger(x AS LONG) AS LONG
     f2 = FixedMul(f, f)
     f3 = FixedMul(f2, f)
     
-    poly = FIXED_POINT_ONE + ' 1
-           FixedMul(FloatToFixed(0.693), f) + ' ln(2) * f
-           FixedMul(FloatToFixed(0.24), f2) + ' term for f²
-           FixedMul(FloatToFixed(0.056), f3)  ' term for f³
+    poly = FIXED_POINT_ONE + _
+           FixedMul(FloatToFixed(0.693), f) + _
+           FixedMul(FloatToFixed(0.24), f2) + _
+           FixedMul(FloatToFixed(0.056), f3)
     
     ' Multiply integer and fractional parts
     result = FixedMul(result, poly)
@@ -261,7 +261,7 @@ END SUB
 ' *******************************************************
 
 ' Convert float matrix to fixed-point format
-SUB MatrixToFixed(A AS Matrix, BYREF fixed_data() AS LONG)
+SUB MatrixToFixed(A AS Matrix, fixed_data() AS LONG)
     DIM size AS LONG, i AS LONG
     
     ' Calculate total size
@@ -309,16 +309,16 @@ SUB MatrixSoftmaxFixed(A AS Matrix, BYREF B AS Matrix)
     DIM fixed_A() AS LONG, fixed_B() AS LONG
     
     ' Convert input matrix to fixed-point
-    MatrixToFixed(A, fixed_A)
+    MatrixToFixed(A, fixed_A())
     
     ' Allocate space for result
     REDIM fixed_B(0 TO A.rows * A.cols - 1)
     
     ' Apply fixed-point softmax
-    FixedSoftmaxMatrix(fixed_A, fixed_B, A.rows, A.cols)
+    FixedSoftmaxMatrix(fixed_A(), fixed_B(), A.rows, A.cols)
     
     ' Convert result back to float matrix
-    FixedToMatrix(fixed_B, B, A.rows, A.cols)
+    FixedToMatrix(fixed_B(), B, A.rows, A.cols)
 END SUB
 
 ' Fixed-point softmax implemented with assembly for 486
@@ -362,16 +362,16 @@ SUB TestFixedExp()
         actual = FixedToFloat(fixed_result)
         
         ' Calculate error
-        DIM error AS SINGLE
-        error = ABS((actual - expected) / expected) * 100 ' Percent error
+        DIM pct_error AS SINGLE
+        pct_error = ABS((actual - expected) / expected) * 100 ' Percent error
         
         ' Update max and average error
-        IF error > max_error THEN max_error = error
-        avg_error = avg_error + error
+        IF pct_error > max_error THEN max_error = pct_error
+        avg_error = avg_error + pct_error
         
         ' Print results
         IF i <= 10 THEN ' Print first few results
-            PRINT "exp("; x; ") = "; expected; " (expected) vs "; actual; " (fixed), error = "; error; "%"
+            PRINT "exp("; x; ") = "; expected; " (expected) vs "; actual; " (fixed), error = "; pct_error; "%"
         END IF
     NEXT i
     
@@ -400,16 +400,16 @@ SUB TestFixedExp()
         actual = FixedToFloat(fixed_result)
         
         ' Calculate error
-        DIM error AS SINGLE
-        error = ABS((actual - expected) / expected) * 100 ' Percent error
+        DIM pct_error AS SINGLE
+        pct_error = ABS((actual - expected) / expected) * 100 ' Percent error
         
         ' Update max and average error
-        IF error > max_error THEN max_error = error
-        avg_error = avg_error + error
+        IF pct_error > max_error THEN max_error = pct_error
+        avg_error = avg_error + pct_error
         
         ' Print results
         IF i <= 10 THEN ' Print first few results
-            PRINT "exp("; x; ") = "; expected; " (expected) vs "; actual; " (fast), error = "; error; "%"
+            PRINT "exp("; x; ") = "; expected; " (expected) vs "; actual; " (fast), error = "; pct_error; "%"
         END IF
     NEXT i
     
@@ -457,11 +457,11 @@ SUB TestFixedSoftmax()
     
     FOR i = 0 TO a.rows - 1
         FOR j = 0 TO a.cols - 1
-            DIM error AS SINGLE
-            error = ABS(b_float.data(i, j) - b_fixed.data(i, j))
+            DIM delta AS SINGLE
+            delta = ABS(b_float.data(i, j) - b_fixed.data(i, j))
             
-            IF error > max_error THEN max_error = error
-            total_error = total_error + error
+            IF delta > max_error THEN max_error = delta
+            total_error = total_error + delta
         NEXT j
     NEXT i
     
@@ -535,11 +535,11 @@ SUB TestSoftmaxPerformance()
     
     FOR i = 0 TO a.rows - 1
         FOR j = 0 TO a.cols - 1
-            DIM error AS SINGLE
-            error = ABS(b_float.data(i, j) - b_fixed.data(i, j))
+            DIM delta AS SINGLE
+            delta = ABS(b_float.data(i, j) - b_fixed.data(i, j))
             
-            IF error > max_error THEN max_error = error
-            total_error = total_error + error
+            IF delta > max_error THEN max_error = delta
+            total_error = total_error + delta
         NEXT j
     NEXT i
     

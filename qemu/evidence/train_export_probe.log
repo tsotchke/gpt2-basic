@@ -1,0 +1,2 @@
+PROBE_OK export_model profile=486sx-safe layers=2
+PROBE_OK main cli_entry=available

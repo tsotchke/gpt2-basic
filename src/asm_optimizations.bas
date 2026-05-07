@@ -30,13 +30,25 @@ DIM SHARED g_has_assembly_softmax AS INTEGER
 
 ' Fixed point format: 16.16 (16 bits integer, 16 bits fraction)
 CONST FIXED_POINT_SHIFT = 16
-CONST FIXED_POINT_ONE = (1 << FIXED_POINT_SHIFT)
+CONST FIXED_POINT_ONE = (1 SHL FIXED_POINT_SHIFT)
 CONST FIXED_POINT_HALF = (FIXED_POINT_ONE \ 2)
 CONST FIXED_POINT_MASK = (FIXED_POINT_ONE - 1)
 
+DECLARE FUNCTION FixedMulAsm(a AS LONG, b AS LONG) AS LONG
+DECLARE FUNCTION FixedDivAsm(a AS LONG, b AS LONG) AS LONG
+DECLARE FUNCTION FixedSqrtAsm(a AS LONG) AS LONG
+DECLARE FUNCTION FixedMultiply(a AS LONG, b AS LONG) AS LONG
+DECLARE FUNCTION FixedDivide(a AS LONG, b AS LONG) AS LONG
+DECLARE FUNCTION FixedAdd(a AS LONG, b AS LONG) AS LONG
+DECLARE FUNCTION FixedSubtract(a AS LONG, b AS LONG) AS LONG
+
 ' Convert a float to fixed point
 FUNCTION FloatToFixed(value AS SINGLE) AS LONG
-    RETURN INT(value * FIXED_POINT_ONE + (IIF(value >= 0, 0.5, -0.5)))
+    IF value >= 0 THEN
+        RETURN INT(value * FIXED_POINT_ONE + 0.5)
+    END IF
+
+    RETURN INT(value * FIXED_POINT_ONE - 0.5)
 END FUNCTION
 
 ' Convert fixed point to float
@@ -50,7 +62,7 @@ FUNCTION FixedMul(a AS LONG, b AS LONG) AS LONG
         ' 64-bit version (for development on modern systems)
         DIM result AS LONGINT
         result = CLNGINT(a) * CLNGINT(b)
-        result = result >> FIXED_POINT_SHIFT
+        result = result SHR FIXED_POINT_SHIFT
         RETURN CLNG(result)
     #ELSE
         IF g_use_assembly AND g_has_assembly_fixed_point THEN
@@ -63,17 +75,17 @@ FUNCTION FixedMul(a AS LONG, b AS LONG) AS LONG
             DIM result_hi AS LONG, result_lo AS LONG, result AS LONG
             
             ' Split into high and low parts
-            a_hi = a >> 16
+            a_hi = a SHR 16
             a_lo = a AND &HFFFF
-            b_hi = b >> 16
+            b_hi = b SHR 16
             b_lo = b AND &HFFFF
             
             ' Compute partial products
             result_hi = a_hi * b_hi
-            result_lo = (a_lo * b_lo) >> 16
+            result_lo = (a_lo * b_lo) SHR 16
             
             ' Mixed products
-            result = result_hi + result_lo + ((a_hi * b_lo) >> 16) + ((a_lo * b_hi) >> 16)
+            result = result_hi + result_lo + ((a_hi * b_lo) SHR 16) + ((a_lo * b_hi) SHR 16)
             
             RETURN result
         END IF
@@ -85,7 +97,7 @@ FUNCTION FixedDiv(a AS LONG, b AS LONG) AS LONG
     #IFDEF __FB_64BIT__
         ' 64-bit version (for development on modern systems)
         DIM result AS LONGINT
-        result = (CLNGINT(a) << FIXED_POINT_SHIFT) / CLNGINT(b)
+        result = (CLNGINT(a) SHL FIXED_POINT_SHIFT) / CLNGINT(b)
         RETURN CLNG(result)
     #ELSE
         IF g_use_assembly AND g_has_assembly_fixed_point THEN
@@ -121,22 +133,39 @@ FUNCTION FixedSqrt(a AS LONG) AS LONG
             ' Initial guess (important for convergence)
             x0 = a
             IF x0 > FIXED_POINT_ONE THEN
-                x0 = FIXED_POINT_ONE + (x0 >> 1)
+                x0 = FIXED_POINT_ONE + (x0 SHR 1)
             END IF
             
             ' Newton-Raphson iterations
-            x = (x0 + FixedDiv(a, x0)) >> 1
+            x = (x0 + FixedDiv(a, x0)) SHR 1
             
             ' Three iterations are usually enough for sufficient precision
+            DIM i AS INTEGER
             FOR i = 1 TO 3
                 x2 = FixedMul(x, x)
                 IF ABS(x2 - a) < 10 THEN EXIT FOR ' Close enough
-                x = (x + FixedDiv(a, x)) >> 1
+                x = (x + FixedDiv(a, x)) SHR 1
             NEXT i
             
             RETURN x
         END IF
     #ENDIF
+END FUNCTION
+
+FUNCTION FixedMultiply(a AS LONG, b AS LONG) AS LONG
+    RETURN FixedMul(a, b)
+END FUNCTION
+
+FUNCTION FixedDivide(a AS LONG, b AS LONG) AS LONG
+    RETURN FixedDiv(a, b)
+END FUNCTION
+
+FUNCTION FixedAdd(a AS LONG, b AS LONG) AS LONG
+    RETURN a + b
+END FUNCTION
+
+FUNCTION FixedSubtract(a AS LONG, b AS LONG) AS LONG
+    RETURN a - b
 END FUNCTION
 
 ' *******************************************************
@@ -188,17 +217,17 @@ FUNCTION FixedMulAsm(a AS LONG, b AS LONG) AS LONG
         DIM result_hi AS LONG, result_lo AS LONG
         
         ' Split into high and low parts
-        a_hi = a >> 16
+        a_hi = a SHR 16
         a_lo = a AND &HFFFF
-        b_hi = b >> 16
+        b_hi = b SHR 16
         b_lo = b AND &HFFFF
         
         ' Compute partial products
         result_hi = a_hi * b_hi
-        result_lo = (a_lo * b_lo) >> 16
+        result_lo = (a_lo * b_lo) SHR 16
         
         ' Mixed products
-        result = result_hi + result_lo + ((a_hi * b_lo) >> 16) + ((a_lo * b_hi) >> 16)
+        result = result_hi + result_lo + ((a_hi * b_lo) SHR 16) + ((a_lo * b_hi) SHR 16)
     #ENDIF
     
     RETURN result
@@ -347,6 +376,7 @@ END FUNCTION
 ' Assembly optimized matrix multiplication
 SUB MatrixMultiplyAsm(A AS Matrix, B AS Matrix, BYREF C AS Matrix)
     DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
+    DIM i_block AS INTEGER, j_block AS INTEGER, k_block AS INTEGER
     
     ' Ensure dimensions are compatible
     IF A.cols <> B.rows THEN
@@ -673,7 +703,7 @@ SUB InitAsmOptimizations()
     g_has_assembly_softmax = 0
     
     ' Detect CPU capabilities
-    IF NOT g_cpu_detected THEN
+    IF g_cpu_detected = 0 THEN
         DetectCPU()
     END IF
     
@@ -701,22 +731,13 @@ SUB InitAsmOptimizations()
             g_has_assembly_softmax = 1
     END SELECT
     
-    PRINT "Assembly optimizations: "; IIF(g_use_assembly, "Enabled", "Disabled")
+    PRINT "Assembly optimizations: "; IIFString(g_use_assembly, "Enabled", "Disabled")
     IF g_use_assembly THEN
-        PRINT "  Fixed point math: "; IIF(g_has_assembly_fixed_point, "Yes", "No")
-        PRINT "  Matrix multiply : "; IIF(g_has_assembly_matrix_mul, "Yes", "No")
-        PRINT "  Softmax compute : "; IIF(g_has_assembly_softmax, "Yes", "No")
+        PRINT "  Fixed point math: "; IIFString(g_has_assembly_fixed_point, "Yes", "No")
+        PRINT "  Matrix multiply : "; IIFString(g_has_assembly_matrix_mul, "Yes", "No")
+        PRINT "  Softmax compute : "; IIFString(g_has_assembly_softmax, "Yes", "No")
     END IF
 END SUB
-
-' Helper function for conditional expressions
-FUNCTION IIF(condition AS INTEGER, true_val AS STRING, false_val AS STRING) AS STRING
-    IF condition THEN
-        RETURN true_val
-    ELSE
-        RETURN false_val
-    END IF
-END FUNCTION
 
 ' *******************************************************
 ' * Testing Functions                                   *
