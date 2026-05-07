@@ -32,6 +32,7 @@ Verified production surface:
 - causal attention, feed-forward blocks, layer norms, and output head
 - Q20.12 fixed-point weights in `GPT2FX.BIN`
 - fixed-point attention exp table in `GPT2EXP.BIN`
+- optional q4/log compressed token-embedding artifact in `GPT2TQ4.BIN`
 - optional q4/log compressed output-head artifact in `GPT2HQ4.BIN`
 - KV decode cache for in-window generation
 - parity vectors, DOS quality logs, and DOS-emitted `PERF_*` timing records
@@ -39,9 +40,10 @@ Verified production surface:
 Legacy matrix, block-sparse, synthetic benchmark, and diagnostic smoke-test
 modules remain in the repository as lab code. They should not be treated as the
 current production inference architecture unless a specific build path wires
-them into `GPT2.EXE`. The q4/log output-head path is no longer just lab code:
-it is wired through host export, DOS loading, vector parity, and QEMU `--perf`
-as a low-memory release mode.
+them into `GPT2.EXE`. The q4/log vocabulary-tensor path is no longer just lab
+code: token embeddings and the output head are wired through host export, DOS
+loading, vector parity, host quality, and QEMU `--perf` as a low-memory release
+mode.
 
 The default checkpoint is a 2-layer, 48-dimensional, 4-head, 192-context model
 with 463,168 parameters, Q20.12 fixed-point weights, and a DOS-loadable
@@ -50,12 +52,13 @@ suite at 10/10, average 0.960. DOS evidence for the same checkpoint is 10/10,
 average 0.961 after the prompt-aware starter prior. Physical hardware timing is
 still required for board-specific speed claims.
 
-The optional compressed-head release candidate,
-`assets/gpt2_basic/MODEL_HEADQ4_PROD_PROBE`, keeps the same 4096-token lexicon
-and checkpoint behavior while replacing the resident output head with
-`GPT2HQ4.BIN`. It passes DOS vector parity and host fixed quality, reduces DOS
-runtime memory from 2,055,940 to 1,646,404 bytes, and measures 2.12 tok/s on the
-QEMU 486DX2/66 gate versus 2.46 tok/s for the full-head default.
+The optional compressed release candidate,
+`assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`, keeps the same 4096-token
+lexicon and checkpoint behavior while replacing the resident token embedding
+and output head with `GPT2TQ4.BIN` and `GPT2HQ4.BIN`. It passes DOS vector
+parity and host fixed quality, reduces DOS runtime memory from 2,055,940 to
+974,724 bytes, and measures 2.12 tok/s on the QEMU 486DX2/66 gate versus 2.46
+tok/s for the full-resident default.
 
 ## ► About This Project
 
@@ -268,10 +271,13 @@ of 1,852,672 bytes, and measured DOS runtime memory of about 2,055,940 bytes.
 The current QEMU `486dx2-66 --perf` run for this promoted model generated 108
 tokens in 43.94 seconds, or 2.46 tokens/sec.
 
-The q4/log output-head release mode keeps the same fixed checkpoint but stores
-the 196,608-value output head as 98,304 packed q4 bytes plus per-token scales.
-DOS expands a small decode table at load time, so the compressed path keeps
-usable speed while saving about 409 KB of runtime memory.
+The q4/log low-memory release mode keeps the same fixed checkpoint but stores
+both 196,608-value vocabulary tensors compactly: token embeddings in
+`GPT2TQ4.BIN` and the output head in `GPT2HQ4.BIN`. Each tensor has 98,304
+packed q4 bytes plus per-token scales. DOS dequantizes only the current token
+embedding row and expands a small output-head decode table at load time, so the
+compressed path keeps usable speed while saving about 1.08 MB of runtime
+memory.
 
 ```
 ┌──────────────────────────────┬────────────────────┬───────────────────┬───────────────────┐
@@ -286,6 +292,7 @@ usable speed while saving about 409 KB of runtime memory.
 │ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
 │ QEMU 486dx2-66 --perf        │ 2.46               │ 28.5 seconds      │ 40.7 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
+│ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
@@ -311,18 +318,19 @@ GPT2CFG.TXT   checkpoint shape and file contract
 GPT2WT.BIN    float32 host reference weights
 GPT2FX.BIN    Q20.12 signed fixed-point weights, 4 bytes/value
 GPT2EXP.BIN   fixed-point exp lookup table for attention softmax
+GPT2TQ4.BIN   optional q4/log compressed token-embedding artifact
 GPT2HQ4.BIN   optional q4/log compressed output-head artifact
 ```
 
 The verified production checkpoint currently stores weights as signed Q20.12 `LONG` values. This is larger than packed int8/int4 formats, but it keeps the DOS runtime simple, deterministic, and parity-checkable against the host fixed-point reference.
 
-The first measured compressed release path is output-head q4/log. It is optional
-because the full Q20.12 head is still faster, but it is useful when RAM matters
-more than peak speed: the measured QEMU 486DX2/66 path saves about 20% runtime
-memory and gives up about 14% throughput. Full-model packed int16, int8, and
-4-bit formats remain future architecture experiments until each one has the
-same host validator, DOS loader, vector parity, quality report, and `--perf`
-timing.
+The current measured compressed release path is token-embedding plus output-head
+q4/log. It is optional because the full Q20.12 tensors are still faster, but it
+is useful when RAM matters more than peak speed: the measured QEMU 486DX2/66
+path saves about 53% runtime memory and gives up about 14% throughput. Full
+model packed int16, int8, and broader 4-bit formats remain architecture
+experiments until each one has the same host validator, DOS loader, vector
+parity, quality report, and `--perf` timing.
 
 ### ■ Fixed-Point Arithmetic (Q20.12)
 
@@ -501,7 +509,7 @@ The production executable still includes several older modules, but the verified
 ```
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
 │ Tokenizer     │  │ Fixed-Point      │  │ Model Files       │
-│ lexicon/byte  │◀─┤ GPT Runtime      │◀─┤ GPT2FX/EXP/HQ4    │
+│ lexicon/byte  │◀─┤ GPT Runtime      │◀─┤ GPT2FX/EXP/TQ4/HQ4│
 └───────────────┘  └──────────────────┘  └───────────────────┘
        ▲                    ▲                      ▲
        │                    │                      │
@@ -545,7 +553,7 @@ The production executable still includes several older modules, but the verified
 /scripts
   ├── train_gpt2_basic.py     # host training/export entrypoint
   ├── gpt2_basic_tokenizer.py # shared byte/BPE/lexicon tokenizer contract
-  └── quantize_gpt2_basic.py  # q4/log output-head release artifact builder
+  └── quantize_gpt2_basic.py  # q4/log token/head release artifact builder
 /assets/gpt2_basic/MODEL      # host-exported production checkpoint
   ├── GPT2CFG.TXT             # model shape
   ├── GPT2WT.BIN              # float32 reference weights
@@ -555,6 +563,9 @@ The production executable still includes several older modules, but the verified
   └── GPT2VEC.TXT             # parity vectors
 /assets/gpt2_basic/MODEL_HEADQ4_PROD_PROBE
   └── GPT2HQ4.BIN             # optional q4/log output-head release artifact
+/assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE
+  ├── GPT2TQ4.BIN             # optional q4/log token-embedding artifact
+  └── GPT2HQ4.BIN             # optional q4/log output-head artifact
 ```
 
 ### ■ Transformer Architecture
@@ -787,7 +798,7 @@ Several limitations have been identified during implementation:
 
 - **Physical hardware evidence:** QEMU `-icount` measurements are repeatable emulator evidence, not cycle-accurate proof for a specific motherboard.
 - **Prompt coverage:** The current checkpoint passes the measured DOS held-out and runtime suites, but broader open-ended prompts still need product testing.
-- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.46 tokens/sec for the full-head default and 2.12 tokens/sec for the q4/log output-head release mode.
+- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.46 tokens/sec for the full-resident default and 2.12 tokens/sec for the q4/log token+head release mode.
 - **Context length:** The fixed cached decode path has a hard prompt-plus-output ceiling at the exported context window.
 - **Sampling:** The production fixed-point path is currently greedy even though the UI exposes temperature/top-p/top-k controls.
 ```

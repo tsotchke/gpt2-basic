@@ -1,0 +1,37 @@
+PERF_BEGIN|suite=gpt2-basic-hardware|version=1
+PERF_BASIS|declared=emulation_or_physical|note=runner_records_qemu_or_pc_details
+PERF_CONTEXT|timed_region=decode_loop_only|sampling=greedy_temperature_0|console_progress=disabled|kv_cache=enabled
+Initializing GPT-2 BASIC model...
+Memory Manager Initialized. Maximum memory:  32MB
+Matrix operations initialized with optimization level  3
+Assembly optimizations: Enabled
+  Fixed point math: Yes
+  Matrix multiply : Yes
+  Softmax compute : Yes
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+Loaded fixed-point GPT2-BASIC model from MODEL
+Model initialization complete!
+  Profile     : 486sx-safe
+  Layers      :  2
+  Embed dim   :  48
+  Heads       :  4
+  Vocab size  :  4096
+  Max tokens  :  192
+  Parameters  :  463168
+  Fixed bytes :  1852672
+  Runtime mem :  974724
+  Arithmetic  : Q20.12 fixed-point
+PERF_MACHINE|cpu_detected=486DX4|cpu_enum=4|fpu=1|timer=freebasic_TIMER
+PERF_MODEL|profile=486sx-safe|layers=2|emb=48|heads=4|ctx=192|vocab=4096|params=463168|fixed_bytes=1852672|runtime_bytes=974724|arithmetic=q20.12_fixed
+PERF_RUN|name=real_inference|prompt_tokens=3|generated_tokens=35|seconds=16.37000012397766|tokens_per_sec=2.138057405921114|last_token=48
+PERF_RUN|name=486_target|prompt_tokens=2|generated_tokens=33|seconds=15.38000011444092|tokens_per_sec=2.145643677142429|last_token=65
+PERF_RUN|name=basic_runtime|prompt_tokens=4|generated_tokens=49|seconds=23.40000009536743|tokens_per_sec=2.094017085482862|last_token=313
+PERF_SUMMARY|runs=3|tokens=117|seconds=55.15000033378601|tokens_per_sec=2.121486841194513
+PERF_END
+Shutting down model...
+Memory Manager Shutdown. Peak memory usage:  0.9295692443847656MB
+Matrix allocations:  0, Frees:  0
+Cache hits:  0, Misses:  0
+Disk reads:  0, Writes:  0
+PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg

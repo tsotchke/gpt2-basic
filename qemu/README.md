@@ -73,11 +73,12 @@ weights, plus `GPT2EXP.BIN`, the fixed-point attention exp lookup table. The
 runtime can still load legacy `TINY*` checkpoint names, but new production
 exports use the `GPT2*` files.
 
-Low-memory release candidates may also include `GPT2HQ4.BIN`, an optional q4/log
-compressed output-head artifact. If present and valid, `GPT2.EXE` skips the full
-resident output head, builds a small fixed-point decode table, and computes final
-logits from the compressed head. The measured candidate is
-`assets/gpt2_basic/MODEL_HEADQ4_PROD_PROBE`.
+Low-memory release candidates may also include `GPT2TQ4.BIN` and `GPT2HQ4.BIN`,
+optional q4/log compressed token-embedding and output-head artifacts. If present
+and valid, `GPT2.EXE` skips the full resident token embedding and output head,
+dequantizes only the current token row, builds a small fixed-point output-head
+decode table, and computes final logits from the compressed head. The measured
+candidate is `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`.
 
 Validate the checkpoint with:
 
@@ -253,7 +254,8 @@ Verified behavior:
 - Text completion initializes the trained GPT2-BASIC model from `C:\MODEL`.
 - A prompt encodes through the same byte/BPE/lexicon tokenizer contract used by the host tools.
 - The primary demo path uses fixed-point weights and fixed-point inference kernels.
-- Optional `GPT2HQ4.BIN` output-head compression loads and runs in DOS.
+- Optional `GPT2TQ4.BIN` token-embedding compression and `GPT2HQ4.BIN`
+  output-head compression load and run in DOS.
 - The real GPT runtime uses a KV decode cache for normal in-window generation, while preserving the full-prefix path as a fallback.
 - The old quality prior is disabled by default and is not the demo path.
 
@@ -278,12 +280,13 @@ Current performance baseline:
 │ Pentium 133                  │ 16.27              │ 4.3 seconds       │ 6.1 seconds       │
 │ QEMU 486dx2-66 --perf        │ 2.46               │ 28.5 seconds      │ 40.7 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
+│ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
 
-The first seven rows come from the current code-count performance model in `qemu/evidence/era_performance_report.md`; the QEMU `486dx2-66 --perf` rows come from the promoted 4096-token lexicon default and its q4/log output-head release candidate running inside FreeDOS. Real hardware timing is still required before making claims about a specific PC. This QEMU build does not expose a true 386 CPU model, so the `386DX/33-class` row remains a conservative target estimate, not a true 386 compatibility proof.
+The first seven rows come from the current code-count performance model in `qemu/evidence/era_performance_report.md`; the QEMU `486dx2-66 --perf` rows come from the promoted 4096-token lexicon default and q4/log release candidates running inside FreeDOS. Real hardware timing is still required before making claims about a specific PC. This QEMU build does not expose a true 386 CPU model, so the `386DX/33-class` row remains a conservative target estimate, not a true 386 compatibility proof.
 
-Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory while still passing 3/3 vectors and 39/39 phase checks.
+Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory. The q4/log token+head candidate uses 974,724 runtime bytes and reaches about 0.93 MB peak memory while still passing 3/3 vectors and 39/39 phase checks.
 
 QEMU's curses display can emit CP437 conversion warnings on macOS terminals. They are display-backend noise, not DOS program failures.

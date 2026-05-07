@@ -34,11 +34,13 @@ older baseline rows below. The release state is:
 - Default DOS runtime memory: 2,055,940 bytes.
 - Default QEMU 486DX2/66 perf: 2.46 tok/s.
 - Default DOS all-suite quality: 10/10 average 0.961.
-- Optional compressed release mode: `MODEL_HEADQ4_PROD_PROBE` with
-  `GPT2HQ4.BIN` q4/log output-head artifact.
-- Q4 mode DOS runtime memory: 1,646,404 bytes.
-- Q4 mode QEMU 486DX2/66 perf: 2.12 tok/s.
-- Q4 mode vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`.
+- Optional compressed release mode: `MODEL_TOKHEADQ4_PROD_PROBE` with
+  `GPT2TQ4.BIN` q4/log token-embedding artifact and `GPT2HQ4.BIN` q4/log
+  output-head artifact.
+- Q4 token+head mode DOS runtime memory: 974,724 bytes.
+- Q4 token+head mode QEMU 486DX2/66 perf: 2.12 tok/s.
+- Q4 token+head mode vector parity: 3/3 vectors, 39/39 phases,
+  `VECTOR_CHECK_OK`.
 
 The stale findings below are retained as the historical audit trail. Their
 resolved items are superseded by `qemu/evidence/domain_training_strategy_report.md`,

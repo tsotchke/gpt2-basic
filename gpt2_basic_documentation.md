@@ -81,9 +81,9 @@ design-space modules. The promoted DOS checkpoint is a 2-layer, 48-dimensional,
 463,168 parameters, Q20.12 fixed-point weights, a DOS KV decode cache, and
 QEMU/DOS parity and quality evidence. It passes the 10-prompt DOS all-suite at
 10/10 average 0.961 and measures 2.46 tok/s on the QEMU 486DX2/66 gate. A
-separate q4/log output-head release mode is now fully wired through host export,
+separate q4/log token+head release mode is now fully wired through host export,
 DOS loading, vector parity, quality evaluation, and QEMU `--perf`: it reduces
-runtime memory from 2,055,940 to 1,646,404 bytes while measuring 2.12 tok/s on
+runtime memory from 2,055,940 to 974,724 bytes while measuring 2.12 tok/s on
 the same gate. Sections below describe both the original architecture concepts
 and the realized production subset; `qemu/evidence/domain_training_strategy_report.md`
 is the authoritative implementation ledger.
@@ -490,14 +490,16 @@ One of the most critical optimizations in our implementation is the 4-bit logari
 
 In the current production runtime this idea is realized conservatively. The
 main checkpoint remains Q20.12 signed fixed point for simple parity, while the
-largest resident tensor, the 4096-token output head, can be replaced by
-`GPT2HQ4.BIN`. That file stores q4/log codes in input-major order plus
-per-output-token scales. DOS validates the artifact, skips loading the full
-resident output head, builds a compact fixed-point decode table, and computes
-the final logits from the compressed head. The measured result is 98,304 packed
-head bytes instead of 786,432 full-head bytes, 1,646,404 bytes of DOS runtime
-memory instead of 2,055,940 bytes, and 2.12 tok/s instead of 2.46 tok/s on the
-QEMU 486DX2/66 performance gate.
+two largest vocabulary-shaped tensors can be replaced by q4/log artifacts.
+`GPT2TQ4.BIN` stores token-embedding rows as per-token q4/log codes and
+`GPT2HQ4.BIN` stores the output head in input-major order with per-output-token
+scales. DOS validates both artifacts, skips loading the full resident token
+embedding and output head, dequantizes only the current token row, builds a
+compact fixed-point decode table for the head, and computes final logits from
+the compressed head. The measured result is 98,304 packed bytes per tensor
+instead of 786,432 full bytes per tensor, 974,724 bytes of DOS runtime memory
+instead of 2,055,940 bytes, and 2.12 tok/s instead of 2.46 tok/s on the QEMU
+486DX2/66 performance gate.
 
 #### Mathematical Foundation
 

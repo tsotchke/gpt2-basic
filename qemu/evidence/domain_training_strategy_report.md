@@ -48,7 +48,8 @@ held-out prompt strings are not included.
 | `MODEL_LEXICON4096_ADAPTED_REPAIR2_S600` | low-rate repair fine-tune from adapted 4096 on broad adapted + clean repair corpus | 0/5 avg 0.743 host strict | 3/5 avg 0.809 host strict | reject, short repair corrupts token fluency |
 | `MODEL_LEXICON_GOLD_V1_S3000` | fresh punctuation/boundary-safe lexicon from hand-curated gold corpus v1 | 2/5 avg 0.923 host strict | 4/5 avg 0.893 host strict | reject for promotion, cleaner and smaller but held-out coverage is not broad enough |
 | `MODEL` / `MODEL_LEXICON_GOLD_V2_S3000` | full 4096-token lexicon from expanded audited gold corpus v2 + 30-token stop rule + prompt-aware starter prior | 5/5 avg 0.973 host strict | 5/5 avg 0.948 DOS fixed | promoted default; sampler repair fixes bad prompt starts without changing weights |
-| `MODEL_HEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed output head | 5/5 avg 0.973 host fixed | 5/5 avg 0.940 host fixed | keep as low-memory release mode; near-default speed with 409 KB less runtime memory |
+| `MODEL_HEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed output head | 5/5 avg 0.973 host fixed | 5/5 avg 0.940 host fixed | keep as intermediate/proven fallback; 409 KB less runtime memory |
+| `MODEL_TOKHEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed token embedding and output head | 5/5 avg 0.972 host fixed | 5/5 avg 0.948 host fixed | preferred low-memory release mode; 974,724 byte DOS runtime footprint |
 | `MODEL_LEXICON_GOLD_V3_S3000` | gold v2 + direct completion and anti-chaining meta examples | 5/5 avg 0.965 host strict | 5/5 avg 0.876 host strict | reject, learned the meta-rules too literally |
 | `MODEL_LEXICON_GOLD_V4_S3000` | gold v2 + answer-only fragment-completion reinforcement | 5/5 avg 0.972 host strict | 5/5 avg 0.913 host strict | reject, cleaner corpus idea but worse runtime prose than v2 |
 
@@ -670,6 +671,63 @@ future compression work: each compressed artifact must have a host validator, a
 DOS loader, vector parity, quality evidence, and direct `--perf` timing before
 it is described as production.
 
+## Q4/Log Token+Head Release Mode
+
+The next completed compression pass applies the same q4/log contract to the
+other vocabulary-sized resident tensor: the token embedding matrix. The
+quantizer now writes both `GPT2TQ4.BIN` and `GPT2HQ4.BIN`, then rewrites
+`GPT2FX.BIN` with the exact dequantized token rows and output head used by DOS.
+That keeps host fixed quality and vector generation aligned with the compressed
+runtime path.
+
+Runtime behavior:
+
+- If `GPT2TQ4.BIN` is absent, DOS loads the full Q20.12 token embedding matrix
+  from `GPT2FX.BIN`.
+- If `GPT2TQ4.BIN` is present and valid, DOS skips the resident full token
+  embedding matrix and dequantizes only the current token row during each
+  forward pass.
+- If `GPT2HQ4.BIN` is present and valid, DOS still uses the q4/log output-head
+  decode table described above.
+
+Candidate: `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`
+
+- Base weights: promoted `MODEL_LEXICON_GOLD_V2_S3000` / `assets/gpt2_basic/MODEL`
+- Token-embedding values: 196,608 Q20.12 weights
+- Output-head values: 196,608 Q20.12 weights
+- Full resident size of each tensor: 786,432 bytes
+- Packed q4 code bytes per tensor: 98,304 bytes
+- DOS runtime memory: 974,724 bytes, peak 0.930 MB
+- Default uncompressed DOS runtime memory: 2,055,940 bytes, peak 1.961 MB
+- Runtime memory saving versus default: 1,081,216 bytes
+- Host fixed held-out: 5/5 average 0.972
+- Host fixed runtime-regression: 5/5 average 0.948
+- Host fixed all-suite: 10/10 average 0.960
+- DOS vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
+- QEMU 486DX2/66 perf: 2.12 tok/s versus 2.46 tok/s for the full-resident default
+- DOS compile after token+head q4 loader path: `COMPILE_OK`, `GPT2.EXE` 502,272 bytes
+- Active default checkpoint still passes vector parity after the loader change:
+  3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
+
+Evidence:
+
+- `qemu/evidence/model_report_tokheadq4_prod_probe.log`
+- `qemu/evidence/tokheadq4_quantizer_probe.log`
+- `qemu/evidence/quality_report_tokheadq4_prod_probe_heldout.md`
+- `qemu/evidence/quality_report_tokheadq4_prod_probe_runtime.md`
+- `qemu/evidence/quality_report_tokheadq4_prod_probe_fixed_all.md`
+- `qemu/evidence/vector_486_model_tokheadq4_prod_probe.log`
+- `qemu/evidence/perf_486_486dx2-66_model_tokheadq4_prod_probe.log`
+- `qemu/evidence/vector_486.log`
+- `qemu/evidence/hardware_perf_report.md`
+
+Result: promote as the preferred low-memory release candidate. It preserves the
+4096-token lexicon behavior and the full host quality gate while cutting the DOS
+runtime footprint below 1 MB. Throughput is effectively the same as the
+head-only q4 mode because the token embedding path dequantizes only one short
+row per generated token; the output head remains the dominant compressed hot
+loop.
+
 ## Updated Next Architecture
 
 The production tokenizer path is now wired and verified: host training/export
@@ -680,12 +738,13 @@ and the optional mode marker selects byte/BPE/lexicon encoding explicitly. The
 measured BPE and lexicon sweeps prove the contract, Lexicon4096 proves that the
 maximum current vocabulary is feasible under DOS, and the adapted sweep proves
 that feeding measured results back into the curriculum is productive. The q4/log
-output-head path proves that compression can be added to the actual DOS
-inference contract when it is measured end to end. The boundary cleanup,
-gold-corpus sweeps, and post-training repair show the same tradeoff from
-different directions: clean data reduces malformed text, while a small sampler
-prior can fix deterministic first-token boundary failures without destabilizing
-the trained weights.
+token+head path proves that compression can be added to the actual DOS
+inference contract when it is measured end to end, and that vocabulary-sized
+tensors can be pushed below 1 MB runtime memory without losing the current
+quality gate. The boundary cleanup, gold-corpus sweeps, and post-training
+repair show the same tradeoff from different directions: clean data reduces
+malformed text, while a small sampler prior can fix deterministic first-token
+boundary failures without destabilizing the trained weights.
 
 The next serious improvement should keep the large lexicon path, the gold v2
 corpus base, the corrected boundary audit, and the 30-token lexicon-aware stop
@@ -709,10 +768,10 @@ rule, but change the objective:
    pieces and penalizes alphabetic byte fallback inside generated words.
 8. Keep the 4096-token ceiling for now. More vocabulary would require a DOS
    hash-table and memory-contract change, while the current maximum already
-   fits in about 1.96 MB peak runtime memory.
-9. Extend q4/log compression beyond the output head only when the loop-level
-   speed tradeoff is measured; smaller files are not automatically faster on a
-   486.
+   fits below 1 MB peak runtime memory in token+head q4 mode.
+9. Extend q4/log compression beyond vocabulary-shaped tensors only when the
+   loop-level speed tradeoff is measured; smaller files are not automatically
+   faster on a 486.
 10. Rerun strict host quality first, then QEMU vector parity, DOS held-out
    quality, runtime-regression quality, all-suite quality, and QEMU `--perf`
    only for candidates that improve the gold v2 strict host gate by more than

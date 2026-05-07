@@ -15,7 +15,9 @@ DEFAULT_MODEL = ROOT / "assets" / "gpt2_basic" / "MODEL"
 EXP_TABLE_SIZE = 513
 BYTES_PER_VALUE = 4
 HEAD_Q4_MAGIC = 0x34514847
+TOKEN_Q4_MAGIC = 0x34515447
 HEAD_Q4_VERSION = 1
+TOKEN_Q4_VERSION = 1
 
 
 def resolve_file(model_dir: Path, primary_name: str, legacy_name: str) -> Path:
@@ -89,18 +91,25 @@ def validate_file_size(path: Path, expected_bytes: int) -> None:
         raise ValueError(f"{path} is {actual_bytes} bytes, expected {expected_bytes}")
 
 
-def validate_head_q4(path: Path, cfg: dict[str, str]) -> str:
+def validate_q4_artifact(
+    path: Path,
+    cfg: dict[str, str],
+    artifact_name: str,
+    magic_value: int,
+    version_value: int,
+    absent_message: str,
+) -> str:
     if not path.exists():
-        return "absent optional compressed output head"
+        return absent_message
     data = path.read_bytes()
     if len(data) < 32:
-        raise ValueError(f"{path} is too small for GPT2HQ4 header")
+        raise ValueError(f"{path} is too small for {artifact_name} header")
     magic, version, vocab_size, emb_dim, value_count, level_count, scale_count, packed_bytes = struct.unpack(
         "<iiiiiiii", data[:32]
     )
-    if magic != HEAD_Q4_MAGIC:
+    if magic != magic_value:
         raise ValueError(f"{path} has wrong magic {magic}")
-    if version != HEAD_Q4_VERSION:
+    if version != version_value:
         raise ValueError(f"{path} has unsupported version {version}")
     expected_vocab = require_int(cfg, "vocab_size")
     expected_emb = require_int(cfg, "n_embd")
@@ -119,6 +128,28 @@ def validate_head_q4(path: Path, cfg: dict[str, str]) -> str:
         raise ValueError(f"{path} packed_bytes={packed_bytes}, expected {(value_count + 1) // 2}")
     original_bytes = value_count * BYTES_PER_VALUE
     return f"OK q4-log values={value_count} packed={packed_bytes} original_i32={original_bytes}"
+
+
+def validate_head_q4(path: Path, cfg: dict[str, str]) -> str:
+    return validate_q4_artifact(
+        path,
+        cfg,
+        "GPT2HQ4",
+        HEAD_Q4_MAGIC,
+        HEAD_Q4_VERSION,
+        "absent optional compressed output head",
+    )
+
+
+def validate_token_q4(path: Path, cfg: dict[str, str]) -> str:
+    return validate_q4_artifact(
+        path,
+        cfg,
+        "GPT2TQ4",
+        TOKEN_Q4_MAGIC,
+        TOKEN_Q4_VERSION,
+        "absent optional compressed token embedding",
+    )
 
 
 def validate_profile(path: Path, cfg: dict[str, str]) -> dict[str, str]:
@@ -307,6 +338,8 @@ def self_test(model_dir: Path, strict: bool) -> None:
     profile = validate_profile(profile_path, cfg)
     vectors = validate_vector_file(vector_path, cfg)
     tokenizer_status = validate_tokenizer_file(vocab_path, cfg)
+    head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
+    token_q4_status = validate_token_q4(model_dir / "GPT2TQ4.BIN", cfg)
     alias = validate_optional_alias(model_dir, "GPT2FX.BIN", "TINYFX.BIN", expected_weight_bytes)
     status = named_artifact_status(model_dir, "GPT2CFG.TXT", "TINYCFG.TXT")
     line = artifact_line("GPT2CFG.TXT", status)
@@ -318,6 +351,9 @@ def self_test(model_dir: Path, strict: bool) -> None:
     print(f"PROBE_OK validate_profile profile={profile['profile']}")
     print("trace validate_tokenizer_file")
     print(f"PROBE_OK validate_tokenizer_file status={tokenizer_status}")
+    print("trace validate_q4_artifact")
+    print(f"PROBE_OK validate_head_q4 status={head_q4_status}")
+    print(f"PROBE_OK validate_token_q4 status={token_q4_status}")
     print(f"PROBE_OK validate_vector_file vectors={vectors[0]} phases={vectors[2]}")
     print(f"PROBE_OK validate_optional_alias status={alias}")
     print(f"PROBE_OK named_artifact_status status={status}")
@@ -358,6 +394,7 @@ def main() -> None:
     profile_metadata = validate_profile(profile_path, cfg)
     tokenizer_status = validate_tokenizer_file(vocab_path, cfg)
     head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
+    token_q4_status = validate_token_q4(model_dir / "GPT2TQ4.BIN", cfg)
     vector_path = optional_artifact(model_dir, "GPT2VEC.TXT")
     vector_count, vector_expected_count, phase_count, phase_expected_count = validate_vector_file(vector_path, cfg)
 
@@ -394,6 +431,7 @@ def main() -> None:
     print(artifact_line("GPT2EXP.BIN", named_artifact_status(model_dir, "GPT2EXP.BIN", "TINYEXP.BIN")))
     print(artifact_line("PROFILE.TXT", f"OK profile={profile_metadata['profile']}"))
     print(artifact_line("VOCAB.BIN", tokenizer_status))
+    print(artifact_line("GPT2TQ4.BIN", token_q4_status))
     print(artifact_line("GPT2HQ4.BIN", head_q4_status))
     if vector_path.exists():
         print(
