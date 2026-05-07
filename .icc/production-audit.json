@@ -68,10 +68,20 @@
         },
         {
           "role": "promoted_model",
-          "path_prefixes": [
+          "paths": [
             "assets/gpt2_basic/MODEL"
           ],
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL/"
+          ],
           "description": "Promoted default checkpoint packaged for the 486 production target."
+        },
+        {
+          "role": "compressed_release_model",
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL_HEADQ4_PROD_PROBE/"
+          ],
+          "description": "Measured q4/log output-head release-mode checkpoint with DOS vector, quality, and performance evidence."
         },
         {
           "role": "candidate_model",

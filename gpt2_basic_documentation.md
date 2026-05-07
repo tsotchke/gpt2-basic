@@ -75,6 +75,19 @@ Key technical innovations in this implementation include:
 5. SIMD-like operations through bit manipulation techniques
 6. Critical section optimization through targeted assembly language
 
+Current repository evidence now distinguishes the production path from earlier
+design-space modules. The promoted DOS checkpoint is a 2-layer, 48-dimensional,
+4-head, 192-context GPT2-BASIC model with a 4096-token longest-match lexicon,
+463,168 parameters, Q20.12 fixed-point weights, a DOS KV decode cache, and
+QEMU/DOS parity and quality evidence. It passes the 10-prompt DOS all-suite at
+10/10 average 0.961 and measures 2.46 tok/s on the QEMU 486DX2/66 gate. A
+separate q4/log output-head release mode is now fully wired through host export,
+DOS loading, vector parity, quality evaluation, and QEMU `--perf`: it reduces
+runtime memory from 2,055,940 to 1,646,404 bytes while measuring 2.12 tok/s on
+the same gate. Sections below describe both the original architecture concepts
+and the realized production subset; `qemu/evidence/domain_training_strategy_report.md`
+is the authoritative implementation ledger.
+
 This paper provides a thorough technical analysis of these innovations, documents the challenges of implementing transformer models on constrained hardware, and explores the counterfactual implications of what might have resulted if such techniques had been available during the 486 era of computing.
 
 ## 2. Historical Background
@@ -474,6 +487,17 @@ Temperature-based sampling provides control over the randomness of generation, w
 ### 4.1 4-bit Logarithmic Quantization
 
 One of the most critical optimizations in our implementation is the 4-bit logarithmic quantization scheme for model parameters. This technique reduces memory usage by 8× compared to 32-bit floating-point representation, while maintaining sufficient precision for inference.
+
+In the current production runtime this idea is realized conservatively. The
+main checkpoint remains Q20.12 signed fixed point for simple parity, while the
+largest resident tensor, the 4096-token output head, can be replaced by
+`GPT2HQ4.BIN`. That file stores q4/log codes in input-major order plus
+per-output-token scales. DOS validates the artifact, skips loading the full
+resident output head, builds a compact fixed-point decode table, and computes
+the final logits from the compressed head. The measured result is 98,304 packed
+head bytes instead of 786,432 full-head bytes, 1,646,404 bytes of DOS runtime
+memory instead of 2,055,940 bytes, and 2.12 tok/s instead of 2.46 tok/s on the
+QEMU 486DX2/66 performance gate.
 
 #### Mathematical Foundation
 

@@ -10,6 +10,7 @@ CONST GPT2BASIC_CFG_FILE AS STRING = "GPT2CFG.TXT"
 CONST GPT2BASIC_WEIGHT_FILE AS STRING = "GPT2WT.BIN"
 CONST GPT2BASIC_FIXED_WEIGHT_FILE AS STRING = "GPT2FX.BIN"
 CONST GPT2BASIC_EXP_TABLE_FILE AS STRING = "GPT2EXP.BIN"
+CONST GPT2BASIC_HEAD_Q4_FILE AS STRING = "GPT2HQ4.BIN"
 CONST GPT2BASIC_VECTOR_FILE AS STRING = "GPT2VEC.TXT"
 CONST TINYGPT_CFG_FILE AS STRING = "TINYCFG.TXT"
 CONST TINYGPT_WEIGHT_FILE AS STRING = "TINYWT.BIN"
@@ -28,6 +29,8 @@ CONST TINYGPT_FX_EXP_MAX AS INTEGER = 16
 CONST TINYGPT_FX_CLAMP AS LONG = 2000000000
 CONST TINYGPT_BYTE_RUN_FX_PENALTY AS LONG = 6144
 CONST TINYGPT_BYTE_RUN_FLOAT_PENALTY AS SINGLE = 1.5
+CONST TINYGPT_HEAD_Q4_MAGIC AS LONG = &H34514847
+CONST TINYGPT_HEAD_Q4_VERSION AS LONG = 1
 
 DIM SHARED g_tiny_loaded AS INTEGER
 DIM SHARED g_tiny_fixed_loaded AS INTEGER
@@ -106,6 +109,12 @@ DIM SHARED g_tiny_fx_final_ln_b() AS LONG
 DIM SHARED g_tiny_fx_head_w() AS LONG
 DIM SHARED g_tiny_fx_head_b() AS LONG
 DIM SHARED g_tiny_fx_exp() AS LONG
+DIM SHARED g_tiny_fx_head_q4_loaded AS INTEGER
+DIM SHARED g_tiny_fx_head_q4_bytes AS LONG
+DIM SHARED g_tiny_fx_head_q4() AS UBYTE
+DIM SHARED g_tiny_fx_head_q4_scale() AS LONG
+DIM SHARED g_tiny_fx_head_q4_level() AS LONG
+DIM SHARED g_tiny_fx_head_q4_decode() AS LONG
 
 DIM SHARED g_tiny_fx_cache_k() AS LONG
 DIM SHARED g_tiny_fx_cache_v() AS LONG
@@ -146,6 +155,7 @@ DECLARE SUB TinyGPTReadSingles(file_num AS INTEGER, values() AS SINGLE, value_co
 DECLARE SUB TinyGPTReadLongs(file_num AS INTEGER, values() AS LONG, value_count AS LONG)
 DECLARE FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
 DECLARE FUNCTION TinyGPTLoadFixedExpTable(base_path AS STRING) AS INTEGER
+DECLARE FUNCTION TinyGPTLoadHeadQ4(base_path AS STRING, expected_value_count AS LONG) AS INTEGER
 DECLARE SUB TinyGPTFreeModel()
 DECLARE FUNCTION TinyGPTIsLoaded() AS INTEGER
 DECLARE FUNCTION TinyGPTIsFixedPointLoaded() AS INTEGER
@@ -195,6 +205,7 @@ DECLARE FUNCTION TinyGPTFixedExpNeg(x AS LONG) AS LONG
 DECLARE FUNCTION TinyGPTFixedTanh(x AS LONG) AS LONG
 DECLARE SUB TinyGPTFixedLayerNormVec(input_vec() AS LONG, output_vec() AS LONG, emb_dim AS INTEGER, gamma_arr() AS LONG, beta_arr() AS LONG, param_base AS LONG)
 DECLARE SUB TinyGPTFixedLinearVec(input_vec() AS LONG, output_vec() AS LONG, in_dim AS INTEGER, out_dim AS INTEGER, weight_arr() AS LONG, weight_base AS LONG, bias_arr() AS LONG, bias_base AS LONG)
+DECLARE SUB TinyGPTFixedHeadQ4LinearVec(input_vec() AS LONG, output_vec() AS LONG)
 DECLARE SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, write_logits AS INTEGER, logits() AS LONG)
 DECLARE FUNCTION TinyGPTFixedGELU(x AS LONG) AS LONG
 DECLARE FUNCTION TinyGPTFixedSample(logits() AS LONG, context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
@@ -319,6 +330,95 @@ SUB TinyGPTReadLongs(file_num AS INTEGER, values() AS LONG, value_count AS LONG)
     NEXT i
 END SUB
 
+FUNCTION TinyGPTLoadHeadQ4(base_path AS STRING, expected_value_count AS LONG) AS INTEGER
+    DIM q4_path AS STRING
+    DIM file_num AS INTEGER
+    DIM magic AS LONG
+    DIM version AS LONG
+    DIM vocab_size AS LONG
+    DIM emb_dim AS LONG
+    DIM value_count AS LONG
+    DIM level_count AS LONG
+    DIM scale_count AS LONG
+    DIM packed_bytes AS LONG
+    DIM i AS LONG
+    DIM code AS INTEGER
+    DIM magnitude AS INTEGER
+    DIM decode_index AS LONG
+    DIM decoded_value AS LONGINT
+    DIM byte_value AS UBYTE
+
+    q4_path = base_path + "\" + GPT2BASIC_HEAD_Q4_FILE
+    IF DIR(q4_path) = "" THEN RETURN 0
+
+    file_num = FREEFILE
+    ON ERROR GOTO head_q4_error
+    OPEN q4_path FOR BINARY AS #file_num
+
+    GET #file_num, , magic
+    GET #file_num, , version
+    GET #file_num, , vocab_size
+    GET #file_num, , emb_dim
+    GET #file_num, , value_count
+    GET #file_num, , level_count
+    GET #file_num, , scale_count
+    GET #file_num, , packed_bytes
+
+    IF magic <> TINYGPT_HEAD_Q4_MAGIC THEN GOTO head_q4_error
+    IF version <> TINYGPT_HEAD_Q4_VERSION THEN GOTO head_q4_error
+    IF vocab_size <> g_tiny_vocab_size THEN GOTO head_q4_error
+    IF emb_dim <> g_tiny_n_embd THEN GOTO head_q4_error
+    IF value_count <> expected_value_count THEN GOTO head_q4_error
+    IF level_count <> 8 THEN GOTO head_q4_error
+    IF scale_count <> g_tiny_vocab_size THEN GOTO head_q4_error
+    IF packed_bytes <> (expected_value_count + 1) \ 2 THEN GOTO head_q4_error
+    IF packed_bytes <= 0 THEN GOTO head_q4_error
+
+    REDIM g_tiny_fx_head_q4_level(0 TO level_count - 1)
+    REDIM g_tiny_fx_head_q4_scale(0 TO scale_count - 1)
+    REDIM g_tiny_fx_head_q4(0 TO packed_bytes - 1)
+    REDIM g_tiny_fx_head_q4_decode(0 TO (scale_count * 16) - 1)
+
+    TinyGPTReadLongs file_num, g_tiny_fx_head_q4_level(), level_count
+    TinyGPTReadLongs file_num, g_tiny_fx_head_q4_scale(), scale_count
+    FOR i = 0 TO packed_bytes - 1
+        GET #file_num, , byte_value
+        g_tiny_fx_head_q4(i) = byte_value
+    NEXT i
+
+    IF SEEK(file_num) <= LOF(file_num) THEN GOTO head_q4_error
+    CLOSE #file_num
+    ON ERROR GOTO 0
+
+    FOR i = 0 TO scale_count - 1
+        FOR code = 0 TO 15
+            magnitude = code AND 7
+            decoded_value = 0
+            IF magnitude <> 0 THEN
+                decoded_value = (CLNGINT(g_tiny_fx_head_q4_scale(i)) * CLNGINT(g_tiny_fx_head_q4_level(magnitude))) \ TINYGPT_FX_ONE
+                IF (code AND 8) <> 0 THEN decoded_value = -decoded_value
+            END IF
+            decode_index = (i * 16) + code
+            g_tiny_fx_head_q4_decode(decode_index) = TinyGPTFixedClamp(decoded_value)
+        NEXT code
+    NEXT i
+
+    g_tiny_fx_head_q4_loaded = 1
+    g_tiny_fx_head_q4_bytes = 32 + (level_count * 4) + (scale_count * 4) + packed_bytes + (scale_count * 16 * 4)
+    RETURN 1
+
+head_q4_error:
+    ON ERROR GOTO 0
+    IF file_num <> 0 THEN CLOSE #file_num
+    ERASE g_tiny_fx_head_q4
+    ERASE g_tiny_fx_head_q4_scale
+    ERASE g_tiny_fx_head_q4_level
+    ERASE g_tiny_fx_head_q4_decode
+    g_tiny_fx_head_q4_loaded = 0
+    g_tiny_fx_head_q4_bytes = 0
+    RETURN 0
+END FUNCTION
+
 FUNCTION TinyGPTLoadFixedExpTable(base_path AS STRING) AS INTEGER
     DIM exp_path AS STRING
     DIM file_num AS INTEGER
@@ -350,6 +450,7 @@ FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
     DIM token_count AS LONG
     DIM pos_count AS LONG
     DIM head_count AS LONG
+    DIM skip_bytes AS LONG
 
     weight_path = TinyGPTResolveFile(base_path, GPT2BASIC_FIXED_WEIGHT_FILE, TINYGPT_FIXED_WEIGHT_FILE)
 
@@ -364,6 +465,9 @@ FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
     layer_eh = CLNG(g_tiny_n_layer) * CLNG(g_tiny_n_embd) * CLNG(g_tiny_hidden_dim)
     layer_he = CLNG(g_tiny_n_layer) * CLNG(g_tiny_hidden_dim) * CLNG(g_tiny_n_embd)
     head_count = CLNG(g_tiny_n_embd) * CLNG(g_tiny_vocab_size)
+    g_tiny_fx_head_q4_loaded = 0
+    g_tiny_fx_head_q4_bytes = 0
+    TinyGPTLoadHeadQ4 base_path, head_count
 
     REDIM g_tiny_fx_tok_emb(0 TO token_count - 1)
     REDIM g_tiny_fx_pos_emb(0 TO pos_count - 1)
@@ -385,7 +489,9 @@ FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
     REDIM g_tiny_fx_fc2_b(0 TO layer_e - 1)
     REDIM g_tiny_fx_final_ln_w(0 TO g_tiny_n_embd - 1)
     REDIM g_tiny_fx_final_ln_b(0 TO g_tiny_n_embd - 1)
-    REDIM g_tiny_fx_head_w(0 TO head_count - 1)
+    IF g_tiny_fx_head_q4_loaded = 0 THEN
+        REDIM g_tiny_fx_head_w(0 TO head_count - 1)
+    END IF
     REDIM g_tiny_fx_head_b(0 TO g_tiny_vocab_size - 1)
 
     file_num = FREEFILE
@@ -412,7 +518,12 @@ FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
     TinyGPTReadLongs file_num, g_tiny_fx_fc2_b(), layer_e
     TinyGPTReadLongs file_num, g_tiny_fx_final_ln_w(), g_tiny_n_embd
     TinyGPTReadLongs file_num, g_tiny_fx_final_ln_b(), g_tiny_n_embd
-    TinyGPTReadLongs file_num, g_tiny_fx_head_w(), head_count
+    IF g_tiny_fx_head_q4_loaded <> 0 THEN
+        skip_bytes = head_count * 4
+        SEEK #file_num, SEEK(file_num) + skip_bytes
+    ELSE
+        TinyGPTReadLongs file_num, g_tiny_fx_head_w(), head_count
+    END IF
     TinyGPTReadLongs file_num, g_tiny_fx_head_b(), g_tiny_vocab_size
 
     CLOSE #file_num
@@ -597,6 +708,10 @@ SUB TinyGPTFreeModel()
     ERASE g_tiny_fx_head_w
     ERASE g_tiny_fx_head_b
     ERASE g_tiny_fx_exp
+    ERASE g_tiny_fx_head_q4
+    ERASE g_tiny_fx_head_q4_scale
+    ERASE g_tiny_fx_head_q4_level
+    ERASE g_tiny_fx_head_q4_decode
     ERASE g_tiny_fx_cache_k
     ERASE g_tiny_fx_cache_v
     ERASE g_tiny_fx_cache_tokens
@@ -617,6 +732,8 @@ SUB TinyGPTFreeModel()
 
     g_tiny_loaded = 0
     g_tiny_fixed_loaded = 0
+    g_tiny_fx_head_q4_loaded = 0
+    g_tiny_fx_head_q4_bytes = 0
     g_tiny_generation_start_len = 0
     g_tiny_cache_len = 0
     g_tiny_fx_cache_len = 0
@@ -697,6 +814,7 @@ FUNCTION TinyGPTRuntimeMemoryBytes() AS LONG
     DIM linear_acc_count AS LONG
     DIM vector_count AS LONG
     DIM debug_vector_count AS LONG
+    DIM head_count AS LONG
 
     total = 0
     IF g_tiny_vocab_size < 1 THEN RETURN 0
@@ -706,12 +824,16 @@ FUNCTION TinyGPTRuntimeMemoryBytes() AS LONG
     IF g_tiny_hidden_dim < 1 THEN RETURN 0
 
     cache_values = CLNG(g_tiny_n_layer) * CLNG(g_tiny_n_positions) * CLNG(g_tiny_n_embd)
+    head_count = CLNG(g_tiny_n_embd) * CLNG(g_tiny_vocab_size)
     linear_acc_count = g_tiny_hidden_dim
     IF g_tiny_n_embd > linear_acc_count THEN linear_acc_count = g_tiny_n_embd
     IF g_tiny_vocab_size > linear_acc_count THEN linear_acc_count = g_tiny_vocab_size
 
     IF g_tiny_fixed_loaded <> 0 THEN
         total = TinyGPTFixedWeightBytes()
+        IF g_tiny_fx_head_q4_loaded <> 0 THEN
+            total = total - (head_count * 4) + g_tiny_fx_head_q4_bytes
+        END IF
         total = total + CLNG(TINYGPT_FX_EXP_SIZE) * 4
         total = total + cache_values * 8
         total = total + CLNG(g_tiny_n_positions) * 4
@@ -1596,6 +1718,61 @@ SUB TinyGPTFixedLinearVec(input_vec() AS LONG, output_vec() AS LONG, in_dim AS I
     NEXT out_idx
 END SUB
 
+SUB TinyGPTFixedHeadQ4LinearVec(input_vec() AS LONG, output_vec() AS LONG)
+    DIM out_idx AS INTEGER
+    DIM next_out_idx AS INTEGER
+    DIM in_idx AS INTEGER
+    DIM vocab_size AS INTEGER
+    DIM packed_index AS LONG
+    DIM packed_value AS UBYTE
+    DIM code AS INTEGER
+    DIM input_value AS LONG
+    DIM weight_value AS LONG
+    DIM mul_value AS LONGINT
+
+    vocab_size = g_tiny_vocab_size
+
+    FOR out_idx = 0 TO vocab_size - 1
+        g_tiny_fx_linear_acc(out_idx) = g_tiny_fx_head_b(out_idx)
+    NEXT out_idx
+
+    FOR in_idx = 0 TO g_tiny_n_embd - 1
+        input_value = input_vec(in_idx)
+        packed_index = (CLNG(in_idx) * CLNG(vocab_size)) \ 2
+
+        FOR out_idx = 0 TO vocab_size - 1 STEP 2
+            packed_value = g_tiny_fx_head_q4(packed_index)
+
+            code = packed_value AND 15
+            weight_value = g_tiny_fx_head_q4_decode((CLNG(out_idx) * 16) + code)
+            IF weight_value <> 0 THEN
+                mul_value = (CLNGINT(input_value) * CLNGINT(weight_value)) \ TINYGPT_FX_ONE
+                IF mul_value > TINYGPT_FX_CLAMP THEN mul_value = TINYGPT_FX_CLAMP
+                IF mul_value < -TINYGPT_FX_CLAMP THEN mul_value = -TINYGPT_FX_CLAMP
+                g_tiny_fx_linear_acc(out_idx) = g_tiny_fx_linear_acc(out_idx) + mul_value
+            END IF
+
+            next_out_idx = out_idx + 1
+            IF next_out_idx < vocab_size THEN
+                code = (packed_value \ 16) AND 15
+                weight_value = g_tiny_fx_head_q4_decode((CLNG(next_out_idx) * 16) + code)
+                IF weight_value <> 0 THEN
+                    mul_value = (CLNGINT(input_value) * CLNGINT(weight_value)) \ TINYGPT_FX_ONE
+                    IF mul_value > TINYGPT_FX_CLAMP THEN mul_value = TINYGPT_FX_CLAMP
+                    IF mul_value < -TINYGPT_FX_CLAMP THEN mul_value = -TINYGPT_FX_CLAMP
+                    g_tiny_fx_linear_acc(next_out_idx) = g_tiny_fx_linear_acc(next_out_idx) + mul_value
+                END IF
+            END IF
+
+            packed_index = packed_index + 1
+        NEXT out_idx
+    NEXT in_idx
+
+    FOR out_idx = 0 TO vocab_size - 1
+        output_vec(out_idx) = TinyGPTFixedClamp(g_tiny_fx_linear_acc(out_idx))
+    NEXT out_idx
+END SUB
+
 FUNCTION TinyGPTFixedGELU(x AS LONG) AS LONG
     DIM x2 AS LONG
     DIM x3 AS LONG
@@ -1824,7 +2001,11 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
             TinyGPTCopyLongVector g_tiny_fx_norm_vec(), g_tiny_fx_dbg_final_ln_vec(), emb_dim
         END IF
 
-        TinyGPTFixedLinearVec g_tiny_fx_norm_vec(), logits(), emb_dim, g_tiny_vocab_size, g_tiny_fx_head_w(), 0, g_tiny_fx_head_b(), 0
+        IF g_tiny_fx_head_q4_loaded <> 0 THEN
+            TinyGPTFixedHeadQ4LinearVec g_tiny_fx_norm_vec(), logits()
+        ELSE
+            TinyGPTFixedLinearVec g_tiny_fx_norm_vec(), logits(), emb_dim, g_tiny_vocab_size, g_tiny_fx_head_w(), 0, g_tiny_fx_head_b(), 0
+        END IF
     END IF
 END SUB
 

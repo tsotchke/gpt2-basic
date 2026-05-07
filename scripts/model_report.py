@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import struct
 from pathlib import Path
 
 from gpt2_basic_tokenizer import BYTE_VOCAB_SIZE, GPT2BasicTokenizer
@@ -13,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL = ROOT / "assets" / "gpt2_basic" / "MODEL"
 EXP_TABLE_SIZE = 513
 BYTES_PER_VALUE = 4
+HEAD_Q4_MAGIC = 0x34514847
+HEAD_Q4_VERSION = 1
 
 
 def resolve_file(model_dir: Path, primary_name: str, legacy_name: str) -> Path:
@@ -84,6 +87,38 @@ def validate_file_size(path: Path, expected_bytes: int) -> None:
     actual_bytes = path.stat().st_size
     if actual_bytes != expected_bytes:
         raise ValueError(f"{path} is {actual_bytes} bytes, expected {expected_bytes}")
+
+
+def validate_head_q4(path: Path, cfg: dict[str, str]) -> str:
+    if not path.exists():
+        return "absent optional compressed output head"
+    data = path.read_bytes()
+    if len(data) < 32:
+        raise ValueError(f"{path} is too small for GPT2HQ4 header")
+    magic, version, vocab_size, emb_dim, value_count, level_count, scale_count, packed_bytes = struct.unpack(
+        "<iiiiiiii", data[:32]
+    )
+    if magic != HEAD_Q4_MAGIC:
+        raise ValueError(f"{path} has wrong magic {magic}")
+    if version != HEAD_Q4_VERSION:
+        raise ValueError(f"{path} has unsupported version {version}")
+    expected_vocab = require_int(cfg, "vocab_size")
+    expected_emb = require_int(cfg, "n_embd")
+    if vocab_size != expected_vocab or emb_dim != expected_emb:
+        raise ValueError(f"{path} shape vocab={vocab_size} emb={emb_dim}, expected {expected_vocab} {expected_emb}")
+    if value_count != vocab_size * emb_dim:
+        raise ValueError(f"{path} value_count={value_count}, expected {vocab_size * emb_dim}")
+    if level_count != 8:
+        raise ValueError(f"{path} level_count={level_count}, expected 8")
+    if scale_count != vocab_size:
+        raise ValueError(f"{path} scale_count={scale_count}, expected {vocab_size}")
+    expected_size = 32 + level_count * 4 + scale_count * 4 + packed_bytes
+    if len(data) != expected_size:
+        raise ValueError(f"{path} is {len(data)} bytes, expected {expected_size}")
+    if packed_bytes != (value_count + 1) // 2:
+        raise ValueError(f"{path} packed_bytes={packed_bytes}, expected {(value_count + 1) // 2}")
+    original_bytes = value_count * BYTES_PER_VALUE
+    return f"OK q4-log values={value_count} packed={packed_bytes} original_i32={original_bytes}"
 
 
 def validate_profile(path: Path, cfg: dict[str, str]) -> dict[str, str]:
@@ -322,6 +357,7 @@ def main() -> None:
         validate_file_size(float_path, expected_weight_bytes)
     profile_metadata = validate_profile(profile_path, cfg)
     tokenizer_status = validate_tokenizer_file(vocab_path, cfg)
+    head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
     vector_path = optional_artifact(model_dir, "GPT2VEC.TXT")
     vector_count, vector_expected_count, phase_count, phase_expected_count = validate_vector_file(vector_path, cfg)
 
@@ -358,6 +394,7 @@ def main() -> None:
     print(artifact_line("GPT2EXP.BIN", named_artifact_status(model_dir, "GPT2EXP.BIN", "TINYEXP.BIN")))
     print(artifact_line("PROFILE.TXT", f"OK profile={profile_metadata['profile']}"))
     print(artifact_line("VOCAB.BIN", tokenizer_status))
+    print(artifact_line("GPT2HQ4.BIN", head_q4_status))
     if vector_path.exists():
         print(
             artifact_line(

@@ -21,6 +21,29 @@ ICC confirms that the current evidence directory contains compile, vector, quali
 
 ICC index-quality also flags all large BASIC sources as symbol blind spots, including `src/real_gpt.bas`, `src/main.bas`, `src/matrix_ops.bas`, `src/simd_ops.bas`, and `src/memory_manager.bas`. Manual BASIC audit is therefore required for production claims.
 
+## Current Release Update
+
+This audit began before the final lexicon and q4/log release work. The current
+promoted default is no longer the 258-token byte checkpoint described in the
+older baseline rows below. The release state is:
+
+- Default checkpoint: `assets/gpt2_basic/MODEL`, promoted from
+  `MODEL_LEXICON_GOLD_V2_S3000`.
+- Shape: `2L 48D 4H ctx192 hidden192 vocab4096`, 463,168 parameters.
+- Tokenizer: DOS-loadable 4096-token lexicon vocabulary with byte fallback.
+- Default DOS runtime memory: 2,055,940 bytes.
+- Default QEMU 486DX2/66 perf: 2.46 tok/s.
+- Default DOS all-suite quality: 10/10 average 0.961.
+- Optional compressed release mode: `MODEL_HEADQ4_PROD_PROBE` with
+  `GPT2HQ4.BIN` q4/log output-head artifact.
+- Q4 mode DOS runtime memory: 1,646,404 bytes.
+- Q4 mode QEMU 486DX2/66 perf: 2.12 tok/s.
+- Q4 mode vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`.
+
+The stale findings below are retained as the historical audit trail. Their
+resolved items are superseded by `qemu/evidence/domain_training_strategy_report.md`,
+`qemu/evidence/hardware_perf_report.md`, and the current ICC readiness report.
+
 ## Current Production Architecture
 
 The actual production path is now the trained GPT2-BASIC runtime:

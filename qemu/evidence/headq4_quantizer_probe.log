@@ -1,0 +1,5 @@
+PROBE_OK parse_config profile=486sx-safe
+PROBE_OK quantize_head_q4 values=196608
+PROBE_OK pack_nibbles bytes=98304
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

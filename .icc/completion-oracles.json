@@ -8,7 +8,9 @@
         "fixed-point language model",
         "486",
         "gpt2-basic-486",
-        "dos-gpt2-basic"
+        "dos-gpt2-basic",
+        "q4 output-head release mode",
+        "compressed-head release"
       ],
       "requires": [
         {
