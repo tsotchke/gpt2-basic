@@ -1,0 +1,9 @@
+PROBE_OK parse_config profile=486sx-safe
+PROBE_OK nearest_log_q4_code levels=8
+PROBE_OK quantize_rows_q4 values=196608
+PROBE_OK quantize_token_q4 values=196608
+PROBE_OK quantize_head_q4 values=196608
+PROBE_OK pack_nibbles bytes=98304
+PROBE_OK head_q4_stream_marker bytes=16
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

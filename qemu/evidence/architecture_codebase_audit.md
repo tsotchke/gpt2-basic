@@ -41,9 +41,14 @@ older baseline rows below. The release state is:
 - Q4 token+head mode QEMU 486DX2/66 perf: 2.12 tok/s.
 - Q4 token+head mode vector parity: 3/3 vectors, 39/39 phases,
   `VECTOR_CHECK_OK`.
+- Q4 token+head streamed-head mode: `MODEL_TOKHEADQ4_STREAM_PROD_PROBE`,
+  `GPT2HQS.ON` marker, 616,324 bytes DOS runtime memory, 0.81 tok/s on the
+  QEMU 486DX2/66 gate.
+- Q4 streamed-head vector parity: 3/3 vectors, 39/39 phases,
+  `VECTOR_CHECK_OK`.
 - Production entrypoint: `src/main_prod.bas`, staged as `GPT2SRC\MAIN.BAS`.
   The old combined driver is staged separately as `LABMAIN.BAS`.
-- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 294,912 bytes.
+- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 296,448 bytes.
 - Default production QEMU 486DX2/66 perf after the split: 108 tokens in
   44.00 seconds, 2.45 tok/s.
 - Kernel timing mode: `GPT2.EXE --kernel-perf`, emitted through
@@ -77,7 +82,7 @@ This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L
 
 | Evidence | Result |
 |---|---|
-| DOS compile | `COMPILE_OK`, `GPT2.EXE` 294,912 bytes |
+| DOS compile | `COMPILE_OK`, `GPT2.EXE` 296,448 bytes |
 | Vector parity | `VECTOR_SUMMARY passed 3 of 3`, `PHASE_SUMMARY passed 39 of 39`, `VECTOR_CHECK_OK` |
 | DOS quality suite | `PASS`, 10/10 prompts, average 0.961 |
 | Held-out DOS quality suite | `PASS`, 5/5 prompts, average 0.973 |
@@ -258,7 +263,7 @@ The current best architecture is not "larger model" by default. The current best
 
 1. Run `qemu/run_perf_486.sh` for the remaining QEMU profiles and regenerate `hardware_perf_report.md`.
 2. Measure the q4/log token+head release mode with kernel timing, not only aggregate perf.
-3. Prototype faster output-head scoring or streaming for the 4096-token vocabulary, then prove it with vector parity and `--kernel-perf`.
+3. Prototype faster output-head scoring; the first streamed-head mode is implemented and proves the memory floor, but it is too slow to replace resident q4.
 4. Add a non-greedy interactive quality matrix for temperature/top-k/top-p.
 5. Broaden the product prompt suite beyond the current curated technical answers.
 6. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf` contract.
@@ -269,6 +274,5 @@ The restored system is now honest about inference, has a slim production
 executable, passes the current DOS quality gates, and has a real DOS timing
 contract. The main architectural weakness is now performance concentration in
 the vocabulary-sized output head, plus the absence of physical-board timing.
-The next improvements should be measured output-head compression/streaming,
-broader prompt coverage, and real-machine perf, not another unmeasured size
-increase.
+The next improvements should be faster output-head scoring, broader prompt
+coverage, and real-machine perf, not another unmeasured size increase.

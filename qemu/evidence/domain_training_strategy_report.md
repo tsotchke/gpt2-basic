@@ -50,6 +50,7 @@ held-out prompt strings are not included.
 | `MODEL` / `MODEL_LEXICON_GOLD_V2_S3000` | full 4096-token lexicon from expanded audited gold corpus v2 + 30-token stop rule + prompt-aware starter prior | 5/5 avg 0.973 host strict | 5/5 avg 0.948 DOS fixed | promoted default; sampler repair fixes bad prompt starts without changing weights |
 | `MODEL_HEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed output head | 5/5 avg 0.973 host fixed | 5/5 avg 0.940 host fixed | keep as intermediate/proven fallback; 409 KB less runtime memory |
 | `MODEL_TOKHEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed token embedding and output head | 5/5 avg 0.972 host fixed | 5/5 avg 0.948 host fixed | preferred low-memory release mode; 974,724 byte DOS runtime footprint |
+| `MODEL_TOKHEADQ4_STREAM_PROD_PROBE` | token+head q4 plus streamed output-head rows from `GPT2HQ4.BIN` | vector parity pass | 3/3 vectors, 39/39 phases DOS | keep as low-memory fallback; 616,324 byte runtime footprint but 0.81 tok/s |
 | `MODEL_LEXICON_GOLD_V3_S3000` | gold v2 + direct completion and anti-chaining meta examples | 5/5 avg 0.965 host strict | 5/5 avg 0.876 host strict | reject, learned the meta-rules too literally |
 | `MODEL_LEXICON_GOLD_V4_S3000` | gold v2 + answer-only fragment-completion reinforcement | 5/5 avg 0.972 host strict | 5/5 avg 0.913 host strict | reject, cleaner corpus idea but worse runtime prose than v2 |
 
@@ -728,6 +729,40 @@ head-only q4 mode because the token embedding path dequantizes only one short
 row per generated token; the output head remains the dominant compressed hot
 loop.
 
+## Q4/Log Streamed Output-Head Fallback
+
+The next compression pass implements the disk-row streaming idea against the
+measured hot tensor instead of reviving the old lab `file_io.bas` path. The new
+marker file `GPT2HQS.ON` tells DOS to keep `GPT2HQ4.BIN` open, keep only q4
+levels/scales plus one packed output-head row buffer resident, and stream the
+packed head row for each embedding dimension during final-logit scoring.
+
+Candidate: `assets/gpt2_basic/MODEL_TOKHEADQ4_STREAM_PROD_PROBE`
+
+- Base weights: promoted `MODEL_LEXICON_GOLD_V2_S3000` / `assets/gpt2_basic/MODEL`
+- Compressed artifacts: `GPT2TQ4.BIN`, `GPT2HQ4.BIN`, `GPT2HQS.ON`
+- DOS runtime memory: 616,324 bytes
+- DOS vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
+- QEMU 486DX2/66 perf: 117 generated tokens in 144.18 seconds, 0.81 tok/s
+- QEMU 486DX2/66 kernel perf: final head 130.03 seconds, 91.5% of measured
+  kernel time
+
+Evidence:
+
+- `qemu/evidence/model_report_tokheadq4_stream_prod_probe.log`
+- `qemu/evidence/tokheadq4_stream_quantizer_probe.log`
+- `qemu/evidence/vector_486_model_tokheadq4_stream_prod_probe.log`
+- `qemu/evidence/perf_486_486dx2-66_model_tokheadq4_stream_prod_probe.log`
+- `qemu/evidence/perf_486_486dx2-66_model_tokheadq4_stream_prod_probe_kernel.log`
+- `qemu/evidence/hardware_perf_report.md`
+
+Result: keep as an implemented low-memory fallback, not as the preferred
+release mode. It proves the production parameter-streaming contract and cuts
+runtime memory from 974,724 bytes in resident token+head q4 mode to 616,324
+bytes, but it also shows why streaming cannot be hand-waved as a free win on a
+486: final-head time dominates even more strongly, and throughput falls from
+2.12 tok/s to 0.81 tok/s.
+
 ## Production Runtime Realization
 
 The next implementation pass moved GPT2-BASIC from "the lab driver can run the
@@ -738,7 +773,7 @@ real model" to a narrower release executable:
 - The production executable includes the tokenizer, minimal allocation
   accounting, `real_gpt.bas`, and release entrypoints for demo, quality, vector,
   perf, and kernel-perf runs.
-- DOS compile after the split: `COMPILE_OK`, `GPT2.EXE` 294,912 bytes.
+- DOS compile after streamed-head support: `COMPILE_OK`, `GPT2.EXE` 296,448 bytes.
 - Active model vector parity after the split: 3/3 vectors, 39/39 phases,
   `VECTOR_CHECK_OK`.
 - Default QEMU 486DX2/66 perf after the split: 108 generated tokens in 44.00

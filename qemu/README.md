@@ -294,12 +294,13 @@ Current performance baseline:
 │ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
+│ QEMU 486dx2-66 q4 streaming  │ 0.81               │ 86.3 seconds      │ 123.5 seconds     │
 │ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
 
 The first seven rows come from the current code-count performance model in `qemu/evidence/era_performance_report.md`; the QEMU `486dx2-66 --perf` rows come from the promoted 4096-token lexicon default and q4/log release candidates running inside FreeDOS. Real hardware timing is still required before making claims about a specific PC. This QEMU build does not expose a true 386 CPU model, so the `386DX/33-class` row remains a conservative target estimate, not a true 386 compatibility proof.
 
-Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory. The q4/log token+head candidate uses 974,724 runtime bytes and reaches about 0.93 MB peak memory while still passing 3/3 vectors and 39/39 phase checks.
+Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory. The q4/log token+head candidate uses 974,724 runtime bytes and reaches about 0.93 MB peak memory while still passing 3/3 vectors and 39/39 phase checks. The q4/log streamed-head candidate uses 616,324 runtime bytes and passes the same vector gate, but slows to 0.81 tok/s on the QEMU 486DX2/66 profile.
 
 QEMU's curses display can emit CP437 conversion warnings on macOS terminals. They are display-backend noise, not DOS program failures.

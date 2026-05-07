@@ -56,7 +56,7 @@ suite at 10/10, average 0.960. DOS evidence for the same checkpoint is 10/10,
 average 0.961 after the prompt-aware starter prior. Physical hardware timing is
 still required for board-specific speed claims.
 
-The slim production build currently compiles to a 294,912-byte `GPT2.EXE`.
+The slim production build currently compiles to a 296,448-byte `GPT2.EXE`.
 The optional compressed release candidate,
 `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`, keeps the same 4096-token
 lexicon and checkpoint behavior while replacing the resident token embedding
@@ -64,6 +64,14 @@ and output head with `GPT2TQ4.BIN` and `GPT2HQ4.BIN`. It passes DOS vector
 parity and host fixed quality, reduces DOS runtime memory from 2,055,940 to
 974,724 bytes, and measures 2.12 tok/s on the QEMU 486DX2/66 gate versus 2.45
 tok/s for the full-resident default.
+
+The lower-memory streaming candidate,
+`assets/gpt2_basic/MODEL_TOKHEADQ4_STREAM_PROD_PROBE`, adds `GPT2HQS.ON` so DOS
+streams packed output-head rows from `GPT2HQ4.BIN` instead of keeping the q4
+codes and decode table resident. It passes DOS vector parity, lowers runtime
+memory to 616,324 bytes, and measures 0.81 tok/s on the QEMU 486DX2/66 gate.
+This is the real parameter-streaming path, but it is a low-memory fallback
+rather than the default speed path.
 
 ## ► About This Project
 
@@ -312,6 +320,7 @@ memory.
 │ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
+│ QEMU 486dx2-66 q4 streaming  │ 0.81               │ 86.3 seconds      │ 123.5 seconds     │
 │ Host-speed QEMU --perf       │ 127.27             │ 0.55 seconds      │ 0.8 seconds       │
 └──────────────────────────────┴────────────────────┴───────────────────┴───────────────────┘
 ```
@@ -346,10 +355,11 @@ The verified production checkpoint currently stores weights as signed Q20.12 `LO
 The current measured compressed release path is token-embedding plus output-head
 q4/log. It is optional because the full Q20.12 tensors are still faster, but it
 is useful when RAM matters more than peak speed: the measured QEMU 486DX2/66
-path saves about 53% runtime memory and gives up about 14% throughput. Full
-model packed int16, int8, and broader 4-bit formats remain architecture
-experiments until each one has the same host validator, DOS loader, vector
-parity, quality report, and `--perf` timing.
+path saves about 53% runtime memory and gives up about 14% throughput. The
+streamed output-head variant saves about 70% runtime memory and gives up about
+67% throughput. Full model packed int16, int8, and broader 4-bit formats remain
+architecture experiments until each one has the same host validator, DOS
+loader, vector parity, quality report, and `--perf` timing.
 
 ### ■ Fixed-Point Arithmetic (Q20.12)
 
@@ -425,15 +435,19 @@ This technique was inspired by sparse matrix methods used in early scientific co
       └─────────────────────────┘
 ```
 
-To handle models that exceed available RAM, we implemented a system inspired by virtual memory and game level streaming from the 486 era:
+To handle models that exceed comfortable RAM budgets, the current production
+path implements streaming where the measured pressure is highest:
 
-- Store model parameters on disk in a structured format
-- Load only the needed layer weights when required
-- Immediately free memory after use
-- Implement predictive loading when possible
-- Detect available memory and adapt streaming strategy
+- Store the compressed output head on disk in `GPT2HQ4.BIN`
+- Keep levels, scales, and one row buffer resident
+- Stream packed output-head rows on demand when `GPT2HQS.ON` is present
+- Keep the faster resident q4 mode available when memory allows it
+- Measure the memory/speed tradeoff through DOS vector parity and `--perf`
 
-This approach is reminiscent of how games like Wing Commander managed to create experiences that seemed to exceed the hardware limitations of the time.
+This approach is reminiscent of how games like Wing Commander managed to create
+experiences that seemed to exceed the hardware limitations of the time. Older
+lab code still explores broader layer-style streaming, but production claims
+should be tied to the measured q4/log streamed-head mode.
 
 ### ■ SIMD-Like Bit Manipulation
 
@@ -821,7 +835,7 @@ Several limitations have been identified during implementation:
 
 - **Physical hardware evidence:** QEMU `-icount` measurements are repeatable emulator evidence, not cycle-accurate proof for a specific motherboard.
 - **Prompt coverage:** The current checkpoint passes the measured DOS held-out and runtime suites, but broader open-ended prompts still need product testing.
-- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.45 tokens/sec for the full-resident default and 2.12 tokens/sec for the q4/log token+head release mode.
+- **Generation speed:** The current QEMU `486dx2-66 --perf` measurement is 2.45 tokens/sec for the full-resident default, 2.12 tokens/sec for the q4/log token+head release mode, and 0.81 tokens/sec for the q4/log streamed-head fallback.
 - **Context length:** Generation rolls forward after the exported context window, but attention remains limited to the active 192-token window.
 - **Sampling:** Evidence runs intentionally use greedy temperature-0 decode. Interactive fixed-point decode now supports temperature, top-k, and top-p, but non-greedy quality still needs a dedicated product test matrix.
 ```

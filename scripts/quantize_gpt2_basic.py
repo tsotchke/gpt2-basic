@@ -27,6 +27,7 @@ HEAD_Q4_MAGIC = 0x34514847  # "GHQ4" little-endian.
 TOKEN_Q4_MAGIC = 0x34515447  # "GTQ4" little-endian.
 HEAD_Q4_VERSION = 1
 TOKEN_Q4_VERSION = 1
+HEAD_Q4_STREAM_MARKER = "GPT2HQS.ON"
 FX_ONE = 4096
 LOG_Q4_LEVELS = (0, 256, 512, 1024, 1536, 2048, 3072, 4096)
 
@@ -181,7 +182,12 @@ def rewrite_fixed_weights(path: Path, weights: FixedWeights, tok_emb: list[int],
     path.write_bytes(struct.pack("<" + "i" * len(flat), *flat))
 
 
-def update_profile(model_dir: Path, head_artifact: Q4Tensor | None, token_artifact: Q4Tensor | None) -> None:
+def update_profile(
+    model_dir: Path,
+    head_artifact: Q4Tensor | None,
+    token_artifact: Q4Tensor | None,
+    head_stream: bool,
+) -> None:
     profile_path = model_dir / "PROFILE.TXT"
     if not profile_path.exists():
         return
@@ -192,6 +198,8 @@ def update_profile(model_dir: Path, head_artifact: Q4Tensor | None, token_artifa
         if not line.startswith("head_quantization=")
         and not line.startswith("head_quantized_file=")
         and not line.startswith("head_quantized_bytes=")
+        and not line.startswith("head_streaming=")
+        and not line.startswith("head_streaming_marker=")
         and not line.startswith("token_embedding_quantization=")
         and not line.startswith("token_embedding_quantized_file=")
         and not line.startswith("token_embedding_quantized_bytes=")
@@ -212,6 +220,13 @@ def update_profile(model_dir: Path, head_artifact: Q4Tensor | None, token_artifa
                 f"head_quantized_bytes={len(head_artifact.packed)}",
             ]
         )
+    if head_artifact is not None and head_stream:
+        filtered.extend(
+            [
+                "head_streaming=q4-log-disk-row",
+                f"head_streaming_marker={HEAD_Q4_STREAM_MARKER}",
+            ]
+        )
     profile_path.write_text("\n".join(filtered) + "\n", encoding="ascii")
 
 
@@ -222,6 +237,7 @@ def quantize_model(
     rewrite_fixed_token: bool,
     emit_head_q4: bool,
     emit_token_q4: bool,
+    head_stream: bool,
 ) -> Path:
     target_dir = model_dir
     if output_dir is not None:
@@ -238,13 +254,18 @@ def quantize_model(
     token_artifact = quantize_token_q4(weights, vocab_size, emb_dim) if emit_token_q4 else None
     if head_artifact is not None:
         write_head_q4(target_dir / "GPT2HQ4.BIN", cfg, head_artifact)
+        marker_path = target_dir / HEAD_Q4_STREAM_MARKER
+        if head_stream:
+            marker_path.write_text("q4-log-disk-row\n", encoding="ascii")
+        elif marker_path.exists():
+            marker_path.unlink()
     if token_artifact is not None:
         write_token_q4(target_dir / "GPT2TQ4.BIN", cfg, token_artifact)
     if (head_artifact is not None and rewrite_fixed_head) or (token_artifact is not None and rewrite_fixed_token):
         rewritten_head = head_artifact.dequantized if head_artifact is not None and rewrite_fixed_head else weights.head_w
         rewritten_tok_emb = token_artifact.dequantized if token_artifact is not None and rewrite_fixed_token else weights.tok_emb
         rewrite_fixed_weights(target_dir / "GPT2FX.BIN", weights, rewritten_tok_emb, rewritten_head)
-    update_profile(target_dir, head_artifact, token_artifact)
+    update_profile(target_dir, head_artifact, token_artifact, head_stream)
 
     original_tensor_bytes = vocab_size * emb_dim * 4
     if token_artifact is not None:
@@ -265,6 +286,8 @@ def quantize_model(
         )
     if (head_artifact is not None and rewrite_fixed_head) or (token_artifact is not None and rewrite_fixed_token):
         print(f"rewrote {target_dir / 'GPT2FX.BIN'} with dequantized q4 tensors")
+    if head_artifact is not None and head_stream:
+        print(f"wrote {target_dir / HEAD_Q4_STREAM_MARKER}")
     return target_dir
 
 
@@ -273,6 +296,7 @@ def self_test(model_dir: Path) -> None:
     weights = read_weights(model_dir, cfg)
     head_artifact = quantize_head_q4(weights, cfg.vocab_size, cfg.n_embd)
     token_artifact = quantize_token_q4(weights, cfg.vocab_size, cfg.n_embd)
+    marker_payload = "q4-log-disk-row\n"
     expected_values = cfg.vocab_size * cfg.n_embd
     for name, artifact in [("head", head_artifact), ("token", token_artifact)]:
         if len(artifact.codes) != expected_values:
@@ -287,6 +311,7 @@ def self_test(model_dir: Path) -> None:
     print(f"PROBE_OK quantize_token_q4 values={expected_values}")
     print(f"PROBE_OK quantize_head_q4 values={expected_values}")
     print(f"PROBE_OK pack_nibbles bytes={len(head_artifact.packed)}")
+    print(f"PROBE_OK head_q4_stream_marker bytes={len(marker_payload)}")
     print("PROBE_OK self_test exercised=1")
     print("PROBE_OK main cli_entry=available")
 
@@ -299,6 +324,7 @@ def main() -> None:
     parser.add_argument("--no-token-q4", action="store_true")
     parser.add_argument("--no-rewrite-fixed-head", action="store_true")
     parser.add_argument("--no-rewrite-fixed-token", action="store_true")
+    parser.add_argument("--head-stream", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
@@ -312,6 +338,7 @@ def main() -> None:
         not args.no_rewrite_fixed_token,
         not args.no_head_q4,
         not args.no_token_q4,
+        args.head_stream,
     )
 
 

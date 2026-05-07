@@ -18,6 +18,7 @@ HEAD_Q4_MAGIC = 0x34514847
 TOKEN_Q4_MAGIC = 0x34515447
 HEAD_Q4_VERSION = 1
 TOKEN_Q4_VERSION = 1
+HEAD_Q4_STREAM_MARKER = "GPT2HQS.ON"
 
 
 def resolve_file(model_dir: Path, primary_name: str, legacy_name: str) -> Path:
@@ -150,6 +151,22 @@ def validate_token_q4(path: Path, cfg: dict[str, str]) -> str:
         TOKEN_Q4_VERSION,
         "absent optional compressed token embedding",
     )
+
+
+def validate_head_q4_stream_marker(model_dir: Path, profile: dict[str, str]) -> str:
+    marker_path = model_dir / HEAD_Q4_STREAM_MARKER
+    if not marker_path.exists():
+        if profile.get("head_streaming"):
+            raise FileNotFoundError(marker_path)
+        return "absent optional q4 output-head streaming marker"
+    marker_text = marker_path.read_text(encoding="ascii", errors="ignore").strip()
+    if marker_text != "q4-log-disk-row":
+        raise ValueError(f"{marker_path} has unsupported marker {marker_text!r}")
+    if not (model_dir / "GPT2HQ4.BIN").exists():
+        raise FileNotFoundError(model_dir / "GPT2HQ4.BIN")
+    if profile.get("head_streaming") not in {"", None, "q4-log-disk-row"}:
+        raise ValueError(f"PROFILE.TXT has unsupported head_streaming={profile.get('head_streaming')!r}")
+    return "OK q4-log output head streamed from GPT2HQ4.BIN rows"
 
 
 def validate_profile(path: Path, cfg: dict[str, str]) -> dict[str, str]:
@@ -340,6 +357,7 @@ def self_test(model_dir: Path, strict: bool) -> None:
     tokenizer_status = validate_tokenizer_file(vocab_path, cfg)
     head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
     token_q4_status = validate_token_q4(model_dir / "GPT2TQ4.BIN", cfg)
+    head_q4_stream_status = validate_head_q4_stream_marker(model_dir, profile)
     alias = validate_optional_alias(model_dir, "GPT2FX.BIN", "TINYFX.BIN", expected_weight_bytes)
     status = named_artifact_status(model_dir, "GPT2CFG.TXT", "TINYCFG.TXT")
     line = artifact_line("GPT2CFG.TXT", status)
@@ -354,6 +372,7 @@ def self_test(model_dir: Path, strict: bool) -> None:
     print("trace validate_q4_artifact")
     print(f"PROBE_OK validate_head_q4 status={head_q4_status}")
     print(f"PROBE_OK validate_token_q4 status={token_q4_status}")
+    print(f"PROBE_OK validate_head_q4_stream_marker status={head_q4_stream_status}")
     print(f"PROBE_OK validate_vector_file vectors={vectors[0]} phases={vectors[2]}")
     print(f"PROBE_OK validate_optional_alias status={alias}")
     print(f"PROBE_OK named_artifact_status status={status}")
@@ -395,6 +414,7 @@ def main() -> None:
     tokenizer_status = validate_tokenizer_file(vocab_path, cfg)
     head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
     token_q4_status = validate_token_q4(model_dir / "GPT2TQ4.BIN", cfg)
+    head_q4_stream_status = validate_head_q4_stream_marker(model_dir, profile_metadata)
     vector_path = optional_artifact(model_dir, "GPT2VEC.TXT")
     vector_count, vector_expected_count, phase_count, phase_expected_count = validate_vector_file(vector_path, cfg)
 
@@ -433,6 +453,7 @@ def main() -> None:
     print(artifact_line("VOCAB.BIN", tokenizer_status))
     print(artifact_line("GPT2TQ4.BIN", token_q4_status))
     print(artifact_line("GPT2HQ4.BIN", head_q4_status))
+    print(artifact_line(HEAD_Q4_STREAM_MARKER, head_q4_stream_status))
     if vector_path.exists():
         print(
             artifact_line(
