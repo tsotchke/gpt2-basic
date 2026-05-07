@@ -156,6 +156,26 @@ heldout:            PASS, 5/5 prompts, average 0.973
 all:                PASS, 10/10 prompts, average 0.961
 ```
 
+## Trace Suite
+
+Run the educational step trace through the compiled DOS fixed-point runtime:
+
+```sh
+bash qemu/run_trace_486.sh
+```
+
+The suite boots FreeDOS, launches `C:\GPT2.EXE --trace`, writes `C:\TRACE.LOG`,
+and extracts it to:
+
+```text
+qemu/evidence/trace_486.log
+```
+
+The log is intentionally machine-readable. It records `TRACE_MODEL`,
+`TRACE_TOKENIZER`, prompt token pieces, each `TRACE_STAGE` forward/sample step,
+each generated `TRACE_STEP`, the final decoded text, and `TRACE_END`. This is
+the implemented DOS teaching surface for step-by-step inference inspection.
+
 ## Profile Pareto Report
 
 Rank exported checkpoints against held-out quality, runtime memory, and the
@@ -269,6 +289,8 @@ Verified behavior:
 - The primary demo path uses fixed-point weights and fixed-point inference kernels.
 - Optional `GPT2TQ4.BIN` token-embedding compression and `GPT2HQ4.BIN`
   output-head compression load and run in DOS.
+- `GPT2.EXE --trace` emits prompt-token and generation-step records from the
+  real fixed-point runtime into `C:\TRACE.LOG`.
 - The real GPT runtime uses a KV decode cache for normal in-window generation, while preserving the full-prefix path as a fallback.
 - The old quality prior is disabled by default and is not the demo path.
 

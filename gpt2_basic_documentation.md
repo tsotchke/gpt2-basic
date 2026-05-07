@@ -2387,6 +2387,14 @@ The BASIC implementation offers several pedagogical advantages over modern imple
 
 4. **Direct Mathematical Mapping**: The code directly implements the mathematical operations described in transformer papers, making it easier to connect theory with implementation.
 
+The release build now includes the practical text-mode tracing surface implied
+by these advantages. `GPT2.EXE --trace` runs inside DOS against the active
+`C:\MODEL` checkpoint and emits stable `TRACE_*` records for model shape,
+tokenizer mode, prompt tokens, each greedy fixed-point generation step, and the
+final decoded text. The QEMU harness `bash qemu/run_trace_486.sh` captures this
+as `qemu/evidence/trace_486.log`, giving students a step-by-step audit trail
+without requiring a graphics card beyond ordinary DOS text mode.
+
 ### 8.2 Optimization Techniques for Constrained Environments
 
 Beyond illustrating transformer fundamentals, our implementation demonstrates a range of optimization techniques that are valuable for constrained computing environments:
@@ -2487,9 +2495,9 @@ The current implementation focuses on demonstrating technical feasibility rather
 
 #### Educational Extensions
 
-1. **Interactive Visualizations**: Adding visualization components that illustrate attention patterns and internal model states.
+1. **Interactive Visualizations**: Adding visualization components that illustrate attention patterns and internal model states. The implemented text trace is the portable baseline; VGA Mode 13h attention displays remain an optional lab variant.
 
-2. **Step-by-Step Execution Mode**: Implementing a mode that steps through the transformer computation with detailed explanations at each stage.
+2. **Step-by-Step Execution Mode**: The release executable now implements this as `GPT2.EXE --trace`, with QEMU evidence in `qemu/evidence/trace_486.log`. Future work can add richer mathematical annotations or graphical overlays, but the DOS inference trace itself is no longer aspirational.
 
 3. **Comparative Implementations**: Developing parallel implementations using different optimization techniques to demonstrate trade-offs.
 
@@ -2595,13 +2603,19 @@ END SUB
 
 ### B.2 Educational Toolkit Extensions
 
-The implementation could be extended into a comprehensive educational toolkit:
+The implementation now has the first component of a comprehensive educational
+toolkit:
 
-1. **Interactive Tracing**: Adding visualization capabilities to show attention patterns, token embeddings, and other internal states during inference.
+1. **Interactive Tracing**: The text-mode `GPT2.EXE --trace` path records model
+   metadata, tokenizer pieces, generation stages, generated tokens, and decoded
+   text on DOS. Visualization capabilities for attention patterns, token
+   embeddings, and other internal states can build on this trace contract.
 
 2. **Comparative Implementations**: Developing parallel implementations with different optimization strategies that students could benchmark against each other.
 
-3. **Step-by-Step Mode**: Creating a detailed tracing mode that explains each operation as it happens, with mathematical annotations.
+3. **Step-by-Step Mode**: The implemented trace mode provides the DOS
+   execution trail; mathematical annotations and graphical overlays remain
+   useful additions rather than prerequisites.
 
 Sample visualization code might look like:
 

@@ -775,7 +775,7 @@ real model" to a narrower release executable:
 - The production executable includes the tokenizer, minimal allocation
   accounting, `real_gpt.bas`, and release entrypoints for demo, quality, vector,
   perf, and kernel-perf runs.
-- DOS compile after streamed-head support: `COMPILE_OK`, `GPT2.EXE` 296,448 bytes.
+- DOS compile after trace-mode support: `COMPILE_OK`, `GPT2.EXE` 302,592 bytes.
 - Active model vector parity after the split: 3/3 vectors, 39/39 phases,
   `VECTOR_CHECK_OK`.
 - Default QEMU 486DX2/66 perf after the split: 108 generated tokens in 44.00
@@ -784,6 +784,10 @@ real model" to a narrower release executable:
   `bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL kernel`.
 - Kernel result: the 4096-token final output head accounts for about 73.7% of
   measured kernel time.
+- Educational trace mode: `GPT2.EXE --trace`, launched by
+  `bash qemu/run_trace_486.sh`, emits `TRACE_*` records for model shape,
+  tokenizer mode, prompt tokens, each generation step, decoded text, and final
+  context length.
 
 The fixed-point decode contract also now covers two product gaps from the
 architecture audit. First, `TinyGPTFixedSample` keeps the greedy temperature-0
@@ -798,6 +802,7 @@ Evidence:
 - `qemu/evidence/vector_486.log`
 - `qemu/evidence/perf_486_486dx2-66.log`
 - `qemu/evidence/perf_486_486dx2-66_kernel.log`
+- `qemu/evidence/trace_486.log`
 - `qemu/evidence/hardware_perf_report.md`
 
 Result: keep as the release runtime baseline. The remaining performance target
@@ -805,6 +810,29 @@ is no longer ambiguous: for the 4096-token vocabulary, the output head is the
 dominant hot loop. Further compression or streaming work should prioritize that
 path first and measure the speed/memory tradeoff inside DOS before expanding
 the model again.
+
+## Educational Trace Realization
+
+The aspirational documentation called for a step-by-step teaching mode. The
+production implementation now realizes the portable DOS version of that idea:
+`src/main_prod.bas` has a `RunTraceMode` entrypoint exposed as `--trace`,
+`--step-trace`, and `--educational-trace`. It uses the real tokenizer and
+fixed-point generation path, not a host simulation.
+
+Current trace evidence:
+
+- Runner: `bash qemu/run_trace_486.sh`
+- Evidence: `qemu/evidence/trace_486.log`
+- Prompt: `What makes this real inference?`
+- Prompt tokens: 3 lexicon pieces
+- Generated tokens: 12 greedy fixed-point steps
+- Records: `TRACE_MODEL`, `TRACE_TOKENIZER`, `TRACE_INPUT_TOKEN`,
+  `TRACE_STAGE`, `TRACE_STEP`, `TRACE_DECODED`, and `TRACE_END`
+
+Result: keep as the release teaching/audit surface. VGA attention graphics can
+still be built as an additional lab variant, but the project no longer depends
+on graphical mode support to show a step-by-step inference path on era-accurate
+systems.
 
 ## Updated Next Architecture
 

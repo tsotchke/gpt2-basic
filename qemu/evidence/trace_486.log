@@ -1,0 +1,50 @@
+Initializing GPT2-BASIC production runtime...
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+Production model initialization complete.
+  Build       : production fixed-point runtime
+  Profile     : 486sx-safe
+  Layers      :  2
+  Embed dim   :  48
+  Heads       :  4
+  Vocab size  :  4096
+  Max tokens  :  192
+  Parameters  :  463168
+  Fixed bytes :  1852672
+  Runtime mem :  2055940
+  Arithmetic  : Q20.12 fixed-point
+TRACE_BEGIN|suite=gpt2-basic-step|version=1
+TRACE_MODEL|profile=486sx-safe|layers=2|emb=48|heads=4|ctx=192|vocab=4096|params=463168|runtime_bytes=2055940
+TRACE_TOKENIZER|mode=lexicon|vocab=4096|merges=0|max_token_len=16
+TRACE_PROMPT|text=What makes this real inference?
+TRACE_PROMPT_TOKENS|count=3
+TRACE_INPUT_TOKEN|pos=0|id=2028|text=What makes this
+TRACE_INPUT_TOKEN|pos=1|id=367|text= real inference
+TRACE_INPUT_TOKEN|pos=2|id=65|text=?
+TRACE_STAGE|name=decode_begin|prompt_tokens=3|max_new_tokens=12|sampling=greedy_temperature_0
+TRACE_STAGE|name=forward_sample|step=0|context_len=3
+TRACE_STEP|step=0|token=2972|text= The prompt is|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=1|context_len=4
+TRACE_STEP|step=1|token=3332|text= encoded into|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=2|context_len=5
+TRACE_STEP|step=2|token=270|text= tokens|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=3|context_len=6
+TRACE_STEP|step=3|token=46|text=,|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=4|context_len=7
+TRACE_STEP|step=4|token=692|text= the transformer|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=5|context_len=8
+TRACE_STEP|step=5|token=2918|text= updates hidden|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=6|context_len=9
+TRACE_STEP|step=6|token=1489|text= state|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=7|context_len=10
+TRACE_STEP|step=7|token=46|text=,|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=8|context_len=11
+TRACE_STEP|step=8|token=1547|text= the output head|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=9|context_len=12
+TRACE_STEP|step=9|token=2510|text= produces logits|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=10|context_len=13
+TRACE_STEP|step=10|token=46|text=,|ends_sentence=0
+TRACE_STAGE|name=forward_sample|step=11|context_len=14
+TRACE_STEP|step=11|token=2358|text= and the sampler|ends_sentence=0
+TRACE_DECODED|text=What makes this real inference? The prompt is encoded into tokens, the transformer updates hidden state, the output head produces logits, and the sampler
+TRACE_END|generated_tokens=12|final_context_len=15

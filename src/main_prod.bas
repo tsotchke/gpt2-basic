@@ -46,11 +46,14 @@ DECLARE SUB WaitForKeypress()
 DECLARE SUB StripTrailingEOT(tokens() AS INTEGER, BYREF token_count AS INTEGER)
 DECLARE FUNCTION ProdLongText(value AS LONG) AS STRING
 DECLARE FUNCTION ProdDoubleText(value AS DOUBLE) AS STRING
+DECLARE FUNCTION TraceSafeText(value AS STRING) AS STRING
+DECLARE FUNCTION TraceTokenizerModeName(mode_value AS INTEGER) AS STRING
 DECLARE FUNCTION InitializeModel() AS INTEGER
 DECLARE SUB ShutdownModel()
 DECLARE SUB PrintActiveModelInfo()
 DECLARE FUNCTION GenerateNextToken(context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
 DECLARE SUB GenerateText(prompt AS STRING, max_length AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER)
+DECLARE SUB RunTraceMode(prompt AS STRING, max_length AS INTEGER)
 DECLARE SUB RunQualityPrompt(prompt_name AS STRING, prompt_text AS STRING)
 DECLARE SUB RunAutomatedQualitySuite(suite_name AS STRING)
 DECLARE SUB RunHardwarePerformanceCase(case_name AS STRING, prompt AS STRING, max_length AS INTEGER, BYREF total_runs AS INTEGER, BYREF total_tokens AS LONG, BYREF total_seconds AS DOUBLE)
@@ -78,6 +81,37 @@ END FUNCTION
 
 FUNCTION ProdDoubleText(value AS DOUBLE) AS STRING
     RETURN LTRIM$(STR$(value))
+END FUNCTION
+
+FUNCTION TraceSafeText(value AS STRING) AS STRING
+    DIM result AS STRING
+    DIM i AS INTEGER
+    DIM ch AS STRING
+    DIM code AS INTEGER
+
+    result = ""
+    FOR i = 1 TO LEN(value)
+        ch = MID$(value, i, 1)
+        code = ASC(ch)
+        IF ch = "|" THEN
+            result = result + "/"
+        ELSEIF code = 13 OR code = 10 OR code = 9 THEN
+            result = result + " "
+        ELSEIF code < 32 OR code > 126 THEN
+            result = result + "."
+        ELSE
+            result = result + ch
+        END IF
+    NEXT i
+
+    RETURN result
+END FUNCTION
+
+FUNCTION TraceTokenizerModeName(mode_value AS INTEGER) AS STRING
+    IF mode_value = TOKENIZER_MODE_BYTE THEN RETURN "byte"
+    IF mode_value = TOKENIZER_MODE_BPE THEN RETURN "bpe"
+    IF mode_value = TOKENIZER_MODE_LEXICON THEN RETURN "lexicon"
+    RETURN "unknown"
 END FUNCTION
 
 FUNCTION InitializeModel() AS INTEGER
@@ -247,6 +281,90 @@ SUB GenerateText(prompt AS STRING, max_length AS INTEGER, temperature AS SINGLE,
     PRINT "--------------"
     PRINT "Runtime memory: "; GPT2BasicRuntimeMemoryBytes(); " bytes"
     PRINT "Tracked peak  : "; g_prod_peak_memory; " bytes"
+END SUB
+
+SUB RunTraceMode(prompt AS STRING, max_length AS INTEGER)
+    DIM input_tokens() AS INTEGER
+    DIM input_token_count AS INTEGER
+    DIM context_tokens() AS INTEGER
+    DIM context_len AS INTEGER
+    DIM generated_tokens AS INTEGER
+    DIM i AS INTEGER
+    DIM next_token AS INTEGER
+    DIM token_text AS STRING
+    DIM generated_text AS STRING
+
+    IF InitializeModel() = 0 THEN
+        PRINT "TRACE_FAILED|stage=initialize_model"
+        RETURN
+    END IF
+
+    Encode prompt, input_tokens(), input_token_count
+    StripTrailingEOT input_tokens(), input_token_count
+    IF input_token_count > GPT2BasicContextLength() THEN input_token_count = GPT2BasicContextLength()
+    IF input_token_count < 1 THEN
+        REDIM input_tokens(0 TO 0)
+        input_tokens(0) = 0
+        input_token_count = 1
+    END IF
+
+    REDIM context_tokens(0 TO input_token_count + max_length - 1)
+    FOR i = 0 TO input_token_count - 1
+        context_tokens(i) = input_tokens(i)
+    NEXT i
+    context_len = input_token_count
+
+    PRINT "TRACE_BEGIN|suite=gpt2-basic-step|version=1"
+    PRINT "TRACE_MODEL|profile=" + GPT2BasicProfileName() + _
+          "|layers=" + ProdLongText(CLng(GPT2BasicLayerCount())) + _
+          "|emb=" + ProdLongText(CLng(GPT2BasicEmbeddingDim())) + _
+          "|heads=" + ProdLongText(CLng(GPT2BasicHeadCount())) + _
+          "|ctx=" + ProdLongText(CLng(GPT2BasicContextLength())) + _
+          "|vocab=" + ProdLongText(CLng(GPT2BasicVocabSize())) + _
+          "|params=" + ProdLongText(GPT2BasicParameterCount()) + _
+          "|runtime_bytes=" + ProdLongText(GPT2BasicRuntimeMemoryBytes())
+    PRINT "TRACE_TOKENIZER|mode=" + TraceTokenizerModeName(g_tokenizer.tokenizer_mode) + _
+          "|vocab=" + ProdLongText(CLng(g_tokenizer.vocab_size)) + _
+          "|merges=" + ProdLongText(CLng(g_tokenizer.merge_count)) + _
+          "|max_token_len=" + ProdLongText(CLng(g_tokenizer.max_token_length))
+    PRINT "TRACE_PROMPT|text=" + TraceSafeText(prompt)
+    PRINT "TRACE_PROMPT_TOKENS|count=" + ProdLongText(CLng(input_token_count))
+
+    FOR i = 0 TO input_token_count - 1
+        token_text = TraceSafeText(TinyGPTTokenText(input_tokens(i)))
+        PRINT "TRACE_INPUT_TOKEN|pos=" + ProdLongText(CLng(i)) + _
+              "|id=" + ProdLongText(CLng(input_tokens(i))) + _
+              "|text=" + token_text
+    NEXT i
+
+    GPT2BasicBeginGeneration input_token_count
+    PRINT "TRACE_STAGE|name=decode_begin|prompt_tokens=" + ProdLongText(CLng(input_token_count)) + _
+          "|max_new_tokens=" + ProdLongText(CLng(max_length)) + _
+          "|sampling=greedy_temperature_0"
+
+    FOR i = 0 TO max_length - 1
+        PRINT "TRACE_STAGE|name=forward_sample|step=" + ProdLongText(CLng(i)) + _
+              "|context_len=" + ProdLongText(CLng(context_len))
+        next_token = GenerateNextToken(context_tokens(), context_len, 0.0, DEFAULT_TOP_P, DEFAULT_TOP_K)
+        context_tokens(context_len) = next_token
+        context_len = context_len + 1
+        generated_tokens = generated_tokens + 1
+        token_text = TraceSafeText(TinyGPTTokenText(next_token))
+        PRINT "TRACE_STEP|step=" + ProdLongText(CLng(i)) + _
+              "|token=" + ProdLongText(CLng(next_token)) + _
+              "|text=" + token_text + _
+              "|ends_sentence=" + ProdLongText(CLng(TinyGPTTokenEndsSentence(next_token)))
+
+        IF next_token = 0 THEN EXIT FOR
+        IF i >= SENTENCE_STOP_MIN_TOKENS THEN
+            IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
+        END IF
+    NEXT i
+
+    generated_text = Decode(context_tokens(), context_len)
+    PRINT "TRACE_DECODED|text=" + TraceSafeText(generated_text)
+    PRINT "TRACE_END|generated_tokens=" + ProdLongText(CLng(generated_tokens)) + _
+          "|final_context_len=" + ProdLongText(CLng(context_len))
 END SUB
 
 SUB RunQualityPrompt(prompt_name AS STRING, prompt_text AS STRING)
@@ -488,6 +606,13 @@ SUB Main()
         g_prod_kernel_perf_request = 1
         RunHardwarePerformanceSuite
         g_prod_kernel_perf_request = 0
+        ShutdownModel
+        RETURN
+    END IF
+
+    IF command_line = "--trace" OR command_line = "--step-trace" OR command_line = "--educational-trace" THEN
+        RANDOMIZE 486
+        RunTraceMode "What makes this real inference?", 12
         ShutdownModel
         RETURN
     END IF

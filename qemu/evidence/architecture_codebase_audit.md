@@ -8,8 +8,8 @@ Scope: current `gpt2-basic` workspace, ICC repo `gpt2_basic`, target `gpt2-basic
 
 | Check | Result |
 |---|---|
-| Indexed files | 250 |
-| Indexed lines | 99,533 |
+| Indexed files | 434 |
+| Indexed lines | 119,982 |
 | Contract gaps | 0 |
 | Completion oracle | complete |
 | Runtime evidence | present |
@@ -48,7 +48,10 @@ older baseline rows below. The release state is:
   `VECTOR_CHECK_OK`.
 - Production entrypoint: `src/main_prod.bas`, staged as `GPT2SRC\MAIN.BAS`.
   The old combined driver is staged separately as `LABMAIN.BAS`.
-- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 296,448 bytes.
+- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 302,592 bytes.
+- Educational trace mode: `GPT2.EXE --trace`, launched by
+  `qemu/run_trace_486.sh`, emits prompt-token and generation-step `TRACE_*`
+  records from the real DOS fixed-point runtime.
 - Default production QEMU 486DX2/66 perf after the split: 108 tokens in
   44.00 seconds, 2.45 tok/s.
 - Kernel timing mode: `GPT2.EXE --kernel-perf`, emitted through
@@ -74,7 +77,7 @@ The actual production path is now the trained GPT2-BASIC runtime:
 4. `src/real_gpt.bas:438` prefers Q20.12 fixed weights through `TinyGPTLoadFixedModel`.
 5. `src/real_gpt.bas:1627` runs the fixed-point cached token forward pass.
 6. `src/real_gpt.bas` applies the printable/EOT/tokenizer output mask, greedy temperature-0 selection for evidence, and fixed-point temperature/top-k/top-p sampling for interactive use.
-7. `src/main_prod.bas` exposes `GPT2.EXE --perf`, `--kernel-perf`, `--vectors`, and quality suites with machine-readable evidence records.
+7. `src/main_prod.bas` exposes `GPT2.EXE --perf`, `--kernel-perf`, `--trace`, `--vectors`, and quality suites with machine-readable evidence records.
 
 This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L 48D 4H ctx192 hidden192 vocab4096`, with 463,168 parameters and 2,055,940 bytes reported runtime memory.
 
@@ -82,10 +85,11 @@ This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L
 
 | Evidence | Result |
 |---|---|
-| DOS compile | `COMPILE_OK`, `GPT2.EXE` 296,448 bytes |
+| DOS compile | `COMPILE_OK`, `GPT2.EXE` 302,592 bytes |
 | Vector parity | `VECTOR_SUMMARY passed 3 of 3`, `PHASE_SUMMARY passed 39 of 39`, `VECTOR_CHECK_OK` |
 | DOS quality suite | `PASS`, 10/10 prompts, average 0.961 |
 | Held-out DOS quality suite | `PASS`, 5/5 prompts, average 0.973 |
+| DOS educational trace | `TRACE_BEGIN`, prompt token records, 12 generation steps, `TRACE_END` |
 | QEMU `486dx2-66 --perf` | 35-token `real_inference`: 14.12 s, 2.48 tok/s |
 | QEMU `486dx2-66 --perf` full suite | 108 tokens in 44.00 s, 2.45 tok/s |
 | QEMU `486dx2-66 --kernel-perf` | final output head: 30.75 s, 73.7% of measured kernel time |
@@ -253,6 +257,24 @@ Severity: resolved
 
 ICC readiness was reduced mainly because host helpers were not traced. Focused probe logs now cover the tokenizer contract, online corpus fetch/report path, domain curriculum builder, trainer CLI/export path, rejected subword prototype, architecture profile sweep, quality-prior trainer, FAT image writer, and profile/report paths. Current ICC readiness is 100 with zero contract gaps.
 
+### 10. Educational Step Trace Is Implemented In DOS
+
+Severity: resolved
+
+The documentation originally described step-by-step execution and teaching
+visualization as aspirational. The production executable now implements the
+portable text-mode half of that architecture through `GPT2.EXE --trace`.
+`qemu/run_trace_486.sh` boots the same FreeDOS image and active `C:\MODEL`
+checkpoint used by quality/perf evidence, captures `C:\TRACE.LOG`, and stores
+it as `qemu/evidence/trace_486.log`.
+
+The trace log records model shape, tokenizer mode, prompt tokens, every
+forward/sample stage, every generated token, the decoded text, and the final
+context length. This gives an era-compatible teaching and audit surface without
+requiring VGA graphics. Attention heatmaps or Mode 13h displays can still be
+added as lab variants, but step-by-step inference inspection is no longer a
+future-only documentation claim.
+
 ## Architecture Direction
 
 The current best architecture is not "larger model" by default. The current best architecture is:
@@ -274,7 +296,7 @@ The current best architecture is not "larger model" by default. The current best
 2. Measure any faster output-head variant with kernel timing, not only aggregate perf.
 3. Add a non-greedy interactive quality matrix for temperature/top-k/top-p.
 4. Broaden the product prompt suite beyond the current curated technical answers.
-5. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf` contract.
+5. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf` and `GPT2.EXE --trace` contracts.
 
 ## Bottom Line
 

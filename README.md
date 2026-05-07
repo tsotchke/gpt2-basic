@@ -38,6 +38,7 @@ Verified production surface:
 - KV decode cache for in-window generation
 - rolling fixed decode once prompt-plus-output exceeds the exported context window
 - deterministic greedy decode for evidence runs, plus fixed-point temperature/top-k/top-p sampling for interactive runs
+- machine-readable DOS educational trace mode with prompt-token and generation-step records
 - optional DOS-emitted kernel-stage timing with `--kernel-perf`
 - parity vectors, DOS quality logs, and DOS-emitted `PERF_*` timing records
 
@@ -56,7 +57,7 @@ suite at 10/10, average 0.960. DOS evidence for the same checkpoint is 10/10,
 average 0.961 after the prompt-aware starter prior. Physical hardware timing is
 still required for board-specific speed claims.
 
-The slim production build currently compiles to a 296,448-byte `GPT2.EXE`.
+The slim production build currently compiles to a 302,592-byte `GPT2.EXE`.
 The optional compressed release candidate,
 `assets/gpt2_basic/MODEL_TOKHEADQ4_PROD_PROBE`, keeps the same 4096-token
 lexicon and checkpoint behavior while replacing the resident token embedding
@@ -241,6 +242,18 @@ Run the full fixed-point quality prompt suite with:
 bash qemu/run_quality_486.sh
 ```
 
+Run the educational trace suite with:
+
+```sh
+bash qemu/run_trace_486.sh
+```
+
+That boots the real DOS executable with `GPT2.EXE --trace`, captures prompt
+tokenization, each greedy forward/sample step, the decoded text, and final
+context length into `qemu/evidence/trace_486.log`. This is the implemented
+step-through teaching surface; richer VGA visualizations remain optional lab
+work on top of the same runtime.
+
 Rank exported checkpoints against held-out quality, memory, and available QEMU
 `--perf` measurements with:
 
@@ -339,8 +352,9 @@ true 386 CPU model.
 Current quality evidence for the promoted lexicon default is in
 `qemu/evidence/quality_report_default_model_all.md`,
 `qemu/evidence/quality_report_default_model_fixed_all.md`, and
-`qemu/evidence/quality_report_dos_all.md`. These are emulator and host
-measurements until we can repeat the same command on a physical PC.
+`qemu/evidence/quality_report_dos_all.md`. The DOS educational trace evidence
+is in `qemu/evidence/trace_486.log`. These are emulator and host measurements
+until we can repeat the same commands on a physical PC.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
@@ -457,6 +471,21 @@ This approach is reminiscent of how games like Wing Commander managed to create
 experiences that seemed to exceed the hardware limitations of the time. Older
 lab code still explores broader layer-style streaming, but production claims
 should be tied to the measured q4/log streamed-head mode.
+
+### ■ DOS Educational Trace Mode
+
+The release executable also has a teaching/introspection mode:
+
+```sh
+bash qemu/run_trace_486.sh
+```
+
+Inside FreeDOS this runs `GPT2.EXE --trace` against the same `C:\MODEL` files
+used by quality, vector, and performance evidence. The trace records model
+shape, tokenizer mode, prompt pieces, each generated token, and the final
+decoded text in a stable `TRACE_*` line format. It is intentionally text-mode
+and machine-readable so it works on the same era-accurate systems as the main
+demo.
 
 ### ■ SIMD-Like Bit Manipulation
 
