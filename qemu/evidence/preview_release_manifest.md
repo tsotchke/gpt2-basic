@@ -5,7 +5,7 @@ Generated: `2026-05-11`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `234 files, 34,743,507 bytes`
+Package status: `236 files, 34,750,828 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 

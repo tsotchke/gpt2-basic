@@ -426,6 +426,16 @@ The release notes include a consumer-side command that runs the same verifier
 from inside an extracted `gpt2-basic-preview` tree against both downloaded zips
 and sidecars.
 
+Check repository tracking hygiene before cutting or tagging a release:
+
+```sh
+python3 scripts/verify_workspace_tracking.py
+```
+
+That guard rejects untracked files and any ignored workspace path outside the
+documented local-runtime buckets, so scratch data cannot silently become part
+of the release decision process.
+
 Write the current improvement backlog with:
 
 ```sh

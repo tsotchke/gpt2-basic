@@ -4,13 +4,15 @@ Generated: `2026-05-11`
 
 Scope: DOS preview release workspace after the preview-source cleanup,
 workspace-audit archive, hardware-transfer tracked-input guard, and preview
-host-path portability guard.
+host-path portability guard, plus the workspace tracking verifier.
 
 ## Current Source State
 
 - The working tree was clean after commit `d409869` before the hardware-transfer
   tracking guard was added.
 - The repository had `798` tracked files after the audit archive update.
+- The repository has `801` tracked files after adding the workspace tracking
+  verifier and probe evidence.
 - The stale pre-cleanup ICC report was archived at
   `qemu/evidence/archive/release_diff_audit_pre_cleanup.md`.
 - The current top-level release surface is the DOS preview and hardware-transfer
@@ -30,11 +32,13 @@ host-path portability guard.
 - `scripts/verify_preview_artifacts.py` rejects host absolute path leaks inside
   the preview tree, including POSIX home-directory and Windows user-profile
   fragments.
+- `scripts/verify_workspace_tracking.py` rejects untracked files and ignored
+  files outside the documented local-runtime/cache buckets.
 - `qemu/make_dos_staging.py` now recreates `qemu/staging/GPT2SRC` from scratch
   before writing staged DOS source files, so stale ignored staging files cannot
   enter the transfer bundle.
 - Verified preview zip hash after the tracked-input and host-path guards:
-  `b1c938c6a5341fe9683decb7773666f564266e8831c0e9e2c8f9b663bd70c933`.
+  `e338e58132e842c786588d1b6fbde1357bf961e4f8654567a26644951809a406`.
 - Verified hardware-transfer zip hash:
   `96291d959e33250fd3ac82150ccf2505ab939ce8e41d8b2cc23c4d6bd34c3c72`.
 
@@ -58,3 +62,6 @@ notes:
 cache. Its provenance and fetch policy are tracked through
 `scripts/fetch_online_training_corpus.py` and
 `qemu/evidence/online_training_data_audit.md`.
+
+The current guard probe is stored at
+`qemu/evidence/workspace_tracking_probe.log`.
