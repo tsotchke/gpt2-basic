@@ -20,9 +20,11 @@ from build_preview_release import (  # noqa: E402
     DEFAULT_GENERATED_DATE,
     DEFAULT_ZIP,
     RELEASE_MODELS,
+    copied_tree_files,
     create_zip,
     file_sha256,
     selected_evidence,
+    untracked_release_inputs,
     write_converged_package_manifest,
     write_manifest,
 )
@@ -461,6 +463,39 @@ class BuildPreviewReleaseTest(unittest.TestCase):
 
         self.assertIn("run_main_486.log", names)
         self.assertNotIn("scratch.log", names)
+
+    def test_copied_tree_files_excludes_transient_cache_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "keep.txt").write_text("keep\n", encoding="ascii")
+            (root / ".DS_Store").write_text("cache\n", encoding="ascii")
+            cache = root / "__pycache__"
+            cache.mkdir()
+            (cache / "module.pyc").write_bytes(b"cache")
+            names = {path.relative_to(root).as_posix() for path in copied_tree_files(root)}
+
+        self.assertEqual(names, {"keep.txt"})
+
+    def test_untracked_release_inputs_rejects_local_package_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tracked = root / "tracked.txt"
+            untracked = root / "data" / "domain_curriculum" / "local.txt"
+            outside = Path(tempfile.gettempdir()) / "outside-preview-input.txt"
+            untracked.parent.mkdir(parents=True)
+            tracked.write_text("tracked\n", encoding="ascii")
+            untracked.write_text("local\n", encoding="ascii")
+            outside.write_text("outside\n", encoding="ascii")
+            try:
+                missing = untracked_release_inputs(
+                    [tracked, untracked, outside],
+                    {"tracked.txt"},
+                    root=root,
+                )
+            finally:
+                outside.unlink(missing_ok=True)
+
+        self.assertEqual(missing, ["data/domain_curriculum/local.txt"])
 
     def test_manifest_reports_existing_package_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

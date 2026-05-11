@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import shutil
+import subprocess
 import tempfile
 import zipfile
 from dataclasses import dataclass
@@ -102,6 +103,8 @@ SELECTED_EVIDENCE_PREFIXES = (
 SELECTED_EVIDENCE_DIRS = {
     "hardware_capture_486_qemu",
 }
+TREE_COPY_IGNORED_NAMES = {".DS_Store", "__pycache__"}
+TREE_COPY_IGNORED_SUFFIXES = {".pyc", ".pyo"}
 
 
 def rel(path: Path) -> str:
@@ -192,6 +195,75 @@ def selected_evidence(evidence_dir: Path) -> list[Path]:
         if path.name in SELECTED_EVIDENCE_NAMES or path.name.startswith(SELECTED_EVIDENCE_PREFIXES):
             files.append(path)
     return files
+
+
+def tree_copy_skips(path: Path) -> bool:
+    if path.name in TREE_COPY_IGNORED_NAMES or path.suffix in TREE_COPY_IGNORED_SUFFIXES:
+        return True
+    return any(part in TREE_COPY_IGNORED_NAMES for part in path.parts)
+
+
+def copied_tree_files(src: Path) -> list[Path]:
+    if not src.exists():
+        return []
+    return sorted(path for path in src.rglob("*") if path.is_file() and not tree_copy_skips(path))
+
+
+def release_source_files(
+    selected: list[tuple[ReleaseModel, AuditRow]],
+    evidence_files: list[Path],
+    pack_root: Path,
+) -> list[Path]:
+    files: list[Path] = []
+    files.extend(ROOT / doc for doc in DOC_FILES if (ROOT / doc).is_file())
+    for tree in TREE_DIRS:
+        files.extend(copied_tree_files(ROOT / tree))
+    files.extend(path for path in sorted((ROOT / "qemu").iterdir()) if path.is_file() and path.suffix in QEMU_FILE_SUFFIXES)
+    qemu_readme = ROOT / "qemu" / "README.md"
+    if qemu_readme.is_file():
+        files.append(qemu_readme)
+    for _model, row in selected:
+        files.extend(copied_tree_files(row.model.path))
+    files.extend(copied_tree_files(pack_root))
+    gpt2_exe = DEFAULT_EVIDENCE / "GPT2.EXE"
+    if gpt2_exe.is_file():
+        files.append(gpt2_exe)
+    files.extend(path for path in evidence_files if path.is_file())
+
+    unique: dict[str, Path] = {}
+    for path in files:
+        unique[str(path.resolve())] = path
+    return [unique[key] for key in sorted(unique)]
+
+
+def git_tracked_paths(root: Path = ROOT) -> set[str] | None:
+    if not (root / ".git").exists():
+        return None
+    result = subprocess.run(["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True)
+    return {entry for entry in result.stdout.decode("utf-8").split("\0") if entry}
+
+
+def untracked_release_inputs(source_files: list[Path], tracked_paths: set[str], root: Path = ROOT) -> list[str]:
+    missing: list[str] = []
+    root_resolved = root.resolve()
+    for path in source_files:
+        try:
+            rel_path = path.resolve().relative_to(root_resolved).as_posix()
+        except ValueError:
+            continue
+        if rel_path not in tracked_paths:
+            missing.append(rel_path)
+    return sorted(missing)
+
+
+def require_release_sources_tracked(source_files: list[Path]) -> None:
+    tracked = git_tracked_paths()
+    if tracked is None:
+        return
+    missing = untracked_release_inputs(source_files, tracked)
+    if missing:
+        sample = ",".join(missing[:10])
+        raise SystemExit(f"PREVIEW_RELEASE_FAILED untracked_release_input={sample}")
 
 
 def copy_tree(src: Path, dst: Path) -> None:
@@ -338,6 +410,7 @@ def build_package(
         if not force:
             raise SystemExit(f"PREVIEW_RELEASE_FAILED output_exists={output_dir} use --force")
         shutil.rmtree(output_dir)
+    require_release_sources_tracked(release_source_files(selected, evidence_files, pack_root))
     output_dir.mkdir(parents=True)
     for doc in DOC_FILES:
         copy_if_exists(ROOT / doc, output_dir / doc)
@@ -397,7 +470,7 @@ def create_zip(output_dir: Path, zip_path: Path, force: bool) -> None:
                 write_deterministic_zip_entry(archive, output_dir.parent, path)
 
 
-def self_test(rows: list[AuditRow], evidence_dir: Path) -> None:
+def self_test(rows: list[AuditRow], evidence_dir: Path, pack_root: Path) -> None:
     selected = release_rows(rows)
     assistants = assistant_rows(rows)
     evidence = selected_evidence(evidence_dir)
@@ -414,6 +487,7 @@ def self_test(rows: list[AuditRow], evidence_dir: Path) -> None:
         raise RuntimeError("manifest missing DOS-only preview scope")
     if "qemu/evidence/run_main_486.log" not in manifest:
         raise RuntimeError("manifest missing DOS demo run log")
+    require_release_sources_tracked(release_source_files(selected, evidence, pack_root))
     with tempfile.TemporaryDirectory() as tmp:
         package_dir = Path(tmp) / "preview"
         package_dir.mkdir()
@@ -426,6 +500,7 @@ def self_test(rows: list[AuditRow], evidence_dir: Path) -> None:
     print(f"PROBE_OK preview_release_evidence_files={len(evidence)}")
     print("PROBE_OK preview_release_manifest=1")
     print("PROBE_OK preview_release_checksums=1")
+    print("PROBE_OK preview_release_tracked_inputs=1")
     print("PROBE_OK artifact_preview_release_manifest_md=1")
 
 
@@ -455,7 +530,7 @@ def main() -> None:
     evidence = selected_evidence(args.evidence_dir)
 
     if args.self_test:
-        self_test(rows, args.evidence_dir)
+        self_test(rows, args.evidence_dir, args.pack_root)
         return
 
     args.manifest.parent.mkdir(parents=True, exist_ok=True)

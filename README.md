@@ -402,7 +402,9 @@ The builder writes `/private/tmp/gpt2-basic-hardware-transfer.zip` plus a
 and the preview manifest uses a pinned release date plus portable artifact
 names by default, so identical no-change rebuilds produce the same zip checksum
 without embedding host output paths. CI also rebuilds the preview package under
-a second output root and requires the same zip checksum. Pass
+a second output root and requires the same zip checksum. The preview builder
+also refuses untracked files in copied release-input roots so local scratch
+files cannot alter the zip. Pass
 `--generated-date YYYY-MM-DD` only for a deliberate release respin.
 
 Verify both release archives before publishing:

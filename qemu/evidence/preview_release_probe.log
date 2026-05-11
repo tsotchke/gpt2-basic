@@ -3,6 +3,7 @@ PROBE_OK preview_release_assistant_models=2
 PROBE_OK preview_release_evidence_files=50
 PROBE_OK preview_release_manifest=1
 PROBE_OK preview_release_checksums=1
+PROBE_OK preview_release_tracked_inputs=1
 PROBE_OK artifact_preview_release_manifest_md=1
 PROBE_OK preview_artifacts_preview_tree=1
 PROBE_OK preview_artifacts_preview_zip=1
