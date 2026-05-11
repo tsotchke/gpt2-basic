@@ -90,6 +90,7 @@ SELECTED_EVIDENCE_NAMES = {
     "quality_report_dos_heldout.md",
     "run_main_486.log",
     "vector_486_model_lexicon_gold_v4_s3000.log",
+    "workspace_tracking_probe.log",
 }
 SELECTED_EVIDENCE_PREFIXES = (
     "quality_report_default_model",

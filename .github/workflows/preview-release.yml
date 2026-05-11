@@ -38,7 +38,8 @@ jobs:
             scripts/train_subword_prototype.py \
             scripts/verify_hardware_capture.py \
             scripts/verify_assistant_packs.py \
-            scripts/verify_preview_artifacts.py
+            scripts/verify_preview_artifacts.py \
+            scripts/verify_workspace_tracking.py
 
       - name: Run host unit tests
         run: python -m unittest discover tests
@@ -51,6 +52,10 @@ jobs:
           python scripts/build_hardware_transfer.py --self-test
           python scripts/build_preview_release.py --self-test
           python scripts/verify_preview_artifacts.py --self-test
+          python scripts/verify_workspace_tracking.py --self-test
+
+      - name: Verify workspace tracking hygiene
+        run: python scripts/verify_workspace_tracking.py
 
       - name: Verify assistant pack evidence
         run: python scripts/verify_assistant_packs.py
