@@ -8,6 +8,8 @@ OUT = ROOT / "qemu" / "staging" / "GPT2SRC"
 
 NAME_MAP = {
     "main_prod.bas": "MAIN.BAS",
+    "visual_trace.bas": "VISUAL.BAS",
+    "assistant.bas": "ASSIST.BAS",
     "main.bas": "LABMAIN.BAS",
     "data_structures.bas": "DATASTR.BAS",
     "matrix_ops.bas": "MATOPS.BAS",

@@ -52,6 +52,7 @@ third_party/
 !assets/**/*.BIN
 !assets/**/*.bin
 !qemu/evidence/*.log
+!qemu/evidence/**/*.log
 
 # Online corpus fetch outputs
 data/online_corpus/raw/

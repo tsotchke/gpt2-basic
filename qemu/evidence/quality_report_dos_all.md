@@ -6,7 +6,7 @@ Evaluation backend: `dos-fixed-qemu`
 Quality suite: `all`
 Source log: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence/quality_486.log`
 Quality status: `PASS`
-Average score: `0.961`
+Average score: `0.969`
 Prompt pass rate: `10/10` at threshold `0.72`
 
 ## Prompt Suite
@@ -14,13 +14,13 @@ Prompt pass rate: `10/10` at threshold `0.72`
 | Prompt | Score | Keywords | Repeat | Max run | Boundary | End | Status |
 |---|---:|---:|---:|---:|---:|---|---|
 | real_inference | 0.975 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| 486_target | 0.970 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| dos_model | 0.850 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| basic_runtime | 0.973 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| optimization | 0.974 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| 486_target | 0.974 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| dos_model | 0.965 | 3 | 2.9% | 2 | 0 | yes | PASS |
+| basic_runtime | 0.973 | 3 | 0.0% | 2 | 0 | yes | PASS |
+| optimization | 0.938 | 5 | 11.8% | 2 | 0 | yes | PASS |
 | heldout_cache | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_timing | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_limits | 0.972 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| heldout_timing | 0.969 | 4 | 1.3% | 2 | 0 | yes | PASS |
+| heldout_limits | 0.973 | 4 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_fixed_point | 0.975 | 3 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_profiles | 0.974 | 4 | 0.0% | 2 | 0 | yes | PASS |
 
@@ -39,7 +39,7 @@ The prompt is encoded into tokens, the transformer updates hidden state, the out
 Prompt: `GPT2 BASIC on a 486`
 
 ```text
-A 486-era machine can run a tiny transformer when the model keeps memory, context length, and arithmetic cost under control. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The goal is not a modern assistant. The user needs to know whether the checkpoint, encodes the prompt, runs attention and feed-forward layers, masks invalid output, and decodes printable text.
+The useful target is a compact checkpoint that produces short technical continuations at a measurable speed. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The constraint makes the system easier to audit. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. The vocabulary helps by replacing common technical words and phrases with single tokens. The goal is not a modern assistant.
 ```
 
 ### dos_model
@@ -47,7 +47,7 @@ A 486-era machine can run a tiny transformer when the model keeps memory, contex
 Prompt: `DOS language models need`
 
 ```text
-compact checkpoint that produces short technical continuations at a measurable speed. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. The vocabulary helps by replacing common technical words and phrases with single tokens. The constraint makes the system easier to audit.
+enough vocabulary to say technical phrases cleanly without making the output head too expensive. DOS language models need reproducible timing, vector parity, plain file formats, and readable continuations from model logits. A BASIC transformer runtime uses arrays for weights, tokens, cache vectors, hidden states, logits, and fixed-point work buffers. A BASIC transformer runtime loads the checkpoint, encodes the prompt, runs attention, applies feed-forward layers, and decodes sampled tokens.
 ```
 
 ### basic_runtime
@@ -55,7 +55,7 @@ compact checkpoint that produces short technical continuations at a measurable s
 Prompt: `A BASIC transformer runtime`
 
 ```text
-uses the same tokenizer contract as the host tools. Plain arrays make memory use visible and keep the implementation understandable on old development tools. The DOS program is a real inference runner, not a training system. The BASIC runtime uses arrays for tokens, embeddings, cache vectors, logits, weights, and fixed-point work buffers.
+uses the same tokenizer contract as the host tools. The result is not copied from a prompt table. Generation loads the checkpoint, encodes the prompt, runs transformer layers, masks invalid output, and decodes printable text. 486 target connects naturally with old PC limits. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. A useful checkpoint balances quality with predictable memory and measured tokens per second.
 ```
 
 ### optimization
@@ -63,7 +63,7 @@ uses the same tokenizer contract as the host tools. Plain arrays make memory use
 Prompt: `To improve performance on real hardware`
 
 ```text
-reduce repeated work, keep memory access predictable, choose a compact profile, and measure tokens per second inside the decode loop.
+choose a compact profile and compare quality against speed, memory, and vector parity. To improve performance on real hardware, preserve fixed-point correctness while replacing slow operations with predictable integer work. To improve performance on real hardware, use vocabulary pieces that reduce token count without making every logit step too expensive. To improve performance on real hardware, measure generated tokens per second on the target path before promoting a checkpoint.
 ```
 
 ### heldout_cache
@@ -79,7 +79,7 @@ Cache reuse saves repeated attention work while preserving enough context for co
 Prompt: `How should a DOS model report timing?`
 
 ```text
-It should print generated tokens, elapsed seconds, tokens per second, model profile, context length, and whether the run used emulator timing or physical hardware timing. How should a DOS model report timing? The measurement belongs around the decode loop, not around boot, file loading, or setup. A clear timing result names the checkpoint and says how many tokens were generated.
+A timing result needs generated tokens, elapsed seconds, tokens per second, the model profile, and the measurement basis. The report needs enough context for another run to repeat the measurement. Host stopwatch numbers alone are not hardware evidence. What belongs in a timing result? The timed section belongs inside the decode loop so loading files and boot time do not distort generation speed. Prompt length and output length matter because attention work grows with the active context.
 ```
 
 ### heldout_limits
@@ -87,7 +87,7 @@ It should print generated tokens, elapsed seconds, tokens per second, model prof
 Prompt: `What limits a tiny transformer on old PCs?`
 
 ```text
-The output head grows with vocabulary size, so every extra token adds weights and logits work. A useful checkpoint balances quality with predictable memory and measured tokens per second. Capacity alone does not make the old-PC model better. Memory pressure comes from weights, activations, logits, token arrays, and work buffers. The practical limit is the whole runtime, not just file size.
+The limits are weight bytes, cache memory, context length, integer arithmetic, output vocabulary, and the number of operations per generated token. What limits a tiny transformer on old PCs? Memory controls how large the checkpoint and cache can be, while speed controls how many matrix and attention operations are practical. A small model has to balance both.
 ```
 
 ### heldout_fixed_point
@@ -105,4 +105,3 @@ Prompt: `Why compare model profiles before choosing one?`
 ```text
 A larger checkpoint is only better when measured quality improves enough to justify extra memory and slower generation. Quality and runtime evidence have to be considered together. A profile comparison should put held-out quality beside tokens per second and peak memory. That makes it clear whether a larger vocabulary or hidden size is helping the real target machine. The default profile should be selected from evidence, not from size alone.
 ```
-

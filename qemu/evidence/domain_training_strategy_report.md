@@ -48,6 +48,7 @@ held-out prompt strings are not included.
 | `MODEL_LEXICON4096_ADAPTED_REPAIR2_S600` | low-rate repair fine-tune from adapted 4096 on broad adapted + clean repair corpus | 0/5 avg 0.743 host strict | 3/5 avg 0.809 host strict | reject, short repair corrupts token fluency |
 | `MODEL_LEXICON_GOLD_V1_S3000` | fresh punctuation/boundary-safe lexicon from hand-curated gold corpus v1 | 2/5 avg 0.923 host strict | 4/5 avg 0.893 host strict | reject for promotion, cleaner and smaller but held-out coverage is not broad enough |
 | `MODEL` / `MODEL_LEXICON_GOLD_V2_S3000` | full 4096-token lexicon from expanded audited gold corpus v2 + 30-token stop rule + prompt-aware starter prior | 5/5 avg 0.973 host strict | 5/5 avg 0.948 DOS fixed | promoted default; sampler repair fixes bad prompt starts without changing weights |
+| `MODEL_HEADSHORTLIST2048_PROD_PROBE` | promoted default weights + 2048-row output-head shortlist | 5/5 avg 0.967 host fixed | 5/5 avg 0.947 host fixed | keep as fastest measured large-vocab release mode; 3.35 tok/s on QEMU 486DX2/66 |
 | `MODEL_HEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed output head | 5/5 avg 0.973 host fixed | 5/5 avg 0.940 host fixed | keep as intermediate/proven fallback; 409 KB less runtime memory |
 | `MODEL_TOKHEADQ4_PROD_PROBE` | promoted default weights + q4/log compressed token embedding and output head | 5/5 avg 0.972 host fixed | 5/5 avg 0.948 host fixed | preferred low-memory release mode; 974,724 byte DOS runtime footprint |
 | `MODEL_TOKHEADQ4_STREAM_PROD_PROBE` | token+head q4 plus streamed output-head rows from `GPT2HQ4.BIN` | vector parity pass | 3/3 vectors, 39/39 phases DOS | keep as low-memory fallback; 616,324 byte runtime footprint but 0.81 tok/s |
@@ -616,6 +617,99 @@ Evidence:
 - `qemu/evidence/vector_486_model_lexicon_gold_v2_s3000.log`
 - `qemu/evidence/compile_main_486.log`
 
+## Output-Head Shortlist Speed Mode
+
+The next measured output-head optimization keeps the full Q20.12 checkpoint
+resident but narrows final-logit scoring to a corpus-selected set of output
+tokens. `scripts/build_head_shortlist.py` writes `GPT2HSL.BIN`, a small
+`HSL1` artifact containing the token IDs DOS should score. Non-shortlisted
+logits are initialized to `-TINYGPT_FX_CLAMP`, so the sampler cannot select
+them. Prompt/context encoding still uses the complete 4096-token lexicon.
+
+Candidate: `assets/gpt2_basic/MODEL_HEADSHORTLIST2048_PROD_PROBE`
+
+- Base weights: promoted `MODEL_LEXICON_GOLD_V2_S3000` / `assets/gpt2_basic/MODEL`
+- Output-head shortlist: 2,048 token IDs, 8,208-byte `GPT2HSL.BIN`
+- DOS runtime memory: 2,064,148 bytes
+- Default unshortlisted DOS runtime memory: 2,055,940 bytes
+- Host fixed held-out: 5/5 average 0.967
+- Host fixed runtime-regression: 5/5 average 0.947
+- DOS vector parity: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
+- Vector evidence includes masked-logit probe indexes, so the test proves
+  non-shortlisted logits are actually clamped in DOS.
+- QEMU 486DX2/66 kernel perf: 106 generated tokens in 31.64 seconds,
+  3.35 tok/s.
+- Final-head kernel time fell from the full-head baseline's 30.75 seconds to
+  17.93 seconds on the same QEMU 486DX2/66 profile.
+- DOS compile after shortlist loader path: `COMPILE_OK`, `GPT2.EXE` 309,760 bytes
+- Active default checkpoint still passes vector parity after the optional
+  loader change: 3/3 vectors, 39/39 phases, `VECTOR_CHECK_OK`
+
+Evidence:
+
+- `qemu/evidence/model_report_headshortlist2048_prod_probe.log`
+- `qemu/evidence/head_shortlist_builder_probe.log`
+- `qemu/evidence/vector_export_headshortlist2048_probe.log`
+- `qemu/evidence/quality_report_headshortlist2048_heldout.md`
+- `qemu/evidence/quality_report_headshortlist2048_runtime.md`
+- `qemu/evidence/vector_486_model_headshortlist2048_prod_probe.log`
+- `qemu/evidence/perf_486_486dx2-66_model_headshortlist2048_prod_probe_kernel.log`
+- `qemu/evidence/vector_486.log`
+- `qemu/evidence/compile_main_486.log`
+
+Result: keep as the fastest measured large-vocabulary release mode. This is not
+a memory optimization; it adds one 8 KB artifact and keeps full head weights
+resident. Its value is speed: the current shortlist roughly halves the
+vocabulary-shaped dot products while preserving the quality gates measured so
+far. It should be shipped beside the full resident and q4 variants, with
+clear documentation that a smaller shortlist must be revalidated against host
+quality and DOS vector probes before release.
+
+## Formerly Aspirational Software Closure
+
+The remaining non-hardware aspirational software surfaces are now closed as
+source-verified implementation work. Physical 486/Pentium timing remains
+deferred; QEMU emulator evidence is the accepted runtime basis until a board is
+available.
+
+ICC target: `gpt2-basic-aspirational-software`
+
+- Readiness: `ready`
+- Score: 100
+- Contract gaps: 0
+- Stub/fallback blockers: 0
+- Completion oracle: `complete`
+- Runtime checks: `runtime_evidence_present` and `failure_free` pass
+
+Verified software surfaces:
+
+- Memory tracker and raw tracked allocation API:
+  `MemoryTracker`, `InitMemoryTracker`, `CleanupMemoryTracker`,
+  `TrackedAllocate`, `TrackedDeallocate`
+- Matrix pool API: `MatrixPool`, `InitMatrixPool`, `CleanupMatrixPool`,
+  `GetPooledMatrix`, `ReturnMatrixToPool`
+- Parameter streaming: `LayerCache`, `GetLayerWeights`, `EnsureCacheSpace`,
+  `LoadLayerFromDisk`, `StreamMatrixRows`, `StreamLayerWeights`
+- Block-sparse attention: `SparseBlock`, `SparseBlockMatrix`, block find/create,
+  causal masks, sparse score computation, sparse softmax, adaptive selection
+- SIMD-like packed operations: 4-bit, 8-bit, and 16-bit packing/arithmetic,
+  CPU detection, adaptive precision, and matrix integration
+- Assembly/fallback fixed point: `HasAssemblySupport`,
+  `FixedMultiplyFallback`, `FixedMulAsm`, `MatrixMultiplyAsm`, `SoftmaxAsm`
+- Production fixed point: Q20.12 fixed-point runtime in `src/real_gpt.bas`
+- Benchmarks and emulator evidence hooks: component benchmarks plus
+  `qemu/evidence/hardware_perf_report.md`
+
+Evidence:
+
+- `scripts/verify_aspirational_software.py`
+- `qemu/evidence/aspirational_software_closure.md`
+- `qemu/evidence/aspirational_software_closure.json`
+
+Result: software closure is complete under ICC. Remaining hardware validation is
+explicitly an emulator-vs-physical evidence question, not an unimplemented
+software subsystem.
+
 ## Q4/Log Output-Head Release Mode
 
 The first completed compression pass targets the tensor that made the 4096-token
@@ -775,7 +869,7 @@ real model" to a narrower release executable:
 - The production executable includes the tokenizer, minimal allocation
   accounting, `real_gpt.bas`, and release entrypoints for demo, quality, vector,
   perf, and kernel-perf runs.
-- DOS compile after sampling-matrix support: `COMPILE_OK`, `GPT2.EXE` 307,712 bytes.
+- DOS compile after optional head-shortlist support: `COMPILE_OK`, `GPT2.EXE` 309,760 bytes.
 - Active model vector parity after the split: 3/3 vectors, 39/39 phases,
   `VECTOR_CHECK_OK`.
 - Default QEMU 486DX2/66 perf after the split: 108 generated tokens in 44.00
@@ -810,11 +904,11 @@ Evidence:
 - `qemu/evidence/sampling_486.log`
 - `qemu/evidence/hardware_perf_report.md`
 
-Result: keep as the release runtime baseline. The remaining performance target
-is no longer ambiguous: for the 4096-token vocabulary, the output head is the
-dominant hot loop. Further compression or streaming work should prioritize that
-path first and measure the speed/memory tradeoff inside DOS before expanding
-the model again.
+Result: keep as the release runtime baseline. The performance target was no
+longer ambiguous: for the 4096-token vocabulary, the output head was the
+dominant hot loop. The new `GPT2HSL.BIN` shortlist mode is the first measured
+speed answer for that hot loop, while q4 resident and streamed modes remain the
+memory-compatibility answers.
 
 ## Educational Trace Realization
 
@@ -828,16 +922,19 @@ Current trace evidence:
 
 - Runner: `bash qemu/run_trace_486.sh`
 - Evidence: `qemu/evidence/trace_486.log`
+- VGA runner: `bash qemu/run_visual_trace_486.sh`
+- VGA evidence: `qemu/evidence/visual_trace_486.log`
 - Prompt: `What makes this real inference?`
 - Prompt tokens: 3 lexicon pieces
 - Generated tokens: 12 greedy fixed-point steps
 - Records: `TRACE_MODEL`, `TRACE_TOKENIZER`, `TRACE_INPUT_TOKEN`,
   `TRACE_STAGE`, `TRACE_STEP`, `TRACE_DECODED`, and `TRACE_END`
+- Visual records: `VISUAL_MODEL`, `VISUAL_GRAPHICS`, `VISUAL_TOKEN`,
+  `VISUAL_STAGE`, and `VISUAL_END`
 
-Result: keep as the release teaching/audit surface. VGA attention graphics can
-still be built as an additional lab variant, but the project no longer depends
-on graphical mode support to show a step-by-step inference path on era-accurate
-systems.
+Result: keep as the release teaching/audit surface. The text trace remains the
+portable contract; the VGA visual trace proves the optional Mode 13h graphics
+path without making graphics support a dependency for normal inference.
 
 ## Non-Greedy Sampling Matrix
 
@@ -907,8 +1004,9 @@ rule, but change the objective:
    pieces and penalizes alphabetic byte fallback inside generated words.
 8. Keep the 4096-token ceiling for now. More vocabulary would require a DOS
    hash-table and memory-contract change, while the current maximum already
-   fits below 1 MB peak runtime memory in token+head q4 mode.
-9. Extend q4/log compression beyond vocabulary-shaped tensors only when the
+   has a fast 2,048-row output-head shortlist mode and fits below 1 MB peak
+   runtime memory in token+head q4 mode.
+9. Extend q4/log compression or output-head pruning beyond vocabulary-shaped tensors only when the
    loop-level speed tradeoff is measured; smaller files are not automatically
    faster on a 486.
 10. Rerun strict host quality first, then QEMU vector parity, DOS held-out

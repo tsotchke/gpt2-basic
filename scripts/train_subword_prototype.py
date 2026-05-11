@@ -49,6 +49,7 @@ from train_tiny_gpt import (
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "assets" / "gpt2_basic" / "MODEL_SUBWORD_PROTOTYPE"
 DEFAULT_REPORT = ROOT / "qemu" / "evidence" / "subword_prototype_report.md"
+DEVICE_CHOICES = ("auto", "cpu", "mps", "cuda")
 
 
 @dataclass(frozen=True)
@@ -141,6 +142,23 @@ def mark_host_only_export(output: Path) -> None:
         "It is for host evaluation only, not DOS promotion.\n",
         encoding="ascii",
     )
+
+
+def print_subword_backend_contract(runtime, mode: str) -> None:
+    print_backend_contract(runtime)
+    fallback_intentional = int(
+        runtime.requested == "auto"
+        and runtime.selected == "cpu"
+        and not any(runtime.accelerator_available.values())
+    )
+    print(f"runtime_backend: subword_host_{runtime.selected}", flush=True)
+    print(
+        "backend_gate: "
+        f"mode={mode} requested={runtime.requested} selected={runtime.selected} "
+        f"fallback_intentional={fallback_intentional}",
+        flush=True,
+    )
+
 
 def build_stream(tokenizer: SubwordTokenizer, document_groups: list[tuple[list[str], int]], repeats: int) -> list[int]:
     tokens: list[int] = []
@@ -255,7 +273,7 @@ def train(args: argparse.Namespace) -> tuple[GPT2BasicModel, SubwordTokenizer, d
     data = th.tensor(stream, dtype=th.long)
 
     runtime = build_backend_runtime(args.device)
-    print_backend_contract(runtime)
+    print_subword_backend_contract(runtime, "train")
     device = runtime.device
 
     model = GPT2BasicModel(cfg).to(device)
@@ -324,79 +342,62 @@ def report_text(args: argparse.Namespace, cfg: Config, stats: dict[str, int], he
     )
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--profile", choices=sorted(MODEL_PROFILES), default="486sx-safe")
-    parser.add_argument("--vocab-size", type=int, default=512)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
-    parser.add_argument("--corpus-file", action="append", type=Path)
-    parser.add_argument("--include-docs", action="store_true")
-    parser.add_argument("--core-weight", type=int, default=24)
-    parser.add_argument("--corpus-weight", type=int, default=3)
-    parser.add_argument("--corpus-doc-chars", type=int, default=1800)
-    parser.add_argument("--corpus-max-docs", type=int, default=0)
-    parser.add_argument("--repeats", type=int, default=8)
-    parser.add_argument("--steps", type=int, default=2500)
-    parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--lr", type=float, default=1.8e-3)
-    parser.add_argument("--device", choices=("auto", "cpu", "mps", "cuda"), default="auto")
-    parser.add_argument("--log-every", type=int, default=250)
-    parser.add_argument("--sample-tokens", type=int, default=48)
-    parser.add_argument("--threshold", type=float, default=0.72)
-    parser.add_argument("--seed", type=int, default=486)
-    parser.add_argument("--eval-only", action="store_true")
-    parser.add_argument("--self-test", action="store_true")
-    args = parser.parse_args()
+def self_test() -> None:
+    runtime = build_backend_runtime("cpu")
+    print_subword_backend_contract(runtime, "self_test")
+    tokenizer = SubwordTokenizer.build("fixed point runtime memory tokens speed", 300)
+    encoded = tokenizer.encode("fixed point runtime")
+    decoded = tokenizer.decode(encoded)
+    assert "fixed" in decoded
+    cfg = Config(n_positions=16, n_embd=16, n_head=4, n_layer=1, hidden_dim=32, vocab_size=tokenizer.vocab_size)
+    model = GPT2BasicModel(cfg).to(runtime.device)
+    completion, generated = generate_completion(model, tokenizer, "fixed point", 1, 0, runtime.device)
+    assert generated == 1
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        vocab_path = tmp_path / "SUBWORDVOCAB.json"
+        tokenizer.write(vocab_path)
+        loaded = SubwordTokenizer.load(vocab_path)
+        assert loaded.decode(encoded) == decoded
+        export_tokenizer = prototype_export_tokenizer(tokenizer)
+        export_tokenizer.validate_for_vocab_size(tokenizer.vocab_size)
+        (tmp_path / "quality_heldout.md").write_text("# heldout\n", encoding="ascii")
+        (tmp_path / "quality_runtime.md").write_text("# runtime\n", encoding="ascii")
+        (tmp_path / "PROFILE.TXT").write_text("tokenizer=byte\n", encoding="ascii")
+        mark_host_only_export(tmp_path)
+        assert "dos_ready=0" in (tmp_path / "PROFILE.TXT").read_text(encoding="ascii")
+        report = report_text(
+            argparse.Namespace(output=tmp_path, profile="486sx-safe"),
+            cfg,
+            {"training_tokens": 0, "core_documents": 0, "external_documents": 0, "subword_pieces": len(tokenizer.pieces)},
+            "# heldout",
+            "# runtime",
+        )
+    assert "Subword Host Prototype" in report
+    assert isinstance(completion, str)
+    print("trace_scope subword_prototype_contract")
+    print("trace mask_logits")
+    print("trace generate_completion")
+    print("trace prototype_export_tokenizer")
+    print("trace mark_host_only_export")
+    print("trace report_text")
+    print("trace build_backend_runtime")
+    print("trace print_subword_backend_contract")
+    print("artifact: SUBWORDVOCAB.json")
+    print("artifact: HOST_ONLY_NOT_DOS_READY.txt")
+    print("artifact: quality_heldout.md")
+    print("artifact: quality_runtime.md")
+    print("PROBE_OK subword_prototype_tokenizer=1")
 
-    if args.self_test:
-        tokenizer = SubwordTokenizer.build("fixed point runtime memory tokens speed", 300)
-        encoded = tokenizer.encode("fixed point runtime")
-        decoded = tokenizer.decode(encoded)
-        assert "fixed" in decoded
-        cfg = Config(n_positions=16, n_embd=16, n_head=4, n_layer=1, hidden_dim=32, vocab_size=tokenizer.vocab_size)
-        model = GPT2BasicModel(cfg).to(th.device("cpu"))
-        completion, generated = generate_completion(model, tokenizer, "fixed point", 1, 0, th.device("cpu"))
-        assert generated == 1
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            vocab_path = tmp_path / "SUBWORDVOCAB.json"
-            tokenizer.write(vocab_path)
-            loaded = SubwordTokenizer.load(vocab_path)
-            assert loaded.decode(encoded) == decoded
-            export_tokenizer = prototype_export_tokenizer(tokenizer)
-            export_tokenizer.validate_for_vocab_size(tokenizer.vocab_size)
-            (tmp_path / "quality_heldout.md").write_text("# heldout\n", encoding="ascii")
-            (tmp_path / "quality_runtime.md").write_text("# runtime\n", encoding="ascii")
-            (tmp_path / "PROFILE.TXT").write_text("tokenizer=byte\n", encoding="ascii")
-            mark_host_only_export(tmp_path)
-            assert "dos_ready=0" in (tmp_path / "PROFILE.TXT").read_text(encoding="ascii")
-            report = report_text(
-                argparse.Namespace(output=tmp_path, profile="486sx-safe"),
-                cfg,
-                {"training_tokens": 0, "core_documents": 0, "external_documents": 0, "subword_pieces": len(tokenizer.pieces)},
-                "# heldout",
-                "# runtime",
-            )
-        assert "Subword Host Prototype" in report
-        assert isinstance(completion, str)
-        print("trace_scope subword_prototype_contract")
-        print("trace mask_logits")
-        print("trace generate_completion")
-        print("trace prototype_export_tokenizer")
-        print("trace mark_host_only_export")
-        print("trace report_text")
-        print("artifact: SUBWORDVOCAB.json")
-        print("artifact: HOST_ONLY_NOT_DOS_READY.txt")
-        print("artifact: quality_heldout.md")
-        print("artifact: quality_runtime.md")
-        print("PROBE_OK subword_prototype_tokenizer=1")
-        return
 
+def build_subword_prototype_run(args: argparse.Namespace) -> None:
     if args.eval_only:
         runtime = build_backend_runtime(args.device)
-        print_backend_contract(runtime)
+        print_subword_backend_contract(runtime, "eval_only")
         tokenizer = SubwordTokenizer.load(args.output / "SUBWORDVOCAB.json")
+        export_tokenizer = prototype_export_tokenizer(tokenizer)
+        export_tokenizer.write_vocab_bin(args.output / "VOCAB.BIN")
+        mark_host_only_export(args.output)
         fixed_cfg = parse_config(args.output / "GPT2CFG.TXT")
         model = load_float_model(args.output, fixed_cfg, runtime.device)
         stats = {
@@ -446,6 +447,38 @@ def main() -> None:
     args.report.write_text(report_text(args, cfg, stats, heldout_report, runtime_report), encoding="ascii")
     print(f"wrote {args.output}")
     print(f"wrote {args.report}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--profile", choices=sorted(MODEL_PROFILES), default="486sx-safe")
+    parser.add_argument("--vocab-size", type=int, default=512)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--corpus-file", action="append", type=Path)
+    parser.add_argument("--include-docs", action="store_true")
+    parser.add_argument("--core-weight", type=int, default=24)
+    parser.add_argument("--corpus-weight", type=int, default=3)
+    parser.add_argument("--corpus-doc-chars", type=int, default=1800)
+    parser.add_argument("--corpus-max-docs", type=int, default=0)
+    parser.add_argument("--repeats", type=int, default=8)
+    parser.add_argument("--steps", type=int, default=2500)
+    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--lr", type=float, default=1.8e-3)
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
+    parser.add_argument("--log-every", type=int, default=250)
+    parser.add_argument("--sample-tokens", type=int, default=48)
+    parser.add_argument("--threshold", type=float, default=0.72)
+    parser.add_argument("--seed", type=int, default=486)
+    parser.add_argument("--eval-only", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+
+    if args.self_test:
+        self_test()
+        return
+
+    build_subword_prototype_run(args)
 
 
 if __name__ == "__main__":

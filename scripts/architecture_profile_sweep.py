@@ -27,13 +27,14 @@ from evaluate_gpt2_basic_quality import (
     quality_prompts,
 )
 from profile_pareto_report import QualitySummary, fmt_quality, parse_quality_report
-from train_tiny_gpt import MODEL_PROFILES, ModelProfile
+from train_tiny_gpt import MODEL_PROFILES, ModelProfile, build_backend_runtime, print_backend_contract
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODELS_ROOT = ROOT / "assets" / "gpt2_basic"
 DEFAULT_EVIDENCE = ROOT / "qemu" / "evidence"
 DEFAULT_OUTPUT = DEFAULT_EVIDENCE / "architecture_profile_sweep.md"
+DEVICE_CHOICES = ("auto", "cpu", "mps", "cuda")
 
 
 @dataclass(frozen=True)
@@ -213,7 +214,25 @@ def train_command(row: ArchitectureRow, args: argparse.Namespace) -> list[str]:
     return command
 
 
+def print_sweep_backend_contract(runtime, mode: str) -> None:
+    print_backend_contract(runtime)
+    fallback_intentional = int(
+        runtime.requested == "auto"
+        and runtime.selected == "cpu"
+        and not any(runtime.accelerator_available.values())
+    )
+    print(f"runtime_backend: architecture_profile_sweep_{runtime.selected}", flush=True)
+    print(
+        "backend_gate: "
+        f"mode={mode} requested={runtime.requested} selected={runtime.selected} "
+        f"fallback_intentional={fallback_intentional}",
+        flush=True,
+    )
+
+
 def run_training(rows: list[ArchitectureRow], args: argparse.Namespace) -> None:
+    runtime = build_backend_runtime(args.device)
+    print_sweep_backend_contract(runtime, "train")
     for row in rows:
         if row.export_dir is not None and not args.force:
             print(f"skip existing export: {rel(row.export_dir)}")
@@ -351,6 +370,8 @@ def selected_profiles(args: argparse.Namespace) -> list[str]:
 
 
 def self_test(models_root: Path, evidence_dir: Path) -> None:
+    runtime = build_backend_runtime("cpu")
+    print_sweep_backend_contract(runtime, "self_test")
     rows = build_rows(["386-min", "486sx-safe"], models_root, evidence_dir)
     report = markdown(rows, evidence_dir)
     command = train_command(
@@ -375,6 +396,8 @@ def self_test(models_root: Path, evidence_dir: Path) -> None:
     print("trace refresh_heldout_reports")
     print("trace run_training")
     print("trace train_command")
+    print("trace build_backend_runtime")
+    print("trace print_sweep_backend_contract")
     print(f"PROBE_OK architecture_profiles count={len(MODEL_PROFILES)}")
     print(f"PROBE_OK architecture_rows count={len(rows)}")
     print(f"PROBE_OK architecture_report bytes={len(report)}")
@@ -393,7 +416,7 @@ def main() -> None:
     parser.add_argument("--include-docs", action="store_true")
     parser.add_argument("--corpus-file", action="append", type=Path)
     parser.add_argument("--corpus-weight", type=int, default=1)
-    parser.add_argument("--device", choices=("auto", "cpu", "mps", "cuda"), default="auto")
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
     parser.add_argument("--sample-tokens", type=int, default=120)
     parser.add_argument("--log-every", type=int, default=100)
     parser.add_argument("--write-legacy-names", action="store_true")

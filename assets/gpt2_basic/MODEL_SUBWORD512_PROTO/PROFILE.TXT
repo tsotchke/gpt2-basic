@@ -9,3 +9,5 @@ hidden_dim=192
 weights=GPT2WT.BIN
 fixed_weights=GPT2FX.BIN
 exp_table=GPT2EXP.BIN
+dos_ready=0
+host_tokenizer=SUBWORDVOCAB.json

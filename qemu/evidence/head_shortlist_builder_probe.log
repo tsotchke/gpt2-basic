@@ -1,0 +1,11 @@
+trace read_text_documents
+trace select_head_shortlist
+trace prepare_output_model
+trace write_head_shortlist
+trace update_profile
+trace build_head_shortlist_variant
+PROBE_OK read_text_documents docs=6
+PROBE_OK select_head_shortlist tokens=128
+PROBE_OK write_head_shortlist bytes=528
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

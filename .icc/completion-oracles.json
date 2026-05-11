@@ -10,7 +10,9 @@
         "gpt2-basic-486",
         "dos-gpt2-basic",
         "q4 output-head release mode",
-        "compressed-head release"
+        "compressed-head release",
+        "head-shortlist release",
+        "GPT2HSL output-head shortlist"
       ],
       "requires": [
         {
@@ -46,6 +48,64 @@
           "severity": "high",
           "label": "No fake production generation paths",
           "action": "wire_real_inference_or_mark_diagnostic"
+        }
+      ]
+    },
+    {
+      "name": "gpt2-basic-aspirational-software",
+      "aliases": [
+        "formerly aspirational software",
+        "aspirational software",
+        "memory manager",
+        "block sparse attention",
+        "simd-like operations",
+        "parameter streaming"
+      ],
+      "requires": [
+        {
+          "runtime_event": {
+            "event_kinds": [
+              "completion_condition"
+            ],
+            "event_names": [
+              "completion_reason"
+            ],
+            "event_values": [
+              "aspirational_software_implemented"
+            ]
+          },
+          "severity": "high",
+          "label": "Formerly aspirational software closure probe passes",
+          "action": "run_scripts_verify_aspirational_software"
+        },
+        {
+          "runtime_event": {
+            "event_kinds": [
+              "checkpoint"
+            ],
+            "event_names": [
+              "checkpoint"
+            ],
+            "event_values": [
+              "formerly_aspirational_software"
+            ]
+          },
+          "severity": "medium",
+          "label": "Software closure checkpoint is recorded",
+          "action": "persist_aspirational_software_closure_evidence"
+        },
+        {
+          "runtime_event": {
+            "event_kinds": [
+              "artifact"
+            ],
+            "event_names": [
+              "artifact_file"
+            ]
+          },
+          "severity": "medium",
+          "label": "Software closure report artifact exists",
+          "action": "write_aspirational_software_closure_report"
         }
       ]
     }

@@ -73,6 +73,12 @@ weights, plus `GPT2EXP.BIN`, the fixed-point attention exp lookup table. The
 runtime can still load legacy `TINY*` checkpoint names, but new production
 exports use the `GPT2*` files.
 
+Speed-focused release candidates may include `GPT2HSL.BIN`, an optional
+output-head shortlist. If present and valid, DOS keeps the full checkpoint
+resident but scores only the listed output rows and clamps every other logit.
+The measured candidate is
+`assets/gpt2_basic/MODEL_HEADSHORTLIST2048_PROD_PROBE`.
+
 Low-memory release candidates may also include `GPT2TQ4.BIN` and `GPT2HQ4.BIN`,
 optional q4/log compressed token-embedding and output-head artifacts. If present
 and valid, `GPT2.EXE` skips the full resident token embedding and output head,
@@ -151,9 +157,9 @@ architecture decisions.
 Current DOS quality evidence:
 
 ```text
-runtime-regression: PASS, 5/5 prompts, average 0.948
+runtime-regression: PASS, 5/5 prompts, average 0.965
 heldout:            PASS, 5/5 prompts, average 0.973
-all:                PASS, 10/10 prompts, average 0.961
+all:                PASS, 10/10 prompts, average 0.969
 ```
 
 ## Trace Suite
@@ -175,6 +181,78 @@ The log is intentionally machine-readable. It records `TRACE_MODEL`,
 `TRACE_TOKENIZER`, prompt token pieces, each `TRACE_STAGE` forward/sample step,
 each generated `TRACE_STEP`, the final decoded text, and `TRACE_END`. This is
 the implemented DOS teaching surface for step-by-step inference inspection.
+
+Run the VGA visual trace through the same compiled runtime:
+
+```sh
+bash qemu/run_visual_trace_486.sh
+```
+
+The suite launches `C:\GPT2.EXE --trace`, compiles the optional lab
+`C:\VISUAL.EXE` trace visualizer, draws a Mode 13h token/progress view when
+graphics are available, writes `C:\VISUAL.LOG`, and extracts it to:
+
+```text
+qemu/evidence/visual_trace_486.log
+```
+
+The log records `VISUAL_MODEL`, `VISUAL_GRAPHICS`, prompt-token color rows,
+generated-token color rows, and `VISUAL_END`. The visual mode is intentionally
+small: it proves the DOS graphics path exists without making VGA a dependency
+for the production text runner.
+
+## Assistant Packs
+
+Run the optional Clippy-style assistant shell through FreeDOS:
+
+```sh
+bash qemu/run_assistant_486.sh
+```
+
+The suite compiles `C:\ASSIST.EXE`, copies `assets/gpt2_basic/PACKS` to
+`C:\PACKS`, runs `ASSIST.EXE --scripted`, and extracts:
+
+```text
+qemu/evidence/assistant_486.log
+qemu/evidence/assistant_compile_486.log
+```
+
+The assistant shell is intentionally separate from `GPT2.EXE`. Packs are
+listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, and optional
+`SPRITE`/`ICONS` assets. `PACK.INI` can point `MODEL=` at `C:\MODEL` or a
+pack-local checkpoint, so a future DOS, Windows, or OS/2 shell can share the
+same pack format while rendering a richer UI. The current release focus is the
+DOS reference shell and DOS demo package; the OS/2/Warp package is deferred to
+a later release. The current DOS renderer uses a text-mode assistant bubble and
+action list, which keeps it compatible with plain VGA text, serial capture, and
+OS/2 DOS sessions.
+
+Train and test every listed assistant pack model with:
+
+```sh
+python3 scripts/train_assistant_pack_models.py
+```
+
+The sweep generates `TRAIN.TXT` from each pack's metadata and retrieval notes,
+fine-tunes `PACKS\<ID>\MODEL` from the current 486-safe base checkpoint,
+validates the exported model files, runs short assistant-window quality
+prompts, and writes:
+
+```text
+qemu/evidence/assistant_pack_model_training_summary.md
+qemu/evidence/assistant_pack_backend_probe.log
+qemu/evidence/train_assistant_<pack>.log
+qemu/evidence/model_report_assistant_<pack>.log
+qemu/evidence/quality_report_assistant_<pack>.md
+```
+
+The host quality gate uses a 96-token assistant reply window and requires all
+pack prompts to pass at `0.90`. It rejects prompt-label leakage, truncated
+endings, triple-character spelling glitches, and replies that do not reach the
+tail of the expected pack answer. `ASSIST.EXE` keeps interactive generation
+bounded to 16 tokens with early sentence stopping, and the scripted 486 probe
+uses retrieval-only bubbles so the DOS evidence run still exercises pack-local
+model loading without turning every release check into a long generation run.
 
 ## Sampling Matrix
 
@@ -210,6 +288,111 @@ The report is written to `qemu/evidence/profile_pareto_report.md`. The active
 `MODEL` row prefers DOS fixed-point held-out evidence; non-active checkpoint
 rows use host float held-out probes until they are copied into `C:\MODEL` and
 run through DOS.
+
+Audit all exported model directories, including assistant pack-local models,
+with:
+
+```sh
+python3 scripts/audit_exported_models.py --refresh-model-reports
+```
+
+The inventory is written to
+`qemu/evidence/exported_model_quality_inventory.md`. It runs strict artifact
+validation for each checkpoint, records `model_inventory_<model>.log`, links
+the best matching quality report, and separates promoted/passable checkpoints
+from models that still need training.
+
+Refresh strict all-suite quality reports for every DOS-ready root export with:
+
+```sh
+python3 scripts/refresh_model_quality_reports.py
+```
+
+Then generate the repair plan:
+
+```sh
+python3 scripts/plan_model_quality_repairs.py
+```
+
+Those reports distinguish release-ready exports from historical failed
+candidates, host-only prototypes, and the small set of profiles worth another
+training run. The stricter gate treats malformed fragments, unclean endings,
+and high phrase repetition as hard failures.
+
+Build the iterative preview-release manifest with:
+
+```sh
+python3 scripts/build_preview_release.py --manifest-only
+```
+
+The manifest is written to `qemu/evidence/preview_release_manifest.md` and
+includes only strict-quality release models plus assistant packs, source,
+scripts, and host verification tests. To create the local package tree and zip
+under `/private/tmp`, run:
+
+```sh
+python3 scripts/build_preview_release.py --force
+```
+
+Build the physical-DOS transfer bundle with:
+
+```sh
+python3 scripts/build_hardware_transfer.py --force
+```
+
+Both release zip builders use deterministic archive metadata, and the
+preview manifest uses a pinned release date by default. The `Preview Release`
+workflow checks that a no-change rebuild keeps the same zip checksum; pass
+`--generated-date YYYY-MM-DD` only for a deliberate release respin.
+
+Publish the preview zip, hardware-transfer zip, both `.sha256` sidecars, and
+`qemu/evidence/preview_release_manifest.md`. The `Preview Release` GitHub
+Actions workflow uploads those same files as the
+`gpt2-basic-v0.1.0-preview` workflow artifact after verification. Verify the
+release archives before attaching them:
+
+```sh
+python3 scripts/verify_preview_artifacts.py
+```
+
+That verifier checks checksums, zip sidecars, extracted zip payloads, live tree
+versus zip payload consistency, the required DOS demo evidence, the exact
+release model/packs set, absence of deferred media/VM payloads and transient
+host-cache artifacts, and the 8.3-safe hardware transfer manifest. It also
+rejects malformed SHA-256 fields and duplicate, unsorted, escaping, or
+non-normalized archive/manifest paths. The verifier enforces deterministic ZIP
+entry metadata as well. The release notes include the equivalent consumer-side
+command for verifying both downloaded zips from inside an extracted preview
+tree.
+
+Refresh the evidence-driven improvement queue with:
+
+```sh
+python3 scripts/write_improvement_backlog.py
+```
+
+That writes `qemu/evidence/improvement_backlog.md`, separating preview-release
+work, retraining, runtime tuning, assistant packs, Windows/OS2 shells, and real
+hardware validation. For the current preview, only the DOS demo and DOS package
+are in release scope; OS/2/Warp packaging remains backlog work for a later
+release.
+
+The physical-hardware release ladder is in
+[`docs/hardware-validation.md`](../docs/hardware-validation.md). The next
+non-emulator gate is one real 486-class DOS machine running the same
+`--quality-all`, `--perf`, and assistant probes. Pentium data is useful for
+scaling comparisons but is not required before calling the 486-focused release
+solid.
+
+Before the package leaves the emulator, rehearse that exact capture path with:
+
+```sh
+bash qemu/run_hardware_capture_486.sh
+```
+
+That stages `C:\GPT2`, runs `hardware/HWVALID.BAT` under FreeDOS, extracts the
+same logs expected from a physical machine, and verifies them with
+`scripts/verify_hardware_capture.py`.
 
 ## Architecture Profile Sweep
 
@@ -261,12 +444,16 @@ bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL kernel
 
 That mode launches `C:\GPT2.EXE --kernel-perf`, writes `KERNEL_PERF_*` records
 into the same log format, and preserves the normal `PERF_*` records for timing
-comparison. The current large-vocabulary release spends about 73.7% of measured
-decode time in the final output head on the QEMU 486DX2/66 profile.
+comparison. The full-head large-vocabulary release spends about 73.7% of
+measured decode time in the final output head on the QEMU 486DX2/66 profile.
+The 2,048-row `GPT2HSL.BIN` candidate lowers that final-head kernel time from
+30.75 seconds to 17.93 seconds.
 
 The emitted `PERF_*` records are generated by the DOS executable itself. QEMU
-profile rows are emulator evidence; physical 386/486/Pentium rows should use
-the same `GPT2.EXE --perf` mode and the same report parser.
+profile rows are emulator evidence; physical hardware rows should use the same
+`GPT2.EXE --perf` mode and the same report parser. The first non-emulator gate
+is a 486-class DOS machine; Pentium rows can be added later as optional scaling
+evidence.
 
 ## Era-Speed Run
 
@@ -310,6 +497,8 @@ Verified behavior:
 - The primary demo path uses fixed-point weights and fixed-point inference kernels.
 - Optional `GPT2TQ4.BIN` token-embedding compression and `GPT2HQ4.BIN`
   output-head compression load and run in DOS.
+- Optional `GPT2HSL.BIN` output-head shortlists load and run in DOS, with
+  vector probes that verify non-shortlisted logits are clamped.
 - `GPT2.EXE --trace` emits prompt-token and generation-step records from the
   real fixed-point runtime into `C:\TRACE.LOG`.
 - `GPT2.EXE --sampling-matrix` emits fixed-seed temperature/top-k/top-p rows
@@ -332,10 +521,11 @@ Current performance baseline:
 │ QEMU 386dx-33 no-FPU         │ 0.31               │ 228.1 seconds     │ 325.8 seconds     │
 │ QEMU 486sx-25 no-FPU         │ 0.61               │ 114.0 seconds     │ 162.9 seconds     │
 │ QEMU 486dx-33                │ 1.23               │ 57.0 seconds      │ 81.4 seconds      │
-│ QEMU 486dx2-66 --perf        │ 2.45               │ 28.5 seconds      │ 40.8 seconds      │
+│ QEMU 486dx2-66 --perf        │ 2.46               │ 28.4 seconds      │ 40.6 seconds      │
 │ QEMU 486dx4-100              │ 4.91               │ 14.2 seconds      │ 20.4 seconds      │
 │ QEMU pentium-60              │ 4.92               │ 14.2 seconds      │ 20.3 seconds      │
 │ QEMU pentium-133             │ 9.85               │ 7.1 seconds       │ 10.2 seconds      │
+│ QEMU 486dx2-66 head shortlist│ 3.35               │ 20.9 seconds      │ 29.9 seconds      │
 │ QEMU 486dx2-66 q4 head       │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 tok+head   │ 2.12               │ 33.0 seconds      │ 47.1 seconds      │
 │ QEMU 486dx2-66 q4 streaming  │ 0.81               │ 86.3 seconds      │ 123.5 seconds     │
@@ -351,12 +541,14 @@ specific PC. This QEMU build does not expose a true 386 CPU model, so the
 throttling; it is a no-FPU class timing gate, not a true 386 compatibility
 proof.
 
-Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory. The q4/log token+head candidate uses 974,724 runtime bytes and reaches about 0.93 MB peak memory while still passing 3/3 vectors and 39/39 phase checks. The q4/log streamed-head candidate uses 616,324 runtime bytes and passes the same vector gate, but slows to 0.81 tok/s on the QEMU 486DX2/66 profile.
+Current production memory footprint is 2,055,940 bytes. `--vectors` reaches about 1.96 MB peak memory during phase-parity validation. The head-shortlist speed candidate uses 2,064,148 runtime bytes, passes 3/3 vectors and 39/39 phase checks with masked-logit probes, and raises QEMU 486DX2/66 throughput to 3.35 tok/s by scoring 2,048 output rows instead of the full 4,096. The q4/log output-head candidate uses 1,646,404 runtime bytes and reaches about 1.57 MB peak memory. The q4/log token+head candidate uses 974,724 runtime bytes and reaches about 0.93 MB peak memory while still passing 3/3 vectors and 39/39 phase checks. The q4/log streamed-head candidate uses 616,324 runtime bytes and passes the same vector gate, but slows to 0.81 tok/s on the QEMU 486DX2/66 profile.
 
-Keep both resident and streamed compressed checkpoints. Resident q4 token+head
-mode is the preferred low-memory release profile because it stays close to the
-full-head speed. Streamed q4 output-head mode is the maximum-compatibility
-fallback for tighter RAM budgets; its lower throughput is the cost of replacing
-resident output-head codes and decode tables with disk-row reads.
+Keep the full resident, head-shortlist, resident compressed, and streamed
+compressed checkpoints. The head-shortlist path is the fastest measured
+large-vocabulary mode. Resident q4 token+head mode is the preferred low-memory
+release profile because it stays close to the full-head speed. Streamed q4
+output-head mode is the maximum-compatibility fallback for tighter RAM budgets;
+its lower throughput is the cost of replacing resident output-head codes and
+decode tables with disk-row reads.
 
 QEMU's curses display can emit CP437 conversion warnings on macOS terminals. They are display-backend noise, not DOS program failures.

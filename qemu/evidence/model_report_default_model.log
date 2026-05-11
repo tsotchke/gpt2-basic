@@ -14,6 +14,10 @@ artifact GPT2FX.BIN: OK (1852672 bytes)
 artifact GPT2EXP.BIN: OK (2052 bytes)
 artifact PROFILE.TXT: OK profile=486sx-safe
 artifact VOCAB.BIN: OK mode=lexicon vocab=4096 merges=0 output_allowed=3934 (102424 bytes)
+artifact GPT2TQ4.BIN: absent optional compressed token embedding
+artifact GPT2HQ4.BIN: absent optional compressed output head
+artifact GPT2HQS.ON: absent optional q4 output-head streaming marker
+artifact GPT2HSL.BIN: absent optional output-head shortlist
 artifact GPT2VEC.TXT: OK vectors=3 expected_logits=24 phases=39 expected_phase_values=312
 artifact TINYCFG.TXT: absent optional legacy alias
 artifact TINYWT.BIN: absent optional legacy alias

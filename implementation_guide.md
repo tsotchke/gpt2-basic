@@ -2,6 +2,35 @@
 
 This document provides a comprehensive reference for the completed GPT-2 BASIC project, detailing how all components work together in the final implementation. It serves as the central guide to understanding the system architecture and implementation details.
 
+## Current Release Note
+
+The production path is now `src/main_prod.bas` plus `src/real_gpt.bas`, staged
+as `GPT2SRC\MAIN.BAS` and compiled into a 309,760-byte DOS `GPT2.EXE`. The
+promoted checkpoint is `assets/gpt2_basic/MODEL`: a 2-layer, 48-dimensional,
+4-head, 192-context transformer with a 4,096-token lexicon tokenizer and
+463,168 parameters.
+
+The release ships multiple measured model modes rather than one universal
+binary contract:
+
+- full resident Q20.12 weights for the simplest numeric path
+- `GPT2HSL.BIN` output-head shortlist for the fastest measured large-vocab path
+- `GPT2TQ4.BIN` plus `GPT2HQ4.BIN` q4/log artifacts for low-memory resident mode
+- `GPT2HQS.ON` streamed q4 output-head rows for maximum RAM compatibility
+
+Older sections below that discuss matrix pools, block-sparse layers, UI menus,
+or generic parameter streaming describe lab architecture retained in the repo,
+not the slim release executable. Those formerly aspirational software surfaces
+are now source-verified by `scripts/verify_aspirational_software.py`, with
+closure evidence in `qemu/evidence/aspirational_software_closure.md` and ICC
+readiness for `gpt2-basic-aspirational-software` at score 100. Physical board
+timing is still deferred; emulator evidence is the current runtime basis.
+
+The authoritative release evidence is in
+`qemu/evidence/domain_training_strategy_report.md`,
+`qemu/evidence/architecture_codebase_audit.md`, and
+`qemu/evidence/hardware_perf_report.md`.
+
 ## Project Overview
 
 GPT-2 BASIC has successfully implemented a scaled-down GPT-2 transformer model in FreeBASIC that is compatible with 486-era hardware constraints. The project demonstrates that modern AI concepts can be implemented on vintage hardware through careful optimization and innovative approaches.

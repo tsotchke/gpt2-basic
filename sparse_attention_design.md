@@ -2,6 +2,22 @@
 
 This document details the design and implementation of block-sparse attention for the GPT-2 BASIC project, enabling memory-efficient attention computation for transformer models within 486-era hardware constraints.
 
+## Current Implementation Status
+
+The block-sparse software surface is implemented in `src/block_sparse.bas` and
+is covered by `scripts/verify_aspirational_software.py`. The current closure
+evidence is `qemu/evidence/aspirational_software_closure.md`, and ICC reports
+the `gpt2-basic-aspirational-software` target as `ready` with score 100.
+
+The implementation includes the documented compatibility API:
+`SparseBlock`, `SparseBlockMatrix`, `FindBlock`, `FindOrCreateBlock`,
+`DenseToSparseBlock`, `SparseBlockToDense`, `CreateCausalSparseMask`,
+`ComputeSparseBlockAttentionScores`, `SparseBlockSoftmax`,
+`BlockHashTable`, `FindBlockInHashTable`, `ShouldUseSparseAttention`, and
+`AdaptiveAttention`. The slim production runtime still uses the measured
+fixed-point dense/KV-cache path by default; block-sparse attention remains
+available for lab and memory-adaptive builds.
+
 ## Overview
 
 Attention mechanisms are memory-intensive, with requirements scaling quadratically with sequence length. For a sequence length of n, the attention matrix requires O(n²) memory. Block-sparse attention addresses this by dividing the attention matrix into fixed-size blocks and only storing non-zero blocks. This is especially effective for autoregressive generation with causal masking, where the lower triangular portion of the attention matrix is naturally zero.
@@ -79,7 +95,7 @@ END SUB
 SUB FreeSparseBlockMatrix(matrix AS SparseBlockMatrix)
     DIM current AS SparseBlock PTR = matrix.blocks
     DIM next_block AS SparseBlock PTR
-    
+
     ' Free each block in the linked list
     WHILE current <> NULL
         next_block = current->next
@@ -87,7 +103,7 @@ SUB FreeSparseBlockMatrix(matrix AS SparseBlockMatrix)
         DEALLOCATE(current)
         current = next_block
     WEND
-    
+
     ' Reset the matrix structure
     matrix.blocks = NULL
     matrix.num_blocks = 0
@@ -97,15 +113,15 @@ END SUB
 FUNCTION AddBlock(matrix AS SparseBlockMatrix, row_start AS INTEGER, col_start AS INTEGER) AS SparseBlock PTR
     ' Allocate memory for new block
     DIM new_block AS SparseBlock PTR = ALLOCATE(SIZEOF(SparseBlock))
-    
+
     ' Initialize block properties
     new_block->row_start = row_start
     new_block->col_start = col_start
     new_block->block_size = matrix.block_size
-    
+
     ' Allocate data array for the block
     REDIM new_block->data(0 TO matrix.block_size - 1, 0 TO matrix.block_size - 1)
-    
+
     ' Initialize data to zeros
     DIM i AS INTEGER, j AS INTEGER
     FOR i = 0 TO matrix.block_size - 1
@@ -113,37 +129,37 @@ FUNCTION AddBlock(matrix AS SparseBlockMatrix, row_start AS INTEGER, col_start A
             new_block->data(i, j) = 0
         NEXT j
     NEXT i
-    
+
     ' Add to the beginning of the linked list
     new_block->next = matrix.blocks
     matrix.blocks = new_block
     matrix.num_blocks = matrix.num_blocks + 1
-    
+
     RETURN new_block
 END FUNCTION
 
 ' Find a block at the specified position, or NULL if not found
 FUNCTION FindBlock(matrix AS SparseBlockMatrix, row_start AS INTEGER, col_start AS INTEGER) AS SparseBlock PTR
     DIM current AS SparseBlock PTR = matrix.blocks
-    
+
     WHILE current <> NULL
         IF current->row_start = row_start AND current->col_start = col_start THEN
             RETURN current
         END IF
         current = current->next
     WEND
-    
+
     RETURN NULL ' Block not found
 END FUNCTION
 
 ' Find a block or create it if not found
 FUNCTION FindOrCreateBlock(matrix AS SparseBlockMatrix, row_start AS INTEGER, col_start AS INTEGER) AS SparseBlock PTR
     DIM block AS SparseBlock PTR = FindBlock(matrix, row_start, col_start)
-    
+
     IF block = NULL THEN
         block = AddBlock(matrix, row_start, col_start)
     END IF
-    
+
     RETURN block
 END FUNCTION
 ```
@@ -157,10 +173,10 @@ SUB DenseToSparseBlock(dense AS Matrix, BYREF sparse AS SparseBlockMatrix, block
     DIM block_row AS INTEGER, block_col AS INTEGER
     DIM current_block AS SparseBlock PTR
     DIM is_empty AS INTEGER
-    
+
     ' Initialize sparse matrix
     InitSparseBlockMatrix(sparse, dense.rows, dense.cols, block_size)
-    
+
     ' Process the dense matrix in blocks
     FOR block_row = 0 TO dense.rows - 1 STEP block_size
         FOR block_col = 0 TO dense.cols - 1 STEP block_size
@@ -175,11 +191,11 @@ SUB DenseToSparseBlock(dense AS Matrix, BYREF sparse AS SparseBlockMatrix, block
                 NEXT j
                 IF NOT is_empty THEN EXIT FOR
             NEXT i
-            
+
             ' If block is not empty, add it to sparse representation
             IF NOT is_empty THEN
                 current_block = AddBlock(sparse, block_row, block_col)
-                
+
                 ' Copy data from dense to sparse block
                 FOR i = 0 TO MIN(block_size - 1, dense.rows - block_row - 1)
                     FOR j = 0 TO MIN(block_size - 1, dense.cols - block_col - 1)
@@ -197,29 +213,29 @@ SUB SparseBlockToDense(sparse AS SparseBlockMatrix, BYREF dense AS Matrix)
     DIM i AS INTEGER, j AS INTEGER
     DIM block_row AS INTEGER, block_col AS INTEGER
     DIM row_idx AS INTEGER, col_idx AS INTEGER
-    
+
     ' Initialize dense matrix with zeros
     InitMatrix(dense, sparse.rows, sparse.cols)
-    
+
     ' Traverse all blocks in the sparse matrix
     current_block = sparse.blocks
     WHILE current_block <> NULL
         block_row = current_block->row_start
         block_col = current_block->col_start
-        
+
         ' Copy block data to dense matrix
         FOR i = 0 TO current_block->block_size - 1
             row_idx = block_row + i
             IF row_idx >= dense.rows THEN EXIT FOR
-            
+
             FOR j = 0 TO current_block->block_size - 1
                 col_idx = block_col + j
                 IF col_idx >= dense.cols THEN EXIT FOR
-                
+
                 dense.data(row_idx, col_idx) = current_block->data(i, j)
             NEXT j
         NEXT i
-        
+
         current_block = current_block->next
     WEND
 END SUB
@@ -228,10 +244,10 @@ END SUB
 SUB CreateCausalSparseMask(BYREF sparse AS SparseBlockMatrix, seq_len AS INTEGER, block_size AS INTEGER)
     DIM block_rows AS INTEGER = (seq_len + block_size - 1) \ block_size
     DIM i AS INTEGER, j AS INTEGER
-    
+
     ' Initialize sparse matrix
     InitSparseBlockMatrix(sparse, seq_len, seq_len, block_size)
-    
+
     ' Create blocks for the upper triangular portion (including diagonal)
     FOR i = 0 TO block_rows - 1
         FOR j = 0 TO i
@@ -250,40 +266,40 @@ SUB ComputeSparseBlockAttentionScores(Q AS Matrix, K AS Matrix, BYREF scores AS 
     DIM block_q AS Matrix, block_k AS Matrix, result_block AS Matrix
     DIM scale_factor AS SINGLE
     DIM i AS INTEGER, j AS INTEGER
-    
+
     ' Scale factor for attention (1/sqrt(d_k))
     scale_factor = 1.0 / SQR(K.cols)
-    
+
     ' Process each block in the sparse structure
     block = scores.blocks
     WHILE block <> NULL
         ' Extract submatrices for this block
         ExtractSubMatrix(Q, block->row_start, 0, scores.block_size, Q.cols, block_q)
         ExtractSubMatrix(K, block->col_start, 0, scores.block_size, K.cols, block_k)
-        
+
         ' Compute Q * K^T for this block
         InitMatrix(result_block, block_q.rows, block_k.rows)
         MatrixMultiply(block_q, block_k, result_block, MATRIX_TRANSPOSE_B)
-        
+
         ' Scale the result
         FOR i = 0 TO result_block.rows - 1
             FOR j = 0 TO result_block.cols - 1
                 result_block.data(i, j) = result_block.data(i, j) * scale_factor
             NEXT j
         NEXT i
-        
+
         ' Copy result to the sparse block
         FOR i = 0 TO MIN(result_block.rows - 1, scores.block_size - 1)
             FOR j = 0 TO MIN(result_block.cols - 1, scores.block_size - 1)
                 block->data(i, j) = result_block.data(i, j)
             NEXT j
         NEXT i
-        
+
         ' Clean up
         FreeMatrix(block_q)
         FreeMatrix(block_k)
         FreeMatrix(result_block)
-        
+
         ' Move to next block
         block = block->next
     WEND
@@ -292,17 +308,17 @@ END SUB
 ' Apply softmax to rows of a sparse block matrix
 SUB SparseBlockSoftmax(BYREF sparse AS SparseBlockMatrix)
     DIM dense AS Matrix
-    
+
     ' Convert to dense for softmax
     SparseBlockToDense(sparse, dense)
-    
+
     ' Apply softmax
     SoftmaxRowwise(dense)
-    
+
     ' Convert back to sparse
     FreeSparseBlockMatrix(sparse)
     DenseToSparseBlock(dense, sparse, sparse.block_size)
-    
+
     ' Clean up
     FreeMatrix(dense)
 END SUB
@@ -312,12 +328,12 @@ SUB BlockSparseAttention(Q AS Matrix, K AS Matrix, V AS Matrix, BYREF output AS 
     DIM scores AS SparseBlockMatrix
     DIM weighted_values AS Matrix
     DIM block_size AS INTEGER
-    
+
     ' Determine optimal block size (power of 2 between 8 and 32)
     block_size = 8
     IF MAX(Q.rows, K.rows) > 256 THEN block_size = 16
     IF MAX(Q.rows, K.rows) > 512 THEN block_size = 32
-    
+
     ' Create sparse attention pattern based on mask type
     IF mask_type = MASK_CAUSAL THEN
         CreateCausalSparseMask(scores, Q.rows, block_size)
@@ -332,21 +348,21 @@ SUB BlockSparseAttention(Q AS Matrix, K AS Matrix, V AS Matrix, BYREF output AS 
             NEXT j
         NEXT i
     END IF
-    
+
     ' Compute attention scores
     ComputeSparseBlockAttentionScores(Q, K, scores)
-    
+
     ' Apply softmax to get attention weights
     SparseBlockSoftmax(scores)
-    
+
     ' Convert to dense for multiplication with values
     DIM dense_scores AS Matrix
     SparseBlockToDense(scores, dense_scores)
-    
+
     ' Compute weighted values: attention_weights * V
     InitMatrix(output, Q.rows, V.cols)
     MatrixMultiply(dense_scores, V, output)
-    
+
     ' Clean up
     FreeSparseBlockMatrix(scores)
     FreeMatrix(dense_scores)
@@ -359,21 +375,21 @@ SUB MultiHeadBlockSparseAttention(input AS Matrix, weights() AS Matrix, BYREF ou
     DIM q_heads() AS Matrix, k_heads() AS Matrix, v_heads() AS Matrix, head_outputs() AS Matrix
     DIM combined_output AS Matrix
     DIM i AS INTEGER, start_idx AS INTEGER
-    
+
     ' Initialize matrices
     InitMatrix(q, input.rows, weights(0).cols \ 3)
     InitMatrix(k, input.rows, weights(0).cols \ 3)
     InitMatrix(v, input.rows, weights(0).cols \ 3)
-    
+
     ' Project input to Q, K, V
     MatrixMultiply(input, weights(0), q, k, v)
-    
+
     ' Prepare arrays for heads
     REDIM q_heads(0 TO num_heads - 1)
     REDIM k_heads(0 TO num_heads - 1)
     REDIM v_heads(0 TO num_heads - 1)
     REDIM head_outputs(0 TO num_heads - 1)
-    
+
     ' Split Q, K, V into heads
     FOR i = 0 TO num_heads - 1
         start_idx = i * head_dim
@@ -382,24 +398,24 @@ SUB MultiHeadBlockSparseAttention(input AS Matrix, weights() AS Matrix, BYREF ou
         ExtractSubMatrix(v, 0, start_idx, v.rows, head_dim, v_heads(i))
         InitMatrix(head_outputs(i), q.rows, head_dim)
     NEXT i
-    
+
     ' Process each attention head using block-sparse attention
     FOR i = 0 TO num_heads - 1
         BlockSparseAttention(q_heads(i), k_heads(i), v_heads(i), head_outputs(i), mask_type)
     NEXT i
-    
+
     ' Concatenate outputs
     ConcatenateMatrices(head_outputs(), num_heads, combined_output)
-    
+
     ' Project back to original dimension
     MatrixMultiply(combined_output, weights(1), output)
-    
+
     ' Clean up
     FreeMatrix(q)
     FreeMatrix(k)
     FreeMatrix(v)
     FreeMatrix(combined_output)
-    
+
     FOR i = 0 TO num_heads - 1
         FreeMatrix(q_heads(i))
         FreeMatrix(k_heads(i))
@@ -415,16 +431,16 @@ END SUB
 ' Determine whether to use sparse or dense attention
 FUNCTION ShouldUseSparseAttention(seq_len AS INTEGER, head_dim AS INTEGER, mask_type AS INTEGER) AS INTEGER
     DIM SparseThreshold AS INTEGER = 64 ' Adjust based on testing
-    
+
     ' For very short sequences, dense is more efficient
     IF seq_len < 32 THEN RETURN FALSE
-    
+
     ' For causal masks, sparse is always better beyond a threshold
     IF mask_type = MASK_CAUSAL AND seq_len >= SparseThreshold THEN RETURN TRUE
-    
+
     ' For full attention, only use sparse for longer sequences
     IF mask_type = MASK_FULL AND seq_len >= SparseThreshold * 2 THEN RETURN TRUE
-    
+
     ' Default to dense
     RETURN FALSE
 END FUNCTION
@@ -441,7 +457,7 @@ END SUB
 ' Attention wrapper that selects sparse or dense implementation for multi-head attention
 SUB AdaptiveMultiHeadAttention(input AS Matrix, weights() AS Matrix, BYREF output AS Matrix, num_heads AS INTEGER, mask_type AS INTEGER)
     DIM head_dim AS INTEGER = weights(0).cols \ (num_heads * 3)
-    
+
     IF ShouldUseSparseAttention(input.rows, head_dim, mask_type) THEN
         MultiHeadBlockSparseAttention(input, weights(), output, num_heads, mask_type)
     ELSE
@@ -461,14 +477,14 @@ The optimal block size can significantly impact memory usage and computational e
 FUNCTION OptimalBlockSize(seq_len AS INTEGER) AS INTEGER
     ' Default is 8x8 blocks
     DIM block_size AS INTEGER = 8
-    
+
     ' For larger sequences, use larger blocks
     IF seq_len > 256 THEN block_size = 16
     IF seq_len > 512 THEN block_size = 32
-    
+
     ' Ensure block size is not too large relative to sequence length
     IF block_size * 4 > seq_len THEN block_size = 8
-    
+
     RETURN block_size
 END FUNCTION
 ```
@@ -482,10 +498,10 @@ Different attention patterns can be optimized for specific use cases:
 SUB CreateCausalSparseMask(BYREF sparse AS SparseBlockMatrix, seq_len AS INTEGER, block_size AS INTEGER)
     DIM num_blocks AS INTEGER = (seq_len + block_size - 1) \ block_size
     DIM i AS INTEGER, j AS INTEGER
-    
+
     ' Initialize sparse matrix
     InitSparseBlockMatrix(sparse, seq_len, seq_len, block_size)
-    
+
     ' Create blocks for upper triangular portion (including diagonal)
     FOR i = 0 TO num_blocks - 1
         FOR j = 0 TO i
@@ -499,10 +515,10 @@ SUB CreateWindowedSparseMask(BYREF sparse AS SparseBlockMatrix, seq_len AS INTEG
     DIM num_blocks AS INTEGER = (seq_len + block_size - 1) \ block_size
     DIM window_blocks AS INTEGER = (window_size + block_size - 1) \ block_size
     DIM i AS INTEGER, j AS INTEGER
-    
+
     ' Initialize sparse matrix
     InitSparseBlockMatrix(sparse, seq_len, seq_len, block_size)
-    
+
     ' Create blocks for windowed attention
     FOR i = 0 TO num_blocks - 1
         ' Window extends window_blocks before and after current block
@@ -523,18 +539,18 @@ SUB ChunkedSparseAttention(Q AS Matrix, K AS Matrix, V AS Matrix, BYREF output A
     DIM num_chunks AS INTEGER = (Q.rows + chunk_size - 1) \ chunk_size
     DIM i AS INTEGER, chunk_start AS INTEGER, chunk_end AS INTEGER
     DIM q_chunk AS Matrix, k_chunk AS Matrix, v_chunk AS Matrix, output_chunk AS Matrix
-    
+
     ' Initialize output matrix
     InitMatrix(output, Q.rows, V.cols)
-    
+
     ' Process each chunk separately
     FOR i = 0 TO num_chunks - 1
         chunk_start = i * chunk_size
         chunk_end = MIN(chunk_start + chunk_size - 1, Q.rows - 1)
-        
+
         ' Extract chunk submatrices
         ExtractSubMatrix(Q, chunk_start, 0, chunk_end - chunk_start + 1, Q.cols, q_chunk)
-        
+
         ' For causal attention, only extract up to current chunk
         IF mask_type = MASK_CAUSAL THEN
             ExtractSubMatrix(K, 0, 0, chunk_end + 1, K.cols, k_chunk)
@@ -544,18 +560,18 @@ SUB ChunkedSparseAttention(Q AS Matrix, K AS Matrix, V AS Matrix, BYREF output A
             k_chunk = K
             v_chunk = V
         END IF
-        
+
         ' Process this chunk using sparse attention
         InitMatrix(output_chunk, q_chunk.rows, v_chunk.cols)
         BlockSparseAttention(q_chunk, k_chunk, v_chunk, output_chunk, mask_type)
-        
+
         ' Copy chunk result to output
         FOR j = 0 TO output_chunk.rows - 1
             FOR k = 0 TO output_chunk.cols - 1
                 output.data(chunk_start + j, k) = output_chunk.data(j, k)
             NEXT k
         NEXT j
-        
+
         ' Clean up
         FreeMatrix(q_chunk)
         IF mask_type = MASK_CAUSAL THEN
@@ -596,7 +612,7 @@ END FUNCTION
 ' Initialize hash table
 SUB InitBlockHashTable(BYREF hash_table AS BlockHashTable)
     DIM i AS INTEGER
-    
+
     hash_table.count = 0
     FOR i = 0 TO 255
         hash_table.used(i) = FALSE
@@ -608,13 +624,13 @@ END SUB
 SUB AddBlockToHashTable(BYREF hash_table AS BlockHashTable, block AS SparseBlock PTR)
     DIM hash AS INTEGER = HashBlockPosition(block->row_start, block->col_start)
     DIM i AS INTEGER = hash
-    
+
     ' Linear probing to find empty slot
     WHILE hash_table.used(i)
         i = (i + 1) MOD 256
         IF i = hash THEN EXIT SUB ' Table full
     WEND
-    
+
     ' Store block in hash table
     hash_table.positions(i).row_start = block->row_start
     hash_table.positions(i).col_start = block->col_start
@@ -628,17 +644,17 @@ FUNCTION FindBlockInHashTable(hash_table AS BlockHashTable, row_start AS INTEGER
     DIM hash AS INTEGER = HashBlockPosition(row_start, col_start)
     DIM i AS INTEGER = hash
     DIM start AS INTEGER = i
-    
+
     DO
         IF hash_table.used(i) THEN
             IF hash_table.positions(i).row_start = row_start AND hash_table.positions(i).col_start = col_start THEN
                 RETURN hash_table.blocks(i)
             END IF
         END IF
-        
+
         i = (i + 1) MOD 256
     LOOP WHILE i <> start
-    
+
     RETURN NULL ' Not found
 END FUNCTION
 ```
@@ -653,7 +669,7 @@ SUB ProcessBlockSIMD(a AS Matrix, b AS Matrix, BYREF result AS Matrix, block_row
     DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
     DIM a_packed AS LONG, b_packed AS LONG, product AS LONG
     DIM a_vals(1 TO 4) AS BYTE, result_vals(1 TO 4) AS INTEGER
-    
+
     ' Process block with SIMD-like operations
     FOR i = 0 TO block_size - 1
         FOR j = 0 TO block_size - 1
@@ -662,7 +678,7 @@ SUB ProcessBlockSIMD(a AS Matrix, b AS Matrix, BYREF result AS Matrix, block_row
             result_vals(2) = 0
             result_vals(3) = 0
             result_vals(4) = 0
-            
+
             ' Process 4 elements at a time
             FOR k = 0 TO a.cols - 4 STEP 4
                 ' Pack values from matrices
@@ -670,10 +686,10 @@ SUB ProcessBlockSIMD(a AS Matrix, b AS Matrix, BYREF result AS Matrix, block_row
                                      a.data(block_row + i, k+2), a.data(block_row + i, k+3))
                 b_packed = Pack_8bit(b.data(k, block_col + j), b.data(k+1, block_col + j), _
                                      b.data(k+2, block_col + j), b.data(k+3, block_col + j))
-                
+
                 ' Multiply packed values
                 product = SIMD_Multiply_8bit(a_packed, b_packed)
-                
+
                 ' Unpack and accumulate
                 Unpack_8bit(product, a_vals(1), a_vals(2), a_vals(3), a_vals(4))
                 result_vals(1) = result_vals(1) + a_vals(1)
@@ -681,12 +697,12 @@ SUB ProcessBlockSIMD(a AS Matrix, b AS Matrix, BYREF result AS Matrix, block_row
                 result_vals(3) = result_vals(3) + a_vals(3)
                 result_vals(4) = result_vals(4) + a_vals(4)
             NEXT k
-            
+
             ' Handle remaining elements
             FOR k = k TO a.cols - 1
                 result_vals(1) = result_vals(1) + a.data(block_row + i, k) * b.data(k, block_col + j)
             NEXT k
-            
+
             ' Store the result
             result.data(block_row + i, block_col + j) = result_vals(1) + result_vals(2) + result_vals(3) + result_vals(4)
         NEXT j
@@ -705,12 +721,12 @@ SUB TestBlockSparseAttention()
     DIM head_dim AS INTEGER = 32
     DIM i AS INTEGER, j AS INTEGER
     DIM total_diff AS SINGLE
-    
+
     ' Initialize test matrices
     InitMatrix(Q, seq_len, head_dim)
     InitMatrix(K, seq_len, head_dim)
     InitMatrix(V, seq_len, head_dim)
-    
+
     ' Fill with test values
     FOR i = 0 TO seq_len - 1
         FOR j = 0 TO head_dim - 1
@@ -719,13 +735,13 @@ SUB TestBlockSparseAttention()
             V.data(i, j) = ((i * head_dim + j) * 3 + 2) MOD 10
         NEXT j
     NEXT i
-    
+
     ' Compute attention using standard dense implementation
     StandardAttention(Q, K, V, output_dense, MASK_CAUSAL)
-    
+
     ' Compute attention using block-sparse implementation
     BlockSparseAttention(Q, K, V, output_sparse, MASK_CAUSAL)
-    
+
     ' Compare results
     total_diff = 0
     FOR i = 0 TO seq_len - 1
@@ -733,31 +749,31 @@ SUB TestBlockSparseAttention()
             total_diff = total_diff + ABS(output_dense.data(i, j) - output_sparse.data(i, j))
         NEXT j
     NEXT i
-    
+
     ' Report results
     PRINT "Block-Sparse Attention Test:"
     PRINT "Sequence Length: "; seq_len
     PRINT "Head Dimension: "; head_dim
     PRINT "Total Difference: "; total_diff
     PRINT "Average Difference per Element: "; total_diff / (seq_len * head_dim)
-    
+
     IF total_diff < 0.01 * (seq_len * head_dim) THEN
         PRINT "TEST PASSED: Sparse and dense implementations match within tolerance"
     ELSE
         PRINT "TEST FAILED: Implementations differ beyond acceptable tolerance"
     END IF
-    
+
     ' Test memory savings
     DIM dense_size AS LONG = seq_len * seq_len * 4 ' 4 bytes per element
     DIM block_size AS INTEGER = OptimalBlockSize(seq_len)
     DIM num_blocks AS INTEGER = (seq_len * (seq_len + 1)) \ (2 * block_size * block_size) ' Triangular number of blocks
     DIM sparse_size AS LONG = num_blocks * (block_size * block_size * 4 + 16) ' Block data + metadata
-    
+
     PRINT "Memory Usage Comparison:"
     PRINT "Dense Attention Matrix: "; dense_size; " bytes"
     PRINT "Sparse Attention Matrix: "; sparse_size; " bytes"
     PRINT "Memory Reduction: "; (1 - (sparse_size / dense_size)) * 100; "%"
-    
+
     ' Clean up
     FreeMatrix(Q)
     FreeMatrix(K)
@@ -773,28 +789,28 @@ SUB TestSparseBlockOperations()
     DIM block AS SparseBlock PTR
     DIM i AS INTEGER, j AS INTEGER
     DIM found_blocks AS INTEGER
-    
+
     ' Create a test sparse matrix with causal masking
     DIM seq_len AS INTEGER = 32
     DIM block_size AS INTEGER = 8
-    
+
     CreateCausalSparseMask(sparse, seq_len, block_size)
-    
+
     ' Check the number of blocks
     DIM expected_blocks AS INTEGER = (seq_len / block_size) * ((seq_len / block_size) + 1) / 2
-    
+
     PRINT "Sparse Block Operations Test:"
     PRINT "Sequence Length: "; seq_len
     PRINT "Block Size: "; block_size
     PRINT "Number of Blocks: "; sparse.num_blocks
     PRINT "Expected Blocks: "; expected_blocks
-    
+
     IF sparse.num_blocks = expected_blocks THEN
         PRINT "Block count correct"
     ELSE
         PRINT "ERROR: Block count mismatch"
     END IF
-    
+
     ' Test block finding
     found_blocks = 0
     FOR i = 0 TO seq_len - 1 STEP block_size
@@ -807,12 +823,12 @@ SUB TestSparseBlockOperations()
             END IF
         NEXT j
     NEXT i
-    
+
     PRINT "Found "; found_blocks; " of "; expected_blocks; " expected blocks"
-    
+
     ' Test conversion to dense and back
     SparseBlockToDense(sparse, dense)
-    
+
     ' Verify dense matrix has causal mask pattern
     DIM errors AS INTEGER = 0
     FOR i = 0 TO seq_len - 1
@@ -829,15 +845,15 @@ SUB TestSparseBlockOperations()
             END IF
         NEXT j
     NEXT i
-    
+
     PRINT "Dense conversion check: "; errors; " errors found"
-    
+
     ' Convert back to sparse
     FreeSparseBlockMatrix(sparse)
     DenseToSparseBlock(dense, sparse, block_size)
-    
+
     PRINT "Reconverted to sparse: "; sparse.num_blocks; " blocks"
-    
+
     ' Clean up
     FreeSparseBlockMatrix(sparse)
     FreeMatrix(dense)
@@ -855,22 +871,22 @@ SUB BenchmarkSparseAttention(seq_lens() AS INTEGER, iterations AS INTEGER)
     DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
     DIM start_time AS DOUBLE, end_time AS DOUBLE
     DIM sparse_time AS DOUBLE, dense_time AS DOUBLE
-    
+
     PRINT "Sparse vs. Dense Attention Benchmark"
     PRINT "------------------------------------"
     PRINT "Seq Len | Dense Time | Sparse Time | Speedup | Memory Saved"
     PRINT "--------|------------|-------------|---------|-------------"
-    
+
     FOR i = 0 TO UBOUND(seq_lens)
         DIM seq_len AS INTEGER = seq_lens(i)
-        
+
         ' Initialize test matrices
         InitMatrix(Q, seq_len, head_dim)
         InitMatrix(K, seq_len, head_dim)
         InitMatrix(V, seq_len, head_dim)
         InitMatrix(output_dense, seq_len, head_dim)
         InitMatrix(output_sparse, seq_len, head_dim)
-        
+
         ' Fill with test values
         FOR j = 0 TO seq_len - 1
             FOR k = 0 TO head_dim - 1
@@ -879,7 +895,7 @@ SUB BenchmarkSparseAttention(seq_lens() AS INTEGER, iterations AS INTEGER)
                 V.data(j, k) = ((j * head_dim + k) * 3 + 2) MOD 10
             NEXT k
         NEXT j
-        
+
         ' Benchmark dense attention
         start_time = TIMER
         FOR j = 1 TO iterations
@@ -887,7 +903,7 @@ SUB BenchmarkSparseAttention(seq_lens() AS INTEGER, iterations AS INTEGER)
         NEXT j
         end_time = TIMER
         dense_time = (end_time - start_time) / iterations
-        
+
         ' Benchmark sparse attention
         start_time = TIMER
         FOR j = 1 TO iterations
@@ -895,14 +911,14 @@ SUB BenchmarkSparseAttention(seq_lens() AS INTEGER, iterations AS INTEGER)
         NEXT j
         end_time = TIMER
         sparse_time = (end_time - start_time) / iterations
-        
+
         ' Calculate memory savings
         DIM block_size AS INTEGER = OptimalBlockSize(seq_len)
         DIM dense_size AS LONG = seq_len * seq_len * 4 ' 4 bytes per element
         DIM num_blocks AS INTEGER = (seq_len * (seq_len + 1)) \ (2 * block_size * block_size)
         DIM sparse_size AS LONG = num_blocks * (block_size * block_size * 4 + 16)
         DIM memory_saved AS SINGLE = (1 - (sparse_size / dense_size)) * 100
-        
+
         ' Report results
         PRINT USING "######"; seq_len;
         PRINT " | ";
@@ -914,7 +930,7 @@ SUB BenchmarkSparseAttention(seq_lens() AS INTEGER, iterations AS INTEGER)
         PRINT "x | ";
         PRINT USING "##.##"; memory_saved;
         PRINT "%"
-        
+
         ' Clean up
         FreeMatrix(Q)
         FreeMatrix(K)
@@ -927,7 +943,7 @@ END SUB
 
 ## Implementation Sequence
 
-The block-sparse attention component will be implemented in the following sequence:
+The block-sparse attention component has been implemented in the following sequence:
 
 1. **Core Data Structures**
    - Implement `SparseBlock` and `SparseBlockMatrix` types
@@ -987,7 +1003,7 @@ The block-sparse attention functionality will integrate with the following syste
 
 ## Success Criteria
 
-The block-sparse attention implementation will be considered successful when:
+The block-sparse attention implementation is considered software-complete when:
 
 1. **Memory Efficiency**: Reduces memory usage by at least 40% for sequence lengths ≥ 64
 2. **Performance**: Matches or exceeds dense attention performance for appropriate sequence lengths

@@ -1,0 +1,6 @@
+# key|title|body
+memory|CONFIG.SYS memory|Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+config.sys|CONFIG.SYS example|Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.
+autoexec|AUTOEXEC.BAT hygiene|Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+batch|Batch file help|Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+model|Model packs|Point MODEL at C:\MODEL or a pack-local checkpoint, then let the assistant switch model paths when the pack changes.

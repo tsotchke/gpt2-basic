@@ -1,109 +1,110 @@
-# Release Diff Audit
+# Production Audit: `gpt2_basic`
 
-Date: 2026-05-06
+Verdict: `fail`  Target: `gpt2-basic-486-production`  Risks: `5`
+Policy: `gpt2-basic-486-production`  Source: `/Users/tyr/Desktop/gpt2-basic/.icc/production-audit.json`  Suppressed: `0`
 
-Target: `gpt2-basic-486-production`
-
-## Summary
-
-The current working tree is a coherent release replacement, but it is still too
-large for automatic guard-diff signoff. ICC completion/readiness evidence is
-clean; the remaining production-audit blocker is intentional guard-diff policy:
-the tracked diff contains 1,242 policy-deleted lines, above the 200-line release
-limit.
-
-This should not be suppressed in `.icc/production-audit.json`. The correct
-resolution is to review and commit the release as a deliberate large replacement,
-or split the source/runtime work into smaller commits with evidence preserved.
-
-## Current Diff Shape
-
-Tracked source/doc/config diff:
-
-| Scope | Files | Insertions | Deletions |
-|---|---:|---:|---:|
-| tracked changes | 16 | 2,638 | 1,331 |
-
-Largest policy-deletion contributors:
-
-| Path | Policy-deleted lines |
-|---|---:|
-| `src/benchmark.bas` | 236 |
-| `src/model.bas` | 229 |
-| `src/file_io.bas` | 165 |
-| `src/main.bas` | 133 |
-| `src/transformer_components.bas` | 103 |
-| `README.md` | 89 |
-| `src/tokenizer.bas` | 84 |
-| `src/memory_manager.bas` | 58 |
-| `src/simd_ops.bas` | 32 |
-| `src/softmax_fixed.bas` | 31 |
-
-Untracked release payload:
-
-| Classification | Files |
-|---|---:|
-| candidate model snapshots | 91 |
-| curriculum files | 8 |
-| generated local bytecode | 26 |
-| host tooling | 20 |
-| production source | 3 |
-| promoted model files | 3 |
-| QEMU tooling | 21 |
-| ICC repo config | 2 |
-| runtime evidence | 110 |
-
-ICC release classification now covers all changed paths: unknown changed paths
-are `0`.
-
-## Source Surface Audit
-
-Symbol-level deltas show replacement work rather than silent removal of major
-runtime capability.
-
-| File | Added symbols | Removed symbols | Notes |
+| Severity | Area | Finding | Action |
 |---|---|---|---|
-| `src/asm_optimizations.bas` | `FixedAdd`, `FixedDivide`, `FixedMultiply`, `FixedSubtract` | `IIF` | Replaces non-portable helper with explicit fixed-point helpers and DOS-compatible operators. |
-| `src/benchmark.bas` | `BenchmarkGPT2BasicRuntime`, `BenchmarkGenerateText`, `CleanupBenchmarkFiles`, `CreateBenchmarkLayerFiles` | `CleanupTestFiles`, `CreateTestLayerFiles`, `GenerateText` | Replaces synthetic transformer block benchmark path with production GPT2-BASIC runtime benchmark path. |
-| `src/data_structures.bas` | `CEILING`, `CompatFormat`, `IIFString`, `MAX`, `MIN`, `TANH` | `IIF` | Adds compiler-compatible utility surface used across DOS runtime code. |
-| `src/file_io.bas` | `CreateDiagnosticModel`, `InitGPT2BasicModelFiles`, `LoadModelVocabulary`, `ModelDirectoryHasGPT2BasicCheckpoint` | `CreateDummyModel`, `LoadVocabulary` | Replaces dummy/test naming with diagnostic path and adds GPT2-BASIC checkpoint discovery/config loading. |
-| `src/main.bas` | `PerfDoubleText`, `PerfLongText`, `PrintActiveModelInfo`, `RunAutomatedQualitySuite`, `RunHardwarePerformanceCase`, `RunHardwarePerformanceSuite`, `RunQualityPrompt`, `StripTrailingEOT` | none | Adds real runtime quality and hardware performance surfaces. |
-| `src/model.bas` | `GenerateModelText`, `LoadTextModelConfig`, `SoftmaxVectorFixedPoint` | `GenerateText`, `InitModelConfig`, `LoadModelConfig` | Renames generation/config entry points around GPT2-BASIC text config and fixed-point logits. |
-| `src/quantization.bas` | `DequantizeLogToFixed` | none | Adds fixed-point bridge needed by runtime components. |
-| `src/tokenizer.bas` | `CleanTokenizerText`, `LexiconTokenize`, `TokenPieceBoundaryMatches`, `TokenPieceMatchesBytes`, `TokenizerLexiconWordByte`, `TokenizerOutputAllowed` | none | Adds byte cleaning, lexicon mode, BPE/lexicon output legality, and DOS tokenizer parity hooks. |
-| `src/transformer_components.bas` | `ShouldUseBlockSparseAttention` | none | Adds runtime decision point for block-sparse attention. |
+| `high` | `source_drift` | 3 indexed file(s) changed since artifact refresh | review changed paths and refresh artifacts after the edits are intentional |
+| `high` | `source_drift` | indexed artifacts are stale relative to the live source tree | inspect source-drift, then refresh index, memory, architecture, and git-history artifacts |
+| `medium` | `forward_progress` | 22 rollback-sensitive diff risk(s); 0 block production signoff | replace rollback-shaped changes with complete optimal implementation, or prove the architectural replacement in the same diff |
+| `medium` | `guard_diff` | 3 guard warning(s) in the current git diff | review warning details before merging |
+| `low` | `guard_diff` | 217 file(s) differ from HEAD | commit or discard intentional local edits before final production signoff |
 
-Files with no symbol removals: `src/block_sparse.bas`, `src/matrix_ops.bas`,
-`src/memory_manager.bas`, `src/simd_ops.bas`, `src/softmax_fixed.bas`.
+## Evidence Summary
 
-## ICC Status
+| Surface | Status | Key Counts |
+|---|---|---|
+| `artifacts` | `PASS` | stale `True` |
+| `source_drift` | `STALE` | changed `3` added `0` modified `3` deleted `0` |
+| `guard_diff` | `PASS` | violations `0` warnings `3` |
+| `index_quality` | `PASS` | blind spots `0` |
+| `release_classification` | `PASS` | changed `272` unknown `0` |
+| `feature_map` | `PASS` | clusters `12` promotion candidates `0` |
+| `tasks` | `portfolio` | tasks `0` returned `0` |
+| `readiness` | `ready` | score `100` gaps `0` stubs `0` runtime checks `2` |
+| `audit_patterns:shell-hardening` | `PASS` | findings `0` severities `{}` |
+| `audit_patterns:python-stub-bodies` | `PASS` | findings `0` severities `{}` |
+| `audit_patterns:python-production-leakage` | `PASS` | findings `0` severities `{}` |
 
-Latest ICC status after `.icc` policy scoping:
+## Release Classification
 
-| Gate | Result |
-|---|---|
-| completion oracle | complete, 5/5 pass |
-| readiness | ready, score 100 |
-| source drift | clean |
-| release classification | pass, unknown 0 |
-| index quality | pass, blind spots 0 |
-| audit patterns | pass for shell hardening, Python stubs, and Python leakage |
-| production audit | fail only on guard-diff deletion volume |
+Rules: `17`  Require classified changes: `True`
 
-## Release Decision
+| Role | Changed Paths |
+|---|---:|
+| `assistant_pack` | 23 |
+| `candidate_model` | 29 |
+| `curriculum` | 2 |
+| `documentation` | 11 |
+| `full_release_model` | 1 |
+| `hardware_capture` | 3 |
+| `host_tests` | 4 |
+| `host_tooling` | 16 |
+| `production_source` | 6 |
+| `promoted_model` | 4 |
+| `qemu_tooling` | 7 |
+| `repo_config` | 3 |
+| `runtime_evidence` | 155 |
+| `speed_release_model` | 8 |
 
-The current diff is structurally defensible as a release replacement, but it is
-not eligible for automatic guard-diff clearance. Before final release signoff,
-do one of the following:
+## Guard Diff Detail
 
-1. Split into reviewable commits:
-   - DOS compatibility/core helpers.
-   - GPT2-BASIC fixed-point runtime and file format support.
-   - Tokenizer modes and output mask contract.
-   - Host training/evaluation/export tooling.
-   - Model artifacts, QEMU evidence, and `.icc` release policy.
-2. Or explicitly accept a single large replacement commit with this audit,
-   compile/vector/quality evidence, and ICC readiness attached.
+| Area | Files | Added | Modified | Deleted | Untracked | +/- Lines | Policy Del | Samples |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `qemu` | 162 | 0 | 23 | 0 | 139 | +8407 | 272 | `qemu/README.md`, `qemu/evidence/architecture_codebase_audit.md`, `qemu/evidence/architecture_profile_sweep_probe.log`, `qemu/evidence/compile_main_486.log` |
+| `assets` | 16 | 0 | 7 | 0 | 9 | +52 | 69 | `assets/gpt2_basic/MODEL/GPT2FX.BIN`, `assets/gpt2_basic/MODEL/GPT2VEC.TXT`, `assets/gpt2_basic/MODEL/GPT2WT.BIN`, `assets/gpt2_basic/MODEL/VOCAB.BIN` |
+| `scripts` | 16 | 0 | 5 | 0 | 11 | +3351 | 22 | `scripts/architecture_profile_sweep.py`, `scripts/evaluate_gpt2_basic_quality.py`, `scripts/export_gpt2_basic_vectors.py`, `scripts/model_report.py` |
+| `repo-root` | 9 | 0 | 9 | 0 | 0 | +234 | 28 | `README.md`, `gpt2_basic_documentation.md`, `gpt2_basic_tldr.md`, `implementation_guide.md` |
+| `src` | 6 | 0 | 4 | 0 | 2 | +1372 | 9 | `src/asm_optimizations.bas`, `src/block_sparse.bas`, `src/memory_manager.bas`, `src/real_gpt.bas` |
+| `data` | 2 | 0 | 0 | 0 | 2 | +828 | 0 | `data/domain_curriculum/cache_repair_focus_v1.txt`, `data/domain_curriculum/gold_curriculum_v5_clean_repair.txt` |
+| `repo-oracle-config` | 2 | 0 | 2 | 0 | 0 | +96 | 2 | `.icc/completion-oracles.json`, `.icc/production-audit.json` |
+| `.github` | 1 | 0 | 0 | 0 | 1 | +0 | 0 | `.github/` |
+| `codebase-tool-tests` | 1 | 0 | 0 | 0 | 1 | +0 | 0 | `tests/` |
+| `docs` | 1 | 0 | 0 | 0 | 1 | +0 | 0 | `docs/` |
 
-Do not suppress `guard_diff`; it is correctly reporting the size of the
-uncommitted release change.
+| Path | Raw Deleted | Moved Discount | Policy Deleted |
+|---|---:|---:|---:|
+| `qemu/evidence/release_diff_audit.md` | 109 | 4 | 105 |
+| `assets/gpt2_basic/MODEL/GPT2VEC.TXT` | 42 | 0 | 42 |
+| `qemu/evidence/quality_486.log` | 129 | 95 | 34 |
+| `qemu/evidence/architecture_codebase_audit.md` | 26 | 0 | 26 |
+| `qemu/evidence/profile_pareto_report.md` | 17 | 0 | 17 |
+| `README.md` | 15 | 0 | 15 |
+| `assets/gpt2_basic/MODEL_SUBWORD512_PROTO/quality_heldout.md` | 14 | 0 | 14 |
+| `assets/gpt2_basic/MODEL_SUBWORD512_PROTO/quality_runtime.md` | 14 | 1 | 13 |
+| `qemu/README.md` | 13 | 0 | 13 |
+| `qemu/evidence/icc_readiness.md` | 22 | 9 | 13 |
+
+## Feature Map Detail
+
+| Surface | Role | Files | Lines | Promotions |
+|---|---|---:|---:|---:|
+| `scripts/train_tiny_gpt.py` | `tooling_surface` | 1 | 1076 | 0 |
+| `scripts/evaluate_gpt2_basic_quality.py` | `tooling_surface` | 1 | 684 | 0 |
+| `scripts/train_subword_prototype.py` | `tooling_surface` | 1 | 486 | 0 |
+| `scripts/build_preview_release.py` | `tooling_surface` | 1 | 416 | 0 |
+| `scripts/train_assistant_pack_models.py` | `tooling_surface` | 1 | 702 | 0 |
+| `scripts/architecture_profile_sweep.py` | `tooling_surface` | 1 | 449 | 0 |
+| `scripts/plan_model_quality_repairs.py` | `tooling_surface` | 1 | 212 | 0 |
+| `src/real_gpt.bas` | `product_surface` | 1 | 3485 | 0 |
+| `scripts/model_report.py` | `tooling_surface` | 1 | 536 | 0 |
+| `scripts/audit_exported_models.py` | `tooling_surface` | 1 | 358 | 0 |
+
+| Cluster | Role | Files | Lines | Prefixes | Promotions |
+|---:|---|---:|---:|---|---:|
+| 10 | `docs_surface` | 546 | 95467 | `qemu`, `assets`, `data`, `memory-bank` | 0 |
+| 4 | `product_surface` | 18 | 17866 | `src` | 0 |
+| 8 | `tooling_surface` | 33 | 12755 | `scripts`, `qemu` | 0 |
+| 2 | `docs_surface` | 2 | 3867 | `README.md`, `gpt2_basic_documentation.md` | 0 |
+| 7 | `docs_surface` | 3 | 1844 | `implementation_guide.md`, `memory_management_design.md`, `src` | 0 |
+| 6 | `mixed_surface` | 12 | 1038 | `qemu`, `to_latex.sh` | 0 |
+| 11 | `docs_surface` | 1 | 1022 | `qemu` | 0 |
+| 9 | `product_surface` | 1 | 931 | `src` | 0 |
+| 0 | `tooling_surface` | 1 | 684 | `scripts` | 0 |
+| 5 | `mixed_surface` | 2 | 411 | `assets`, `data` | 0 |
+
+## Recommended Commands
+- `python3 scripts/codebase_tool.py index --repo gpt2_basic --base-sha 75dd0969ba4e24a51788b0866e5b13dd8996ac07`
+- `python3 scripts/codebase_tool.py build-memory --repo gpt2_basic`
+- `python3 scripts/codebase_tool.py build-git-history --repo gpt2_basic`

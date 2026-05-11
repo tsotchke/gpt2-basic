@@ -1,0 +1,14 @@
+GPT2-BASIC model export
+profile=486dx2-usable
+vocab_size=4096
+n_positions=192
+n_embd=64
+n_head=4
+n_layer=3
+hidden_dim=256
+weights=GPT2WT.BIN
+fixed_weights=GPT2FX.BIN
+exp_table=GPT2EXP.BIN
+tokenizer=lexicon
+tokenizer_merges=0
+tokenizer_output_allowed=3934

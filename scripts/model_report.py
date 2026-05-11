@@ -19,6 +19,9 @@ TOKEN_Q4_MAGIC = 0x34515447
 HEAD_Q4_VERSION = 1
 TOKEN_Q4_VERSION = 1
 HEAD_Q4_STREAM_MARKER = "GPT2HQS.ON"
+HEAD_SHORTLIST_FILE = "GPT2HSL.BIN"
+HEAD_SHORTLIST_MAGIC = 0x314C5348
+HEAD_SHORTLIST_VERSION = 1
 
 
 def resolve_file(model_dir: Path, primary_name: str, legacy_name: str) -> Path:
@@ -167,6 +170,49 @@ def validate_head_q4_stream_marker(model_dir: Path, profile: dict[str, str]) -> 
     if profile.get("head_streaming") not in {"", None, "q4-log-disk-row"}:
         raise ValueError(f"PROFILE.TXT has unsupported head_streaming={profile.get('head_streaming')!r}")
     return "OK q4-log output head streamed from GPT2HQ4.BIN rows"
+
+
+def validate_head_shortlist(path: Path, cfg: dict[str, str]) -> str:
+    if not path.exists():
+        return "absent optional output-head shortlist"
+    data = path.read_bytes()
+    if len(data) < 16:
+        raise ValueError(f"{path} is too small for head-shortlist header")
+    if (len(data) - 16) % 4 != 0:
+        raise ValueError(f"{path} payload is not a whole number of int32 values")
+    magic, version, vocab_size, count = struct.unpack("<iiii", data[:16])
+    if magic != HEAD_SHORTLIST_MAGIC:
+        raise ValueError(f"{path} has wrong magic {magic}")
+    if version != HEAD_SHORTLIST_VERSION:
+        raise ValueError(f"{path} has unsupported version {version}")
+    expected_vocab = require_int(cfg, "vocab_size")
+    if vocab_size != expected_vocab:
+        raise ValueError(f"{path} vocab_size={vocab_size}, expected {expected_vocab}")
+    if count < 1 or count > expected_vocab:
+        raise ValueError(f"{path} count={count}, expected 1..{expected_vocab}")
+    expected_size = 16 + count * 4
+    if len(data) != expected_size:
+        raise ValueError(f"{path} is {len(data)} bytes, expected {expected_size}")
+    tokens = list(struct.unpack("<" + "i" * count, data[16:]))
+    if len(set(tokens)) != len(tokens):
+        raise ValueError(f"{path} contains duplicate token ids")
+    for token in tokens:
+        if token < 0 or token >= expected_vocab:
+            raise ValueError(f"{path} token {token} outside vocabulary")
+    return f"OK output-head shortlist tokens={count} ({len(data)} bytes)"
+
+
+def validate_optional_artifact_compatibility(
+    head_shortlist_status: str,
+    head_q4_status: str,
+    head_q4_stream_status: str,
+) -> None:
+    if not head_shortlist_status.startswith("OK"):
+        return
+    if head_q4_status.startswith("OK"):
+        raise ValueError("GPT2HSL.BIN cannot be staged with GPT2HQ4.BIN; DOS would use the q4 head path")
+    if head_q4_stream_status.startswith("OK"):
+        raise ValueError("GPT2HSL.BIN cannot be staged with GPT2HQS.ON; DOS would stream the q4 head path")
 
 
 def validate_profile(path: Path, cfg: dict[str, str]) -> dict[str, str]:
@@ -358,6 +404,19 @@ def self_test(model_dir: Path, strict: bool) -> None:
     head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
     token_q4_status = validate_token_q4(model_dir / "GPT2TQ4.BIN", cfg)
     head_q4_stream_status = validate_head_q4_stream_marker(model_dir, profile)
+    head_shortlist_status = validate_head_shortlist(model_dir / HEAD_SHORTLIST_FILE, cfg)
+    validate_optional_artifact_compatibility(head_shortlist_status, head_q4_status, head_q4_stream_status)
+    compatibility_rejected = 0
+    try:
+        validate_optional_artifact_compatibility(
+            "OK output-head shortlist tokens=1 (20 bytes)",
+            "OK q4-log values=1 packed=1 original_i32=4",
+            "absent optional q4 output-head streaming marker",
+        )
+    except ValueError:
+        compatibility_rejected = 1
+    if compatibility_rejected == 0:
+        raise AssertionError("validate_optional_artifact_compatibility accepted conflicting head artifacts")
     alias = validate_optional_alias(model_dir, "GPT2FX.BIN", "TINYFX.BIN", expected_weight_bytes)
     status = named_artifact_status(model_dir, "GPT2CFG.TXT", "TINYCFG.TXT")
     line = artifact_line("GPT2CFG.TXT", status)
@@ -373,6 +432,8 @@ def self_test(model_dir: Path, strict: bool) -> None:
     print(f"PROBE_OK validate_head_q4 status={head_q4_status}")
     print(f"PROBE_OK validate_token_q4 status={token_q4_status}")
     print(f"PROBE_OK validate_head_q4_stream_marker status={head_q4_stream_status}")
+    print(f"PROBE_OK validate_head_shortlist status={head_shortlist_status}")
+    print(f"PROBE_OK validate_optional_artifact_compatibility rejected={compatibility_rejected}")
     print(f"PROBE_OK validate_vector_file vectors={vectors[0]} phases={vectors[2]}")
     print(f"PROBE_OK validate_optional_alias status={alias}")
     print(f"PROBE_OK named_artifact_status status={status}")
@@ -415,6 +476,8 @@ def main() -> None:
     head_q4_status = validate_head_q4(model_dir / "GPT2HQ4.BIN", cfg)
     token_q4_status = validate_token_q4(model_dir / "GPT2TQ4.BIN", cfg)
     head_q4_stream_status = validate_head_q4_stream_marker(model_dir, profile_metadata)
+    head_shortlist_status = validate_head_shortlist(model_dir / HEAD_SHORTLIST_FILE, cfg)
+    validate_optional_artifact_compatibility(head_shortlist_status, head_q4_status, head_q4_stream_status)
     vector_path = optional_artifact(model_dir, "GPT2VEC.TXT")
     vector_count, vector_expected_count, phase_count, phase_expected_count = validate_vector_file(vector_path, cfg)
 
@@ -454,6 +517,7 @@ def main() -> None:
     print(artifact_line("GPT2TQ4.BIN", token_q4_status))
     print(artifact_line("GPT2HQ4.BIN", head_q4_status))
     print(artifact_line(HEAD_Q4_STREAM_MARKER, head_q4_stream_status))
+    print(artifact_line(HEAD_SHORTLIST_FILE, head_shortlist_status))
     if vector_path.exists():
         print(
             artifact_line(

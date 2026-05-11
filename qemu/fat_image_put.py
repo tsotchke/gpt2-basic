@@ -343,9 +343,19 @@ def self_test() -> None:
             image.resolve_parent("ICC/TST")
             tree_source = tmp_path / "tree"
             tree_source.mkdir()
-            (tree_source / "A.TXT").write_bytes(b"tree probe")
+            (tree_source / "old.tmp").write_bytes(b"tree probe")
             put_tree(image, tree_source, "TREE")
-            assert image.read_file("TREE/A.TXT") == b"tree probe"
+            assert image.read_file("TREE/old.tmp") == b"tree probe"
+            (tree_source / "old.tmp").unlink()
+            (tree_source / "new.tmp").write_bytes(b"replacement probe")
+            put_tree(image, tree_source, "TREE")
+            assert image.read_file("TREE/new.tmp") == b"replacement probe"
+            try:
+                image.read_file("TREE/old.tmp")
+            except FileNotFoundError:
+                pass
+            else:
+                raise AssertionError("put_tree left stale file in replacement directory")
         finally:
             image.close()
     print("trace_scope fat_image_contract")

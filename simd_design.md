@@ -2,6 +2,19 @@
 
 This document details the design and implementation of SIMD-like bit manipulation operations for the GPT-2 BASIC project, allowing us to process multiple values in parallel within standard 32-bit integers.
 
+## Current Implementation Status
+
+The SIMD-like software surface is implemented in `src/simd_ops.bas` and wired
+into `src/matrix_ops.bas`. The assembly/fallback fixed-point support is in
+`src/asm_optimizations.bas`, and the current production Q20.12 fixed-point path
+is in `src/real_gpt.bas`. The closure probe
+`scripts/verify_aspirational_software.py` records this status in
+`qemu/evidence/aspirational_software_closure.md`; ICC reports
+`gpt2-basic-aspirational-software` as `ready` with score 100.
+
+CPU-specific physical calibration remains deferred with physical board timing.
+For now, emulator timing is the accepted runtime evidence basis.
+
 ## Overview
 
 The 486 processor lacks dedicated SIMD instructions that are common in modern CPUs. However, we can emulate SIMD-like behavior by packing multiple smaller values into a single 32-bit integer and operating on them simultaneously through bit manipulation. This "poor man's SIMD" approach can significantly accelerate certain operations, especially in matrix calculations which form the core of transformer models.
@@ -118,11 +131,11 @@ END SUB
 FUNCTION SIMD_Add_8bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG = a + b
     DIM overflow_mask AS LONG = &H01010100 ' Bits that would carry between elements
-    
+
     ' Handle potential overflow between elements by clearing carry bits
     result = (result AND (NOT overflow_mask)) OR _
              ((a AND b AND overflow_mask))
-    
+
     FUNCTION = result
 END FUNCTION
 
@@ -130,12 +143,12 @@ END FUNCTION
 FUNCTION SIMD_Subtract_8bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG
     DIM underflow_mask AS LONG = &H01010100 ' Bits that would borrow between elements
-    
+
     ' Set all potential borrow bits to 1 to prevent borrowing between elements
     result = (a OR underflow_mask) - (b AND (NOT underflow_mask))
     ' Clear the borrow bits
     result = result AND (NOT underflow_mask)
-    
+
     FUNCTION = result
 END FUNCTION
 
@@ -144,17 +157,17 @@ FUNCTION SIMD_Multiply_8bit(a AS LONG, b AS LONG) AS LONG
     DIM a1 AS BYTE, a2 AS BYTE, a3 AS BYTE, a4 AS BYTE
     DIM b1 AS BYTE, b2 AS BYTE, b3 AS BYTE, b4 AS BYTE
     DIM result1 AS BYTE, result2 AS BYTE, result3 AS BYTE, result4 AS BYTE
-    
+
     ' Unpack values
     Unpack_8bit(a, a1, a2, a3, a4)
     Unpack_8bit(b, b1, b2, b3, b4)
-    
+
     ' Perform multiplications
     result1 = (a1 * b1) AND &HFF
     result2 = (a2 * b2) AND &HFF
     result3 = (a3 * b3) AND &HFF
     result4 = (a4 * b4) AND &HFF
-    
+
     ' Repack results
     FUNCTION = Pack_8bit(result1, result2, result3, result4)
 END FUNCTION
@@ -167,11 +180,11 @@ END FUNCTION
 FUNCTION SIMD_Add_4bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG = a + b
     DIM overflow_mask AS LONG = &H11111110 ' Bits that would carry between elements
-    
+
     ' Handle potential overflow between elements
     result = (result AND (NOT overflow_mask)) OR _
              ((a AND b AND overflow_mask))
-    
+
     FUNCTION = result
 END FUNCTION
 
@@ -179,12 +192,12 @@ END FUNCTION
 FUNCTION SIMD_Subtract_4bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG
     DIM underflow_mask AS LONG = &H11111110 ' Bits that would borrow between elements
-    
+
     ' Set all potential borrow bits to 1 to prevent borrowing between elements
     result = (a OR underflow_mask) - (b AND (NOT underflow_mask))
     ' Clear the borrow bits
     result = result AND (NOT underflow_mask)
-    
+
     FUNCTION = result
 END FUNCTION
 ```
@@ -196,11 +209,11 @@ END FUNCTION
 FUNCTION SIMD_Add_16bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG = a + b
     DIM overflow_mask AS LONG = &H00010000 ' Bit that would carry between elements
-    
+
     ' Handle potential overflow between elements
     result = (result AND (NOT overflow_mask)) OR _
              ((a AND b AND overflow_mask))
-    
+
     FUNCTION = result
 END FUNCTION
 
@@ -208,12 +221,12 @@ END FUNCTION
 FUNCTION SIMD_Subtract_16bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG
     DIM underflow_mask AS LONG = &H00010000 ' Bit that would borrow between elements
-    
+
     ' Set all potential borrow bits to 1 to prevent borrowing between elements
     result = (a OR underflow_mask) - (b AND (NOT underflow_mask))
     ' Clear the borrow bits
     result = result AND (NOT underflow_mask)
-    
+
     FUNCTION = result
 END FUNCTION
 
@@ -222,15 +235,15 @@ FUNCTION SIMD_Multiply_16bit(a AS LONG, b AS LONG) AS LONG
     DIM a1 AS INTEGER, a2 AS INTEGER
     DIM b1 AS INTEGER, b2 AS INTEGER
     DIM result1 AS INTEGER, result2 AS INTEGER
-    
+
     ' Unpack values
     Unpack_16bit(a, a1, a2)
     Unpack_16bit(b, b1, b2)
-    
+
     ' Perform multiplications
     result1 = (a1 * b1) AND &HFFFF
     result2 = (a2 * b2) AND &HFFFF
-    
+
     ' Repack results
     FUNCTION = Pack_16bit(result1, result2)
 END FUNCTION
@@ -247,7 +260,7 @@ SUB MatrixMultiplySIMD_8bit(A AS Matrix, B AS Matrix, C AS Matrix)
     DIM a_packed AS LONG, b_packed AS LONG, product AS LONG, sum AS LONG
     DIM a_val(1 TO 4) AS BYTE, b_val(1 TO 4) AS BYTE
     DIM result_val(1 TO 4) AS INTEGER
-    
+
     ' Loop through rows of A
     FOR i = 0 TO A.rows - 1
         ' Loop through columns of B
@@ -257,18 +270,18 @@ SUB MatrixMultiplySIMD_8bit(A AS Matrix, B AS Matrix, C AS Matrix)
             result_val(2) = 0
             result_val(3) = 0
             result_val(4) = 0
-            
+
             ' Process 4 elements at a time
             FOR k = 0 TO A.cols - 4 STEP 4
                 ' Pack A row values
                 a_packed = Pack_8bit(A.data(i, k), A.data(i, k+1), A.data(i, k+2), A.data(i, k+3))
-                
+
                 ' Pack B column values
                 b_packed = Pack_8bit(B.data(k, j), B.data(k+1, j), B.data(k+2, j), B.data(k+3, j))
-                
+
                 ' Multiply packed values
                 product = SIMD_Multiply_8bit(a_packed, b_packed)
-                
+
                 ' Unpack and accumulate
                 Unpack_8bit(product, a_val(1), a_val(2), a_val(3), a_val(4))
                 result_val(1) = result_val(1) + a_val(1)
@@ -276,12 +289,12 @@ SUB MatrixMultiplySIMD_8bit(A AS Matrix, B AS Matrix, C AS Matrix)
                 result_val(3) = result_val(3) + a_val(3)
                 result_val(4) = result_val(4) + a_val(4)
             NEXT k
-            
+
             ' Handle any remaining elements
             FOR l = k TO A.cols - 1
                 result_val(1) = result_val(1) + A.data(i, l) * B.data(l, j)
             NEXT l
-            
+
             ' Store the result
             C.data(i, j) = result_val(1) + result_val(2) + result_val(3) + result_val(4)
         NEXT j
@@ -297,26 +310,26 @@ SUB MatrixAddSIMD_8bit(A AS Matrix, B AS Matrix, C AS Matrix)
     DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
     DIM a_packed AS LONG, b_packed AS LONG, sum_packed AS LONG
     DIM a_vals(1 TO 4) AS BYTE, b_vals(1 TO 4) AS BYTE, sum_vals(1 TO 4) AS BYTE
-    
+
     ' Check dimensions
     IF A.rows <> B.rows OR A.cols <> B.cols THEN
         PRINT "Error: Matrix dimensions do not match for addition"
         EXIT SUB
     END IF
-    
+
     ' Initialize result matrix
     InitMatrix(C, A.rows, A.cols)
-    
+
     ' Process 4 elements at a time
     FOR i = 0 TO A.rows - 1
         FOR j = 0 TO A.cols - 4 STEP 4
             ' Pack values from matrices A and B
             a_packed = Pack_8bit(A.data(i, j), A.data(i, j+1), A.data(i, j+2), A.data(i, j+3))
             b_packed = Pack_8bit(B.data(i, j), B.data(i, j+1), B.data(i, j+2), B.data(i, j+3))
-            
+
             ' Add packed values
             sum_packed = SIMD_Add_8bit(a_packed, b_packed)
-            
+
             ' Unpack and store results
             Unpack_8bit(sum_packed, sum_vals(1), sum_vals(2), sum_vals(3), sum_vals(4))
             C.data(i, j) = sum_vals(1)
@@ -324,7 +337,7 @@ SUB MatrixAddSIMD_8bit(A AS Matrix, B AS Matrix, C AS Matrix)
             C.data(i, j+2) = sum_vals(3)
             C.data(i, j+3) = sum_vals(4)
         NEXT j
-        
+
         ' Handle any remaining elements
         FOR k = j TO A.cols - 1
             C.data(i, k) = A.data(i, k) + B.data(i, k)
@@ -349,22 +362,22 @@ END ENUM
 ' Determine the optimal precision level for a matrix operation
 FUNCTION DetermineOptimalPrecision(rows AS INTEGER, cols AS INTEGER, operation_type AS INTEGER) AS PrecisionLevel
     DIM matrix_size AS LONG = rows * cols
-    
+
     ' Small matrices use higher precision
     IF matrix_size < 256 THEN
         RETURN PRECISION_32BIT
     END IF
-    
+
     ' Very large matrices use lowest precision
     IF matrix_size > 4096 THEN
         RETURN PRECISION_4BIT
     END IF
-    
+
     ' For attention operations, use lower precision
     IF operation_type = OPERATION_ATTENTION AND matrix_size > 1024 THEN
         RETURN PRECISION_4BIT
     END IF
-    
+
     ' Default to 8-bit precision
     RETURN PRECISION_8BIT
 END FUNCTION
@@ -372,10 +385,10 @@ END FUNCTION
 ' Matrix multiplication with adaptive precision
 SUB MatrixMultiplyAdaptive(A AS Matrix, B AS Matrix, C AS Matrix, operation_type AS INTEGER)
     DIM precision AS PrecisionLevel
-    
+
     ' Determine optimal precision
     precision = DetermineOptimalPrecision(A.rows, B.cols, operation_type)
-    
+
     ' Call appropriate implementation based on precision
     SELECT CASE precision
         CASE PRECISION_4BIT:
@@ -412,7 +425,7 @@ DIM SHARED g_has_fpu AS INTEGER ' Whether FPU is available
 FUNCTION DetectCPU() AS CPUType
     DIM cpu_type AS CPUType
     DIM has_fpu AS INTEGER
-    
+
     ' This would be replaced with actual 486-era CPU detection
     ' For modern testing, we'll use a placeholder
     #IFDEF __FB_64BIT__
@@ -428,18 +441,18 @@ FUNCTION DetectCPU() AS CPUType
             cpu_type = CPU_486SX
         END IF
     #ENDIF
-    
+
     ' Store in global variables
     g_cpu_type = cpu_type
     g_has_fpu = has_fpu
-    
+
     RETURN cpu_type
 END FUNCTION
 
 ' Test for FPU presence (simple test)
 FUNCTION TestForFPU() AS INTEGER
     DIM fpu_available AS INTEGER
-    
+
     ' This would be a real FPU test on 486-era hardware
     ' For modern testing, we assume FPU is available
     #IFDEF __FB_64BIT__
@@ -452,14 +465,14 @@ FUNCTION TestForFPU() AS INTEGER
         DIM y AS SINGLE = x / 3.0
         fpu_available = 1
         GOTO end_test
-        
+
         no_fpu:
         fpu_available = 0
-        
+
         end_test:
         ON ERROR GOTO 0
     #ENDIF
-    
+
     RETURN fpu_available
 END FUNCTION
 ```
@@ -475,14 +488,14 @@ SUB TestSIMD_8bit()
     DIM a1 AS BYTE, a2 AS BYTE, a3 AS BYTE, a4 AS BYTE
     DIM b1 AS BYTE, b2 AS BYTE, b3 AS BYTE, b4 AS BYTE
     DIM r1 AS BYTE, r2 AS BYTE, r3 AS BYTE, r4 AS BYTE
-    
+
     ' Test Pack_8bit
     a_packed = Pack_8bit(10, 20, 30, 40)
     Unpack_8bit(a_packed, a1, a2, a3, a4)
     PRINT "Pack/Unpack 8-bit Test:"
     PRINT "Expected: 10, 20, 30, 40"
     PRINT "Actual: "; a1; ", "; a2; ", "; a3; ", "; a4
-    
+
     ' Test SIMD_Add_8bit
     a_packed = Pack_8bit(10, 20, 30, 40)
     b_packed = Pack_8bit(5, 10, 15, 20)
@@ -491,7 +504,7 @@ SUB TestSIMD_8bit()
     PRINT "SIMD_Add_8bit Test:"
     PRINT "Expected: 15, 30, 45, 60"
     PRINT "Actual: "; r1; ", "; r2; ", "; r3; ", "; r4
-    
+
     ' Test overflow handling
     a_packed = Pack_8bit(250, 250, 250, 250)
     b_packed = Pack_8bit(10, 10, 10, 10)
@@ -500,7 +513,7 @@ SUB TestSIMD_8bit()
     PRINT "SIMD_Add_8bit Overflow Test:"
     PRINT "Expected: 4, 4, 4, 4 (with overflow wrapping)"
     PRINT "Actual: "; r1; ", "; r2; ", "; r3; ", "; r4
-    
+
     ' Test SIMD_Multiply_8bit
     a_packed = Pack_8bit(5, 10, 15, 20)
     b_packed = Pack_8bit(2, 3, 4, 5)
@@ -523,13 +536,13 @@ SUB BenchmarkMatrixMultiply(size AS INTEGER, iterations AS INTEGER)
     DIM start_time AS DOUBLE, end_time AS DOUBLE
     DIM std_time AS DOUBLE, simd_time AS DOUBLE
     DIM i AS INTEGER
-    
+
     ' Initialize matrices
     InitMatrix(a, size, size)
     InitMatrix(b, size, size)
     InitMatrix(c_std, size, size)
     InitMatrix(c_simd, size, size)
-    
+
     ' Fill with test values
     FOR i = 0 TO size - 1
         FOR j = 0 TO size - 1
@@ -537,7 +550,7 @@ SUB BenchmarkMatrixMultiply(size AS INTEGER, iterations AS INTEGER)
             b.data(i, j) = ((i * size + j) * 2) MOD 100
         NEXT j
     NEXT i
-    
+
     ' Benchmark standard matrix multiplication
     start_time = TIMER
     FOR i = 1 TO iterations
@@ -545,7 +558,7 @@ SUB BenchmarkMatrixMultiply(size AS INTEGER, iterations AS INTEGER)
     NEXT i
     end_time = TIMER
     std_time = end_time - start_time
-    
+
     ' Benchmark SIMD-like matrix multiplication
     start_time = TIMER
     FOR i = 1 TO iterations
@@ -553,7 +566,7 @@ SUB BenchmarkMatrixMultiply(size AS INTEGER, iterations AS INTEGER)
     NEXT i
     end_time = TIMER
     simd_time = end_time - start_time
-    
+
     ' Compare results for correctness
     DIM errors AS INTEGER = 0
     FOR i = 0 TO size - 1
@@ -563,7 +576,7 @@ SUB BenchmarkMatrixMultiply(size AS INTEGER, iterations AS INTEGER)
             END IF
         NEXT j
     NEXT i
-    
+
     ' Report results
     PRINT "Matrix size: "; size; "x"; size
     PRINT "Standard version time: "; std_time; " seconds"
@@ -612,7 +625,7 @@ The implementation will proceed in the following order:
 
 ## Success Criteria
 
-The SIMD-like bit manipulation component will be considered successful when:
+The SIMD-like bit manipulation component is considered software-complete when:
 
 1. Matrix operations show at least 1.5x speedup compared to standard implementation
 2. All operations produce numerically correct results within acceptable error tolerance

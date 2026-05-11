@@ -14,10 +14,18 @@ Scope: current `gpt2-basic` workspace, ICC repo `gpt2_basic`, target `gpt2-basic
 | Completion oracle | complete |
 | Runtime evidence | present |
 | Readiness score | 100 |
+| Aspirational software readiness | ready, score 100 |
 | Source drift | false |
 | Main blind spot | BASIC files indexed as text, so ICC cannot prove BASIC function structure |
 
 ICC confirms that the current evidence directory contains compile, vector, quality, run, perf, tokenizer, training-helper, FAT image, and profile-Pareto artifacts. After adding focused probe logs for the host helpers, ICC reports no contract gaps, no liveness actions, and no unmarked stubbed production paths.
+
+ICC also confirms the formerly aspirational software target
+`gpt2-basic-aspirational-software`: `ready`, score 100, zero contract gaps, and
+zero stub/fallback blockers. The closure probe is
+`scripts/verify_aspirational_software.py`; evidence is stored in
+`qemu/evidence/aspirational_software_closure.md` and
+`qemu/evidence/aspirational_software_closure.json`.
 
 ICC index-quality also flags all large BASIC sources as symbol blind spots, including `src/real_gpt.bas`, `src/main.bas`, `src/matrix_ops.bas`, `src/simd_ops.bas`, and `src/memory_manager.bas`. Manual BASIC audit is therefore required for production claims.
 
@@ -34,6 +42,13 @@ older baseline rows below. The release state is:
 - Default DOS runtime memory: 2,055,940 bytes.
 - Default QEMU 486DX2/66 perf: 2.45 tok/s.
 - Default DOS all-suite quality: 10/10 average 0.961.
+- Optional speed release mode: `MODEL_HEADSHORTLIST2048_PROD_PROBE` with
+  `GPT2HSL.BIN`, a 2,048-row output-head shortlist.
+- Head-shortlist mode DOS runtime memory: 2,064,148 bytes.
+- Head-shortlist mode QEMU 486DX2/66 kernel perf: 3.35 tok/s, with final-head
+  time reduced from 30.75 s to 17.93 s.
+- Head-shortlist mode vector parity: 3/3 vectors, 39/39 phases,
+  `VECTOR_CHECK_OK`, including masked-logit probe indexes.
 - Optional compressed release mode: `MODEL_TOKHEADQ4_PROD_PROBE` with
   `GPT2TQ4.BIN` q4/log token-embedding artifact and `GPT2HQ4.BIN` q4/log
   output-head artifact.
@@ -48,7 +63,7 @@ older baseline rows below. The release state is:
   `VECTOR_CHECK_OK`.
 - Production entrypoint: `src/main_prod.bas`, staged as `GPT2SRC\MAIN.BAS`.
   The old combined driver is staged separately as `LABMAIN.BAS`.
-- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 307,712 bytes.
+- Slim production executable: `COMPILE_OK`, `GPT2.EXE` 309,760 bytes.
 - Educational trace mode: `GPT2.EXE --trace`, launched by
   `qemu/run_trace_486.sh`, emits prompt-token and generation-step `TRACE_*`
   records from the real DOS fixed-point runtime.
@@ -59,8 +74,13 @@ older baseline rows below. The release state is:
   44.00 seconds, 2.45 tok/s.
 - Kernel timing mode: `GPT2.EXE --kernel-perf`, emitted through
   `qemu/run_perf_486.sh ... kernel`.
-- Current kernel hot spot: the 4096-token final output head accounts for about
-  73.7% of measured decode time on the QEMU 486DX2/66 profile.
+- Formerly aspirational software surfaces are source-verified: memory tracker,
+  matrix pool, parameter streaming, block-sparse attention, SIMD-like packed
+  operations, assembly/fallback fixed point, production Q20.12 fixed point, and
+  benchmark/emulator evidence hooks.
+- Current kernel hot spot in the full-head baseline: the 4096-token final
+  output head accounts for about 73.7% of measured decode time on the QEMU
+  486DX2/66 profile. The head-shortlist variant is now the measured mitigation.
 - Fixed decode now has rolling-window continuation after the exported context
   window, and interactive fixed-point sampling supports temperature, top-k, and
   top-p. Evidence runs keep temperature 0 for deterministic parity.
@@ -88,7 +108,7 @@ This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L
 
 | Evidence | Result |
 |---|---|
-| DOS compile | `COMPILE_OK`, `GPT2.EXE` 307,712 bytes |
+| DOS compile | `COMPILE_OK`, `GPT2.EXE` 309,760 bytes |
 | Vector parity | `VECTOR_SUMMARY passed 3 of 3`, `PHASE_SUMMARY passed 39 of 39`, `VECTOR_CHECK_OK` |
 | DOS quality suite | `PASS`, 10/10 prompts, average 0.961 |
 | Held-out DOS quality suite | `PASS`, 5/5 prompts, average 0.973 |
@@ -97,6 +117,7 @@ This is a real inference path. The current checkpoint is `486sx-safe`, shape `2L
 | QEMU `486dx2-66 --perf` | 35-token `real_inference`: 14.12 s, 2.48 tok/s |
 | QEMU `486dx2-66 --perf` full suite | 108 tokens in 44.00 s, 2.45 tok/s |
 | QEMU `486dx2-66 --kernel-perf` | final output head: 30.75 s, 73.7% of measured kernel time |
+| QEMU head-shortlist variant | 106 tokens in 31.64 s, 3.35 tok/s; final head 17.93 s |
 
 The new `--perf` contract is a major improvement over host-side stopwatch claims because timing is emitted by the DOS executable itself. QEMU `-icount` remains emulator evidence, not physical-board proof.
 
@@ -269,18 +290,19 @@ ICC readiness was reduced mainly because host helpers were not traced. Focused p
 Severity: resolved
 
 The documentation originally described step-by-step execution and teaching
-visualization as aspirational. The production executable now implements the
-portable text-mode half of that architecture through `GPT2.EXE --trace`.
-`qemu/run_trace_486.sh` boots the same FreeDOS image and active `C:\MODEL`
-checkpoint used by quality/perf evidence, captures `C:\TRACE.LOG`, and stores
-it as `qemu/evidence/trace_486.log`.
+visualization as aspirational. The production executable implements the
+portable text trace, and the optional lab `VISUAL.EXE` turns that trace into a
+small VGA visual trace. `GPT2.EXE --trace` captures the machine-readable text
+path; `VISUAL.EXE TRACE.LOG` switches to Mode 13h when available and draws
+token/progress bars while emitting `VISUAL_*` records. `qemu/run_trace_486.sh`
+and `qemu/run_visual_trace_486.sh` boot the same FreeDOS image and active
+`C:\MODEL` checkpoint used by quality/perf evidence.
 
-The trace log records model shape, tokenizer mode, prompt tokens, every
-forward/sample stage, every generated token, the decoded text, and the final
-context length. This gives an era-compatible teaching and audit surface without
-requiring VGA graphics. Attention heatmaps or Mode 13h displays can still be
-added as lab variants, but step-by-step inference inspection is no longer a
-future-only documentation claim.
+The trace logs record model shape, tokenizer mode, prompt tokens, every
+forward/sample stage, every generated token, the decoded text, final context
+length, graphics-mode availability, and visual token colors. This gives an
+era-compatible teaching and audit surface without making graphics mandatory for
+normal production inference.
 
 ## Architecture Direction
 
@@ -295,20 +317,33 @@ The current best architecture is not "larger model" by default. The current best
    - Q20.12 LONG baseline: simple and verified, but memory-heavy
    - int16 fixed weights: likely best next compromise
    - packed int8 or int4: memory win only if dequant overhead does not dominate 386/486 inner loops
-7. Prioritize output-head speed, because kernel timing shows it dominates the current 4096-token release.
+7. Keep output-head speed work evidence-driven; `GPT2HSL.BIN` is the first measured win, and smaller/larger shortlists need the same quality/vector/kernel gate.
 
 ## Immediate Next Work
 
-1. Prototype faster output-head scoring; the first streamed-head mode is implemented and proves the memory floor, but it is too slow to replace resident q4.
-2. Measure any faster output-head variant with kernel timing, not only aggregate perf.
-3. Broaden the product prompt suite beyond the current curated technical answers.
-4. Run at least one physical 486/Pentium timing pass using the same `GPT2.EXE --perf`, `GPT2.EXE --trace`, and `GPT2.EXE --sampling-matrix` contracts.
+1. Sweep shortlist sizes and selection objectives against host quality, DOS
+   vector parity with masked-logit probes, and QEMU kernel timing.
+2. Broaden the product prompt suite beyond the current curated technical
+   answers.
+3. Keep the physical 486/Pentium timing pass as a deferred hardware-validation
+   step using the same `GPT2.EXE --perf`, `GPT2.EXE --trace`, and
+   `GPT2.EXE --sampling-matrix` contracts. Emulator evidence is the accepted
+   gate until a board is available.
 
 ## Bottom Line
 
 The restored system is now honest about inference, has a slim production
-executable, passes the current DOS quality gates, and has a real DOS timing
-contract. The main architectural weakness is now performance concentration in
-the vocabulary-sized output head, plus the absence of physical-board timing.
-The next improvements should be faster output-head scoring, broader prompt
-coverage, and real-machine perf, not another unmeasured size increase.
+executable, passes the current DOS quality gates, has a real DOS timing
+contract, and has ICC-verified closure for the formerly aspirational software
+subsystems. The new optional `ASSIST.EXE` surface starts the next product
+direction: a pack-driven Clippy-style assistant that can switch model paths,
+retrieve pack-local notes, expose structured action replies, and reserve
+sprite/icon assets without bloating `GPT2.EXE`. DOSHELP and OFFICE now have
+pack-local trained checkpoints with host model reports, short assistant-window
+quality reports, and FreeDOS evidence that `ASSIST.EXE` loads
+`PACKS\<ID>\MODEL`. The main architectural weakness is now choosing the right
+release variant for the user's memory/speed target and proving richer assistant
+packs. Physical-board timing remains a deferred validation step; emulator
+evidence is the accepted gate for current work. The next improvements should be
+a measured shortlist sweep, broader prompt coverage, and a real VGA/Windows/OS2
+shell over the pack format.

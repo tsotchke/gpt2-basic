@@ -14,6 +14,9 @@ from gpt2_basic_tokenizer import GPT2BasicTokenizer, load_tokenizer_for_model
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL = ROOT / "assets" / "gpt2_basic" / "MODEL"
 DEFAULT_OUTPUT_NAME = "GPT2VEC.TXT"
+HEAD_SHORTLIST_FILE = "GPT2HSL.BIN"
+HEAD_SHORTLIST_MAGIC = 0x314C5348
+HEAD_SHORTLIST_VERSION = 1
 FX_ONE = 4096
 FX_HALF = 2048
 FX_EXP_SIZE = 513
@@ -138,6 +141,36 @@ def read_weights(model_dir: Path, cfg: Config) -> FixedWeights:
     return weights
 
 
+def read_head_shortlist(model_dir: Path, cfg: Config) -> list[int] | None:
+    path = model_dir / HEAD_SHORTLIST_FILE
+    if not path.exists():
+        return None
+    data = path.read_bytes()
+    if len(data) < 16:
+        raise ValueError(f"{path} is too small for head-shortlist header")
+    if (len(data) - 16) % 4 != 0:
+        raise ValueError(f"{path} payload is not a whole number of int32 values")
+    magic, version, vocab_size, count = struct.unpack("<iiii", data[:16])
+    if magic != HEAD_SHORTLIST_MAGIC:
+        raise ValueError(f"{path} has wrong magic {magic}")
+    if version != HEAD_SHORTLIST_VERSION:
+        raise ValueError(f"{path} has unsupported version {version}")
+    if vocab_size != cfg.vocab_size:
+        raise ValueError(f"{path} vocab_size={vocab_size}, expected {cfg.vocab_size}")
+    if count < 1 or count > cfg.vocab_size:
+        raise ValueError(f"{path} count={count}, expected 1..{cfg.vocab_size}")
+    expected_size = 16 + count * 4
+    if len(data) != expected_size:
+        raise ValueError(f"{path} is {len(data)} bytes, expected {expected_size}")
+    tokens = list(struct.unpack("<" + "i" * count, data[16:]))
+    if len(set(tokens)) != len(tokens):
+        raise ValueError(f"{path} contains duplicate token ids")
+    for token in tokens:
+        if token < 0 or token >= cfg.vocab_size:
+            raise ValueError(f"{path} token {token} outside vocabulary")
+    return tokens
+
+
 def fb_idiv(a: int, b: int) -> int:
     if b == 0:
         raise ZeroDivisionError("fixed-point integer division by zero")
@@ -229,12 +262,39 @@ def linear_vec(input_vec: list[int], out_dim: int, weight: list[int], weight_bas
     return [clamp(value) for value in out]
 
 
+def head_linear_vec(
+    input_vec: list[int],
+    cfg: Config,
+    weights: FixedWeights,
+    head_shortlist: list[int] | None = None,
+) -> list[int]:
+    if head_shortlist is None:
+        return linear_vec(input_vec, cfg.vocab_size, weights.head_w, 0, weights.head_b, 0)
+
+    logits = [-FX_CLAMP] * cfg.vocab_size
+    for vocab_idx in head_shortlist:
+        value = weights.head_b[vocab_idx]
+        for emb_idx, input_value in enumerate(input_vec):
+            value += fx_mul(input_value, weights.head_w[emb_idx * cfg.vocab_size + vocab_idx])
+        logits[vocab_idx] = clamp(value)
+    return logits
+
+
 def encode_prompt(prompt: str, tokenizer: GPT2BasicTokenizer | None = None) -> list[int]:
     active_tokenizer = tokenizer or GPT2BasicTokenizer.byte()
     return active_tokenizer.encode(prompt)
 
 
 def forward_fixed_trace(cfg: Config, weights: FixedWeights, context: list[int]) -> tuple[list[int], dict[str, list[int]]]:
+    return forward_fixed_trace_with_head_shortlist(cfg, weights, context, None)
+
+
+def forward_fixed_trace_with_head_shortlist(
+    cfg: Config,
+    weights: FixedWeights,
+    context: list[int],
+    head_shortlist: list[int] | None = None,
+) -> tuple[list[int], dict[str, list[int]]]:
     if not context:
         raise ValueError("context must not be empty")
     active = context[-cfg.n_positions :]
@@ -330,12 +390,7 @@ def forward_fixed_trace(cfg: Config, weights: FixedWeights, context: list[int]) 
 
     norm_vec = layer_norm_vec(x_vec, weights.final_ln_w, weights.final_ln_b, 0)
     phases["final_ln"] = norm_vec.copy()
-    logits: list[int] = []
-    for vocab_idx in range(cfg.vocab_size):
-        value = weights.head_b[vocab_idx]
-        for emb_idx in range(emb_dim):
-            value += fx_mul(norm_vec[emb_idx], weights.head_w[emb_idx * cfg.vocab_size + vocab_idx])
-        logits.append(clamp(value))
+    logits = head_linear_vec(norm_vec, cfg, weights, head_shortlist)
     phases["logits"] = logits.copy()
     return logits, phases
 
@@ -351,14 +406,29 @@ def phase_pairs(values: list[int], count: int, indexes: list[int] | None = None)
     return ",".join(f"{idx}:{values[idx]}" for idx in indexes)
 
 
+def shortlist_probe_indexes(head_shortlist: list[int] | None, vocab_size: int, count: int) -> list[int]:
+    if head_shortlist is None:
+        return []
+    selected = set(head_shortlist)
+    probes: list[int] = []
+    for token_id in range(vocab_size):
+        if token_id not in selected:
+            probes.append(token_id)
+            if len(probes) >= count:
+                break
+    return probes
+
+
 def export_vectors(model_dir: Path, output: Path, prompts: list[str], top_k: int, phase_count: int) -> None:
     cfg = parse_config(model_dir / "GPT2CFG.TXT")
     tokenizer = load_tokenizer_for_model(model_dir, cfg.vocab_size)
     weights = read_weights(model_dir, cfg)
+    head_shortlist = read_head_shortlist(model_dir, cfg)
     lines = [
         "# GPT2-BASIC fixed-point parity vectors",
         f"# profile={cfg.profile}",
         f"# tokenizer={tokenizer.mode} vocab={tokenizer.vocab_size} merges={len(tokenizer.merges)}",
+        f"# head_shortlist={len(head_shortlist) if head_shortlist is not None else 'none'}",
         "# format: V|name|context_len|comma_tokens|top_count|token:logit,...",
         "# format: P|name|phase|dim|value_count|index:value,...",
     ]
@@ -379,8 +449,9 @@ def export_vectors(model_dir: Path, output: Path, prompts: list[str], top_k: int
     ]
     for prompt in prompts:
         tokens = encode_prompt(prompt, tokenizer)
-        logits, phases = forward_fixed_trace(cfg, weights, tokens)
+        logits, phases = forward_fixed_trace_with_head_shortlist(cfg, weights, tokens, head_shortlist)
         top = sorted(range(len(logits)), key=lambda idx: (-logits[idx], idx))[:top_k]
+        masked_probe_indexes = shortlist_probe_indexes(head_shortlist, cfg.vocab_size, min(phase_count, top_k))
         token_text = ",".join(str(token) for token in tokens)
         expected_text = ",".join(f"{idx}:{logits[idx]}" for idx in top)
         name = vector_name(prompt)
@@ -388,7 +459,7 @@ def export_vectors(model_dir: Path, output: Path, prompts: list[str], top_k: int
         for phase in phase_names:
             values = phases[phase]
             if phase == "logits":
-                indexes = top
+                indexes = top + [idx for idx in masked_probe_indexes if idx not in top]
             else:
                 indexes = None
             pairs = phase_pairs(values, phase_count, indexes)
@@ -402,23 +473,27 @@ def self_test(model_dir: Path) -> None:
     cfg = parse_config(model_dir / "GPT2CFG.TXT")
     tokenizer = load_tokenizer_for_model(model_dir, cfg.vocab_size)
     weights = read_weights(model_dir, cfg)
+    head_shortlist = read_head_shortlist(model_dir, cfg)
     fb_div_probe = fb_idiv(7, 3)
     clamp_probe = clamp(FX_CLAMP + 1)
     mul_probe = fx_mul(FX_ONE, FX_ONE)
     div_probe = fx_div(FX_ONE, FX_ONE)
     gelu_probe = fx_gelu(FX_ONE, weights.exp_table)
     linear_probe = linear_vec([FX_ONE], 1, [FX_ONE], 0, [0], 0)
+    head_probe = head_linear_vec([FX_ONE], Config("probe", 2, 1, 1, 1, 1, 1), FixedWeights([], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [FX_ONE, 0], [0, 1], [FX_ONE]), [1])
     tokens = encode_prompt("What makes this real inference?", tokenizer)
     sqrt_probe = fx_sqrt(FX_ONE)
     exp_probe = fx_exp_neg(-FX_ONE, weights.exp_table)
     tanh_probe = fx_tanh(FX_ONE, weights.exp_table)
     norm_probe = layer_norm_vec([FX_ONE] * cfg.n_embd, weights.final_ln_w, weights.final_ln_b, 0)
-    logits, phases = forward_fixed_trace(cfg, weights, tokens)
+    default_logits, _default_phases = forward_fixed_trace(cfg, weights, tokens)
+    logits, phases = forward_fixed_trace_with_head_shortlist(cfg, weights, tokens, head_shortlist)
     pairs = phase_pairs(phases["logits"], 4, sorted(range(len(logits)), key=lambda idx: (-logits[idx], idx))[:4])
     print(f"PROBE_OK parse_config profile={cfg.profile}")
     print(f"PROBE_OK tokenizer mode={tokenizer.mode} vocab={tokenizer.vocab_size} merges={len(tokenizer.merges)}")
     print("PROBE_OK unpack_i32 exercised_by=read_weights")
     print(f"PROBE_OK read_weights exp_table={len(weights.exp_table)}")
+    print(f"PROBE_OK read_head_shortlist count={len(head_shortlist) if head_shortlist is not None else 0}")
     print(f"PROBE_OK fb_idiv value={fb_div_probe}")
     print(f"PROBE_OK clamp value={clamp_probe}")
     print(f"PROBE_OK fx_mul value={mul_probe}")
@@ -429,9 +504,12 @@ def self_test(model_dir: Path) -> None:
     print(f"PROBE_OK fx_gelu value={gelu_probe}")
     print(f"PROBE_OK layer_norm_vec values={len(norm_probe)}")
     print(f"PROBE_OK linear_vec values={linear_probe[0]}")
+    print(f"PROBE_OK head_linear_vec value={head_probe[1]}")
     print(f"PROBE_OK encode_prompt tokens={len(tokens)}")
-    print(f"PROBE_OK forward_fixed_trace logits={len(logits)} phases={len(phases)}")
+    print(f"PROBE_OK forward_fixed_trace logits={len(default_logits)}")
+    print(f"PROBE_OK forward_fixed_trace_with_head_shortlist logits={len(logits)} phases={len(phases)}")
     print(f"PROBE_OK vector_name name={vector_name('What makes this real inference?')}")
+    print(f"PROBE_OK shortlist_probe_indexes count={len(shortlist_probe_indexes([0], 4, 2))}")
     print(f"PROBE_OK phase_pairs pairs={pairs}")
     print("PROBE_OK export_vectors callable=available")
     print("PROBE_OK self_test exercised=1")

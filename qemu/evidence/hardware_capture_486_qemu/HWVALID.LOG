@@ -1,0 +1,9 @@
+HW_CAPTURE_BEGIN
+Run this batch from the staged C:\GPT2 directory.
+
+FreeCom version 0.86 - WATCOMC - XMS_Swap [Dec 30 2024 22:10:51]
+HW_STEP|quality_all
+HW_STEP|perf
+HW_STEP|assist_compile
+HW_STEP|assistant
+HW_CAPTURE_END

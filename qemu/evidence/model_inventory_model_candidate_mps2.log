@@ -1,0 +1,25 @@
+model_dir: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_CANDIDATE_MPS2
+profile: 486sx-safe
+shape: layers=2 emb=48 heads=4 ctx=192 hidden=192 vocab=258
+parameters: 90882
+fixed_weight_bytes: 363528
+config: GPT2CFG.TXT
+fixed_weights: GPT2FX.BIN
+exp_table: GPT2EXP.BIN
+float_reference: GPT2WT.BIN
+profile_metadata: PROFILE.TXT
+artifact GPT2CFG.TXT: OK (132 bytes)
+artifact GPT2WT.BIN: OK (363528 bytes)
+artifact GPT2FX.BIN: OK (363528 bytes)
+artifact GPT2EXP.BIN: OK (2052 bytes)
+artifact PROFILE.TXT: OK profile=486sx-safe
+artifact VOCAB.BIN: absent optional byte-level tokenizer
+artifact GPT2TQ4.BIN: absent optional compressed token embedding
+artifact GPT2HQ4.BIN: absent optional compressed output head
+artifact GPT2HQS.ON: absent optional q4 output-head streaming marker
+artifact GPT2HSL.BIN: absent optional output-head shortlist
+artifact TINYCFG.TXT: absent optional legacy alias
+artifact TINYWT.BIN: absent optional legacy alias
+artifact TINYFX.BIN: absent optional legacy alias
+artifact TINYEXP.BIN: absent optional legacy alias
+status: OK

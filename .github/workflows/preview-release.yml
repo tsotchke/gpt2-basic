@@ -1,0 +1,95 @@
+name: Preview Release
+
+on:
+  push:
+    branches:
+      - master
+      - "release/**"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  host-gates:
+    name: Host release gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python runtime dependency
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Compile Python tooling
+        run: |
+          python -m py_compile \
+            scripts/audit_exported_models.py \
+            scripts/build_hardware_transfer.py \
+            scripts/build_preview_release.py \
+            scripts/evaluate_gpt2_basic_quality.py \
+            scripts/model_report.py \
+            scripts/train_assistant_pack_models.py \
+            scripts/train_subword_prototype.py \
+            scripts/verify_hardware_capture.py \
+            scripts/verify_assistant_packs.py \
+            scripts/verify_preview_artifacts.py
+
+      - name: Run host unit tests
+        run: python -m unittest discover tests
+
+      - name: Run release self-tests
+        run: |
+          python scripts/audit_exported_models.py --self-test
+          python scripts/train_assistant_pack_models.py --self-test
+          python scripts/verify_hardware_capture.py --self-test
+          python scripts/build_hardware_transfer.py --self-test
+          python scripts/build_preview_release.py --self-test
+          python scripts/verify_preview_artifacts.py --self-test
+
+      - name: Verify assistant pack evidence
+        run: python scripts/verify_assistant_packs.py
+
+      - name: Check release package can be built
+        run: |
+          python scripts/build_preview_release.py --force --output-dir /tmp/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview.zip.sha256
+          preview_sha="$(cut -d' ' -f1 /tmp/gpt2-basic-preview.zip.sha256)"
+          python scripts/build_preview_release.py --force --output-dir /tmp/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview.zip.sha256
+          test "$preview_sha" = "$(cut -d' ' -f1 /tmp/gpt2-basic-preview.zip.sha256)"
+          python scripts/build_preview_release.py --manifest-only --output-dir /tmp/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview.zip.sha256
+          python scripts/verify_preview_artifacts.py \
+            --preview-dir /tmp/gpt2-basic-preview \
+            --preview-zip /tmp/gpt2-basic-preview.zip \
+            --preview-zip-sha256 /tmp/gpt2-basic-preview.zip.sha256 \
+            --skip-hardware
+
+      - name: Check hardware transfer bundle can be built
+        run: |
+          python scripts/build_hardware_transfer.py --force --output-dir /tmp/gpt2-basic-hardware-transfer --zip-path /tmp/gpt2-basic-hardware-transfer.zip --zip-sha256 /tmp/gpt2-basic-hardware-transfer.zip.sha256
+          hardware_sha="$(cut -d' ' -f1 /tmp/gpt2-basic-hardware-transfer.zip.sha256)"
+          python scripts/build_hardware_transfer.py --force --output-dir /tmp/gpt2-basic-hardware-transfer --zip-path /tmp/gpt2-basic-hardware-transfer.zip --zip-sha256 /tmp/gpt2-basic-hardware-transfer.zip.sha256
+          test "$hardware_sha" = "$(cut -d' ' -f1 /tmp/gpt2-basic-hardware-transfer.zip.sha256)"
+          python scripts/verify_preview_artifacts.py \
+            --preview-dir /tmp/gpt2-basic-preview \
+            --preview-zip /tmp/gpt2-basic-preview.zip \
+            --preview-zip-sha256 /tmp/gpt2-basic-preview.zip.sha256 \
+            --hardware-dir /tmp/gpt2-basic-hardware-transfer \
+            --hardware-zip /tmp/gpt2-basic-hardware-transfer.zip \
+            --hardware-zip-sha256 /tmp/gpt2-basic-hardware-transfer.zip.sha256
+
+      - name: Upload preview release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpt2-basic-v0.1.0-preview
+          if-no-files-found: error
+          path: |
+            /tmp/gpt2-basic-preview.zip
+            /tmp/gpt2-basic-preview.zip.sha256
+            /tmp/gpt2-basic-hardware-transfer.zip
+            /tmp/gpt2-basic-hardware-transfer.zip.sha256
+            qemu/evidence/preview_release_manifest.md

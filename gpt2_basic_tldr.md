@@ -18,11 +18,17 @@
 
 We implemented a scaled-down GPT-2 transformer model in BASIC that can run on a 486 PC from the early 1990s. This isn't just a fun retrocomputing project—it demonstrates that modern AI algorithms are fundamentally just math that could have theoretically worked 30 years ago. By stripping away the layers of optimization that make modern transformers inscrutable, we expose the core algorithms and show that transformer architecture isn't inherently tied to modern hardware.
 
+Current status: the production release is evidence-gated under QEMU emulator
+profiles, and physical board timing is deferred until hardware is available.
+The formerly aspirational software subsystems are source-verified by
+`scripts/verify_aspirational_software.py`; ICC reports
+`gpt2-basic-aspirational-software` as `ready` with score 100.
+
 ## Introduction: The Intersection of Cutting-Edge AI and Vintage Computing
 
 When OpenAI released GPT-2 in 2019, it represented a significant advancement in natural language processing. Built on the transformer architecture introduced by Vaswani et al. in 2017, these models now power everything from chatbots to code assistants. But could such technology have existed decades earlier?
 
-This project asks a fascinating counterfactual question: **What if transformer models had been developed in the early 1990s, during the height of the 486 PC era?** 
+This project asks a fascinating counterfactual question: **What if transformer models had been developed in the early 1990s, during the height of the 486 PC era?**
 
 While this might seem absurd at first glance—after all, modern language models run on massive GPU clusters—the underlying mathematics of transformers doesn't inherently require modern hardware. The transformer architecture is fundamentally a series of matrix operations combined with attention mechanisms. These operations could theoretically be implemented on any hardware capable of mathematical computation, albeit with significant constraints and optimizations.
 
@@ -118,29 +124,29 @@ FUNCTION QuantizeLog(f AS SINGLE) AS INTEGER
     IF f = 0 THEN sgn = 0 ' Handle zero sign
 
     DIM abs_f AS SINGLE = ABS(f)
-    
+
     ' Handle zero or near-zero special case
     IF abs_f < 0.00001 THEN
         RETURN 0
     END IF
-    
+
     ' Calculate exponent (biased by 8)
     DIM exponent AS INTEGER = INT(LOG(abs_f) / LOG(2)) + 8
-    
+
     ' Ensure exponent is within the 4-bit range (0-15)
     IF exponent < 0 THEN exponent = 0
     IF exponent > 15 THEN exponent = 15
-    
+
     ' Calculate mantissa (4 bits, 0-15)
     DIM power_of_2 AS SINGLE = 2.0 ^ (exponent - 8)
     DIM mantissa AS INTEGER = INT((abs_f / power_of_2) * 16.0) AND 15
-    
+
     ' Pack mantissa and exponent
     DIM packed_val AS INTEGER = mantissa + (exponent * 16)
-    
+
     ' Apply sign
     IF sgn = -1 THEN packed_val = -packed_val
-    
+
     RETURN packed_val
 END FUNCTION
 ```
@@ -153,23 +159,23 @@ To avoid expensive logarithm and power operations during inference, we use looku
 SUB InitDequantLookup()
     FOR packed_val = -255 TO 255
         DIM lookup_index AS INTEGER = packed_val + 255
-        
+
         IF packed_val = 0 THEN
             DequantLookup(lookup_index) = 0.0
         ELSE
             ' Determine the sign
             DIM sgn AS INTEGER
             IF packed_val > 0 THEN sgn = 1 ELSE sgn = -1
-            
+
             ' Extract mantissa and exponent
             DIM abs_packed_val AS INTEGER = ABS(packed_val)
             DIM mantissa AS INTEGER = abs_packed_val MOD 16
             DIM exponent AS INTEGER = abs_packed_val \ 16 ' Integer division
-            
+
             ' Calculate the original approximate float value
             DIM power_of_2 AS SINGLE = 2.0 ^ (exponent - 8)
             DIM abs_f AS SINGLE = (mantissa / 16.0) * power_of_2
-            
+
             ' Apply the sign
             DequantLookup(lookup_index) = abs_f * sgn
         END IF
@@ -208,13 +214,13 @@ FUNCTION FixedMultiply(a AS LONG, b AS LONG) AS LONG
         ' Original 486-compatible version using 32-bit math
         DIM a_high AS LONG, a_low AS LONG
         DIM b_high AS LONG, b_low AS LONG
-        
+
         ' Split into high and low 16-bit parts
         a_high = a >> 16
         a_low = a AND &HFFFF
         b_high = b >> 16
         b_low = b AND &HFFFF
-        
+
         ' Compute the four products
         ' Only a_low * b_low needs adjustment for the fractional part
         result = ((a_high * b_high) << 16) + _
@@ -222,7 +228,7 @@ FUNCTION FixedMultiply(a AS LONG, b AS LONG) AS LONG
                  (a_low * b_high) + _
                  ((a_low * b_low) >> 16)
     #ENDIF
-    
+
     RETURN result
 END FUNCTION
 ```
@@ -264,33 +270,33 @@ SUB TransformerForward(input_ids() AS INTEGER, model_file AS STRING, output_prob
     DIM embedding_params AS EmbeddingParameters
     DIM layer_params AS LayerParameters
     DIM layer_input AS Matrix, layer_output AS Matrix
-    
+
     ' Load embedding parameters
     LoadEmbeddingParameters(model_file, embedding_params)
-    
+
     ' Embed input tokens
     InitMatrix layer_input, UBOUND(input_ids) - LBOUND(input_ids) + 1, embedding_params.hidden_size
     EmbedTokens(input_ids, embedding_params, layer_input)
-    
+
     ' Free embedding parameters
     FreeEmbeddingParameters(embedding_params)
-    
+
     ' Process each layer, streaming parameters from disk
     FOR layer = 0 TO GetNumLayers(model_file) - 1
         ' Load this layer's parameters
         LoadLayerParameters(model_file, layer, layer_params)
-        
+
         ' Process the layer
         InitMatrix layer_output, layer_input.rows, layer_input.cols
         TransformerLayer(layer_input, layer_params, layer_output)
-        
+
         ' Free this layer's parameters
         FreeLayerParameters(layer_params)
-        
+
         ' Swap input and output for next layer
         SwapMatrices layer_input, layer_output
     NEXT layer
-    
+
     ' Final projection to vocabulary
     ' ...
 END SUB
@@ -315,15 +321,15 @@ END FUNCTION
 FUNCTION SIMD_Add_8bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG
     DIM overflow_mask AS LONG
-    
+
     ' Add without considering overflow
     result = a + b
-    
+
     ' Apply masking to handle potential overflow between elements
     overflow_mask = &H01010100 ' Bits that would overflow from one element to another
     result = (result AND (NOT overflow_mask)) OR _
              ((a AND b AND overflow_mask))
-    
+
     RETURN result
 END FUNCTION
 ```
@@ -342,39 +348,39 @@ For the most performance-critical sections of code, we implemented optimized x86
 _FixedMulAsm PROC
     push    bp          ; Save base pointer
     mov     bp, sp      ; Set up stack frame
-    
+
     push    si          ; Save registers
     push    di
-    
+
     ; Multiply 32-bit operands
     mov     ax, [bp+8]  ; High word of first operand
     mov     bx, [bp+6]  ; Low word of first operand
     mov     cx, [bp+12] ; High word of second operand
     mov     dx, [bp+10] ; Low word of second operand
-    
+
     ; Multiply using 32-bit math
     ; AX:BX * CX:DX
-    
+
     mul     dx          ; AX * DX -> DX:AX
     mov     si, ax      ; Save low part of AX * DX
     mov     di, dx      ; Save high part of AX * DX
-    
+
     mov     ax, bx
     mul     cx          ; BX * CX -> DX:AX
     add     si, ax      ; Add low part of BX * CX
     adc     di, dx      ; Add high part of BX * CX with carry
-    
+
     mov     ax, bx
     mul     dx          ; BX * DX -> DX:AX
     sar     di, 16      ; Shift for fixed-point division by 2^16
     or      di, dx      ; Combine with high bits of product
-    
+
     mov     ax, di      ; Move result to AX
     mov     bx, si      ; Move result to BX
-    
+
     pop     di          ; Restore registers
     pop     si
-    
+
     pop     bp          ; Restore base pointer
     ret                 ; Return with result in AX:BX
 _FixedMulAsm ENDP
@@ -396,19 +402,19 @@ SUB SelfAttention(query AS Matrix, key AS Matrix, value AS Matrix, output AS Mat
     DIM scores AS Matrix
     InitMatrix scores, query.rows, key.rows
     MatrixMultiply query, key, scores, MATRIX_TRANSPOSE_B
-    
+
     ' Scale by sqrt(d_k)
     DIM scale_factor AS INTEGER = FixedDivide(FIXED_POINT_SCALE, FixedSqrt(FloatToFixed(CSNG(query.cols))))
     MatrixScale scores, scale_factor
-    
+
     ' Apply mask (if provided)
     IF NOT IsNullMatrix(mask) THEN
         MatrixElementwiseMul scores, mask, scores
     END IF
-    
+
     ' Apply softmax to get attention weights
     SoftmaxRowwise scores
-    
+
     ' Calculate weighted values: softmax(QK^T/sqrt(d_k)) * V
     MatrixMultiply scores, value, output
 END SUB
@@ -424,14 +430,14 @@ SUB FeedForward(input AS Matrix, w1 AS Matrix, w2 AS Matrix, w3 AS Matrix, outpu
     DIM intermediate1 AS Matrix, intermediate2 AS Matrix
     InitMatrix intermediate1, input.rows, w1.cols
     InitMatrix intermediate2, input.rows, w2.cols
-    
+
     MatrixMultiply input, w1, intermediate1
     MatrixMultiply input, w2, intermediate2
-    
+
     ' Apply gating (GLU activation)
     DIM gated AS Matrix
     InitMatrix gated, intermediate1.rows, intermediate1.cols
-    
+
     ' Element-wise multiplication with sigmoid of gate
     FOR r = 0 TO intermediate1.rows - 1
         FOR c = 0 TO intermediate1.cols - 1
@@ -440,7 +446,7 @@ SUB FeedForward(input AS Matrix, w1 AS Matrix, w2 AS Matrix, w3 AS Matrix, outpu
             gated.data(r, c) = FixedToLogQuantized(FixedMultiply(val, gate)).packed_value
         NEXT c
     NEXT r
-    
+
     ' Second projection
     MatrixMultiply gated, w3, output
 END SUB
@@ -453,30 +459,30 @@ A complete transformer layer combines these components with residual connections
 ```basic
 SUB TransformerLayer(input AS Matrix, attention_weights() AS Matrix, ff_weights() AS Matrix, norm_weights() AS Matrix, output AS Matrix)
     DIM temp AS Matrix, attn_output AS Matrix, norm1_output AS Matrix, norm2_output AS Matrix, ff_output AS Matrix
-    
+
     ' Layer normalization before attention
     InitMatrix norm1_output, input.rows, input.cols
     LayerNorm input, norm_weights(0), norm_weights(1), norm1_output
-    
+
     ' Multi-head attention
     InitMatrix attn_output, input.rows, input.cols
     MultiHeadAttention norm1_output, attention_weights(), attn_output
-    
+
     ' Residual connection
     InitMatrix temp, input.rows, input.cols
     MatrixAdd input, attn_output, temp
-    
+
     ' Layer normalization before feed-forward
     InitMatrix norm2_output, temp.rows, temp.cols
     LayerNorm temp, norm_weights(2), norm_weights(3), norm2_output
-    
+
     ' Feed-forward network
     InitMatrix ff_output, temp.rows, temp.cols
     FeedForward norm2_output, ff_weights(0), ff_weights(1), ff_weights(2), ff_output
-    
+
     ' Residual connection
     MatrixAdd temp, ff_output, output
-    
+
     ' Clean up temporary matrices
     FreeMatrix temp
     FreeMatrix attn_output

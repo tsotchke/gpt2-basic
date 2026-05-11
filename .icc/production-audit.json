@@ -34,9 +34,10 @@
             ".gitignore"
           ],
           "path_prefixes": [
+            ".github/workflows/",
             ".icc"
           ],
-          "description": "ICC oracle and release-audit policy."
+          "description": "Repository release automation, ICC oracle, and release-audit policy."
         },
         {
           "role": "production_source",
@@ -51,6 +52,20 @@
             "scripts"
           ],
           "description": "Host training, evaluation, export, and reporting tools."
+        },
+        {
+          "role": "host_tests",
+          "path_prefixes": [
+            "tests"
+          ],
+          "description": "Focused host-side validators for training, export, and evidence tooling."
+        },
+        {
+          "role": "hardware_capture",
+          "path_prefixes": [
+            "hardware"
+          ],
+          "description": "Physical DOS hardware capture batch, notes template, and runbook."
         },
         {
           "role": "runtime_evidence",
@@ -75,6 +90,27 @@
             "assets/gpt2_basic/MODEL/"
           ],
           "description": "Promoted default checkpoint packaged for the 486 production target."
+        },
+        {
+          "role": "speed_release_model",
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL_HEADSHORTLIST2048_PROD_PROBE/"
+          ],
+          "description": "Measured output-head shortlist release-mode checkpoint with DOS vector, quality, and kernel-performance evidence."
+        },
+        {
+          "role": "full_release_model",
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL_LEXICON_GOLD_V4_S3000/"
+          ],
+          "description": "Measured gold-v4 full-resident release checkpoint with DOS vector, quality, and performance evidence."
+        },
+        {
+          "role": "assistant_pack",
+          "path_prefixes": [
+            "assets/gpt2_basic/PACKS/"
+          ],
+          "description": "Pack metadata, retrieval notes, and sprite/icon slots for the optional assistant shell."
         },
         {
           "role": "compressed_release_model",

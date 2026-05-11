@@ -1,0 +1,47 @@
+profile: 486dx2-usable - 486DX2 target: larger model for better text at still-plausible 486 speed
+training_backend_requested: auto
+training_backend_selected: cpu
+training_backend_torch_version: 2.11.0
+training_backend_available_cuda: False
+training_backend_available_mps: False
+loaded_corpus_file: data/domain_curriculum/gold_curriculum_v5_clean_repair.txt docs=39
+device: cpu
+training_documents_core: 42
+training_documents_core_weight: 0
+training_documents_external: 39
+tokenizer_basis_documents: 39
+tokenizer_basis_chars: 69345
+training tokens: 111948
+tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
+model: layers=3 emb=64 heads=4 ctx=192 hidden=256
+step     1 loss 8.5009
+step   500 loss 0.2941
+step  1000 loss 0.0643
+step  1500 loss 0.0494
+step  2000 loss 0.0432
+step  2500 loss 0.0358
+step  3000 loss 0.0348
+step  3500 loss 0.0306
+step  4000 loss 0.0311
+step  4500 loss 0.0306
+step  5000 loss 0.0295
+step  5500 loss 0.0297
+step  6000 loss 0.0288
+step  6500 loss 0.0374
+step  7000 loss 0.0335
+
+prompt: Hello there.
+Hello there. Cache reuse helps old hardware because the decode loop only adds the newest token work instead of repeating the full attention setup. The benefit must still fit inside the DOS memory budget. A cache matters for text generation because context is reused one token at a time. The model still attends to earlier tokens, but the runtime can store the key and value vectors that do not change.
+
+prompt: GPT2 BASIC on a 486
+GPT2 BASIC on a 486 and memory a de and lowers the chance of malformed byte-built words. A large vocabulary can make bad data worse. A lexicon helps when common technical words and short phrases become single tokens that the model can emit cleanly. The vocabulary must not learn scoring instructions, report paths, or broken generated text.
+
+prompt: Why run a language model in DOS?
+Why run a language model in DOS? Phase-vector checks compare the DOS fixed-point path with the host reference before the checkpoint is trusted. The scale must be chosen carefully so values keep useful precision without overflowing. Every scale and clamp is part of the correctness contract. How does the DOS runtime avoid depending on an FPU? Fixed-point inference stores weights as scaled integers and computes logits with predictable integer arithmetic.
+
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR/GPT2CFG.TXT
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR/GPT2WT.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR/GPT2FX.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR/GPT2EXP.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR/VOCAB.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR/PROFILE.TXT

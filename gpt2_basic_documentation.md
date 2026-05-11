@@ -1,5 +1,20 @@
 # GPT-2 in BASIC: Implementing Modern Transformer Models on 486-Era Hardware
 
+## Current Status Note
+
+The slim production target is the DOS FreeBASIC fixed-point runtime documented
+in `README.md`, `qemu/README.md`, and `qemu/evidence/domain_training_strategy_report.md`.
+Formerly aspirational software subsystems from this paper-style document
+including memory tracking, matrix pooling, disk parameter streaming,
+block-sparse attention, SIMD-like packed operations, and assembly/fallback
+fixed-point support are now source-verified by
+`scripts/verify_aspirational_software.py`. The closure report is
+`qemu/evidence/aspirational_software_closure.md`, and ICC reports
+`gpt2-basic-aspirational-software` as `ready` with score 100.
+
+Physical board timing remains deferred. QEMU emulator evidence is the accepted
+timing basis until a physical 486/Pentium board is available.
+
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
@@ -524,7 +539,7 @@ In BASIC, the quantization is implemented as:
 ```basic
 FUNCTION QuantizeLog (f AS SINGLE) AS LogQuantized
     DIM lq AS LogQuantized
-    
+
     ' Extract sign
     DIM sgn AS INTEGER
     IF f > 0 THEN sgn = 1
@@ -532,31 +547,31 @@ FUNCTION QuantizeLog (f AS SINGLE) AS LogQuantized
     IF f = 0 THEN sgn = 0 ' Handle zero sign
 
     DIM abs_f AS SINGLE = ABS(f)
-    
+
     ' Handle zero or near-zero special case
     IF abs_f < 0.00001 THEN
         lq.packed_value = 0
         FUNCTION = lq
         EXIT FUNCTION
     END IF
-    
+
     ' Calculate exponent (biased by 8)
     DIM exponent AS INTEGER = INT(LOG(abs_f) / LOG(2)) + 8
-    
+
     ' Ensure exponent is within the 4-bit range (0-15)
     IF exponent < 0 THEN exponent = 0
     IF exponent > 15 THEN exponent = 15
-    
+
     ' Calculate mantissa (4 bits, 0-15)
     DIM power_of_2 AS SINGLE = 2.0 ^ (exponent - 8)
     DIM mantissa AS INTEGER = INT((abs_f / power_of_2) * 16.0) AND 15
-    
+
     ' Pack mantissa and exponent
     DIM packed_val AS INTEGER = mantissa + (exponent * 16)
-    
+
     ' Apply sign
     IF sgn = -1 THEN packed_val = -packed_val
-    
+
     lq.packed_value = packed_val
     FUNCTION = lq
 END FUNCTION
@@ -570,7 +585,7 @@ To avoid expensive logarithm and power operations during inference, we use looku
 SUB InitDequantLookup()
     FOR packed_val = -255 TO 255
         DIM lookup_index AS INTEGER = packed_val + 255
-        
+
         ' Handle the special case for zero
         IF packed_val = 0 THEN
             DequantFixedLookup(lookup_index) = FloatToFixed(0.0)
@@ -578,16 +593,16 @@ SUB InitDequantLookup()
             ' Determine the sign
             DIM sgn AS INTEGER
             IF packed_val > 0 THEN sgn = 1 ELSE sgn = -1
-            
+
             ' Extract mantissa and exponent
             DIM abs_packed_val AS INTEGER = ABS(packed_val)
             DIM mantissa AS INTEGER = abs_packed_val MOD 16
             DIM exponent AS INTEGER = abs_packed_val \ 16 ' Integer division
-            
+
             ' Calculate the original approximate float value
             DIM power_of_2 AS SINGLE = 2.0 ^ (exponent - 8)
             DIM abs_f AS SINGLE = (mantissa / 16.0) * power_of_2
-            
+
             ' Apply the sign and convert to fixed-point
             DequantFixedLookup(lookup_index) = FloatToFixed(abs_f * sgn)
         END IF
@@ -602,17 +617,17 @@ This table is computed once at initialization and used repeatedly during inferen
 To assess the impact of quantization on model accuracy, we analyzed the quantization error across different value ranges. Figure 2 shows the relative error introduced by our 4-bit logarithmic quantization compared to 32-bit floating-point.
 
 ```
-      |                        
-      |                      x  
-Rel.  |                   x     
-Error |                 x       
-      |             x           
-      |         x               
-      |   x   x                 
-      | x                       
+      |
+      |                      x
+Rel.  |                   x
+Error |                 x
+      |             x
+      |         x
+      |   x   x
+      | x
       +-------------------------
-        small  medium   large   
-              Value Range       
+        small  medium   large
+              Value Range
 ```
 *Figure 2: Relative quantization error across value ranges*
 
@@ -694,25 +709,25 @@ For more complex functions, we implemented either polynomial approximations or l
 FUNCTION FixedSqrt(fp AS INTEGER) AS INTEGER
     ' Handle special cases
     IF fp <= 0 THEN RETURN 0
-    
+
     ' Initial guess
     DIM low AS INTEGER = 0
     DIM high AS INTEGER = fp
     DIM mid AS INTEGER
     DIM squared AS LONGINT
-    
+
     ' Binary search for the square root
     WHILE high - low > 1
         mid = (low + high) / 2
         squared = CLNGINT(mid) * CLNGINT(mid)
-        
+
         IF squared > (CLNGINT(fp) << 16) THEN
             high = mid
         ELSE
             low = mid
         END IF
     WEND
-    
+
     RETURN low
 END FUNCTION
 ```
@@ -736,16 +751,16 @@ These techniques were essential for maintaining numerical stability in the trans
 To assess the impact of fixed-point arithmetic on model accuracy, we compared the output of key mathematical operations between our fixed-point implementation and a standard 32-bit floating-point implementation. Figure 3 shows the relative error for various operations.
 
 ```
-          |                         
-Relative  |          x              
-Error (%) |        x   x            
-          |       x     x           
-          |      x       x          
-          |     x         x         
-          |    x           x        
-          |   x             x       
-          |  x               x      
-          | x                 x     
+          |
+Relative  |          x
+Error (%) |        x   x
+          |       x     x
+          |      x       x
+          |     x         x
+          |    x           x
+          |   x             x
+          |  x               x
+          | x                 x
           +-------------------------
             Add   Mul  Div  Sqrt Exp
                     Operation
@@ -817,14 +832,14 @@ The implementation includes specialized functions for sparse matrix operations, 
 ' Find a block at specific row and column indices
 FUNCTION FindBlock(sbm AS SparseBlockMatrix, row_start AS INTEGER, col_start AS INTEGER) AS SparseBlock PTR
     DIM current AS SparseBlock PTR = sbm.blocks
-    
+
     WHILE current <> NULL
         IF current->row_start = row_start AND current->col_start = col_start THEN
             RETURN current
         END IF
         current = current->next
     WEND
-    
+
     RETURN NULL ' Block not found
 END FUNCTION
 
@@ -833,14 +848,14 @@ SUB CreateCausalAttentionPattern(sbm AS SparseBlockMatrix)
     DIM block_row AS INTEGER
     DIM block_col AS INTEGER
     DIM num_blocks_per_dim AS INTEGER = sbm.rows \ sbm.block_size
-    
+
     ' Create blocks only for the upper triangle (where block_col <= block_row)
     FOR block_row = 0 TO num_blocks_per_dim - 1
         DIM row_start AS INTEGER = block_row * sbm.block_size
-        
+
         FOR block_col = 0 TO block_row
             DIM col_start AS INTEGER = block_col * sbm.block_size
-            
+
             ' Add this block - it's part of the causal mask
             AddBlock(sbm, row_start, col_start)
         NEXT block_col
@@ -855,11 +870,11 @@ For attention computation, we implemented specialized block-sparse matrix multip
 SUB BlockSparseMatrixMultiply(Scores AS SparseBlockMatrix, Value AS Matrix, Output AS Matrix)
     ' Process each block in the sparse matrix
     DIM block AS SparseBlock PTR = Scores.blocks
-    
+
     WHILE block <> NULL
         DIM row_start AS INTEGER = block->row_start
         DIM col_start AS INTEGER = block->col_start
-        
+
         ' Process this block - only compute for non-zero blocks
         ' ...
 
@@ -894,7 +909,7 @@ A key innovation in our implementation is the automatic selection between dense 
 FUNCTION ShouldUseBlockSparseAttention(context_length AS INTEGER) AS INTEGER
     ' Use block-sparse attention for longer contexts
     CONST SPARSE_THRESHOLD AS INTEGER = 32
-    
+
     IF context_length > SPARSE_THRESHOLD THEN
         FUNCTION = 1 ' True, use block-sparse
     ELSE
@@ -982,23 +997,23 @@ SUB LoadLayerParameters(model_file AS STRING, layer_index AS INTEGER, params AS 
     DIM file_num AS INTEGER
     DIM header AS ModelFileHeader
     DIM layer_header AS LayerDataHeader
-    
+
     ' Open the model file
     file_num = FREEFILE
     OPEN model_file FOR BINARY AS #file_num
-    
+
     ' Read the file header
     GET #file_num, 1, header
-    
+
     ' Seek to the layer data using the offset table
     SEEK #file_num, header.layer_offset_table(layer_index + 1)
-    
+
     ' Read the layer header
     GET #file_num, , layer_header
-    
+
     ' Load each matrix for this layer
     ' ...
-    
+
     CLOSE #file_num
 END SUB
 
@@ -1020,33 +1035,33 @@ SUB TransformerForward(input_ids() AS INTEGER, model_file AS STRING, output_prob
     DIM embedding_params AS EmbeddingParameters
     DIM layer_params AS LayerParameters
     DIM layer_input AS Matrix, layer_output AS Matrix
-    
+
     ' Load embedding parameters
     LoadEmbeddingParameters(model_file, embedding_params)
-    
+
     ' Embed input tokens
     InitMatrix layer_input, LEN(input_ids), embedding_params.hidden_size
     EmbedTokens(input_ids, embedding_params, layer_input)
-    
+
     ' Free embedding parameters
     FreeEmbeddingParameters(embedding_params)
-    
+
     ' Process each layer, streaming parameters from disk
     FOR layer = 0 TO GetNumLayers(model_file) - 1
         ' Load this layer's parameters
         LoadLayerParameters(model_file, layer, layer_params)
-        
+
         ' Process the layer
         InitMatrix layer_output, layer_input.rows, layer_input.cols
         TransformerLayer(layer_input, layer_params, layer_output)
-        
+
         ' Free this layer's parameters
         FreeLayerParameters(layer_params)
-        
+
         ' Swap input and output for next layer
         SwapMatrices layer_input, layer_output
     NEXT layer
-    
+
     ' Final projection to vocabulary
     ' ...
 END SUB
@@ -1108,13 +1123,13 @@ END TYPE
 ' Pack 4 8-bit values into a single SIMD_8bit value
 FUNCTION Pack_8bit(v1 AS BYTE, v2 AS BYTE, v3 AS BYTE, v4 AS BYTE) AS SIMD_8bit
     DIM result AS SIMD_8bit
-    
+
     ' Pack values using bitwise OR and shifting
     result.packed_value = ((v1 AND &HFF)) OR _
                           ((v2 AND &HFF) << 8) OR _
                           ((v3 AND &HFF) << 16) OR _
                           ((v4 AND &HFF) << 24)
-    
+
     FUNCTION = result
 END FUNCTION
 
@@ -1136,15 +1151,15 @@ With values packed into a single integer, we can perform certain operations on m
 FUNCTION SIMD_Add_8bit(a AS SIMD_8bit, b AS SIMD_8bit) AS SIMD_8bit
     DIM result AS SIMD_8bit
     DIM overflow_mask AS LONG
-    
+
     ' Add without considering overflow
     result.packed_value = a.packed_value + b.packed_value
-    
+
     ' Apply masking to handle potential overflow between elements
     overflow_mask = &H01010100 ' Bits that would overflow from one element to another
     result.packed_value = result.packed_value AND (NOT overflow_mask) OR _
                          (a.packed_value AND b.packed_value AND overflow_mask)
-    
+
     FUNCTION = result
 END FUNCTION
 ```
@@ -1159,35 +1174,35 @@ We applied these SIMD-like techniques to optimize matrix operations:
 ' Optimized matrix addition using SIMD-like operations
 SUB MatrixAdd_SIMD(a AS Matrix, b AS Matrix, result AS Matrix)
     DIM i AS INTEGER, j AS INTEGER
-    
+
     ' Process the matrix 4 elements at a time when possible
     FOR i = 0 TO a.rows - 1
         FOR j = 0 TO a.cols - 4 STEP 4
             ' Pack 4 LogQuantized values into SIMD_8bit values
             DIM simd_a AS SIMD_8bit
             DIM simd_b AS SIMD_8bit
-            
+
             simd_a.packed_value = a.data(i, j) OR _
                                 (a.data(i, j+1) << 8) OR _
                                 (a.data(i, j+2) << 16) OR _
                                 (a.data(i, j+3) << 24)
-            
+
             simd_b.packed_value = b.data(i, j) OR _
                                 (b.data(i, j+1) << 8) OR _
                                 (b.data(i, j+2) << 16) OR _
                                 (b.data(i, j+3) << 24)
-            
+
             ' Perform SIMD addition
             DIM simd_result AS SIMD_8bit
             simd_result = SIMD_Add_8bit(simd_a, simd_b)
-            
+
             ' Unpack and store result
             result.data(i, j) = simd_result.packed_value AND &HFF
             result.data(i, j+1) = (simd_result.packed_value >> 8) AND &HFF
             result.data(i, j+2) = (simd_result.packed_value >> 16) AND &HFF
             result.data(i, j+3) = (simd_result.packed_value >> 24) AND &HFF
         NEXT j
-        
+
         ' Process any remaining elements
         FOR j = j TO a.cols - 1
             result.data(i, j) = a.data(i, j) + b.data(i, j)
@@ -1204,24 +1219,24 @@ SUB MatrixMultiply_SIMD(a AS Matrix, b AS Matrix, result AS Matrix)
     ' Create a transposed copy of B for better cache locality
     DIM b_transpose AS Matrix
     MatrixTranspose_SIMD b, b_transpose
-    
+
     ' Blocked matrix multiplication with partial SIMD acceleration
     FOR i = 0 TO a.rows - 1
         FOR j = 0 TO b.cols - 1
             DIM sum AS INTEGER = 0
-            
+
             ' Process 4 elements at a time when possible
             FOR k = 0 TO a.cols - 4 STEP 4
                 ' Use bit manipulation to process multiple elements at once
                 ' ...
-                
+
                 ' Multiply and accumulate 4 elements at once
                 sum = sum + SimdDotProduct4(a_packed, b_packed)
             NEXT k
-            
+
             ' Process any remaining elements
             ' ...
-            
+
             result.data(i, j) = sum
         NEXT j
     NEXT i
@@ -1276,39 +1291,39 @@ The fixed-point multiplication function is a prime candidate for assembly optimi
 _FixedMulAsm PROC
     push    bp          ; Save base pointer
     mov     bp, sp      ; Set up stack frame
-    
+
     push    si          ; Save registers
     push    di
-    
+
     ; Multiply 32-bit operands
     mov     ax, [bp+8]  ; High word of first operand
     mov     bx, [bp+6]  ; Low word of first operand
     mov     cx, [bp+12] ; High word of second operand
     mov     dx, [bp+10] ; Low word of second operand
-    
+
     ; Multiply using 32-bit math
     ; AX:BX * CX:DX
-    
+
     mul     dx          ; AX * DX -> DX:AX
     mov     si, ax      ; Save low part of AX * DX
     mov     di, dx      ; Save high part of AX * DX
-    
+
     mov     ax, bx
     mul     cx          ; BX * CX -> DX:AX
     add     si, ax      ; Add low part of BX * CX
     adc     di, dx      ; Add high part of BX * CX with carry
-    
+
     mov     ax, bx
     mul     dx          ; BX * DX -> DX:AX
     sar     di, 16      ; Shift for fixed-point division by 2^16
     or      di, dx      ; Combine with high bits of product
-    
+
     mov     ax, di      ; Move result to AX
     mov     bx, si      ; Move result to BX
-    
+
     pop     di          ; Restore registers
     pop     si
-    
+
     pop     bp          ; Restore base pointer
     ret                 ; Return with result in AX:BX
 _FixedMulAsm ENDP
@@ -1339,22 +1354,22 @@ Similarly, we implemented optimized assembly versions for other critical operati
 _MatrixMulInnerLoopAsm PROC
     ; Loop setup and registers saving
     ; ...
-    
+
     ; Unroll loop 4 times
-    
+
     ; Element 1
     mov     eax, [esi]     ; Load from first matrix
     mov     ebx, [edi]     ; Load from second matrix
     imul    ebx            ; Multiply
     shrd    eax, edx, 16   ; Shift for fixed-point
     add     [edx], eax     ; Accumulate result
-    
+
     ; Elements 2-4 (similar pattern)
     ; ...
-    
+
     ; Loop control and cleanup
     ; ...
-    
+
     ret
 _MatrixMulInnerLoopAsm ENDP
 ```
@@ -1367,7 +1382,7 @@ A critical aspect of our assembly optimization approach is dynamic CPU capabilit
 ' Detect CPU capabilities
 FUNCTION DetectCPUCapabilities() AS INTEGER
     DIM capabilities AS INTEGER = 0
-    
+
     ' Check if FPU is present (486DX vs 486SX)
     #IFDEF __FB_DOS__
         DIM hasFPU AS INTEGER
@@ -1382,14 +1397,14 @@ FUNCTION DetectCPUCapabilities() AS INTEGER
             movzx eax, al
             mov [hasFPU], eax
         END ASM
-        
+
         IF hasFPU THEN
             capabilities = capabilities OR CPU_HAS_FPU
         END IF
     #ENDIF
-    
+
     ' This would be expanded with other capability tests in a full implementation
-    
+
     RETURN capabilities
 END FUNCTION
 ```
@@ -1400,7 +1415,7 @@ This information is then used to select the optimal implementation for each oper
 ' Initialize system with optimal routines based on CPU capabilities
 SUB InitializeSystem()
     DIM caps AS INTEGER = DetectCPUCapabilities()
-    
+
     ' Select optimal implementations based on capabilities
     IF (caps AND CPU_HAS_FPU) THEN
         ' Use FPU-accelerated versions of certain functions
@@ -1409,7 +1424,7 @@ SUB InitializeSystem()
         ' Use pure integer versions
         ' ...
     END IF
-    
+
     ' Other capability-based optimizations
     ' ...
 END SUB
@@ -1468,10 +1483,10 @@ END TYPE
 SUB ConfigureMemoryDOS(config AS DosMemoryConfig)
     ' Detect available memory
     ' ...
-    
+
     ' Configure based on detected resources
     ' ...
-    
+
     ' For large models, ensure DOS extender is available
     IF config.use_extended AND config.dos_extender = DOS_EXTENDER_DOS4GW THEN
         ' Check for DOS4GW.EXE in PATH
@@ -1488,19 +1503,19 @@ DOS file I/O can be relatively slow, particularly on floppy-based systems. We op
 ' DOS-specific optimized file reading
 SUB ReadFileBlockDOS(filename AS STRING, offset AS LONG, size AS INTEGER, buffer AS ANY PTR)
     DIM file_handle AS INTEGER
-    
+
     ' Open file using DOS functions for maximum performance
     file_handle = FREEFILE
     OPEN filename FOR BINARY ACCESS READ AS #file_handle
-    
+
     ' Use optimal buffer size for DOS filesystem
     ' (typically 4-8KB clusters)
     ' ...
-    
+
     ' Read data
     SEEK #file_handle, offset + 1 ' BASIC files are 1-indexed
     GET #file_handle, , *buffer, size
-    
+
     CLOSE #file_handle
 END SUB
 ```
@@ -1519,7 +1534,7 @@ END SUB
 SUB VisualizeAttentionDOS(attention_matrix AS Matrix)
     ' Scale attention weights to color indices (0-255)
     ' ...
-    
+
     ' Draw representation on screen
     ' ...
 END SUB
@@ -1554,14 +1569,14 @@ Windows' preemptive multitasking (in Windows 95) or cooperative multitasking (in
 ' Process in chunks and yield to system (pseudocode)
 SUB ProcessLayerWindows(layer AS INTEGER)
     DIM start_time AS DOUBLE
-    
+
     ' Process in smaller chunks to maintain system responsiveness
     FOR chunk = 0 TO num_chunks - 1
         start_time = TIMER
-        
+
         ' Process this chunk
         ' ...
-        
+
         ' Yield to system periodically
         IF TIMER - start_time > 0.1 THEN ' 100ms
             #IFDEF __FB_WIN32__
@@ -1583,10 +1598,10 @@ FUNCTION ConfigureModelWindows() AS INTEGER
     #IFDEF __FB_WIN32__
         ' Create dialog box
         ' ...
-        
+
         ' Add controls
         ' ...
-        
+
         ' Show dialog and get result
         ' ...
     #ELSE
@@ -1642,10 +1657,10 @@ Macintosh's event-driven architecture would require restructuring the processing
 SUB MacEventLoop()
     DIM event AS EventRecord
     DIM done AS INTEGER = 0
-    
+
     ' Initialize model
     ' ...
-    
+
     ' Event loop
     WHILE NOT done
         IF WaitNextEvent(everyEvent, event, 60) THEN
@@ -1699,7 +1714,7 @@ SUB ConfigureLinuxMemory()
     #IFDEF __FB_LINUX__
         ' Use mmap for large allocations
         ' ...
-        
+
         ' Configure process nice level
         ' ...
     #ENDIF
@@ -1735,7 +1750,7 @@ SUB InitializePlatform(config AS PlatformConfig)
     #ELSE
         config.platform_type = PLATFORM_GENERIC
     #ENDIF
-    
+
     ' Configure platform-specific optimizations
     SELECT CASE config.platform_type
         CASE PLATFORM_DOS
@@ -1765,7 +1780,7 @@ FUNCTION GetHighResTime() AS DOUBLE
     #IFDEF __FB_DOS__
         ' Use 8254 PIT directly for high-resolution timing
         DIM low AS INTEGER, high AS INTEGER
-        
+
         ' Disable interrupts to read consistently
         ASM
             cli
@@ -1777,7 +1792,7 @@ FUNCTION GetHighResTime() AS DOUBLE
             mov [high], al
             sti
         END ASM
-        
+
         RETURN (high * 256 + low) / 1193180.0  ' Convert to seconds
     #ELSE
         ' Use standard timing on other platforms
@@ -1818,25 +1833,25 @@ SUB BenchmarkFixedPoint()
     DIM iterations AS LONG = 100000
     DIM start_time AS DOUBLE
     DIM a AS INTEGER, b AS INTEGER, result AS INTEGER
-    
+
     ' Initialize random values
     a = INT(RND * 1000)
     b = INT(RND * 1000)
-    
+
     ' Benchmark addition
     start_time = GetHighResTime()
     FOR i = 1 TO iterations
         result = FixedAdd(a, b)
     NEXT i
     PRINT "Fixed-point addition: "; (GetHighResTime() - start_time) * 1000 / iterations; " microseconds per operation"
-    
+
     ' Benchmark multiplication
     start_time = GetHighResTime()
     FOR i = 1 TO iterations
         result = FixedMultiply(a, b)
     NEXT i
     PRINT "Fixed-point multiplication: "; (GetHighResTime() - start_time) * 1000 / iterations; " microseconds per operation"
-    
+
     ' Other operations...
 END SUB
 ```
@@ -1851,24 +1866,24 @@ SUB BenchmarkForwardPass(model_file AS STRING, sequence_length AS INTEGER)
     DIM tokens(1 TO sequence_length) AS INTEGER
     DIM start_time AS DOUBLE
     DIM memory_usage AS MemoryUsageStats
-    
+
     ' Initialize random input sequence
     FOR i = 1 TO sequence_length
         tokens(i) = INT(RND * 1000)
     NEXT i
-    
+
     ' Start memory tracking
     InitMemoryTracking(memory_usage)
-    
+
     ' Benchmark
     start_time = GetHighResTime()
     TransformerForward(tokens(), model_file, output_distribution)
-    
+
     ' Print results
     PRINT "Forward pass for sequence length "; sequence_length; ":"
     PRINT "  Time: "; (GetHighResTime() - start_time) * 1000; " ms"
     PRINT "  Time per token: "; (GetHighResTime() - start_time) * 1000 / sequence_length; " ms"
-    
+
     ' Print memory usage
     PRINT "  Peak memory usage: "; memory_usage.peak_conventional + memory_usage.peak_extended; " bytes"
 END SUB
@@ -2264,19 +2279,19 @@ SUB SelfAttention(query AS Matrix, key AS Matrix, value AS Matrix, output AS Mat
     DIM scores AS Matrix
     InitMatrix scores, query.rows, key.rows
     MatrixMultiply query, key, scores, MATRIX_TRANSPOSE_B
-    
+
     ' Scale by sqrt(d_k)
     DIM scale_factor AS INTEGER = FixedDivide(FIXED_POINT_SCALE, FixedSqrt(FloatToFixed(CSNG(query.cols))))
     MatrixScale scores, scale_factor
-    
+
     ' Apply mask (if provided)
     IF NOT IsNullMatrix(mask) THEN
         MatrixElementwiseMul scores, mask, scores
     END IF
-    
+
     ' Apply softmax to get attention weights
     SoftmaxRowwise scores
-    
+
     ' Calculate weighted values: softmax(QK^T/sqrt(d_k)) * V
     MatrixMultiply scores, value, output
 END SUB
@@ -2294,17 +2309,17 @@ SUB MultiHeadAttention(input AS Matrix, wq AS Matrix, wk AS Matrix, wv AS Matrix
     MatrixMultiply input, wq, query
     MatrixMultiply input, wk, key
     MatrixMultiply input, wv, value
-    
+
     ' Split heads and transpose
     DIM head_dim AS INTEGER = query.cols \ num_heads
     ' (Implementation details of splitting omitted for brevity)
-    
+
     ' Apply self-attention for each head
     ' (Implementation details omitted for brevity)
-    
+
     ' Combine heads and project back
     ' (Implementation details omitted for brevity)
-    
+
     ' Final projection
     MatrixMultiply combined_heads, wo, output
 END SUB
@@ -2319,11 +2334,11 @@ SUB FeedForward(input AS Matrix, w1 AS Matrix, w2 AS Matrix, w3 AS Matrix, outpu
     DIM intermediate1 AS Matrix, intermediate2 AS Matrix
     MatrixMultiply input, w1, intermediate1
     MatrixMultiply input, w2, intermediate2
-    
+
     ' Apply gating (GLU activation)
     DIM gated AS Matrix
     InitMatrix gated, intermediate1.rows, intermediate1.cols
-    
+
     ' Element-wise multiplication with sigmoid of gate
     DIM r AS INTEGER, c AS INTEGER
     FOR r = 0 TO intermediate1.rows - 1
@@ -2334,7 +2349,7 @@ SUB FeedForward(input AS Matrix, w1 AS Matrix, w2 AS Matrix, w3 AS Matrix, outpu
             gated.data(r, c) = FixedToLogQuantized(gated_val).packed_value
         NEXT c
     NEXT r
-    
+
     ' Second projection
     MatrixMultiply gated, w3, output
 END SUB
@@ -2354,7 +2369,7 @@ SUB LayerNorm(input AS Matrix, gamma AS Matrix, beta AS Matrix, output AS Matrix
             mean = FixedAdd(mean, LogQuantizedToFixed(input.data(r, c)))
         NEXT c
         mean = FixedDivide(mean, FloatToFixed(CSNG(input.cols)))
-        
+
         ' Calculate variance
         DIM variance AS INTEGER = 0
         FOR c = 0 TO input.cols - 1
@@ -2362,7 +2377,7 @@ SUB LayerNorm(input AS Matrix, gamma AS Matrix, beta AS Matrix, output AS Matrix
             variance = FixedAdd(variance, FixedMultiply(diff, diff))
         NEXT c
         variance = FixedDivide(variance, FloatToFixed(CSNG(input.cols)))
-        
+
         ' Normalize, scale, and shift
         DIM std_dev AS INTEGER = FixedSqrt(FixedAdd(variance, FloatToFixed(0.00001))) ' Epsilon for stability
         FOR c = 0 TO input.cols - 1
@@ -2495,7 +2510,7 @@ The current implementation focuses on demonstrating technical feasibility rather
 
 #### Educational Extensions
 
-1. **Interactive Visualizations**: Adding visualization components that illustrate attention patterns and internal model states. The implemented text trace is the portable baseline; VGA Mode 13h attention displays remain an optional lab variant.
+1. **Interactive Visualizations**: The release now includes optional lab `VISUAL.EXE`, a Mode 13h token/progress visualizer that reads `TRACE.LOG` from `GPT2.EXE --trace` and emits `VISUAL_*` evidence through `qemu/run_visual_trace_486.sh`. The text trace remains the portable baseline; richer attention heatmaps can build on the same contract.
 
 2. **Step-by-Step Execution Mode**: The release executable now implements this as `GPT2.EXE --trace`, with QEMU evidence in `qemu/evidence/trace_486.log`. Future work can add richer mathematical annotations or graphical overlays, but the DOS inference trace itself is no longer aspirational.
 
@@ -2579,13 +2594,13 @@ SUB TransformerInterruptHandler()
     ' 01h = Initialize model
     ' 02h = Generate text
     ' 03h = Free model
-    
+
     SELECT CASE REG.AH
         CASE &H01 ' Initialize
             ' DS:DX points to model filename
             model_ptr = LoadModel(ConvertSegmentedToLinear(REG.DS, REG.DX))
             REG.AX = model_ptr ' Return model handle
-            
+
         CASE &H02 ' Generate
             ' DS:SI points to prompt
             ' ES:DI points to output buffer
@@ -2593,7 +2608,7 @@ SUB TransformerInterruptHandler()
             prompt = ConvertSegToString(REG.DS, REG.SI)
             GenerateText(prompt, REG.CX, output_buffer)
             CopyStringToSegmented(output_buffer, REG.ES, REG.DI)
-            
+
         CASE &H03 ' Free
             ' BX = model handle
             FreeModel(REG.BX)
@@ -2608,25 +2623,26 @@ toolkit:
 
 1. **Interactive Tracing**: The text-mode `GPT2.EXE --trace` path records model
    metadata, tokenizer pieces, generation stages, generated tokens, and decoded
-   text on DOS. Visualization capabilities for attention patterns, token
-   embeddings, and other internal states can build on this trace contract.
+   text on DOS. Optional lab `VISUAL.EXE` reads that trace, adds a Mode 13h
+   token/progress view, and emits machine-readable `VISUAL_*` records. Richer
+   attention and embedding views can build on this trace contract.
 
 2. **Comparative Implementations**: Developing parallel implementations with different optimization strategies that students could benchmark against each other.
 
-3. **Step-by-Step Mode**: The implemented trace mode provides the DOS
-   execution trail; mathematical annotations and graphical overlays remain
-   useful additions rather than prerequisites.
+3. **Step-by-Step Mode**: The implemented trace modes provide both the DOS
+   execution trail and a VGA visual path; mathematical annotations and richer
+   overlays remain useful additions rather than prerequisites.
 
 Sample visualization code might look like:
 
 ```basic
 SUB VisualizeAttention(attention_matrix AS SparseBlockMatrix)
     SCREEN 13 ' 320x200, 256 colors
-    
+
     ' Scale attention scores to color intensities
     DIM r AS INTEGER, c AS INTEGER
     DIM max_score AS INTEGER = FindMaxAttentionScore(attention_matrix)
-    
+
     ' Draw attention heatmap
     FOR r = 0 TO attention_matrix.rows - 1
         FOR c = 0 TO attention_matrix.cols - 1
@@ -2635,7 +2651,7 @@ SUB VisualizeAttention(attention_matrix AS SparseBlockMatrix)
             PSET (50 + c * 2, 50 + r * 2), color
         NEXT c
     NEXT r
-    
+
     ' Add labels and annotations
     COLOR 15
     LOCATE 2, 2

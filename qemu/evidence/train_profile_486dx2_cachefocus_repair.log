@@ -1,0 +1,38 @@
+profile: 486dx2-usable - 486DX2 target: larger model for better text at still-plausible 486 speed
+training_backend_requested: auto
+training_backend_selected: cpu
+training_backend_torch_version: 2.11.0
+training_backend_available_cuda: False
+training_backend_available_mps: False
+loaded_corpus_file: data/domain_curriculum/cache_repair_focus_v1.txt docs=2
+initialized_from: assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR
+device: cpu
+training_documents_core: 42
+training_documents_core_weight: 0
+training_documents_external: 2
+training tokens: 8064
+tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
+model: layers=3 emb=64 heads=4 ctx=192 hidden=256
+step     1 loss 11.4202
+step   200 loss 0.0703
+step   400 loss 0.0292
+step   600 loss 0.0184
+step   800 loss 0.0136
+step  1000 loss 0.0157
+step  1200 loss 0.0136
+
+prompt: Hello there.
+Hello there. A clean answer should answers and stop cleanly.  the trained as scaled integers and computes with scaled integer a should put held-out and the earlier tokens instead of rebuilding the full attention history is stable behavior.
+
+prompt: GPT2 BASIC on a 486
+GPT2 BASIC on a 486 the constraints the history is neermsmat of generation. A cache matters for text generation. Cache reuse does not change the trained weights or make the model smarter.
+
+prompt: Why run a language model in DOS?
+Why run a language model in DOS? Cache reuse does not cange the trained weights or make the model sssatale on real hardware. A s floating point tensoxples, clean tokenizer, fixed-point arithmetic, predictable memory use, and local generation from trained weights.
+
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CACHEFOCUS_REPAIR/GPT2CFG.TXT
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CACHEFOCUS_REPAIR/GPT2WT.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CACHEFOCUS_REPAIR/GPT2FX.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CACHEFOCUS_REPAIR/GPT2EXP.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CACHEFOCUS_REPAIR/VOCAB.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_CACHEFOCUS_REPAIR/PROFILE.TXT

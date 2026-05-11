@@ -6,7 +6,7 @@ Evaluation backend: `dos-fixed-qemu`
 Quality suite: `runtime-regression`
 Source log: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence/quality_486.log`
 Quality status: `PASS`
-Average score: `0.948`
+Average score: `0.965`
 Prompt pass rate: `5/5` at threshold `0.72`
 
 ## Prompt Suite
@@ -14,10 +14,10 @@ Prompt pass rate: `5/5` at threshold `0.72`
 | Prompt | Score | Keywords | Repeat | Max run | Boundary | End | Status |
 |---|---:|---:|---:|---:|---:|---|---|
 | real_inference | 0.975 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| 486_target | 0.970 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| dos_model | 0.850 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| basic_runtime | 0.973 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| optimization | 0.974 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| 486_target | 0.974 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| dos_model | 0.965 | 3 | 2.9% | 2 | 0 | yes | PASS |
+| basic_runtime | 0.973 | 3 | 0.0% | 2 | 0 | yes | PASS |
+| optimization | 0.938 | 5 | 11.8% | 2 | 0 | yes | PASS |
 
 ## Generated Continuations
 
@@ -34,7 +34,7 @@ The prompt is encoded into tokens, the transformer updates hidden state, the out
 Prompt: `GPT2 BASIC on a 486`
 
 ```text
-A 486-era machine can run a tiny transformer when the model keeps memory, context length, and arithmetic cost under control. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The goal is not a modern assistant. The user needs to know whether the checkpoint, encodes the prompt, runs attention and feed-forward layers, masks invalid output, and decodes printable text.
+The useful target is a compact checkpoint that produces short technical continuations at a measurable speed. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The constraint makes the system easier to audit. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. The vocabulary helps by replacing common technical words and phrases with single tokens. The goal is not a modern assistant.
 ```
 
 ### dos_model
@@ -42,7 +42,7 @@ A 486-era machine can run a tiny transformer when the model keeps memory, contex
 Prompt: `DOS language models need`
 
 ```text
-compact checkpoint that produces short technical continuations at a measurable speed. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. The vocabulary helps by replacing common technical words and phrases with single tokens. The constraint makes the system easier to audit.
+enough vocabulary to say technical phrases cleanly without making the output head too expensive. DOS language models need reproducible timing, vector parity, plain file formats, and readable continuations from model logits. A BASIC transformer runtime uses arrays for weights, tokens, cache vectors, hidden states, logits, and fixed-point work buffers. A BASIC transformer runtime loads the checkpoint, encodes the prompt, runs attention, applies feed-forward layers, and decodes sampled tokens.
 ```
 
 ### basic_runtime
@@ -50,7 +50,7 @@ compact checkpoint that produces short technical continuations at a measurable s
 Prompt: `A BASIC transformer runtime`
 
 ```text
-uses the same tokenizer contract as the host tools. Plain arrays make memory use visible and keep the implementation understandable on old development tools. The DOS program is a real inference runner, not a training system. The BASIC runtime uses arrays for tokens, embeddings, cache vectors, logits, weights, and fixed-point work buffers.
+uses the same tokenizer contract as the host tools. The result is not copied from a prompt table. Generation loads the checkpoint, encodes the prompt, runs transformer layers, masks invalid output, and decodes printable text. 486 target connects naturally with old PC limits. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. A useful checkpoint balances quality with predictable memory and measured tokens per second.
 ```
 
 ### optimization
@@ -58,6 +58,5 @@ uses the same tokenizer contract as the host tools. Plain arrays make memory use
 Prompt: `To improve performance on real hardware`
 
 ```text
-reduce repeated work, keep memory access predictable, choose a compact profile, and measure tokens per second inside the decode loop.
+choose a compact profile and compare quality against speed, memory, and vector parity. To improve performance on real hardware, preserve fixed-point correctness while replacing slow operations with predictable integer work. To improve performance on real hardware, use vocabulary pieces that reduce token count without making every logit step too expensive. To improve performance on real hardware, measure generated tokens per second on the target path before promoting a checkpoint.
 ```
-

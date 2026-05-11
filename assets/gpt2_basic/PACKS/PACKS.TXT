@@ -1,0 +1,3 @@
+# GPT2-BASIC assistant pack order.
+DOSHELP
+OFFICE

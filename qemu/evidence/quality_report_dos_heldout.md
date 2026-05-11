@@ -14,8 +14,8 @@ Prompt pass rate: `5/5` at threshold `0.72`
 | Prompt | Score | Keywords | Repeat | Max run | Boundary | End | Status |
 |---|---:|---:|---:|---:|---:|---|---|
 | heldout_cache | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_timing | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_limits | 0.972 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| heldout_timing | 0.969 | 4 | 1.3% | 2 | 0 | yes | PASS |
+| heldout_limits | 0.973 | 4 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_fixed_point | 0.975 | 3 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_profiles | 0.974 | 4 | 0.0% | 2 | 0 | yes | PASS |
 
@@ -34,7 +34,7 @@ Cache reuse saves repeated attention work while preserving enough context for co
 Prompt: `How should a DOS model report timing?`
 
 ```text
-It should print generated tokens, elapsed seconds, tokens per second, model profile, context length, and whether the run used emulator timing or physical hardware timing. How should a DOS model report timing? The measurement belongs around the decode loop, not around boot, file loading, or setup. A clear timing result names the checkpoint and says how many tokens were generated.
+A timing result needs generated tokens, elapsed seconds, tokens per second, the model profile, and the measurement basis. The report needs enough context for another run to repeat the measurement. Host stopwatch numbers alone are not hardware evidence. What belongs in a timing result? The timed section belongs inside the decode loop so loading files and boot time do not distort generation speed. Prompt length and output length matter because attention work grows with the active context.
 ```
 
 ### heldout_limits
@@ -42,7 +42,7 @@ It should print generated tokens, elapsed seconds, tokens per second, model prof
 Prompt: `What limits a tiny transformer on old PCs?`
 
 ```text
-The output head grows with vocabulary size, so every extra token adds weights and logits work. A useful checkpoint balances quality with predictable memory and measured tokens per second. Capacity alone does not make the old-PC model better. Memory pressure comes from weights, activations, logits, token arrays, and work buffers. The practical limit is the whole runtime, not just file size.
+The limits are weight bytes, cache memory, context length, integer arithmetic, output vocabulary, and the number of operations per generated token. What limits a tiny transformer on old PCs? Memory controls how large the checkpoint and cache can be, while speed controls how many matrix and attention operations are practical. A small model has to balance both.
 ```
 
 ### heldout_fixed_point
@@ -60,4 +60,3 @@ Prompt: `Why compare model profiles before choosing one?`
 ```text
 A larger checkpoint is only better when measured quality improves enough to justify extra memory and slower generation. Quality and runtime evidence have to be considered together. A profile comparison should put held-out quality beside tokens per second and peak memory. That makes it clear whether a larger vocabulary or hidden size is helping the real target machine. The default profile should be selected from evidence, not from size alone.
 ```
-

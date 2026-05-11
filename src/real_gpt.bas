@@ -13,6 +13,7 @@ CONST GPT2BASIC_EXP_TABLE_FILE AS STRING = "GPT2EXP.BIN"
 CONST GPT2BASIC_TOKEN_Q4_FILE AS STRING = "GPT2TQ4.BIN"
 CONST GPT2BASIC_HEAD_Q4_FILE AS STRING = "GPT2HQ4.BIN"
 CONST GPT2BASIC_HEAD_Q4_STREAM_MARKER AS STRING = "GPT2HQS.ON"
+CONST GPT2BASIC_HEAD_SHORTLIST_FILE AS STRING = "GPT2HSL.BIN"
 CONST GPT2BASIC_VECTOR_FILE AS STRING = "GPT2VEC.TXT"
 CONST TINYGPT_CFG_FILE AS STRING = "TINYCFG.TXT"
 CONST TINYGPT_WEIGHT_FILE AS STRING = "TINYWT.BIN"
@@ -35,6 +36,8 @@ CONST TINYGPT_TOKEN_Q4_MAGIC AS LONG = &H34515447
 CONST TINYGPT_TOKEN_Q4_VERSION AS LONG = 1
 CONST TINYGPT_HEAD_Q4_MAGIC AS LONG = &H34514847
 CONST TINYGPT_HEAD_Q4_VERSION AS LONG = 1
+CONST TINYGPT_HEAD_SHORTLIST_MAGIC AS LONG = &H314C5348
+CONST TINYGPT_HEAD_SHORTLIST_VERSION AS LONG = 1
 CONST TINYGPT_KERNEL_STAGE_COUNT AS INTEGER = 6
 CONST TINYGPT_KERNEL_EMBED AS INTEGER = 0
 CONST TINYGPT_KERNEL_QKV AS INTEGER = 1
@@ -136,6 +139,10 @@ DIM SHARED g_tiny_fx_head_q4_file AS INTEGER
 DIM SHARED g_tiny_fx_head_q4_codes_offset AS LONG
 DIM SHARED g_tiny_fx_head_q4_row_bytes AS LONG
 DIM SHARED g_tiny_fx_head_q4_row() AS UBYTE
+DIM SHARED g_tiny_fx_head_shortlist_loaded AS INTEGER
+DIM SHARED g_tiny_fx_head_shortlist_count AS INTEGER
+DIM SHARED g_tiny_fx_head_shortlist_bytes AS LONG
+DIM SHARED g_tiny_fx_head_shortlist() AS INTEGER
 
 DIM SHARED g_tiny_fx_cache_k() AS LONG
 DIM SHARED g_tiny_fx_cache_v() AS LONG
@@ -181,6 +188,7 @@ DECLARE FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
 DECLARE FUNCTION TinyGPTLoadFixedExpTable(base_path AS STRING) AS INTEGER
 DECLARE FUNCTION TinyGPTLoadTokenQ4(base_path AS STRING, expected_value_count AS LONG) AS INTEGER
 DECLARE FUNCTION TinyGPTLoadHeadQ4(base_path AS STRING, expected_value_count AS LONG) AS INTEGER
+DECLARE FUNCTION TinyGPTLoadHeadShortlist(base_path AS STRING) AS INTEGER
 DECLARE SUB TinyGPTFreeModel()
 DECLARE FUNCTION TinyGPTIsLoaded() AS INTEGER
 DECLARE FUNCTION TinyGPTIsFixedPointLoaded() AS INTEGER
@@ -236,6 +244,7 @@ DECLARE SUB TinyGPTKernelPerfReport()
 DECLARE SUB TinyGPTFixedLayerNormVec(input_vec() AS LONG, output_vec() AS LONG, emb_dim AS INTEGER, gamma_arr() AS LONG, beta_arr() AS LONG, param_base AS LONG)
 DECLARE SUB TinyGPTFixedLinearVec(input_vec() AS LONG, output_vec() AS LONG, in_dim AS INTEGER, out_dim AS INTEGER, weight_arr() AS LONG, weight_base AS LONG, bias_arr() AS LONG, bias_base AS LONG)
 DECLARE SUB TinyGPTFixedHeadQ4LinearVec(input_vec() AS LONG, output_vec() AS LONG)
+DECLARE SUB TinyGPTFixedHeadShortlistLinearVec(input_vec() AS LONG, output_vec() AS LONG)
 DECLARE SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, write_logits AS INTEGER, logits() AS LONG)
 DECLARE FUNCTION TinyGPTFixedGELU(x AS LONG) AS LONG
 DECLARE FUNCTION TinyGPTFixedSample(logits() AS LONG, context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
@@ -544,6 +553,59 @@ head_q4_error:
     RETURN 0
 END FUNCTION
 
+FUNCTION TinyGPTLoadHeadShortlist(base_path AS STRING) AS INTEGER
+    DIM shortlist_path AS STRING
+    DIM file_num AS INTEGER
+    DIM magic AS LONG
+    DIM version AS LONG
+    DIM vocab_size AS LONG
+    DIM token_count AS LONG
+    DIM token_value AS LONG
+    DIM i AS LONG
+
+    shortlist_path = base_path + "\" + GPT2BASIC_HEAD_SHORTLIST_FILE
+    IF DIR(shortlist_path) = "" THEN RETURN 0
+
+    file_num = FREEFILE
+    ON ERROR GOTO head_shortlist_error
+    OPEN shortlist_path FOR BINARY AS #file_num
+
+    GET #file_num, , magic
+    GET #file_num, , version
+    GET #file_num, , vocab_size
+    GET #file_num, , token_count
+
+    IF magic <> TINYGPT_HEAD_SHORTLIST_MAGIC THEN GOTO head_shortlist_error
+    IF version <> TINYGPT_HEAD_SHORTLIST_VERSION THEN GOTO head_shortlist_error
+    IF vocab_size <> g_tiny_vocab_size THEN GOTO head_shortlist_error
+    IF token_count < 1 OR token_count > g_tiny_vocab_size THEN GOTO head_shortlist_error
+    IF LOF(file_num) <> 16 + (token_count * 4) THEN GOTO head_shortlist_error
+
+    REDIM g_tiny_fx_head_shortlist(0 TO token_count - 1)
+    FOR i = 0 TO token_count - 1
+        GET #file_num, , token_value
+        IF token_value < 0 OR token_value >= g_tiny_vocab_size THEN GOTO head_shortlist_error
+        g_tiny_fx_head_shortlist(i) = token_value
+    NEXT i
+
+    CLOSE #file_num
+    ON ERROR GOTO 0
+
+    g_tiny_fx_head_shortlist_loaded = 1
+    g_tiny_fx_head_shortlist_count = token_count
+    g_tiny_fx_head_shortlist_bytes = 16 + (token_count * 4)
+    RETURN 1
+
+head_shortlist_error:
+    ON ERROR GOTO 0
+    IF file_num <> 0 THEN CLOSE #file_num
+    ERASE g_tiny_fx_head_shortlist
+    g_tiny_fx_head_shortlist_loaded = 0
+    g_tiny_fx_head_shortlist_count = 0
+    g_tiny_fx_head_shortlist_bytes = 0
+    RETURN -1
+END FUNCTION
+
 FUNCTION TinyGPTLoadFixedExpTable(base_path AS STRING) AS INTEGER
     DIM exp_path AS STRING
     DIM file_num AS INTEGER
@@ -598,8 +660,17 @@ FUNCTION TinyGPTLoadFixedModel(base_path AS STRING) AS INTEGER
     g_tiny_fx_head_q4_file = 0
     g_tiny_fx_head_q4_codes_offset = 0
     g_tiny_fx_head_q4_row_bytes = 0
+    g_tiny_fx_head_shortlist_loaded = 0
+    g_tiny_fx_head_shortlist_count = 0
+    g_tiny_fx_head_shortlist_bytes = 0
     TinyGPTLoadTokenQ4 base_path, token_count
     TinyGPTLoadHeadQ4 base_path, head_count
+    IF TinyGPTLoadHeadShortlist(base_path) < 0 THEN
+        IF g_tiny_fx_head_q4_stream <> 0 AND g_tiny_fx_head_q4_file <> 0 THEN CLOSE #g_tiny_fx_head_q4_file
+        g_tiny_fx_head_q4_stream = 0
+        g_tiny_fx_head_q4_file = 0
+        RETURN 0
+    END IF
 
     IF g_tiny_fx_tok_q4_loaded = 0 THEN
         REDIM g_tiny_fx_tok_emb(0 TO token_count - 1)
@@ -687,6 +758,7 @@ fixed_weight_error:
     ERASE g_tiny_fx_head_q4_level
     ERASE g_tiny_fx_head_q4_decode
     ERASE g_tiny_fx_head_q4_row
+    ERASE g_tiny_fx_head_shortlist
     g_tiny_fx_tok_q4_loaded = 0
     g_tiny_fx_tok_q4_bytes = 0
     g_tiny_fx_head_q4_loaded = 0
@@ -695,6 +767,9 @@ fixed_weight_error:
     g_tiny_fx_head_q4_file = 0
     g_tiny_fx_head_q4_codes_offset = 0
     g_tiny_fx_head_q4_row_bytes = 0
+    g_tiny_fx_head_shortlist_loaded = 0
+    g_tiny_fx_head_shortlist_count = 0
+    g_tiny_fx_head_shortlist_bytes = 0
     RETURN 0
 END FUNCTION
 
@@ -877,6 +952,7 @@ SUB TinyGPTFreeModel()
     ERASE g_tiny_fx_head_q4_level
     ERASE g_tiny_fx_head_q4_decode
     ERASE g_tiny_fx_head_q4_row
+    ERASE g_tiny_fx_head_shortlist
     ERASE g_tiny_fx_cache_k
     ERASE g_tiny_fx_cache_v
     ERASE g_tiny_fx_cache_tokens
@@ -905,6 +981,9 @@ SUB TinyGPTFreeModel()
     g_tiny_fx_head_q4_file = 0
     g_tiny_fx_head_q4_codes_offset = 0
     g_tiny_fx_head_q4_row_bytes = 0
+    g_tiny_fx_head_shortlist_loaded = 0
+    g_tiny_fx_head_shortlist_count = 0
+    g_tiny_fx_head_shortlist_bytes = 0
     g_tiny_generation_start_len = 0
     g_tiny_cache_len = 0
     g_tiny_fx_cache_len = 0
@@ -1009,6 +1088,9 @@ FUNCTION TinyGPTRuntimeMemoryBytes() AS LONG
         END IF
         IF g_tiny_fx_head_q4_loaded <> 0 THEN
             total = total - (head_count * 4) + g_tiny_fx_head_q4_bytes
+        END IF
+        IF g_tiny_fx_head_shortlist_loaded <> 0 THEN
+            total = total + g_tiny_fx_head_shortlist_bytes
         END IF
         total = total + CLNG(TINYGPT_FX_EXP_SIZE) * 4
         total = total + cache_values * 8
@@ -2063,6 +2145,39 @@ SUB TinyGPTFixedHeadQ4LinearVec(input_vec() AS LONG, output_vec() AS LONG)
     NEXT out_idx
 END SUB
 
+SUB TinyGPTFixedHeadShortlistLinearVec(input_vec() AS LONG, output_vec() AS LONG)
+    DIM vocab_idx AS INTEGER
+    DIM list_idx AS INTEGER
+    DIM token_id AS INTEGER
+    DIM in_idx AS INTEGER
+    DIM weight_row AS LONG
+    DIM input_value AS LONG
+    DIM mul_value AS LONGINT
+    DIM acc_value AS LONGINT
+
+    FOR vocab_idx = 0 TO g_tiny_vocab_size - 1
+        output_vec(vocab_idx) = -TINYGPT_FX_CLAMP
+    NEXT vocab_idx
+
+    FOR list_idx = 0 TO g_tiny_fx_head_shortlist_count - 1
+        token_id = g_tiny_fx_head_shortlist(list_idx)
+        IF token_id >= 0 AND token_id < g_tiny_vocab_size THEN
+            acc_value = g_tiny_fx_head_b(token_id)
+            FOR in_idx = 0 TO g_tiny_n_embd - 1
+                input_value = input_vec(in_idx)
+                IF input_value <> 0 THEN
+                    weight_row = CLNG(in_idx) * CLNG(g_tiny_vocab_size) + token_id
+                    mul_value = (CLNGINT(input_value) * CLNGINT(g_tiny_fx_head_w(weight_row))) \ TINYGPT_FX_ONE
+                    IF mul_value > TINYGPT_FX_CLAMP THEN mul_value = TINYGPT_FX_CLAMP
+                    IF mul_value < -TINYGPT_FX_CLAMP THEN mul_value = -TINYGPT_FX_CLAMP
+                    acc_value = acc_value + mul_value
+                END IF
+            NEXT in_idx
+            output_vec(token_id) = TinyGPTFixedClamp(acc_value)
+        END IF
+    NEXT list_idx
+END SUB
+
 FUNCTION TinyGPTFixedGELU(x AS LONG) AS LONG
     DIM x2 AS LONG
     DIM x3 AS LONG
@@ -2331,6 +2446,8 @@ SUB TinyGPTFixedForwardCachedToken(token_id AS INTEGER, cache_pos AS INTEGER, wr
 
         IF g_tiny_fx_head_q4_loaded <> 0 THEN
             TinyGPTFixedHeadQ4LinearVec g_tiny_fx_norm_vec(), logits()
+        ELSEIF g_tiny_fx_head_shortlist_loaded <> 0 THEN
+            TinyGPTFixedHeadShortlistLinearVec g_tiny_fx_norm_vec(), logits()
         ELSE
             TinyGPTFixedLinearVec g_tiny_fx_norm_vec(), logits(), emb_dim, g_tiny_vocab_size, g_tiny_fx_head_w(), 0, g_tiny_fx_head_b(), 0
         END IF

@@ -24,8 +24,9 @@ from export_gpt2_basic_vectors import (
     Config as FixedConfig,
     FixedWeights,
     encode_prompt,
-    forward_fixed_trace,
+    forward_fixed_trace_with_head_shortlist,
     parse_config,
+    read_head_shortlist,
     read_weights,
 )
 from train_tiny_gpt import Config as TorchConfig
@@ -38,6 +39,7 @@ DEFAULT_MODEL = ROOT / "assets" / "gpt2_basic" / "MODEL"
 DEFAULT_OUTPUT = ROOT / "qemu" / "evidence" / "quality_report.md"
 DEFAULT_MIN_GENERATED = 70
 SENTENCE_STOP_MIN_TOKENS = 30
+DOMAIN_WORD_LEXICON: set[str] | None = None
 
 
 @dataclass(frozen=True)
@@ -187,6 +189,7 @@ def generate_fixed_completion(
     max_new_tokens: int,
     min_generated: int,
     tokenizer: GPT2BasicTokenizer,
+    head_shortlist: list[int] | None = None,
 ) -> tuple[str, int]:
     context = encode_prompt(prompt, tokenizer)
     if not context:
@@ -195,7 +198,7 @@ def generate_fixed_completion(
 
     for step in range(max_new_tokens):
         active = context[-cfg.n_positions :]
-        logits, _phases = forward_fixed_trace(cfg, weights, active)
+        logits, _phases = forward_fixed_trace_with_head_shortlist(cfg, weights, active, head_shortlist)
         next_token = select_greedy_token(logits, context[prompt_len:], min_generated, tokenizer, prompt)
         context.append(next_token)
         if next_token == EOT_TOKEN:
@@ -355,7 +358,59 @@ BOUNDARY_FRAGMENT_PATTERNS = [
     r"\bvaluey\b",
     r"\b[a-z]*(?:runsformer|foruntime|tenteger|weigs|contex(?!t)|geraing|losido|seped|prameter|resould|compatibile|parationhm)[a-z]*\b",
     r"\b[a-z]{2,}(?:runtime|transformer|timing|tokens|weights|context|integer)[a-z]{2,}\b",
+    r"\b(?:anarose|calud|ceme|dsed|edese|loow|lowtsed|oldes|predas|reamearesents|roured|rslope|sastsuredures|shent|stshsts|suint|sureamarents)\b",
+    r"\b[a-z]*(?:stststs|stshts|tsts|stsure|mearesents|reamare|rrace|suring|slon|loose|lop)\b",
 ]
+
+
+def domain_word_lexicon() -> set[str]:
+    global DOMAIN_WORD_LEXICON
+    if DOMAIN_WORD_LEXICON is not None:
+        return DOMAIN_WORD_LEXICON
+
+    words: set[str] = set()
+    corpus_root = ROOT / "data" / "domain_curriculum"
+    for path in sorted(corpus_root.glob("*.txt")):
+        text = path.read_text(encoding="utf-8", errors="ignore").lower()
+        words.update(re.findall(r"[a-z]{3,}", text))
+
+    for prompt in REGRESSION_PROMPTS + HELDOUT_PROMPTS:
+        words.update(re.findall(r"[a-z]{3,}", prompt.prompt.lower()))
+        for keyword in prompt.keywords:
+            words.update(re.findall(r"[a-z]{3,}", keyword.lower()))
+
+    words.update(
+        {
+            "basic",
+            "checkpoint",
+            "continuation",
+            "decode",
+            "decoded",
+            "encoder",
+            "generation",
+            "generated",
+            "inference",
+            "integer",
+            "lexicon",
+            "logits",
+            "runtime",
+            "tokenizer",
+            "transformer",
+        }
+    )
+    DOMAIN_WORD_LEXICON = words
+    return words
+
+
+def known_domain_word(word: str, lexicon: set[str]) -> bool:
+    if word in lexicon:
+        return True
+    for suffix in ("s", "ed", "ing", "er", "ers", "ly"):
+        if word.endswith(suffix) and word[: -len(suffix)] in lexicon:
+            return True
+    if word.endswith("ies") and word[:-3] + "y" in lexicon:
+        return True
+    return False
 
 
 def boundary_error_count(text: str) -> int:
@@ -368,6 +423,14 @@ def boundary_error_count(text: str) -> int:
     lower = text.lower()
     for pattern in BOUNDARY_FRAGMENT_PATTERNS:
         errors += len(re.findall(pattern, lower))
+    lexicon = domain_word_lexicon()
+    for word in re.findall(r"[a-z]{6,}", lower):
+        if re.search(r"([a-z]{2,3})\1{2,}", word):
+            errors += 1
+        elif len(word) >= 9 and sum(1 for ch in word if ch in "aeiou") <= 1:
+            errors += 1
+        elif len(word) >= 8 and not known_domain_word(word, lexicon):
+            errors += 1
     return errors
 
 
@@ -415,7 +478,13 @@ def score_completion(prompt: QualityPrompt, completion: str, generated_tokens: i
         max_char_run=char_run,
         boundary_errors=boundary_errors,
         ended_cleanly=ended_cleanly,
-        passed=score >= threshold and boundary_errors == 0,
+        passed=(
+            score >= threshold
+            and boundary_errors == 0
+            and trigram_ratio <= 0.18
+            and char_run <= 4
+            and ended_cleanly
+        ),
     )
 
 
@@ -433,9 +502,10 @@ def evaluate_model(
     results: list[QualityResult] = []
     if backend == "fixed":
         weights = read_weights(model_dir, cfg)
+        head_shortlist = read_head_shortlist(model_dir, cfg)
         for prompt in prompts:
             completion, generated_tokens = generate_fixed_completion(
-                cfg, weights, prompt.prompt, max_new_tokens, min_generated, tokenizer
+                cfg, weights, prompt.prompt, max_new_tokens, min_generated, tokenizer, head_shortlist
             )
             results.append(score_completion(prompt, completion, generated_tokens, threshold))
     else:
@@ -524,8 +594,9 @@ def self_test(model_dir: Path) -> None:
         model, "What makes this real inference?", 8, 0, th.device("cpu"), tokenizer
     )
     weights = read_weights(model_dir, cfg)
+    head_shortlist = read_head_shortlist(model_dir, cfg)
     fixed_completion, fixed_tokens = generate_fixed_completion(
-        cfg, weights, "What makes this real inference?", 8, 0, tokenizer
+        cfg, weights, "What makes this real inference?", 8, 0, tokenizer, head_shortlist
     )
     probe_prompt = QualityPrompt("probe", "What makes this real inference?", ("logits", "weights"))
     float_result = score_completion(probe_prompt, float_completion, float_tokens, 0.1)
@@ -541,6 +612,7 @@ def self_test(model_dir: Path) -> None:
     _max_run = max_repeated_run("aaabb")
     _repeat_ratio = repeated_trigram_ratio("one two three one two three")
     _boundary_errors = boundary_error_count(", thanswer")
+    _unknown_word_errors = boundary_error_count("The runtime produced ucocatiges during generation.")
     _pct = format_pct(0.5)
     report = markdown_report(cfg, [float_result, fixed_result], 0.1, "self-test", "self-test")
     print("trace format_pct")
@@ -550,6 +622,7 @@ def self_test(model_dir: Path) -> None:
     print("PROBE_OK load_float_model loaded=1")
     print(f"PROBE_OK generate_float_completion tokens={float_tokens}")
     print(f"PROBE_OK generate_fixed_completion tokens={fixed_tokens}")
+    print(f"PROBE_OK read_head_shortlist count={len(head_shortlist) if head_shortlist is not None else 0}")
     print(f"PROBE_OK decode_generated bytes={len(_decoded)}")
     print(f"PROBE_OK select_greedy_token token={_selected}")
     print(f"PROBE_OK mask_float_logits entries={_masked.numel()}")
@@ -558,6 +631,7 @@ def self_test(model_dir: Path) -> None:
     print(f"PROBE_OK max_repeated_run run={_max_run}")
     print(f"PROBE_OK repeated_trigram_ratio ratio={_repeat_ratio:.3f}")
     print(f"PROBE_OK boundary_error_count errors={_boundary_errors}")
+    print(f"PROBE_OK unknown_word_boundary_count errors={_unknown_word_errors}")
     print(f"PROBE_OK format_pct value={_pct}")
     print(f"PROBE_OK score_completion float_score={float_result.score:.3f}")
     print(f"PROBE_OK score_completion fixed_score={fixed_result.score:.3f}")

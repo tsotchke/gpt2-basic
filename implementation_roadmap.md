@@ -17,6 +17,12 @@ The project has successfully achieved all planned milestones:
 - ✅ End-to-end text generation working successfully
 - ✅ Comprehensive benchmarking and testing completed
 
+Current software-closure evidence is recorded in
+`qemu/evidence/aspirational_software_closure.md`. ICC reports
+`gpt2-basic-aspirational-software` as `ready` with score 100. Emulator timing is
+the accepted evidence basis until physical 486/Pentium board timing is
+available.
+
 ## Implementation Achievements by Priority
 
 The implementation was organized into five priority levels, with each subsequent level building upon the previous ones. All priorities have been successfully completed.
@@ -211,11 +217,11 @@ END SUB
 FUNCTION SIMD_Add_8bit(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG = a + b
     DIM overflow_mask AS LONG = &H01010100 ' Bits that would carry between elements
-    
+
     ' Handle potential overflow between elements
     result = (result AND (NOT overflow_mask)) OR _
              ((a AND b AND overflow_mask))
-    
+
     FUNCTION = result
 END FUNCTION
 ```
@@ -228,26 +234,26 @@ SUB MatrixMultiplySIMD(A AS Matrix, B AS Matrix, C AS Matrix)
     DIM i AS INTEGER, j AS INTEGER, k AS INTEGER
     DIM temp_sum AS LONG
     DIM a_val AS LONG, b_val AS LONG, product AS LONG
-    
+
     FOR i = 0 TO A.rows - 1
         FOR j = 0 TO B.cols - 1
             temp_sum = 0
-            
+
             ' Process 4 elements at a time using packed values
             FOR k = 0 TO A.cols - 4 STEP 4
                 a_val = Pack_8bit(A.data(i, k), A.data(i, k+1), A.data(i, k+2), A.data(i, k+3))
                 b_val = Pack_8bit(B.data(k, j), B.data(k+1, j), B.data(k+2, j), B.data(k+3, j))
-                
+
                 ' Compute packed product and add to sum
                 product = SIMD_Multiply_8bit(a_val, b_val)
                 temp_sum = SIMD_Add_8bit(temp_sum, product)
             NEXT k
-            
+
             ' Handle remaining elements
             FOR k = k TO A.cols - 1
                 temp_sum = temp_sum + A.data(i, k) * B.data(k, j)
             NEXT k
-            
+
             C.data(i, j) = temp_sum
         NEXT j
     NEXT i
@@ -288,7 +294,7 @@ END SUB
 SUB CreateCausalSparseMask(matrix AS SparseBlockMatrix, seq_len AS INTEGER)
     DIM block_size AS INTEGER = matrix.block_size
     DIM num_blocks AS INTEGER = (seq_len + block_size - 1) \ block_size
-    
+
     ' Create blocks for the upper triangular portion (including diagonal)
     FOR i = 0 TO num_blocks - 1
         FOR j = 0 TO i
@@ -312,19 +318,19 @@ PUBLIC _FixedMulAsm
 _FixedMulAsm PROC
     push    bp          ; Save base pointer
     mov     bp, sp      ; Set up stack frame
-    
+
     push    si          ; Save registers
     push    di
-    
+
     ; Get parameters from stack
     mov     ax, [bp+8]  ; High word of first operand
     mov     bx, [bp+6]  ; Low word of first operand
     mov     cx, [bp+12] ; High word of second operand
     mov     dx, [bp+10] ; Low word of second operand
-    
+
     ; Compute partial products
     ; We need to compute (ax:bx * cx:dx) >> 16
-    
+
     ; Compute bx * dx (low * low)
     mov     si, bx      ; Save bx
     mov     di, dx      ; Save dx
@@ -332,7 +338,7 @@ _FixedMulAsm PROC
     mul     dx          ; dx:ax = bx * dx
     push    dx          ; Save high part
     push    ax          ; Save low part
-    
+
     ; Compute ax * di (high * low)
     mov     bx, ax      ; Restore ax to bx
     mul     di          ; dx:ax = ax * di (high * low)
@@ -340,20 +346,20 @@ _FixedMulAsm PROC
     adc     dx, 0       ; Add carry to dx
     push    dx          ; Save overflow
     push    ax          ; Save result
-    
+
     ; Compute si * cx (low * high)
     mov     ax, si
     mul     cx          ; dx:ax = si * cx (low * high)
     add     ax, [bp-6]  ; Add to previous result
     adc     dx, [bp-8]  ; Add carry and overflow
-    
+
     ; Shift result right by 16 (divide by 2^16)
     mov     bx, ax      ; Low word of result
     mov     ax, dx      ; High word of result
     shr     ax, 16      ; Shift right by 16
     shl     bx, 16      ; Shift left by 16
     or      ax, bx      ; Combine for final result
-    
+
     ; Clean up and return
     pop     di
     pop     si
@@ -367,7 +373,7 @@ The assembly code has been wrapped in a BASIC function with fallback for systems
 ```basic
 FUNCTION FixedMultiply(a AS LONG, b AS LONG) AS LONG
     DIM result AS LONG
-    
+
     #IFDEF USE_ASSEMBLY
         IF HasAssemblySupport() THEN
             result = FixedMulAsm(a, b)
@@ -378,7 +384,7 @@ FUNCTION FixedMultiply(a AS LONG, b AS LONG) AS LONG
     #ELSE
         result = FixedMultiplyFallback(a, b)
     #ENDIF
-    
+
     RETURN result
 END FUNCTION
 ```
@@ -412,26 +418,26 @@ FUNCTION TrackedAllocate(size AS LONG) AS ANY PTR
         PRINT "ERROR: Memory allocation would exceed limit"
         RETURN NULL
     END IF
-    
+
     ' Perform the allocation
     DIM ptr AS ANY PTR = ALLOCATE(size)
-    
+
     ' Update tracking information
     g_memory_tracker.total_allocated = g_memory_tracker.total_allocated + size
     g_memory_tracker.num_allocations = g_memory_tracker.num_allocations + 1
-    
+
     ' Update peak if needed
     IF g_memory_tracker.total_allocated > g_memory_tracker.peak_allocated THEN
         g_memory_tracker.peak_allocated = g_memory_tracker.total_allocated
     END IF
-    
+
     RETURN ptr
 END FUNCTION
 
 ' Track a memory deallocation
 SUB TrackedDeallocate(ptr AS ANY PTR, size AS LONG)
     DEALLOCATE(ptr)
-    
+
     ' Update tracking information
     g_memory_tracker.total_allocated = g_memory_tracker.total_allocated - size
     g_memory_tracker.num_allocations = g_memory_tracker.num_allocations - 1

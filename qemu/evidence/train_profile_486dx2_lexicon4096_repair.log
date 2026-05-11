@@ -1,0 +1,47 @@
+profile: 486dx2-usable - 486DX2 target: larger model for better text at still-plausible 486 speed
+training_backend_requested: auto
+training_backend_selected: cpu
+training_backend_torch_version: 2.11.0
+training_backend_available_cuda: False
+training_backend_available_mps: False
+loaded_corpus_file: data/domain_curriculum/gold_curriculum_v4.txt docs=38
+device: cpu
+training_documents_core: 46
+training_documents_core_weight: 48
+training_documents_external: 38
+tokenizer_basis_documents: 84
+tokenizer_basis_chars: 82489
+training tokens: 7688052
+tokenizer: lexicon vocab=2686 merges=0 output_allowed=2524
+model: layers=3 emb=64 heads=4 ctx=192 hidden=256
+step     1 loss 8.0898
+step   500 loss 2.0597
+step  1000 loss 0.5458
+step  1500 loss 0.2685
+step  2000 loss 0.1488
+step  2500 loss 0.1421
+step  3000 loss 0.0977
+step  3500 loss 0.0905
+step  4000 loss 0.1020
+step  4500 loss 0.0935
+step  5000 loss 0.0932
+step  5500 loss 0.0973
+step  6000 loss 0.0859
+step  6500 loss 0.0757
+step  7000 loss 0.0795
+
+prompt: Hello there.
+Hello there. I am GPT2 BASIC, a compact language model running through a DOS BASIC transformer runtime. I read a byte prompt, run attention and feed-forward layers, and sample the next byte from trained weights. GPT2 BASIC on a 486 is credible when it loads trained weights, runs transformer layers, and prints text chosen from logits.
+
+prompt: GPT2 BASIC on a 486
+GPT2 BASIC on a 486 profile mpl C: GPT2.EXE --plitrf C: PERF.LOG qemu/evidence/hardware perf report.md bash qemu/run perf 486.
+
+prompt: Why run a language model in DOS?
+Why run a language model in DOS? Because the constraint makes the system honest. A clean GPT2-BASIC answer is and produce a-lure behavior has an engineering tradeoff.
+
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR/GPT2CFG.TXT
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR/GPT2WT.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR/GPT2FX.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR/GPT2EXP.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR/VOCAB.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR/PROFILE.TXT

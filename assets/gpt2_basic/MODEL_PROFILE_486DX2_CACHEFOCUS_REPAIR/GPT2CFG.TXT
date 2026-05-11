@@ -1,0 +1,8 @@
+# GPT2-BASIC fixed-point model config
+profile=486dx2-usable
+vocab_size=4096
+n_positions=192
+n_embd=64
+n_head=4
+n_layer=3
+hidden_dim=256

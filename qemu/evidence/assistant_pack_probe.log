@@ -1,0 +1,8 @@
+PROBE_OK assistant_pack_count=2
+PROBE_OK assistant_pack_loader=1
+PROBE_OK assistant_pack_models=1
+PROBE_OK assistant_pack_quality=1
+PROBE_OK assistant_model_switch=1
+PROBE_OK assistant_structured_reply=1
+PROBE_OK assistant_art_slots=1
+PROBE_OK assistant_qemu_evidence=1

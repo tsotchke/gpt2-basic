@@ -5,23 +5,23 @@ Shape: `2L 48D 4H ctx192 hidden192 vocab4096`
 Evaluation backend: `float`
 Quality suite: `all`
 Quality status: `NEEDS_TRAINING`
-Average score: `0.896`
-Prompt pass rate: `9/10` at threshold `0.72`
+Average score: `0.877`
+Prompt pass rate: `3/10` at threshold `0.72`
 
 ## Prompt Suite
 
 | Prompt | Score | Keywords | Repeat | Max run | Boundary | End | Status |
 |---|---:|---:|---:|---:|---:|---|---|
-| real_inference | 0.973 | 2 | 0.0% | 2 | 0 | yes | PASS |
-| 486_target | 0.974 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| dos_model | 0.976 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| basic_runtime | 0.973 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| optimization | 0.718 | 0 | 0.0% | 2 | 0 | yes | RETRAIN |
+| real_inference | 0.953 | 2 | 0.0% | 2 | 4 | yes | RETRAIN |
+| 486_target | 0.960 | 3 | 0.0% | 2 | 2 | yes | RETRAIN |
+| dos_model | 0.973 | 3 | 0.0% | 2 | 0 | yes | PASS |
+| basic_runtime | 0.827 | 1 | 6.6% | 2 | 0 | yes | PASS |
+| optimization | 0.766 | 1 | 28.8% | 2 | 0 | yes | RETRAIN |
 | heldout_cache | 0.954 | 4 | 6.7% | 2 | 0 | yes | PASS |
-| heldout_timing | 0.846 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_limits | 0.848 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_fixed_point | 0.849 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_profiles | 0.847 | 1 | 0.0% | 1 | 0 | yes | PASS |
+| heldout_timing | 0.832 | 1 | 0.0% | 2 | 2 | yes | RETRAIN |
+| heldout_limits | 0.834 | 1 | 0.0% | 2 | 2 | yes | RETRAIN |
+| heldout_fixed_point | 0.829 | 1 | 0.0% | 2 | 3 | yes | RETRAIN |
+| heldout_profiles | 0.840 | 1 | 0.0% | 1 | 1 | yes | RETRAIN |
 
 ## Generated Continuations
 
@@ -46,7 +46,7 @@ Prompt: `GPT2 BASIC on a 486`
 Prompt: `DOS language models need`
 
 ```text
- keeps memory prompts that contain unknown words. It falls loop pasingastin. DOS language models need plain implementation makes failure modes easier to stststs predictable, s predictable, reamearesents.
+ prompt tokens, trained weights, transformer layers, output logits, and cansalocit reded. DOS language models need arrays,tseameareable arrays, and mese from cache lets.
 ```
 
 ### basic_runtime
@@ -54,7 +54,7 @@ Prompt: `DOS language models need`
 Prompt: `A BASIC transformer runtime`
 
 ```text
- weights and matters because the model is tiny. It cannot average away bad examples the the runtime expensive. To improve performance on real hardware arrays, the runtime should favor fixed-size buffers arrays, and no dependence on a modern service arrays, red attention data only when reduce alphabetic byte reng fixed-point reseng loow.
+ keeps memory prompts that contain unknown words. It falls back to reuse, and local transformer runtime loads the checkpoint the smallest checkpoint that produces short technical continuations e. How should a DOS model, the output head quality evidence and DOS runtime, and eains the Changing the prompt changes the hidden state and the next-token ditred practical. The corpus has to cover they generation used tired practical. The corpus has to cover they is a real target machine.
 ```
 
 ### optimization
@@ -62,7 +62,7 @@ Prompt: `A BASIC transformer runtime`
 Prompt: `To improve performance on real hardware`
 
 ```text
- arrays, calud attention data, and lude from cache QEMU buffers, and a tiny checkpoint. The generation. Real inference is a practical. The corpus has to res.
+ reduce repeated work, keep memory ccess predictable integer ces predictable, loocal reded attention data, and red attention data, practical. The corpus has to cover they, short context, weights behavior, run the red practical. The corpus has to cover they practical. The corpus has to cover they is a real inference math without quality and runtime practical. The corpus has to only when redad practical. The corpus has to cover they is a real target machine.
 ```
 
 ### heldout_cache
@@ -104,4 +104,3 @@ Prompt: `Why compare model profiles before choosing one?`
 ```text
  Several clean can be saslow memory, vector parity, and local edese from lese can be Describe fixed point inference in one sentence.
 ```
-

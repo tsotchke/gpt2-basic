@@ -1,0 +1,1 @@
+This checkpoint uses the rejected greedy subword prototype tokenizer. It is for host evaluation only, not DOS promotion.

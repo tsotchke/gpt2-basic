@@ -1,0 +1,9 @@
+PROBE_OK memory_tracker status=PASS
+PROBE_OK parameter_streaming status=PASS
+PROBE_OK block_sparse_attention status=PASS
+PROBE_OK simd_like_ops status=PASS
+PROBE_OK fixed_point_and_assembly status=PASS
+PROBE_OK benchmarks_and_emulator_evidence status=PASS
+PROBE_OK vga_visual_trace status=PASS
+completion_reason=aspirational_software_implemented
+done=True

@@ -4,9 +4,9 @@ Model profile: `486sx-safe`
 Shape: `2L 48D 4H ctx192 hidden192 vocab4096`
 Evaluation backend: `float`
 Quality suite: `all`
-Quality status: `PASS`
-Average score: `0.940`
-Prompt pass rate: `10/10` at threshold `0.72`
+Quality status: `NEEDS_TRAINING`
+Average score: `0.964`
+Prompt pass rate: `7/10` at threshold `0.72`
 
 ## Prompt Suite
 
@@ -14,14 +14,14 @@ Prompt pass rate: `10/10` at threshold `0.72`
 |---|---:|---:|---:|---:|---:|---|---|
 | real_inference | 0.974 | 3 | 0.0% | 2 | 0 | yes | PASS |
 | 486_target | 0.969 | 3 | 0.8% | 2 | 0 | yes | PASS |
-| dos_model | 0.849 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| basic_runtime | 0.975 | 2 | 0.0% | 2 | 0 | yes | PASS |
-| optimization | 0.765 | 1 | 37.0% | 2 | 0 | yes | PASS |
+| dos_model | 0.936 | 2 | 0.0% | 9 | 1 | yes | RETRAIN |
+| basic_runtime | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
+| optimization | 0.931 | 2 | 11.4% | 2 | 1 | yes | RETRAIN |
 | heldout_cache | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_timing | 0.972 | 4 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_limits | 0.973 | 5 | 0.0% | 2 | 0 | yes | PASS |
 | heldout_fixed_point | 0.975 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| heldout_profiles | 0.973 | 5 | 0.0% | 2 | 0 | yes | PASS |
+| heldout_profiles | 0.966 | 5 | 0.0% | 2 | 1 | yes | RETRAIN |
 
 ## Generated Continuations
 
@@ -46,7 +46,7 @@ Prompt: `GPT2 BASIC on a 486`
 Prompt: `DOS language models need`
 
 ```text
- and anarose a compact predictable rslope. To improve performance on real hardware dsed correctly. The checkpoint should answer the current prompt, on an oldes.
+ small context keeps cache memory manageable and keeps attention work bounded. The cache is an engineering tradeoff, not a quality shortcut. Cache reuse saves repeated attention work while preserving enough context for coherent text. A cache changes runtime cost, not the trained weights. Without a cache, each generated token repeats more work.haspacity, diitiiiiiiiiion.
 ```
 
 ### basic_runtime
@@ -54,7 +54,7 @@ Prompt: `DOS language models need`
 Prompt: `A BASIC transformer runtime`
 
 ```text
- correctness contract. Fixed-point inference stores weights as scaled integers and computes logits with predictable integer arithmetic. A strong GPT2-BASIC paragraph can connect real inference with fixed point. The host is used for training and export, while the DOS machine performs the forward pass. Attention, feed-forward layers, normalization, and output logits all need checked integer behavior.
+ keeps attention work bounded. The output path uses the same tokenizer contract as the host tools. Plain arrays make memory use visible and keep the implementation understandable on old development tools. The DOS program is a real inference runner, not a training system. The BASIC runtime uses arrays for tokens, embeddings, cache vectors, logits, weights, and fixed-point work buffers.
 ```
 
 ### optimization
@@ -62,7 +62,7 @@ Prompt: `A BASIC transformer runtime`
 Prompt: `To improve performance on real hardware`
 
 ```text
- arrays, fixed-size buffers, and no dependence on a modern service during generation. The goal is a credible old-PC language model. Why keep the model small for old PCs? The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. The goal is a credible old-PC language model.
+ reduce repeated work, keep memory access predictable, ces predictable, ces predictable, ces predictable, cedes predictable, ces predictable, choose a compact profile, and measure tokens per second inside the decode ludeseses predictable ts predictable, while bad phrases ligh.
 ```
 
 ### heldout_cache
@@ -104,4 +104,3 @@ Prompt: `Why compare model profiles before choosing one?`
 ```text
  The best default is the smallest profile that produces clean text while passing runtime evidence. The model shape explains the cost: layers, embedding size, heads, context length, and vocabulary all matter. A profile without timing evidence is not ready. How should profiles be selected? A larger profile earns its cost only when measured quality improves enough to justify slower generation and higher memory use. A profile table is useful when it puts quality and speed beside memory. Quality oose a compact profile, and measure tokens per second inside the decode lop.
 ```
-
