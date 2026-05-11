@@ -23,6 +23,7 @@ from build_preview_release import (  # noqa: E402
     create_zip,
     file_sha256,
     selected_evidence,
+    write_converged_package_manifest,
     write_manifest,
 )
 from build_hardware_transfer import sha256 as hardware_sha256  # noqa: E402
@@ -371,6 +372,84 @@ class BuildPreviewReleaseTest(unittest.TestCase):
             )
 
         self.assertIn("Generated: `1999-12-31`", manifest)
+
+    def test_manifest_uses_portable_artifact_names(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            package_dir = Path(tmp) / "preview"
+            package_dir.mkdir()
+            zip_path = Path(tmp) / "preview.zip"
+            cfg = Config(
+                profile="test",
+                n_layer=2,
+                n_embd=48,
+                n_head=4,
+                n_positions=192,
+                hidden_dim=192,
+                vocab_size=4096,
+            )
+            row = AuditRow(
+                ExportedModel("MODEL_TEST", "root", ROOT / "assets" / "gpt2_basic" / "MODEL"),
+                cfg,
+                True,
+                ROOT / "qemu" / "evidence" / "model_inventory_model_test.log",
+                (),
+            )
+
+            manifest = write_manifest(
+                rows=[row],
+                selected=[(RELEASE_MODELS[0], row)],
+                assistants=[],
+                evidence_files=[],
+                output_dir=package_dir,
+                zip_path=zip_path,
+                package_built=False,
+                generated_date=DEFAULT_GENERATED_DATE,
+            )
+
+        self.assertIn("Package tree: `preview`", manifest)
+        self.assertIn("Package zip: `preview.zip`", manifest)
+        self.assertNotIn(str(package_dir.parent), manifest)
+
+    def test_converged_manifest_ignores_stale_output_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            cfg = Config(
+                profile="test",
+                n_layer=2,
+                n_embd=48,
+                n_head=4,
+                n_positions=192,
+                hidden_dim=192,
+                vocab_size=4096,
+            )
+            row = AuditRow(
+                ExportedModel("MODEL_TEST", "root", ROOT / "assets" / "gpt2_basic" / "MODEL"),
+                cfg,
+                True,
+                ROOT / "qemu" / "evidence" / "model_inventory_model_test.log",
+                (),
+            )
+            manifests: list[str] = []
+            for parent_name, stale_text in (("a", "old\n"), ("b", "old output path /tmp/build/with/a/long/name\n")):
+                package_dir = root / parent_name / "preview"
+                package_dir.mkdir(parents=True)
+                (package_dir / "payload.txt").write_text("payload\n", encoding="ascii")
+                (package_dir / "preview_release_manifest.md").write_text(stale_text, encoding="ascii")
+                manifests.append(
+                    write_converged_package_manifest(
+                        rows=[row],
+                        selected=[(RELEASE_MODELS[0], row)],
+                        assistants=[],
+                        evidence=[],
+                        output_dir=package_dir,
+                        zip_path=root / parent_name / "preview.zip",
+                        manifest_path=root / parent_name / "manifest.md",
+                        generated_date=DEFAULT_GENERATED_DATE,
+                    )
+                )
+
+            self.assertEqual(manifests[0], manifests[1])
+            self.assertIn("Package status: `3 files", manifests[0])
 
     def test_selected_evidence_includes_dos_demo_run_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

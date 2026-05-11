@@ -397,8 +397,9 @@ python3 scripts/build_hardware_transfer.py --force
 
 The builder writes `/private/tmp/gpt2-basic-hardware-transfer.zip` plus a
 `.sha256` sidecar. Both release zip builders use deterministic archive metadata,
-and the preview manifest uses a pinned release date by default, so identical
-no-change rebuilds produce the same zip checksum. Pass
+and the preview manifest uses a pinned release date plus portable artifact
+names by default, so identical no-change rebuilds produce the same zip checksum
+without embedding host output paths. Pass
 `--generated-date YYYY-MM-DD` only for a deliberate release respin.
 
 Verify both release archives before publishing:

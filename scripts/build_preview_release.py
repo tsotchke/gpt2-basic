@@ -231,8 +231,8 @@ def write_manifest(
         "",
         f"Version: `{DEFAULT_VERSION}`",
         f"Generated: `{generated_date}`",
-        f"Package tree: `{output_dir}`",
-        f"Package zip: `{zip_path}`",
+        f"Package tree: `{output_dir.name}`",
+        f"Package zip: `{zip_path.name}`",
         f"Package checksums: `SHA256SUMS.txt`; zip sidecar: `{zip_path.name}.sha256`",
         f"Package status: `{package_size}`",
         "",
@@ -362,6 +362,29 @@ def build_package(
 
     (output_dir / "preview_release_manifest.md").write_text(manifest_text, encoding="ascii")
 
+
+def write_converged_package_manifest(
+    rows: list[AuditRow],
+    selected: list[tuple[ReleaseModel, AuditRow]],
+    assistants: list[AuditRow],
+    evidence: list[Path],
+    output_dir: Path,
+    zip_path: Path,
+    manifest_path: Path,
+    generated_date: str,
+) -> str:
+    manifest_text = write_manifest(rows, selected, assistants, evidence, output_dir, zip_path, True, generated_date)
+    for _ in range(10):
+        (output_dir / "preview_release_manifest.md").write_text(manifest_text, encoding="ascii")
+        write_package_checksums(output_dir)
+        next_text = write_manifest(rows, selected, assistants, evidence, output_dir, zip_path, True, generated_date)
+        if next_text == manifest_text:
+            manifest_path.write_text(manifest_text, encoding="ascii")
+            return manifest_text
+        manifest_text = next_text
+    raise RuntimeError("preview release manifest status did not converge")
+
+
 def create_zip(output_dir: Path, zip_path: Path, force: bool) -> None:
     if zip_path.exists():
         if not force:
@@ -438,13 +461,18 @@ def main() -> None:
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
 
     if not args.manifest_only:
-        pending_manifest = write_manifest(rows, selected, assistants, evidence, args.output_dir, args.zip_path, True, args.generated_date)
+        pending_manifest = write_manifest(rows, selected, assistants, evidence, args.output_dir, args.zip_path, False, args.generated_date)
         build_package(args.output_dir, pending_manifest, selected, evidence, args.pack_root, args.force)
-        write_package_checksums(args.output_dir)
-        manifest_text = write_manifest(rows, selected, assistants, evidence, args.output_dir, args.zip_path, True, args.generated_date)
-        args.manifest.write_text(manifest_text, encoding="ascii")
-        (args.output_dir / "preview_release_manifest.md").write_text(manifest_text, encoding="ascii")
-        write_package_checksums(args.output_dir)
+        write_converged_package_manifest(
+            rows,
+            selected,
+            assistants,
+            evidence,
+            args.output_dir,
+            args.zip_path,
+            args.manifest,
+            args.generated_date,
+        )
         if not args.no_zip:
             create_zip(args.output_dir, args.zip_path, args.force)
             write_zip_checksum(args.zip_path, args.zip_sha256)

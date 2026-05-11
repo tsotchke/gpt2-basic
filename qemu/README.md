@@ -341,9 +341,10 @@ python3 scripts/build_hardware_transfer.py --force
 ```
 
 Both release zip builders use deterministic archive metadata, and the
-preview manifest uses a pinned release date by default. The `Preview Release`
-workflow checks that a no-change rebuild keeps the same zip checksum; pass
-`--generated-date YYYY-MM-DD` only for a deliberate release respin.
+preview manifest uses a pinned release date plus portable artifact names by
+default. The `Preview Release` workflow checks that a no-change rebuild keeps
+the same zip checksum; pass `--generated-date YYYY-MM-DD` only for a deliberate
+release respin.
 
 Publish the preview zip, hardware-transfer zip, both `.sha256` sidecars, and
 `qemu/evidence/preview_release_manifest.md`. The `Preview Release` GitHub
