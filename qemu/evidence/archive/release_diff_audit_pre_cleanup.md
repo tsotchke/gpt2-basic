@@ -1,5 +1,10 @@
 # Production Audit: `gpt2_basic`
 
+Historical note: this is a pre-cleanup ICC report retained for provenance. It
+does not describe the current workspace state after the DOS preview cleanup
+commits. The current tracking summary is
+`qemu/evidence/workspace_tracking_audit.md`.
+
 Verdict: `fail`  Target: `gpt2-basic-486-production`  Risks: `5`
 Policy: `gpt2-basic-486-production`  Source: `/Users/tyr/Desktop/gpt2-basic/.icc/production-audit.json`  Suppressed: `0`
 
