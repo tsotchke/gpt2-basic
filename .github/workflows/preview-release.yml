@@ -57,10 +57,14 @@ jobs:
 
       - name: Check release package can be built
         run: |
+          set -euo pipefail
           python scripts/build_preview_release.py --force --output-dir /tmp/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview.zip.sha256
           preview_sha="$(cut -d' ' -f1 /tmp/gpt2-basic-preview.zip.sha256)"
           python scripts/build_preview_release.py --force --output-dir /tmp/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview.zip.sha256
           test "$preview_sha" = "$(cut -d' ' -f1 /tmp/gpt2-basic-preview.zip.sha256)"
+          mkdir -p /tmp/gpt2-basic-preview-alt
+          python scripts/build_preview_release.py --force --output-dir /tmp/gpt2-basic-preview-alt/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview-alt/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview-alt/gpt2-basic-preview.zip.sha256 --manifest /tmp/gpt2-basic-preview-alt/preview_release_manifest.md
+          test "$preview_sha" = "$(cut -d' ' -f1 /tmp/gpt2-basic-preview-alt/gpt2-basic-preview.zip.sha256)"
           python scripts/build_preview_release.py --manifest-only --output-dir /tmp/gpt2-basic-preview --zip-path /tmp/gpt2-basic-preview.zip --zip-sha256 /tmp/gpt2-basic-preview.zip.sha256
           python scripts/verify_preview_artifacts.py \
             --preview-dir /tmp/gpt2-basic-preview \
@@ -70,6 +74,7 @@ jobs:
 
       - name: Check hardware transfer bundle can be built
         run: |
+          set -euo pipefail
           python scripts/build_hardware_transfer.py --force --output-dir /tmp/gpt2-basic-hardware-transfer --zip-path /tmp/gpt2-basic-hardware-transfer.zip --zip-sha256 /tmp/gpt2-basic-hardware-transfer.zip.sha256
           hardware_sha="$(cut -d' ' -f1 /tmp/gpt2-basic-hardware-transfer.zip.sha256)"
           python scripts/build_hardware_transfer.py --force --output-dir /tmp/gpt2-basic-hardware-transfer --zip-path /tmp/gpt2-basic-hardware-transfer.zip --zip-sha256 /tmp/gpt2-basic-hardware-transfer.zip.sha256

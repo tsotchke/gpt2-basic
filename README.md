@@ -399,7 +399,8 @@ The builder writes `/private/tmp/gpt2-basic-hardware-transfer.zip` plus a
 `.sha256` sidecar. Both release zip builders use deterministic archive metadata,
 and the preview manifest uses a pinned release date plus portable artifact
 names by default, so identical no-change rebuilds produce the same zip checksum
-without embedding host output paths. Pass
+without embedding host output paths. CI also rebuilds the preview package under
+a second output root and requires the same zip checksum. Pass
 `--generated-date YYYY-MM-DD` only for a deliberate release respin.
 
 Verify both release archives before publishing:
