@@ -22,6 +22,8 @@ DEFAULT_PACK_DIR = ROOT / "assets" / "gpt2_basic" / "PACKS"
 DEFAULT_GPT2_EXE = ROOT / "qemu" / "evidence" / "GPT2.EXE"
 DEFAULT_STAGED_SRC = ROOT / "qemu" / "staging" / "GPT2SRC"
 DETERMINISTIC_ZIP_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
+TREE_COPY_IGNORED_NAMES = {".DS_Store", "__pycache__"}
+TREE_COPY_IGNORED_SUFFIXES = {".pyc", ".pyo"}
 
 
 def require(condition: bool, message: str) -> None:
@@ -42,6 +44,74 @@ def validate_83(root: Path) -> None:
     for path in root.rglob("*"):
         if not short_name_ok(path):
             raise SystemExit(f"HARDWARE_TRANSFER_FAILED non_8_3={path.relative_to(root)}")
+
+
+def tree_copy_skips(path: Path) -> bool:
+    if path.name in TREE_COPY_IGNORED_NAMES or path.suffix in TREE_COPY_IGNORED_SUFFIXES:
+        return True
+    return any(part in TREE_COPY_IGNORED_NAMES for part in path.parts)
+
+
+def copied_tree_files(src: Path) -> list[Path]:
+    if not src.exists():
+        return []
+    return sorted(path for path in src.rglob("*") if path.is_file() and not tree_copy_skips(path))
+
+
+def git_tracked_paths(root: Path = ROOT) -> set[str] | None:
+    if not (root / ".git").exists():
+        return None
+    result = subprocess.run(["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True)
+    return {entry for entry in result.stdout.decode("utf-8").split("\0") if entry}
+
+
+def untracked_release_inputs(source_files: list[Path], tracked_paths: set[str], root: Path = ROOT) -> list[str]:
+    missing: list[str] = []
+    root_resolved = root.resolve()
+    for path in source_files:
+        try:
+            rel_path = path.resolve().relative_to(root_resolved).as_posix()
+        except ValueError:
+            continue
+        if rel_path not in tracked_paths:
+            missing.append(rel_path)
+    return sorted(missing)
+
+
+def hardware_source_files(
+    model_dir: Path,
+    pack_dir: Path,
+    gpt2_exe: Path,
+    staged_src: Path,
+    refresh_staging: bool,
+) -> list[Path]:
+    files = [
+        ROOT / "hardware" / "HWVALID.BAT",
+        ROOT / "hardware" / "HWNOTES.TXT",
+        gpt2_exe,
+    ]
+    files.extend(copied_tree_files(model_dir))
+    files.extend(copied_tree_files(pack_dir))
+    if refresh_staging:
+        files.append(ROOT / "qemu" / "make_dos_staging.py")
+        files.extend(copied_tree_files(ROOT / "src"))
+    else:
+        files.extend(copied_tree_files(staged_src))
+
+    unique: dict[str, Path] = {}
+    for path in files:
+        unique[str(path.resolve())] = path
+    return [unique[key] for key in sorted(unique)]
+
+
+def require_release_sources_tracked(source_files: list[Path]) -> None:
+    tracked = git_tracked_paths()
+    if tracked is None:
+        return
+    missing = untracked_release_inputs(source_files, tracked)
+    if missing:
+        sample = ",".join(missing[:10])
+        raise SystemExit(f"HARDWARE_TRANSFER_FAILED untracked_release_input={sample}")
 
 
 def copy_tree(src: Path, dst: Path) -> None:
@@ -110,6 +180,8 @@ def build_transfer(
     if refresh_staging:
         subprocess.run([sys.executable, str(ROOT / "qemu" / "make_dos_staging.py")], check=True)
 
+    require_release_sources_tracked(hardware_source_files(model_dir, pack_dir, gpt2_exe, staged_src, refresh_staging))
+
     if output_dir.exists():
         require(force, f"output_exists={output_dir}")
         shutil.rmtree(output_dir)
@@ -159,9 +231,16 @@ def self_test() -> None:
         require(zip_path.exists(), "self_test_missing_zip")
         require(zip_sha256.exists(), "self_test_missing_zip_sha256")
         validate_83(out / "GPT2")
+        missing = untracked_release_inputs(
+            [root / "TRACKED.TXT", root / "MODEL" / "LOCAL.TXT"],
+            {"TRACKED.TXT"},
+            root=root,
+        )
+        require(missing == ["MODEL/LOCAL.TXT"], "self_test_tracked_input_guard")
     print("PROBE_OK hardware_transfer_8_3=1")
     print("PROBE_OK hardware_transfer_readme=README.TXT")
     print("PROBE_OK hardware_transfer_manifest=1")
+    print("PROBE_OK hardware_transfer_tracked_inputs=1")
     print("PROBE_OK hardware_transfer_zip=1")
     print("PROBE_OK hardware_transfer_zip_sha256=1")
 

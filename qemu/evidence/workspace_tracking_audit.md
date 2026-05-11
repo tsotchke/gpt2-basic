@@ -2,13 +2,14 @@
 
 Generated: `2026-05-11`
 
-Scope: DOS preview release workspace after the preview-source cleanup through
-commit `b7259df`.
+Scope: DOS preview release workspace after the preview-source cleanup,
+workspace-audit archive, and hardware-transfer tracked-input guard.
 
 ## Current Source State
 
-- The working tree was clean before this audit/archive update.
-- The repository had `797` tracked files before this audit/archive update.
+- The working tree was clean after commit `d409869` before the hardware-transfer
+  tracking guard was added.
+- The repository had `798` tracked files after the audit archive update.
 - The stale pre-cleanup ICC report was archived at
   `qemu/evidence/archive/release_diff_audit_pre_cleanup.md`.
 - The current top-level release surface is the DOS preview and hardware-transfer
@@ -23,8 +24,13 @@ commit `b7259df`.
   package ships `data/domain_curriculum/` as rebuild and repair input.
 - `scripts/build_preview_release.py` now refuses untracked files in copied
   release-input roots when run from a Git checkout.
-- Verified preview zip hash after the tracked-input guard:
-  `54bba902a2cfea0616fc1b07687b41d56a781f2c792b2fbb92762362ab89c2cd`.
+- `scripts/build_hardware_transfer.py` now applies the same tracked-input rule
+  to model, pack, executable, hardware, and staged-source inputs.
+- `qemu/make_dos_staging.py` now recreates `qemu/staging/GPT2SRC` from scratch
+  before writing staged DOS source files, so stale ignored staging files cannot
+  enter the transfer bundle.
+- Verified preview zip hash after the tracked-input guards:
+  `6da044d6b2c79cd088507109f08ebdceec600dbb8dc70c7e1810bcae7252c04c`.
 - Verified hardware-transfer zip hash:
   `96291d959e33250fd3ac82150ccf2505ab939ce8e41d8b2cc23c4d6bd34c3c72`.
 

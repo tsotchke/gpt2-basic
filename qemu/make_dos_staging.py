@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import re
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
@@ -51,6 +52,8 @@ def compat_rewrites(long_name: str, text: str) -> str:
 
 
 def main() -> None:
+    if OUT.exists():
+        shutil.rmtree(OUT)
     OUT.mkdir(parents=True, exist_ok=True)
 
     for long_name, short_name in NAME_MAP.items():

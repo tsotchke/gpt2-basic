@@ -1,6 +1,7 @@
 PROBE_OK hardware_transfer_8_3=1
 PROBE_OK hardware_transfer_readme=README.TXT
 PROBE_OK hardware_transfer_manifest=1
+PROBE_OK hardware_transfer_tracked_inputs=1
 PROBE_OK hardware_transfer_zip=1
 PROBE_OK hardware_transfer_zip_sha256=1
 PROBE_OK preview_artifacts_hardware_tree=1

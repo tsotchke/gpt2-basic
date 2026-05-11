@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import io
 from pathlib import Path
+import tempfile
 import unittest
 
 from scripts import build_hardware_transfer
@@ -40,5 +41,35 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
         self.assertIn("PROBE_OK hardware_transfer_8_3=1", text)
         self.assertIn("PROBE_OK hardware_transfer_readme=README.TXT", text)
         self.assertIn("PROBE_OK hardware_transfer_manifest=1", text)
+        self.assertIn("PROBE_OK hardware_transfer_tracked_inputs=1", text)
         self.assertIn("PROBE_OK hardware_transfer_zip=1", text)
         self.assertIn("PROBE_OK hardware_transfer_zip_sha256=1", text)
+
+    def test_hardware_transfer_copied_tree_files_excludes_transient_cache_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "KEEP.TXT").write_text("keep\n", encoding="ascii")
+            (root / ".DS_Store").write_text("cache\n", encoding="ascii")
+            cache = root / "__pycache__"
+            cache.mkdir()
+            (cache / "MODULE.PYO").write_bytes(b"cache")
+            names = {path.relative_to(root).as_posix() for path in build_hardware_transfer.copied_tree_files(root)}
+
+        self.assertEqual(names, {"KEEP.TXT"})
+
+    def test_hardware_transfer_detects_untracked_release_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tracked = root / "TRACKED.TXT"
+            local = root / "MODEL" / "LOCAL.TXT"
+            local.parent.mkdir()
+            tracked.write_text("tracked\n", encoding="ascii")
+            local.write_text("local\n", encoding="ascii")
+
+            missing = build_hardware_transfer.untracked_release_inputs(
+                [tracked, local],
+                {"TRACKED.TXT"},
+                root=root,
+            )
+
+        self.assertEqual(missing, ["MODEL/LOCAL.TXT"])

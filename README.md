@@ -404,7 +404,9 @@ names by default, so identical no-change rebuilds produce the same zip checksum
 without embedding host output paths. CI also rebuilds the preview package under
 a second output root and requires the same zip checksum. The preview builder
 also refuses untracked files in copied release-input roots so local scratch
-files cannot alter the zip. Pass
+files cannot alter the zip. The hardware-transfer builder applies the same
+tracked-input rule to its model, pack, executable, hardware, and staged-source
+inputs. Pass
 `--generated-date YYYY-MM-DD` only for a deliberate release respin.
 
 Verify both release archives before publishing:
