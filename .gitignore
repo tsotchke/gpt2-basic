@@ -53,14 +53,13 @@ third_party/
 !assets/**/*.bin
 !qemu/evidence/*.log
 !qemu/evidence/**/*.log
+!qemu/evidence/GPT2.EXE
 
 # Online corpus fetch outputs
 data/online_corpus/raw/
 data/online_corpus/clean/
 data/online_corpus/online_training_corpus.txt
 data/online_corpus/SOURCE_MANIFEST.json
-data/domain_curriculum/domain_curriculum.txt
-data/domain_curriculum/SOURCE_MANIFEST.json
 
 # Exclude FreeBASIC bootstrapping files
 fbc_build/

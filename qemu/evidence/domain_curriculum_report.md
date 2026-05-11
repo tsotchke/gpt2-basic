@@ -15,7 +15,7 @@ This corpus is project-owned training material generated from the actual product
 - Answer-bank repeats: 18
 - Exact held-out prompt leakage: no
 
-## Topic Matrix
+## Topic Coverage
 
 | Topic | Keywords |
 |---|---|

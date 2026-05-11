@@ -576,7 +576,7 @@ def main() -> None:
 
     manifest = {
         "generated_by": "scripts/build_domain_curriculum.py",
-        "corpus": str(corpus_path),
+        "corpus": corpus_path.relative_to(ROOT).as_posix(),
         "seed": args.seed,
         "variants_per_topic": args.variants_per_topic,
         "cross_variants": args.cross_variants,

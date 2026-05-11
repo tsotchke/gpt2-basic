@@ -202,8 +202,10 @@ python3 scripts/build_gold_curriculum.py
 ```
 
 The gold-curriculum result is documented in
-`qemu/evidence/gold_curriculum_v2_report.md`. The conservative online corpus is
-still available as warmup/provenance-tracked background text:
+`qemu/evidence/gold_curriculum_v2_report.md`. The project-owned generated
+domain curriculum in `data/domain_curriculum/domain_curriculum.txt` is tracked
+because the preview package ships that training surface. The conservative
+online corpus is still available as warmup/provenance-tracked background text:
 
 ```sh
 python3 scripts/fetch_online_training_corpus.py
