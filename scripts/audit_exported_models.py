@@ -27,6 +27,14 @@ DEFAULT_PACK_ROOT = DEFAULT_MODELS_ROOT / "PACKS"
 DEFAULT_EVIDENCE = ROOT / "qemu" / "evidence"
 DEFAULT_OUTPUT = DEFAULT_EVIDENCE / "exported_model_quality_inventory.md"
 
+
+def display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 QUALITY_KEY_ALIASES = {
     "MODEL_HEADSHORTLIST2048_PROD_PROBE": ("headshortlist2048",),
 }
@@ -308,8 +316,8 @@ def markdown(rows: list[AuditRow], evidence_dir: Path) -> str:
                 reasons.append("quality needs training")
             lines.append(f"- `{row.model.name}`: {', '.join(reasons)}")
 
-    lines.extend(["", f"Evidence root: `{evidence_dir}`", ""])
-    return "\n".join(lines)
+    lines.extend(["", f"Evidence root: `{display_path(evidence_dir)}`", ""])
+    return "\n".join(lines).rstrip()
 
 
 def self_test(models_root: Path, pack_root: Path, evidence_dir: Path) -> None:

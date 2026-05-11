@@ -25,3 +25,4 @@ PROBE_OK preview_artifacts_posix_path_normalization=1
 PROBE_OK preview_artifacts_canonical_order=1
 PROBE_OK preview_artifacts_zip_metadata=1
 PROBE_OK preview_artifacts_transient_rejection=1
+PROBE_OK preview_artifacts_host_path_rejection=1

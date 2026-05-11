@@ -4,7 +4,7 @@ Model profile: `486sx-safe`
 Shape: `2L 48D 4H ctx192 hidden192 vocab4096`
 Evaluation backend: `dos-fixed-qemu`
 Quality suite: `heldout`
-Source log: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence/quality_486.log`
+Source log: `qemu/evidence/quality_486.log`
 Quality status: `PASS`
 Average score: `0.973`
 Prompt pass rate: `5/5` at threshold `0.72`

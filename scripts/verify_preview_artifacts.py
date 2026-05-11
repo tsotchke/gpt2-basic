@@ -24,6 +24,10 @@ DETERMINISTIC_ZIP_COMPRESS_TYPE = zipfile.ZIP_DEFLATED
 SHA256_HEX = set("0123456789abcdef")
 FORBIDDEN_TRANSIENT_NAMES = {"__pycache__", ".ds_store"}
 FORBIDDEN_TRANSIENT_SUFFIXES = (".pyc", ".pyo")
+FORBIDDEN_HOST_PATH_FRAGMENTS = (
+    bytes((47,)) + b"Users" + bytes((47,)),
+    bytes((92,)) + b"Users" + bytes((92,)),
+)
 
 EXPECTED_RELEASE_MODEL_DIRS = {
     "MODEL",
@@ -106,6 +110,16 @@ def require_no_transient_artifact_path(value: str, label: str) -> None:
 def verify_no_transient_artifacts(root: Path, label: str) -> None:
     for path in root.rglob("*"):
         require_no_transient_artifact_path(path.relative_to(root).as_posix(), label)
+
+
+def verify_no_host_absolute_paths(root: Path, label: str) -> None:
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        data = path.read_bytes()
+        rel = path.relative_to(root).as_posix()
+        for fragment in FORBIDDEN_HOST_PATH_FRAGMENTS:
+            require(fragment not in data, f"{label}_host_path_leak={rel}")
 
 
 def sha256(path: Path) -> str:
@@ -283,6 +297,7 @@ def verify_preview_contract(preview_dir: Path) -> None:
 def verify_preview_tree(preview_dir: Path, repo_manifest: Path | None) -> None:
     require(preview_dir.is_dir(), f"missing_preview_dir={preview_dir}")
     verify_no_transient_artifacts(preview_dir, "preview")
+    verify_no_host_absolute_paths(preview_dir, "preview")
     manifest = preview_dir / "preview_release_manifest.md"
     require(manifest.is_file(), f"missing_preview_manifest={manifest}")
     require(manifest_status(manifest) == dir_status(preview_dir), f"preview_manifest_status={manifest}")
@@ -453,6 +468,17 @@ def self_test() -> None:
             skip_hardware=False,
         )
         verify_all(args)
+        leaked = root / "leaked"
+        leaked.mkdir()
+        forbidden = "/" + "Users/example/project/report.log"
+        (leaked / "report.md").write_text(f"Source: {forbidden}\n", encoding="ascii")
+        try:
+            verify_no_host_absolute_paths(leaked, "preview")
+        except SystemExit:
+            pass
+        else:
+            raise RuntimeError("self-test did not reject host absolute path leak")
+    print("PROBE_OK preview_artifacts_host_path_rejection=1")
     print("PROBE_OK preview_artifacts_self_test=1")
 
 

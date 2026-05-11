@@ -21,6 +21,13 @@ DEFAULT_LOG = ROOT / "qemu" / "evidence" / "quality_486.log"
 DEFAULT_OUTPUT = ROOT / "qemu" / "evidence" / "quality_report_dos.md"
 
 
+def display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def default_output_for_suite(suite: str) -> Path:
     if suite == "heldout":
         return ROOT / "qemu" / "evidence" / "quality_report_dos_heldout.md"
@@ -102,7 +109,7 @@ def markdown_report(cfg, results: list[QualityResult], threshold: float, log_pat
         f"Shape: `{cfg.n_layer}L {cfg.n_embd}D {cfg.n_head}H ctx{cfg.n_positions} hidden{cfg.hidden_dim} vocab{cfg.vocab_size}`",
         "Evaluation backend: `dos-fixed-qemu`",
         f"Quality suite: `{suite}`",
-        f"Source log: `{log_path}`",
+        f"Source log: `{display_path(log_path)}`",
         f"Quality status: `{status}`",
         f"Average score: `{avg_score:.3f}`",
         f"Prompt pass rate: `{pass_count}/{len(results)}` at threshold `{threshold:.2f}`",
@@ -144,7 +151,7 @@ def markdown_report(cfg, results: list[QualityResult], threshold: float, log_pat
                 "",
             ]
         )
-    return "\n".join(lines)
+    return "\n".join(lines).rstrip()
 
 
 def self_test(model_dir: Path, log_path: Path, threshold: float) -> None:

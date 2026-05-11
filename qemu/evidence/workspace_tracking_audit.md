@@ -3,7 +3,8 @@
 Generated: `2026-05-11`
 
 Scope: DOS preview release workspace after the preview-source cleanup,
-workspace-audit archive, and hardware-transfer tracked-input guard.
+workspace-audit archive, hardware-transfer tracked-input guard, and preview
+host-path portability guard.
 
 ## Current Source State
 
@@ -26,11 +27,14 @@ workspace-audit archive, and hardware-transfer tracked-input guard.
   release-input roots when run from a Git checkout.
 - `scripts/build_hardware_transfer.py` now applies the same tracked-input rule
   to model, pack, executable, hardware, and staged-source inputs.
+- `scripts/verify_preview_artifacts.py` rejects host absolute path leaks inside
+  the preview tree, including POSIX home-directory and Windows user-profile
+  fragments.
 - `qemu/make_dos_staging.py` now recreates `qemu/staging/GPT2SRC` from scratch
   before writing staged DOS source files, so stale ignored staging files cannot
   enter the transfer bundle.
-- Verified preview zip hash after the tracked-input guards:
-  `6da044d6b2c79cd088507109f08ebdceec600dbb8dc70c7e1810bcae7252c04c`.
+- Verified preview zip hash after the tracked-input and host-path guards:
+  `b1c938c6a5341fe9683decb7773666f564266e8831c0e9e2c8f9b663bd70c933`.
 - Verified hardware-transfer zip hash:
   `96291d959e33250fd3ac82150ccf2505ab939ce8e41d8b2cc23c4d6bd34c3c72`.
 

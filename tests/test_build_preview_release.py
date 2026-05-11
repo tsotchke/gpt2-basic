@@ -42,6 +42,7 @@ from verify_preview_artifacts import (  # noqa: E402
     read_sidecar,
     require_relative_artifact_path,
     verify_hardware_manifest,
+    verify_no_host_absolute_paths,
     verify_preview_checksums,
     verify_tree_matches,
     verify_preview_contract,
@@ -184,6 +185,17 @@ class BuildPreviewReleaseTest(unittest.TestCase):
 
             with self.assertRaises(SystemExit):
                 verify_tree_matches(live, extracted, "preview")
+
+    def test_preview_tree_rejects_host_absolute_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            payload = root / "qemu" / "evidence" / "report.md"
+            payload.parent.mkdir(parents=True)
+            forbidden = "/" + "Users/example/project/report.log"
+            payload.write_text(f"Source: {forbidden}\n", encoding="ascii")
+
+            with self.assertRaises(SystemExit):
+                verify_no_host_absolute_paths(root, "preview")
 
     def test_sidecar_rejects_non_sha256_hash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

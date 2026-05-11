@@ -95,4 +95,4 @@ Missing quality evidence: `0`
 - `MODEL_PROFILE_486DX2_USABLE`: quality needs training
 - `MODEL_SUBWORD512_PROTO`: quality needs training
 
-Evidence root: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence`
+Evidence root: `qemu/evidence`

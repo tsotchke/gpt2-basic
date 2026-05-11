@@ -133,6 +133,10 @@ fi
 
 model_name="$(basename "$MODEL_DIR")"
 model_key="$(printf '%s' "$model_name" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '_' | sed 's/^_*//;s/_*$//')"
+model_display="$MODEL_DIR"
+if [[ "$MODEL_DIR" == "$ROOT/"* ]]; then
+    model_display="${MODEL_DIR#"$ROOT/"}"
+fi
 if [[ "$model_key" == "model" ]]; then
     suffix=""
 else
@@ -197,7 +201,7 @@ python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     --get PERF.LOG "$out_log"
 
 {
-    echo "PERF_RUNNER|basis=qemu-emulation|profile=$profile|label=$label|model_dir=$MODEL_DIR|qemu_machine=isapc|qemu_cpu=$cpu_model|icount_shift=${icount_shift:-off}|accel=tcg|mode=$perf_mode"
+    echo "PERF_RUNNER|basis=qemu-emulation|profile=$profile|label=$label|model_dir=$model_display|qemu_machine=isapc|qemu_cpu=$cpu_model|icount_shift=${icount_shift:-off}|accel=tcg|mode=$perf_mode"
 } >> "$out_log"
 
 if [[ -z "$suffix" && "$perf_mode" == "perf" && "$profile" == "486dx2-66" ]]; then
