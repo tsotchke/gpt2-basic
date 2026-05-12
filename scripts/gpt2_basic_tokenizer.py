@@ -463,7 +463,13 @@ class GPT2BasicTokenizer:
         end_idx = start_idx + len(piece)
         if end_idx >= len(byte_text):
             return True
-        return not (cls._lexicon_word_byte(piece[-1]) and cls._lexicon_word_byte(byte_text[end_idx]))
+        if not cls._lexicon_word_byte(piece[-1]):
+            return True
+        next_byte = byte_text[end_idx]
+        if next_byte == ord("."):
+            next_idx = end_idx + 1
+            return next_idx >= len(byte_text) or not cls._lexicon_word_byte(byte_text[next_idx])
+        return not cls._lexicon_word_byte(next_byte)
 
     def _apply_dos_merges(self, tokens: list[int]) -> list[int]:
         working = list(tokens)
@@ -705,6 +711,9 @@ def self_test() -> None:
         raise AssertionError("lexicon tokenizer decode roundtrip failed")
     if any(boundary_tokenizer.id_to_piece[token] == b" arithmetic. A" for token in boundary_encoded):
         raise AssertionError("lexicon boundary check allowed a prefix piece inside Attention")
+    dotted_sentence = boundary_tokenizer.encode("arithmetic. A no FPU machine")
+    if not any(boundary_tokenizer.id_to_piece[token] == b" machine" for token in dotted_sentence):
+        raise AssertionError("lexicon boundary check rejected word before sentence punctuation")
     sentence_encoded = lexicon_tokenizer.encode("the transformer runtime works.", output_safe=True)
     if not lexicon_tokenizer.token_ends_sentence(sentence_encoded[-1]):
         raise AssertionError("lexicon sentence-ending token was not recognized")

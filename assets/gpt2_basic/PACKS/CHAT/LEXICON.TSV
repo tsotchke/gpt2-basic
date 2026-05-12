@@ -1,0 +1,86 @@
+# word	part_of_speech	tags
+a	determiner	article
+an	determiner	article
+the	determiner	article
+i	pronoun	first_person subject
+me	pronoun	first_person object
+my	pronoun	first_person possessive
+you	pronoun	second_person
+your	pronoun	second_person possessive
+it	pronoun	third_person neutral
+this	pronoun	demonstrative
+that	pronoun	demonstrative
+we	pronoun	first_person plural
+am	verb	be present first_person
+are	verb	be present
+is	verb	be present
+be	verb	be base
+can	verb	modal ability
+do	verb	auxiliary action
+does	verb	auxiliary action
+did	verb	auxiliary past
+have	verb	auxiliary possession
+has	verb	auxiliary possession
+use	verb	action
+ask	verb	action
+answer	verb	action
+explain	verb	action
+talk	verb	action
+chat	verb	action
+type	verb	action
+run	verb	action
+running	verb	action progressive
+mean	verb	definition
+means	verb	definition
+what	question	word
+who	question	word
+where	question	word
+when	question	word
+why	question	word
+how	question	word
+hello	interjection	greeting
+hi	interjection	greeting
+hey	interjection	greeting
+thanks	interjection	gratitude
+thank	verb	gratitude
+bye	interjection	farewell
+goodbye	interjection	farewell
+yes	adverb	affirmation
+no	adverb	negation
+not	adverb	negation
+short	adjective	length
+small	adjective	size
+tiny	adjective	size
+local	adjective	location
+plain	adjective	style
+simple	adjective	style
+friendly	adjective	style
+clear	adjective	style
+one	number	count
+two	number	count
+question	noun	dialogue
+prompt	noun	dialogue
+sentence	noun	dialogue
+answer	noun	dialogue
+reply	noun	dialogue
+idea	noun	dialogue
+demo	noun	product
+model	noun	machine_learning
+weights	noun	machine_learning
+inference	noun	machine_learning
+token	noun	machine_learning
+real	adjective	truth
+actual	adjective	truth
+fake	adjective	truth
+live	adjective	status
+generated	adjective	machine_learning
+script	noun	program
+scripted	adjective	program
+typed	adjective	dialogue
+dos	noun	operating_system
+basic	noun	language
+qemu	noun	emulator
+internet	noun	network
+network	noun	network
+limit	noun	ability
+limits	noun	ability

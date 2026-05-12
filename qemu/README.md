@@ -239,15 +239,16 @@ graphics windows do not provide terminal scrollback.
 
 The assistant shell is intentionally separate from `GPT2.EXE`. Packs are
 listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, `USAGE.TXT`,
-and optional `SPRITE`/`ICONS` assets. `USAGE.TXT` explains what the individual
-pack is for, how it works, and what to type; `ASSIST.EXE` displays it through
-`/about`. `PACK.INI` can point `MODEL=` at `C:\MODEL` or a pack-local
-checkpoint, so a future DOS, Windows, or OS/2 shell can share the same pack
-format while rendering a richer UI. The current release focus is the DOS
-reference shell and DOS demo package; the OS/2/Warp package is deferred to a
-later release. The current DOS renderer uses a text-mode assistant bubble and
-action list, which keeps it compatible with plain VGA text, serial capture, and
-OS/2 DOS sessions.
+and optional pack assets. `CHAT` also ships `GOLDEN.TXT` common English
+dialogue and `LEXICON.TSV` grammar entries; these are training corpus inputs,
+not runtime lookup rules. `USAGE.TXT` explains what the individual pack is for,
+how it works, and what to type; `ASSIST.EXE` displays it through `/about`.
+`PACK.INI` can point `MODEL=` at `C:\MODEL` or a pack-local checkpoint, so a
+future DOS, Windows, or OS/2 shell can share the same pack format while
+rendering a richer UI. The current release focus is the DOS reference shell and
+DOS demo package; the OS/2/Warp package is deferred to a later release. The
+current DOS renderer uses a text-mode assistant bubble and action list, which
+keeps it compatible with plain VGA text, serial capture, and OS/2 DOS sessions.
 
 Train and test every listed assistant pack model with:
 
@@ -272,7 +273,7 @@ The host quality gate uses a 96-token assistant reply window and requires all
 pack prompts to pass at `0.90`. It rejects prompt-label leakage, truncated
 endings, triple-character spelling glitches, and replies that do not reach the
 tail of the expected pack answer. `ASSIST.EXE` keeps interactive generation
-bounded to 16 tokens with early sentence stopping, and the scripted 486 probe
+bounded to 24 tokens with early sentence stopping, and the scripted 486 probe
 uses retrieval-only bubbles so the DOS evidence run still exercises pack-local
 model loading without turning every release check into a long generation run.
 

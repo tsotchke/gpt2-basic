@@ -318,7 +318,7 @@ pack-specific quality reports, and updates `MODEL=PACKS\<ID>\MODEL`. The
 host quality sweep uses a 96-token reply window and requires every pack prompt
 to pass at `0.90`; it rejects label leakage, truncated endings,
 triple-character typos, and replies that miss the tail of the expected pack
-answer. The DOS assistant itself keeps interactive generation bounded to 16
+answer. The DOS assistant itself keeps interactive generation bounded to 24
 tokens with early sentence stopping, while the scripted 486 evidence run uses
 retrieval-only bubbles so pack loading and model switching stay fast enough for
 release checks. `SPRITE=` and `ICONS=` fields are reserved for Clippy-style

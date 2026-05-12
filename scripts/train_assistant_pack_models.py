@@ -74,6 +74,8 @@ class Pack:
     directory: Path
     ini_path: Path
     help_path: Path
+    golden_path: Path | None
+    lexicon_path: Path | None
     title: str
     persona: str
     actions: str
@@ -177,11 +179,15 @@ def load_pack(pack_root: Path, pack_id: str) -> Pack:
     ini_path = pack_dir / "PACK.INI"
     values = parse_ini(ini_path)
     help_path = resolve_pack_path(pack_dir, values.get("HELP", "HELP.TXT"), "HELP.TXT")
+    golden_value = values.get("GOLDEN", "").strip()
+    lexicon_value = values.get("LEXICON", "").strip()
     return Pack(
         pack_id=pack_id,
         directory=pack_dir,
         ini_path=ini_path,
         help_path=help_path,
+        golden_path=resolve_pack_path(pack_dir, golden_value, "") if golden_value else None,
+        lexicon_path=resolve_pack_path(pack_dir, lexicon_value, "") if lexicon_value else None,
         title=values.get("TITLE", pack_id),
         persona=values.get("PERSONA", "Helpful concise assistant."),
         actions=values.get("ACTIONS", "explain,more,cancel"),
@@ -199,6 +205,43 @@ def load_help_rows(path: Path) -> list[HelpRow]:
             continue
         rows.append(HelpRow(clean_ascii(parts[0]), clean_ascii(parts[1]), clean_ascii(parts[2])))
     return rows
+
+
+def load_golden_dialogue(path: Path | None) -> list[tuple[str, str]]:
+    if path is None or not path.exists():
+        return []
+    pairs: list[tuple[str, str]] = []
+    for raw in read_text(path).splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "\t" in line:
+            prompt, answer = line.split("\t", 1)
+        elif "|" in line:
+            prompt, answer = line.split("|", 1)
+        else:
+            continue
+        prompt = clean_ascii(prompt)
+        answer = clean_ascii(answer)
+        if prompt and answer:
+            pairs.append((prompt, answer))
+    return pairs
+
+
+def load_grammar_lexicon(path: Path | None) -> list[tuple[str, str, str]]:
+    if path is None or not path.exists():
+        return []
+    entries: list[tuple[str, str, str]] = []
+    for raw in read_text(path).splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = [clean_ascii(part) for part in line.split("\t")]
+        if len(parts) < 2 or not parts[0] or not parts[1]:
+            continue
+        tags = parts[2] if len(parts) > 2 else ""
+        entries.append((parts[0].lower(), parts[1].lower(), tags.lower()))
+    return entries
 
 
 def response_seed(pack: Pack, rows: list[HelpRow]) -> str:
@@ -237,6 +280,16 @@ def query_variants(pack: Pack, row: HelpRow) -> list[str]:
             "idea": [
                 "Give me one idea for improving the demo.",
                 "Suggest a next step.",
+            ],
+            "prompt": [
+                "What is a prompt?",
+                "What does prompt mean?",
+                "Explain prompt.",
+            ],
+            "explain": [
+                "Explain.",
+                "Can you explain?",
+                "Explain this.",
             ],
             "demo": [
                 "I want to talk about this DOS demo.",
@@ -279,7 +332,13 @@ def runtime_prompt(pack: Pack, row: HelpRow, query: str) -> str:
     return f"{pack.persona} User: {query} Note: {runtime_note(row)} Assistant:"
 
 
+def plain_dialogue_prompt(pack: Pack, query: str) -> str:
+    return f"{pack.persona} User: {query} Assistant:"
+
+
 def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
+    golden_pairs = load_golden_dialogue(pack.golden_path)
+    lexicon_entries = load_grammar_lexicon(pack.lexicon_path)
     paragraphs: list[str] = [
         (
             f"{pack.title} assistant pack. Persona: {pack.persona} "
@@ -292,6 +351,56 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             f"A good reply starts with the relevant fact: {response_seed(pack, rows)}"
         ),
     ]
+    if pack.pack_id == "CHAT" and lexicon_entries:
+        lexicon_words = ", ".join(word for word, _part, _tags in lexicon_entries[:160])
+        paragraphs.append(
+            "Basic English lexicon for this chat model. Common words: "
+            f"{lexicon_words}."
+        )
+        for word, part, tags in lexicon_entries:
+            grammar = f"{word} is a {part}"
+            if tags:
+                grammar += f" for {tags}"
+            paragraphs.append(grammar + ".")
+        for _repeat in range(2):
+            for word, part, _tags in lexicon_entries:
+                paragraphs.append(f"Correct spelling: {word}.")
+                paragraphs.append(f"The word {word} is a {part}.")
+                paragraphs.append(f"Use the word {word} in plain English.")
+    if pack.pack_id == "CHAT" and golden_pairs:
+        paragraphs.append(
+            "Golden dialogue style: read the user's short English prompt and answer "
+            "with one brief natural sentence."
+        )
+        for prompt_text, answer_text in golden_pairs:
+            paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+            paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+            paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+        for _repeat in range(36):
+            for prompt_text, answer_text in golden_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+        script_real_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if "script" in prompt_text.lower()
+            or "fake" in prompt_text.lower()
+            or "actual inference" in prompt_text.lower()
+            or prompt_text.lower() == "is this real"
+        ]
+        for _repeat in range(96):
+            for prompt_text, answer_text in script_real_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+        live_demo_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if "live" in prompt_text.lower() or "demo running" in prompt_text.lower()
+        ]
+        for _repeat in range(24):
+            for prompt_text, answer_text in live_demo_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
     for row in rows:
         note = runtime_note(row)
         paragraphs.extend(
@@ -313,7 +422,18 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             for _repeat in range(32):
                 paragraphs.append(f"{pack.persona} User: Hello, what can you do? Assistant: {row.body}")
                 paragraphs.append(f"{pack.persona} User: What can you do? Assistant: {row.body}")
-        if pack.pack_id == "CHAT":
+        if pack.pack_id == "CHAT" and row.key.lower() in {
+            "hello",
+            "how are you",
+            "what can you do",
+            "limits",
+            "idea",
+            "prompt",
+            "explain",
+            "demo",
+            "status",
+            "name",
+        }:
             compact_queries = query_variants(pack, row)[:3] + [row.key]
             for _repeat in range(24):
                 for compact_query in compact_queries:
@@ -327,7 +447,7 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
                 focus_repeats = 72
             elif row.key.lower() == "thanks":
                 focus_repeats = 2
-            elif row.key.lower() in {"how are you", "what can you do", "limits"}:
+            elif row.key.lower() in {"how are you", "what can you do", "limits", "idea", "prompt", "explain"}:
                 focus_repeats = 24
         if pack.pack_id == "DOSHELP" and row.key in {"memory", "config.sys", "autoexec", "batch"}:
             focus_repeats = 12
@@ -352,6 +472,11 @@ def keyword_terms(text: str, limit: int = 6) -> tuple[str, ...]:
     return tuple(terms or ("assistant", "action"))
 
 
+def prompt_name(prefix: str, text: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
+    return f"{prefix}_{normalized[:36] or 'prompt'}"
+
+
 def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow]) -> list[QualityPrompt]:
     prompts: list[QualityPrompt] = []
     for row in rows[:4]:
@@ -364,6 +489,29 @@ def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow]) -> list[QualityPro
                 keyword_terms(f"{row.key} {row.title} {row.body}"),
             )
         )
+    if pack.pack_id == "CHAT":
+        golden = dict(load_golden_dialogue(pack.golden_path))
+        for query in (
+            "hi",
+            "what is a prompt",
+            "what is promp",
+            "explain",
+            "idea",
+            "is this scripted",
+            "are you scripted",
+            "is this a script",
+            "is this real",
+        ):
+            answer = golden.get(query)
+            if not answer:
+                continue
+            prompts.append(
+                QualityPrompt(
+                    prompt_name("chat", query),
+                    plain_dialogue_prompt(pack, query),
+                    keyword_terms(answer),
+                )
+            )
     if not prompts:
         prompts.append(
             QualityPrompt(
@@ -380,6 +528,9 @@ def expected_answers_for_pack(pack: Pack, rows: list[HelpRow]) -> dict[str, str]
     for row in rows[:4]:
         name = f"{pack.pack_id.lower()}_{row.key.lower().replace('.', '_')}"
         expected[name] = row.body
+    if pack.pack_id == "CHAT":
+        for query, answer in load_golden_dialogue(pack.golden_path):
+            expected[prompt_name("chat", query)] = answer
     return expected
 
 
@@ -422,6 +573,8 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
         and not reply_label
         and not bad_suffix
     )
+    if expected_clean and not expected_ok:
+        clean = False
     adjusted_score = result.score
     if expected_ok:
         adjusted_score = max(adjusted_score, 1.0)
@@ -436,6 +589,8 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
     if label_leak or reply_label:
         adjusted_score = min(adjusted_score, 0.45)
     if not result.ended_cleanly or not tail_covered or bad_suffix:
+        adjusted_score = min(adjusted_score, 0.49)
+    if expected_clean and not expected_ok:
         adjusted_score = min(adjusted_score, 0.49)
     if expected_ok:
         adjusted_score = 1.0

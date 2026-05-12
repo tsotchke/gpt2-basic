@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -131,7 +132,11 @@ def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path) -> None:
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
         require("Quality status: `PASS`" in report, f"pack_quality_not_pass={pack.pack_id}")
-        require("Prompt pass rate: `4/4`" in report, f"pack_quality_pass_rate={pack.pack_id}")
+        match = re.search(r"Prompt pass rate:\s+`(\d+)/(\d+)`", report)
+        require(match is not None, f"pack_quality_pass_rate_missing={pack.pack_id}")
+        passed = int(match.group(1))
+        total = int(match.group(2))
+        require(total > 0 and passed == total, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
 
 
 def verify_qemu_logs(packs: list[PackInfo], assistant_log: Path, compile_log: Path) -> None:

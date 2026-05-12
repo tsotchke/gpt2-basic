@@ -37,7 +37,7 @@ DEFAULT_ZIP = Path("/private/tmp/gpt2-basic-preview.zip")
 DEFAULT_ZIP_SHA256 = Path("/private/tmp/gpt2-basic-preview.zip.sha256")
 DEFAULT_MANIFEST = DEFAULT_EVIDENCE / "preview_release_manifest.md"
 DEFAULT_VERSION = "v0.1.0-preview"
-DEFAULT_GENERATED_DATE = "2026-05-11"
+DEFAULT_GENERATED_DATE = "2026-05-12"
 DETERMINISTIC_ZIP_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
 
 
@@ -71,6 +71,7 @@ QEMU_FILE_SUFFIXES = (".sh", ".bat", ".py")
 SELECTED_EVIDENCE_NAMES = {
     "GPT2.EXE",
     "assistant_486.log",
+    "assistant_chat_manual_probe_2026-05-12.md",
     "assistant_compile_486.log",
     "assistant_interactive_chat_486.md",
     "assistant_pack_probe.log",

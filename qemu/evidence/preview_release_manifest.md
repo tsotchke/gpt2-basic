@@ -1,11 +1,11 @@
 # GPT2-BASIC Preview Release Manifest
 
 Version: `v0.1.0-preview`
-Generated: `2026-05-11`
+Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `257 files, 36,131,800 bytes`
+Package status: `260 files, 37,755,901 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,7 +24,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
-| `ASSISTANT_CHAT` | `2L 48D 4H ctx192 h192 v478` | PASS 4/4 avg 1.000 (fixed, assistant-pack) | 12 files / 1,335,099 B |
+| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v724` | PASS 13/13 avg 1.000 (fixed, assistant-pack) | 14 files / 2,948,144 B |
 | `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.954 (float, assistant-pack) | 12 files / 3,856,004 B |
 | `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.966 (float, assistant-pack) | 12 files / 3,846,533 B |
 
@@ -64,6 +64,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 - `qemu/evidence/GPT2.EXE`
 - `qemu/evidence/assistant_486.log`
+- `qemu/evidence/assistant_chat_manual_probe_2026-05-12.md`
 - `qemu/evidence/assistant_compile_486.log`
 - `qemu/evidence/assistant_interactive_chat_486.md`
 - `qemu/evidence/assistant_pack_probe.log`

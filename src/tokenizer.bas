@@ -83,6 +83,7 @@ DECLARE FUNCTION HashToken(token AS STRING) AS INTEGER
 DECLARE FUNCTION CleanTokenizerText(input_text AS STRING) AS STRING
 DECLARE FUNCTION TokenizerOutputAllowed(tokenizer AS Tokenizer, token_id AS INTEGER) AS INTEGER
 DECLARE FUNCTION TokenizerLexiconWordByte(byte_value AS INTEGER) AS INTEGER
+DECLARE FUNCTION TokenizerLexiconBoundaryNextOK(bytes() AS BYTE, next_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
 DECLARE FUNCTION TokenPieceMatchesBytes(tokenizer AS Tokenizer, vocab_idx AS INTEGER, bytes() AS BYTE, start_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
 DECLARE FUNCTION TokenPieceBoundaryMatches(tokenizer AS Tokenizer, vocab_idx AS INTEGER, bytes() AS BYTE, start_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
 DECLARE SUB BPETokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, tokens() AS INTEGER, BYREF token_count AS INTEGER)
@@ -708,11 +709,26 @@ FUNCTION TokenizerLexiconWordByte(byte_value AS INTEGER) AS INTEGER
     RETURN 0
 END FUNCTION
 
+FUNCTION TokenizerLexiconBoundaryNextOK(bytes() AS BYTE, next_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
+    DIM next_byte AS INTEGER
+    DIM following_byte AS INTEGER
+
+    IF next_idx >= byte_count THEN RETURN 1
+    next_byte = bytes(next_idx)
+    IF next_byte = ASC(".") THEN
+        IF next_idx + 1 >= byte_count THEN RETURN 1
+        following_byte = bytes(next_idx + 1)
+        IF TokenizerLexiconWordByte(following_byte) = 0 THEN RETURN 1
+        RETURN 0
+    END IF
+    IF TokenizerLexiconWordByte(next_byte) <> 0 THEN RETURN 0
+    RETURN 1
+END FUNCTION
+
 ' Return true when a matching lexicon piece ends at a word boundary.
 FUNCTION TokenPieceBoundaryMatches(tokenizer AS Tokenizer, vocab_idx AS INTEGER, bytes() AS BYTE, start_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
     DIM piece_len AS INTEGER
     DIM last_byte AS INTEGER
-    DIM next_byte AS INTEGER
 
     IF vocab_idx < 0 OR vocab_idx >= tokenizer.vocab_size THEN RETURN 0
     piece_len = tokenizer.vocab(vocab_idx).token_len
@@ -720,8 +736,8 @@ FUNCTION TokenPieceBoundaryMatches(tokenizer AS Tokenizer, vocab_idx AS INTEGER,
     IF start_idx + piece_len >= byte_count THEN RETURN 1
 
     last_byte = ASC(MID$(tokenizer.vocab(vocab_idx).token, piece_len, 1))
-    next_byte = bytes(start_idx + piece_len)
-    IF TokenizerLexiconWordByte(last_byte) <> 0 AND TokenizerLexiconWordByte(next_byte) <> 0 THEN RETURN 0
+    IF TokenizerLexiconWordByte(last_byte) <> 0 AND _
+       TokenizerLexiconBoundaryNextOK(bytes(), start_idx + piece_len, byte_count) = 0 THEN RETURN 0
     RETURN 1
 END FUNCTION
 

@@ -10,7 +10,9 @@ Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
 interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
 conversation notes from `CHAT\HELP.TXT`. The DOS shell prints `Thinking:`
 progress while it pre-fills the prompt, then streams the generated `Answer:`
-pieces as the model produces them.
+pieces as the model produces them. `CHAT\GOLDEN.TXT` supplies common English
+call-and-response training examples, and `CHAT\LEXICON.TSV` supplies a small
+grammatical word table for the pack corpus.
 
 Good prompts:
 

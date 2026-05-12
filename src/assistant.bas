@@ -33,7 +33,7 @@ END SUB
 CONST ASSIST_PACK_ROOT = "PACKS"
 CONST ASSIST_PACK_LIST = "PACKS\PACKS.TXT"
 CONST ASSIST_MAX_PACKS = 8
-CONST ASSIST_MAX_REPLY_TOKENS = 16
+CONST ASSIST_MAX_REPLY_TOKENS = 24
 CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 1
 CONST ASSIST_DEFAULT_TOP_P = 0.9
 CONST ASSIST_DEFAULT_TOP_K = 24
@@ -465,7 +465,6 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM key_text AS STRING
     DIM title_text AS STRING
     DIM body_text AS STRING
-    DIM default_text AS STRING
     DIM first_pipe AS INTEGER
     DIM second_pipe AS INTEGER
     DIM q AS STRING
@@ -478,7 +477,6 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     IF help_path = "" OR DIR(help_path) = "" THEN RETURN ""
 
     q = LCASE$(query)
-    default_text = ""
     best_text = ""
     best_score = 0
     file_num = FREEFILE
@@ -497,7 +495,6 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
                     key_text = LCASE$(TRIM$(LEFT$(line_text, first_pipe - 1)))
                     title_text = TRIM$(MID$(line_text, first_pipe + 1, second_pipe - first_pipe - 1))
                     body_text = TRIM$(MID$(line_text, second_pipe + 1))
-                    IF key_text = "default" THEN default_text = title_text + ": " + body_text
                     row_score = 0
                     IF INSTR(q, key_text) > 0 THEN row_score = LEN(key_text)
                     IF INSTR(LCASE$(body_text), q) > 0 AND row_score < 1 THEN row_score = 1
@@ -512,7 +509,6 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 
     CLOSE #file_num
     IF best_text <> "" THEN RETURN best_text
-    IF default_text <> "" THEN RETURN default_text
     RETURN ""
 
 assist_retrieve_error:
@@ -578,23 +574,13 @@ FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
 
     marker_pos = INSTR(lower_text, " user:")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
-    marker_pos = INSTR(lower_text, " user")
-    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
     marker_pos = INSTR(lower_text, " assistant:")
-    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
-    marker_pos = INSTR(lower_text, " assistant")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
     marker_pos = INSTR(lower_text, " note:")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
-    marker_pos = INSTR(lower_text, " note")
-    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
     marker_pos = INSTR(lower_text, " prompt:")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
-    marker_pos = INSTR(lower_text, " prompt")
-    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
     marker_pos = INSTR(lower_text, " reply:")
-    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
-    marker_pos = INSTR(lower_text, " reply")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
     marker_pos = INSTR(lower_text, " q:")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
@@ -799,6 +785,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM intent_name AS STRING
     DIM actions AS STRING
     DIM retrieved AS STRING
+    DIM note_text AS STRING
     DIM prompt AS STRING
     DIM generated AS STRING
     DIM bubble AS STRING
@@ -808,6 +795,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     intent_name = AssistClassifyIntent(query)
     actions = AssistActionsForIntent(intent_name)
     retrieved = AssistRetrieve(pack_index, query)
+    note_text = retrieved
     IF retrieved = "" THEN retrieved = "I can answer from this pack, switch packs, or offer action buttons."
     model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
 
@@ -832,8 +820,9 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 
     generated = ""
     IF use_generation <> 0 THEN
-        prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query + _
-                 " Note: " + retrieved + " Assistant:"
+        prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query
+        IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
+        prompt = prompt + " Assistant:"
         generated = AssistStreamGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
     END IF
 
