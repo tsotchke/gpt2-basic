@@ -13,6 +13,8 @@ host-path portability guard, plus the workspace tracking verifier.
 - The repository had `798` tracked files after the audit archive update.
 - The repository has `801` tracked files after adding the workspace tracking
   verifier and probe evidence.
+- The repository has `804` tracked files after adding the real interactive
+  QEMU assistant demo launcher, DOS entry batch, and regression tests.
 - The stale pre-cleanup ICC report was archived at
   `qemu/evidence/archive/release_diff_audit_pre_cleanup.md`.
 - The current top-level release surface is the DOS preview and hardware-transfer
@@ -34,11 +36,15 @@ host-path portability guard, plus the workspace tracking verifier.
   fragments.
 - `scripts/verify_workspace_tracking.py` rejects untracked files and ignored
   files outside the documented local-runtime/cache buckets.
+- `qemu/run_assistant_interactive_486.sh` and
+  `qemu/fdauto_assist_interactive.bat` are the product demo path: they launch
+  `ASSIST.EXE` without `--scripted`, without redirecting to `ASSIST.LOG`, and
+  without powering off QEMU after startup.
 - `qemu/make_dos_staging.py` now recreates `qemu/staging/GPT2SRC` from scratch
   before writing staged DOS source files, so stale ignored staging files cannot
   enter the transfer bundle.
 - Verified preview zip hash after the tracked-input and host-path guards:
-  `7fe285ad1e8716066f4b92903c28f98165a4d9198561e272369f180ad181b356`.
+  `29434ce9b0410cdd7eff8ef9caed3004487eed2d14aaa73f744315a13c2746d2`.
 - Verified hardware-transfer zip hash:
   `96291d959e33250fd3ac82150ccf2505ab939ce8e41d8b2cc23c4d6bd34c3c72`.
 

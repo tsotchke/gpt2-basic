@@ -37,6 +37,8 @@ CONST ASSIST_MAX_REPLY_TOKENS = 16
 CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 4
 CONST ASSIST_DEFAULT_TOP_P = 0.9
 CONST ASSIST_DEFAULT_TOP_K = 24
+CONST ASSIST_HISTORY_MAX = 96
+CONST ASSIST_HISTORY_PAGE = 10
 
 TYPE AssistantPack
     id AS STRING * 32
@@ -54,10 +56,18 @@ DIM SHARED g_assist_packs(0 TO ASSIST_MAX_PACKS - 1) AS AssistantPack
 DIM SHARED g_assist_pack_count AS INTEGER
 DIM SHARED g_assist_active_pack AS INTEGER
 DIM SHARED g_assist_model_path AS STRING
+DIM SHARED g_assist_emit_records AS INTEGER
+DIM SHARED g_assist_history(0 TO ASSIST_HISTORY_MAX - 1) AS STRING
+DIM SHARED g_assist_history_count AS INTEGER
+DIM SHARED g_assist_history_scroll AS INTEGER
 
 DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
 DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
 DECLARE FUNCTION AssistSafeText(value AS STRING) AS STRING
+DECLARE SUB AssistAddHistory(line_text AS STRING)
+DECLARE SUB AssistClearHistory()
+DECLARE SUB AssistRenderHistory()
+DECLARE SUB AssistHistoryPage(delta AS INTEGER)
 DECLARE FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
 DECLARE FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
 DECLARE SUB AssistLoadPackList()
@@ -112,6 +122,78 @@ FUNCTION AssistSafeText(value AS STRING) AS STRING
 
     RETURN result
 END FUNCTION
+
+SUB AssistAddHistory(line_text AS STRING)
+    DIM i AS INTEGER
+
+    line_text = TRIM$(line_text)
+    IF line_text = "" THEN RETURN
+    IF LEN(line_text) > 360 THEN line_text = LEFT$(line_text, 360)
+
+    IF g_assist_history_count < ASSIST_HISTORY_MAX THEN
+        g_assist_history(g_assist_history_count) = line_text
+        g_assist_history_count = g_assist_history_count + 1
+    ELSE
+        FOR i = 0 TO ASSIST_HISTORY_MAX - 2
+            g_assist_history(i) = g_assist_history(i + 1)
+        NEXT i
+        g_assist_history(ASSIST_HISTORY_MAX - 1) = line_text
+    END IF
+
+    g_assist_history_scroll = 0
+END SUB
+
+SUB AssistClearHistory()
+    DIM i AS INTEGER
+    FOR i = 0 TO ASSIST_HISTORY_MAX - 1
+        g_assist_history(i) = ""
+    NEXT i
+    g_assist_history_count = 0
+    g_assist_history_scroll = 0
+END SUB
+
+SUB AssistRenderHistory()
+    DIM start_index AS INTEGER
+    DIM end_index AS INTEGER
+    DIM i AS INTEGER
+
+    AssistRenderFrame
+    AssistRenderPackStatus
+    PRINT "Transcript: /up, /down, /home, /end, /clear, /packs, /pack NAME, /quit"
+    PRINT
+
+    IF g_assist_history_count = 0 THEN
+        PRINT "(No transcript yet. Type a question at the prompt.)"
+        PRINT
+        RETURN
+    END IF
+
+    end_index = g_assist_history_count - 1 - g_assist_history_scroll
+    IF end_index < 0 THEN end_index = 0
+    start_index = end_index - ASSIST_HISTORY_PAGE + 1
+    IF start_index < 0 THEN start_index = 0
+
+    FOR i = start_index TO end_index
+        PRINT g_assist_history(i)
+        PRINT
+    NEXT i
+
+    PRINT "Showing "; start_index + 1; "-"; end_index + 1; " of "; g_assist_history_count; "."
+    PRINT
+END SUB
+
+SUB AssistHistoryPage(delta AS INTEGER)
+    DIM max_scroll AS INTEGER
+
+    max_scroll = g_assist_history_count - ASSIST_HISTORY_PAGE
+    IF max_scroll < 0 THEN max_scroll = 0
+
+    g_assist_history_scroll = g_assist_history_scroll + delta
+    IF g_assist_history_scroll < 0 THEN g_assist_history_scroll = 0
+    IF g_assist_history_scroll > max_scroll THEN g_assist_history_scroll = max_scroll
+
+    AssistRenderHistory
+END SUB
 
 FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
     DIM file_num AS INTEGER
@@ -271,13 +353,15 @@ FUNCTION AssistInitializeModel(pack_index AS INTEGER) AS INTEGER
     IF model_path = "" THEN model_path = "MODEL"
 
     IF GPT2BasicIsLoaded() <> 0 AND g_assist_model_path = model_path THEN
-        PRINT "ASSIST_MODEL|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-              "|path=" + AssistSafeText(model_path) + _
-              "|profile=" + AssistSafeText(GPT2BasicProfileName()) + _
-              "|tokenizer=" + AssistTokenizerModeName(g_tokenizer.tokenizer_mode) + _
-              "|ctx=" + LTRIM$(STR$(GPT2BasicContextLength())) + _
-              "|vocab=" + LTRIM$(STR$(GPT2BasicVocabSize())) + _
-              "|reuse=1"
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_MODEL|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|path=" + AssistSafeText(model_path) + _
+                  "|profile=" + AssistSafeText(GPT2BasicProfileName()) + _
+                  "|tokenizer=" + AssistTokenizerModeName(g_tokenizer.tokenizer_mode) + _
+                  "|ctx=" + LTRIM$(STR$(GPT2BasicContextLength())) + _
+                  "|vocab=" + LTRIM$(STR$(GPT2BasicVocabSize())) + _
+                  "|reuse=1"
+        END IF
         RETURN 1
     END IF
 
@@ -293,32 +377,48 @@ FUNCTION AssistInitializeModel(pack_index AS INTEGER) AS INTEGER
     END IF
 
     IF GPT2BasicLoadModel(model_path) = 0 THEN
-        PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-              "|path=" + AssistSafeText(model_path)
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|path=" + AssistSafeText(model_path)
+        ELSE
+            PRINT "Model load failed for "; model_path
+        END IF
         RETURN 0
     END IF
 
     IF g_tokenizer.vocab_size <> GPT2BasicVocabSize() THEN
-        PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-              "|reason=vocab_mismatch|tokenizer=" + LTRIM$(STR$(g_tokenizer.vocab_size)) + _
-              "|model=" + LTRIM$(STR$(GPT2BasicVocabSize()))
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|reason=vocab_mismatch|tokenizer=" + LTRIM$(STR$(g_tokenizer.vocab_size)) + _
+                  "|model=" + LTRIM$(STR$(GPT2BasicVocabSize()))
+        ELSE
+            PRINT "Model/tokenizer vocabulary mismatch."
+        END IF
         GPT2BasicFreeModel
         RETURN 0
     END IF
 
     g_assist_model_path = model_path
-    PRINT "ASSIST_MODEL|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-          "|path=" + AssistSafeText(model_path) + _
-          "|profile=" + AssistSafeText(GPT2BasicProfileName()) + _
-          "|tokenizer=" + AssistTokenizerModeName(g_tokenizer.tokenizer_mode) + _
-          "|ctx=" + LTRIM$(STR$(GPT2BasicContextLength())) + _
-          "|vocab=" + LTRIM$(STR$(GPT2BasicVocabSize()))
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_MODEL|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+              "|path=" + AssistSafeText(model_path) + _
+              "|profile=" + AssistSafeText(GPT2BasicProfileName()) + _
+              "|tokenizer=" + AssistTokenizerModeName(g_tokenizer.tokenizer_mode) + _
+              "|ctx=" + LTRIM$(STR$(GPT2BasicContextLength())) + _
+              "|vocab=" + LTRIM$(STR$(GPT2BasicVocabSize()))
+    ELSE
+        PRINT "Loaded model: "; model_path; " ("; GPT2BasicProfileName(); ")"
+    END IF
     RETURN 1
 
 assist_vocab_error:
     ON ERROR GOTO 0
-    PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-          "|reason=vocab_load|path=" + AssistSafeText(vocab_path)
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+              "|reason=vocab_load|path=" + AssistSafeText(vocab_path)
+    ELSE
+        PRINT "Tokenizer vocabulary load failed: "; vocab_path
+    END IF
     RETURN 0
 END FUNCTION
 
@@ -453,11 +553,13 @@ SUB AssistRenderPackStatus()
     PRINT "Model: "; AssistTrimFixed(p.model_path)
     IF AssistTrimFixed(p.sprite_path) <> "" THEN PRINT "Sprite asset: "; AssistTrimFixed(p.sprite_path)
     IF AssistTrimFixed(p.icons_path) <> "" THEN PRINT "Icon asset  : "; AssistTrimFixed(p.icons_path)
-    PRINT "ASSIST_PACK|id=" + AssistTrimFixed(p.id) + _
-          "|title=" + AssistSafeText(AssistTrimFixed(p.title)) + _
-          "|model=" + AssistSafeText(AssistTrimFixed(p.model_path)) + _
-          "|sprite=" + AssistSafeText(AssistTrimFixed(p.sprite_path)) + _
-          "|icons=" + AssistSafeText(AssistTrimFixed(p.icons_path))
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_PACK|id=" + AssistTrimFixed(p.id) + _
+              "|title=" + AssistSafeText(AssistTrimFixed(p.title)) + _
+              "|model=" + AssistSafeText(AssistTrimFixed(p.model_path)) + _
+              "|sprite=" + AssistSafeText(AssistTrimFixed(p.sprite_path)) + _
+              "|icons=" + AssistSafeText(AssistTrimFixed(p.icons_path))
+    END IF
     PRINT
 END SUB
 
@@ -477,8 +579,11 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     IF retrieved = "" THEN retrieved = "I can answer from this pack, switch packs, or offer action buttons."
 
     IF AssistInitializeModel(pack_index) = 0 THEN
-        PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-              "|intent=" + intent_name + "|status=model_unavailable"
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|intent=" + intent_name + "|status=model_unavailable"
+        END IF
+        AssistAddHistory "ASSISTANT: Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
         RETURN
     END IF
 
@@ -497,12 +602,14 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     END IF
     IF LEN(bubble) > 360 THEN bubble = LEFT$(bubble, 360)
 
-    PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
-          "|intent=" + intent_name + _
-          "|ui=text" + _
-          "|actions=" + AssistSafeText(actions) + _
-          "|retrieval=" + AssistSafeText(retrieved) + _
-          "|generated=" + AssistSafeText(generated)
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+              "|intent=" + intent_name + _
+              "|ui=text" + _
+              "|actions=" + AssistSafeText(actions) + _
+              "|retrieval=" + AssistSafeText(retrieved) + _
+              "|generated=" + AssistSafeText(generated)
+    END IF
     PRINT "+------------------------------------------------------------+"
     PRINT "| Assistant                                                  |"
     PRINT "+------------------------------------------------------------+"
@@ -510,6 +617,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     PRINT
     PRINT "[ "; actions; " ]"
     PRINT
+    AssistAddHistory "ASSISTANT: " + bubble
 END SUB
 
 SUB AssistScriptedDemo()
@@ -538,7 +646,7 @@ SUB AssistInteractive()
     AssistPrintPackList
     PRINT
     AssistRenderPackStatus
-    PRINT "Commands: /pack NAME, /packs, /quit"
+    PRINT "Commands: /pack NAME, /packs, /up, /down, /home, /end, /history, /clear, /quit"
     PRINT
 
     DO
@@ -551,6 +659,21 @@ SUB AssistInteractive()
             EXIT DO
         ELSEIF LCASE$(command_text) = "/packs" THEN
             AssistPrintPackList
+        ELSEIF LCASE$(command_text) = "/history" THEN
+            AssistRenderHistory
+        ELSEIF LCASE$(command_text) = "/up" THEN
+            AssistHistoryPage ASSIST_HISTORY_PAGE
+        ELSEIF LCASE$(command_text) = "/down" THEN
+            AssistHistoryPage -ASSIST_HISTORY_PAGE
+        ELSEIF LCASE$(command_text) = "/home" THEN
+            AssistHistoryPage ASSIST_HISTORY_MAX
+        ELSEIF LCASE$(command_text) = "/end" THEN
+            g_assist_history_scroll = 0
+            AssistRenderHistory
+        ELSEIF LCASE$(command_text) = "/clear" THEN
+            AssistClearHistory
+            AssistRenderFrame
+            AssistRenderPackStatus
         ELSEIF LEFT$(LCASE$(command_text), 6) = "/pack " THEN
             IF AssistSelectPack(MID$(command_text, 7)) <> 0 THEN
                 AssistRenderFrame
@@ -560,6 +683,7 @@ SUB AssistInteractive()
             END IF
         ELSE
             query = command_text
+            AssistAddHistory "YOU: " + query
             AssistRenderReply query, 1
         END IF
     LOOP
@@ -573,8 +697,10 @@ SUB AssistMain()
     RANDOMIZE TIMER
     AssistLoadPackList
     command_line = LCASE$(TRIM$(COMMAND$))
+    g_assist_emit_records = 0
 
     IF command_line = "--scripted" OR command_line = "--probe" THEN
+        g_assist_emit_records = 1
         AssistScriptedDemo
         RETURN
     END IF

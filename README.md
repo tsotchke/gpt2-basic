@@ -282,10 +282,22 @@ Run the pack-driven assistant shell with:
 bash qemu/run_assistant_486.sh
 ```
 
-That compiles the optional `ASSIST.EXE` utility, loads `PACKS\PACKS.TXT`,
-discovers pack-local `PACK.INI` metadata, switches the active model path per
-pack, retrieves pack notes, and emits structured `ASSIST_*` records to
-`qemu/evidence/assistant_486.log`. The first packs are `DOSHELP` and `OFFICE`.
+That is the scripted evidence path: it compiles the optional `ASSIST.EXE`
+utility, loads `PACKS\PACKS.TXT`, discovers pack-local `PACK.INI` metadata,
+switches the active model path per pack, retrieves pack notes, and emits
+structured `ASSIST_*` records to `qemu/evidence/assistant_486.log`. The first
+packs are `DOSHELP` and `OFFICE`.
+
+Run the real interactive QEMU demo with:
+
+```sh
+bash qemu/run_assistant_interactive_486.sh
+```
+
+This opens a QEMU window instead of a scripted evidence run. The DOS assistant
+stays open until you type `/quit`. Use `/packs`, `/pack DOSHELP`, `/pack
+OFFICE`, `/history`, `/up`, and `/down` inside the assistant; transcript paging
+is implemented inside DOS so it does not depend on terminal scrollback.
 Train and test every listed assistant pack model with:
 
 ```sh

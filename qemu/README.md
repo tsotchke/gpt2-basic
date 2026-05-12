@@ -209,13 +209,28 @@ Run the optional Clippy-style assistant shell through FreeDOS:
 bash qemu/run_assistant_486.sh
 ```
 
-The suite compiles `C:\ASSIST.EXE`, copies `assets/gpt2_basic/PACKS` to
-`C:\PACKS`, runs `ASSIST.EXE --scripted`, and extracts:
+That command is the scripted evidence path. It compiles `C:\ASSIST.EXE`,
+copies `assets/gpt2_basic/PACKS` to `C:\PACKS`, runs `ASSIST.EXE --scripted`,
+and extracts:
 
 ```text
 qemu/evidence/assistant_486.log
 qemu/evidence/assistant_compile_486.log
 ```
+
+Run the interactive QEMU window demo with:
+
+```sh
+bash qemu/run_assistant_interactive_486.sh
+```
+
+That launcher stages the same source, model, and packs, then boots a graphical
+QEMU display and starts `ASSIST.EXE` normally. It does not pass `--scripted`,
+does not redirect output to `ASSIST.LOG`, and does not power off after startup.
+Inside DOS, type questions directly. Use `/packs`, `/pack DOSHELP`, `/pack
+OFFICE`, `/history`, `/up`, `/down`, `/home`, `/end`, `/clear`, and `/quit`.
+The `/up` and `/down` commands page through the in-DOS transcript because QEMU
+graphics windows do not provide terminal scrollback.
 
 The assistant shell is intentionally separate from `GPT2.EXE`. Packs are
 listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, and optional
