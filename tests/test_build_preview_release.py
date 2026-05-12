@@ -556,6 +556,9 @@ class BuildPreviewReleaseTest(unittest.TestCase):
 
         self.assertIn("Package status: `2 files, 7 bytes`", manifest)
         self.assertIn("qemu/evidence/run_main_486.log", manifest)
+        self.assertIn("## Verification Commands", manifest)
+        self.assertIn("python3 scripts/verify_workspace_tracking.py", manifest)
+        self.assertIn("python3 scripts/verify_preview_artifacts.py", manifest)
 
 
 if __name__ == "__main__":
