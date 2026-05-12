@@ -10,11 +10,11 @@ Available packs:
   OFFICE - Office Assistant
 
 Pack : CHAT - Conversation Pack
-Model: MODEL
+Model: PACKS\CHAT\MODEL
 Usage: /about
 Sprite asset: PACKS\CHAT\CHAT.SPR
 Icon asset  : PACKS\CHAT\CHAT.ICN
-ASSIST_PACK|id=CHAT|title=Conversation Pack|model=MODEL|sprite=PACKS\CHAT\CHAT.SPR|icons=PACKS\CHAT\CHAT.ICN
+ASSIST_PACK|id=CHAT|title=Conversation Pack|model=PACKS\CHAT\MODEL|sprite=PACKS\CHAT\CHAT.SPR|icons=PACKS\CHAT\CHAT.ICN
 
 +------------------------------------------------------------+
 | Pack instructions                                          |
@@ -46,12 +46,12 @@ Actions:
 
 Initialized tokenizer with  258 tokens
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
-ASSIST_MODEL|pack=CHAT|path=MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Starting a conversation: Say hello, ask what I can do, or tell me what you want to talk about.|generated=
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Assistant abilities: I can chat, explain the demo, suggest next steps, admit limits, and switch to DOSHELP or OFFICE for focused tasks.|generated=
 +------------------------------------------------------------+
 | Assistant                                                  |
 +------------------------------------------------------------+
-Starting a conversation: Say hello, ask what I can do, or tell me what you want to talk about.
+Assistant abilities: I can chat, explain the demo, suggest next steps, admit limits, and switch to DOSHELP or OFFICE for focused tasks.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -90,11 +90,11 @@ Actions:
 Initialized tokenizer with  258 tokens
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|generated=
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.|generated=
 +------------------------------------------------------------+
 | Assistant                                                  |
 +------------------------------------------------------------+
-CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -133,11 +133,11 @@ Actions:
 Initialized tokenizer with  258 tokens
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|actions=rewrite,shorten,formalize,cancel|retrieval=Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.|generated=
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|generated=
 +------------------------------------------------------------+
 | Assistant                                                  |
 +------------------------------------------------------------+
-Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.
+Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
 
 [ rewrite,shorten,formalize,cancel ]
 

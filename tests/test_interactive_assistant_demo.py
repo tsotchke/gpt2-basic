@@ -38,6 +38,23 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('LCASE$(command_text) = "/history"', text)
         self.assertIn('LCASE$(command_text) = "/about"', text)
 
+    def test_assistant_streams_generated_tokens_without_prompt_echo(self) -> None:
+        text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
+
+        self.assertIn("FUNCTION AssistStreamGenerate", text)
+        self.assertIn("PRINT \"Generating: \";", text)
+        self.assertIn("PRINT piece;", text)
+        self.assertIn("Decode(generated_tokens(), generated_count)", text)
+        self.assertIn("bubble = generated", text)
+        self.assertNotIn("MID$(decoded_text, LEN(prompt) + 1)", text)
+
+    def test_assistant_retrieval_prefers_specific_pack_rows(self) -> None:
+        text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
+
+        self.assertIn("best_score", text)
+        self.assertIn("row_score = LEN(key_text)", text)
+        self.assertIn("IF best_text <> \"\" THEN RETURN best_text", text)
+
     def test_chat_pack_is_first_and_has_usage_instructions(self) -> None:
         pack_list = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "PACKS.TXT").read_text(encoding="ascii")
         first_pack = next(line.strip() for line in pack_list.splitlines() if line.strip() and not line.startswith("#"))
@@ -46,7 +63,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         chat_ini = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "CHAT" / "PACK.INI").read_text(encoding="ascii")
         chat_usage = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "CHAT" / "USAGE.TXT").read_text(encoding="ascii")
         self.assertIn("TITLE=Conversation Pack", chat_ini)
-        self.assertIn("MODEL=MODEL", chat_ini)
+        self.assertIn("MODEL=PACKS\\CHAT\\MODEL", chat_ini)
         self.assertIn("USAGE=USAGE.TXT", chat_ini)
         self.assertIn("Purpose:", chat_usage)
         self.assertIn("How it works:", chat_usage)

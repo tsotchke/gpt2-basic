@@ -5,7 +5,7 @@ Generated: `2026-05-11`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `249 files, 34,780,791 bytes`
+Package status: `256 files, 38,876,511 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,6 +24,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
+| `ASSISTANT_CHAT` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.957 (float, assistant-pack) | 12 files / 4,089,105 B |
 | `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.954 (float, assistant-pack) | 12 files / 3,856,004 B |
 | `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.966 (float, assistant-pack) | 12 files / 3,846,533 B |
 
@@ -83,6 +84,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 - `qemu/evidence/perf_486_486dx2-66_model_lexicon_gold_v4_s3000.log`
 - `qemu/evidence/preview_release_probe.log`
 - `qemu/evidence/quality_486_model_lexicon_gold_v4_s3000.log`
+- `qemu/evidence/quality_report_assistant_chat.md`
 - `qemu/evidence/quality_report_assistant_doshelp.md`
 - `qemu/evidence/quality_report_assistant_office.md`
 - `qemu/evidence/quality_report_default_model_all.md`
@@ -129,4 +131,4 @@ python3 scripts/build_hardware_transfer.py --force
 python3 scripts/verify_preview_artifacts.py
 ```
 
-Audited models: `46`
+Audited models: `47`

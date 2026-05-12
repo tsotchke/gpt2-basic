@@ -3,11 +3,7 @@ runtime_backend: assistant_pack_train_cpu
 backend_gate: requested=auto selected=cpu mps_available=0 cuda_available=0
 ASSISTANT_PACK_BACKEND|train_requested=auto|train_selected=cpu|quality_backend=float|quality_device=cpu|mps=0|cuda=0
 PROBE_OK assistant_pack_backend_gate=1
-runtime_backend: assistant_pack_doshelp_cpu
-backend_gate: pack=DOSHELP selected=cpu quality_backend=float quality_device=cpu
-ASSISTANT_PACK_BACKEND_PACK|pack=DOSHELP|train_selected=cpu|quality_backend=float|quality_device=cpu
-PROBE_OK assistant_pack_backend_gate_doshelp=1
-runtime_backend: assistant_pack_office_cpu
-backend_gate: pack=OFFICE selected=cpu quality_backend=float quality_device=cpu
-ASSISTANT_PACK_BACKEND_PACK|pack=OFFICE|train_selected=cpu|quality_backend=float|quality_device=cpu
-PROBE_OK assistant_pack_backend_gate_office=1
+runtime_backend: assistant_pack_chat_cpu
+backend_gate: pack=CHAT selected=cpu quality_backend=float quality_device=cpu
+ASSISTANT_PACK_BACKEND_PACK|pack=CHAT|train_selected=cpu|quality_backend=float|quality_device=cpu
+PROBE_OK assistant_pack_backend_gate_chat=1

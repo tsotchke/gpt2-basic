@@ -82,6 +82,7 @@ DECLARE FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
 DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+DECLARE FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 DECLARE SUB AssistRenderFrame()
 DECLARE SUB AssistRenderPackStatus()
 DECLARE SUB AssistPrintPackUsage(pack_index AS INTEGER)
@@ -465,6 +466,9 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM first_pipe AS INTEGER
     DIM second_pipe AS INTEGER
     DIM q AS STRING
+    DIM best_text AS STRING
+    DIM best_score AS INTEGER
+    DIM row_score AS INTEGER
 
     IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN ""
     help_path = AssistTrimFixed(g_assist_packs(pack_index).help_path)
@@ -472,6 +476,8 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 
     q = LCASE$(query)
     default_text = ""
+    best_text = ""
+    best_score = 0
     file_num = FREEFILE
     ON ERROR GOTO assist_retrieve_error
     OPEN help_path FOR INPUT AS #file_num
@@ -489,9 +495,12 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
                     title_text = TRIM$(MID$(line_text, first_pipe + 1, second_pipe - first_pipe - 1))
                     body_text = TRIM$(MID$(line_text, second_pipe + 1))
                     IF key_text = "default" THEN default_text = title_text + ": " + body_text
-                    IF INSTR(q, key_text) > 0 OR INSTR(LCASE$(body_text), q) > 0 THEN
-                        CLOSE #file_num
-                        RETURN title_text + ": " + body_text
+                    row_score = 0
+                    IF INSTR(q, key_text) > 0 THEN row_score = LEN(key_text)
+                    IF INSTR(LCASE$(body_text), q) > 0 AND row_score < 1 THEN row_score = 1
+                    IF row_score > best_score THEN
+                        best_score = row_score
+                        best_text = title_text + ": " + body_text
                     END IF
                 END IF
             END IF
@@ -499,6 +508,7 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     WEND
 
     CLOSE #file_num
+    IF best_text <> "" THEN RETURN best_text
     IF default_text <> "" THEN RETURN default_text
     RETURN ""
 
@@ -509,7 +519,9 @@ END FUNCTION
 
 FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     DIM input_tokens() AS INTEGER
+    DIM generated_tokens() AS INTEGER
     DIM input_count AS INTEGER
+    DIM generated_count AS INTEGER
     DIM context_tokens() AS INTEGER
     DIM context_len AS INTEGER
     DIM next_token AS INTEGER
@@ -526,10 +538,12 @@ FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     END IF
 
     REDIM context_tokens(0 TO input_count + max_tokens - 1)
+    REDIM generated_tokens(0 TO max_tokens - 1)
     FOR i = 0 TO input_count - 1
         context_tokens(i) = input_tokens(i)
     NEXT i
     context_len = input_count
+    generated_count = 0
 
     GPT2BasicBeginGeneration input_count
     FOR i = 0 TO max_tokens - 1
@@ -537,14 +551,76 @@ FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
         context_tokens(context_len) = next_token
         context_len = context_len + 1
         IF next_token = 0 THEN EXIT FOR
+        generated_tokens(generated_count) = next_token
+        generated_count = generated_count + 1
         IF i >= ASSIST_SENTENCE_STOP_MIN_TOKENS THEN
             IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
         END IF
     NEXT i
 
-    decoded_text = Decode(context_tokens(), context_len)
-    IF LEN(decoded_text) > LEN(prompt) THEN RETURN MID$(decoded_text, LEN(prompt) + 1)
-    RETURN decoded_text
+    IF generated_count = 0 THEN RETURN ""
+    decoded_text = Decode(generated_tokens(), generated_count)
+    RETURN TRIM$(decoded_text)
+END FUNCTION
+
+FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+    DIM input_tokens() AS INTEGER
+    DIM generated_tokens() AS INTEGER
+    DIM input_count AS INTEGER
+    DIM generated_count AS INTEGER
+    DIM context_tokens() AS INTEGER
+    DIM context_len AS INTEGER
+    DIM next_token AS INTEGER
+    DIM i AS INTEGER
+    DIM decoded_text AS STRING
+    DIM previous_text AS STRING
+    DIM piece AS STRING
+    DIM generated_text AS STRING
+
+    IF GPT2BasicIsLoaded() = 0 THEN RETURN ""
+    Encode prompt, input_tokens(), input_count
+    IF input_count > GPT2BasicContextLength() THEN input_count = GPT2BasicContextLength()
+    IF input_count < 1 THEN
+        REDIM input_tokens(0 TO 0)
+        input_tokens(0) = 0
+        input_count = 1
+    END IF
+
+    REDIM context_tokens(0 TO input_count + max_tokens - 1)
+    REDIM generated_tokens(0 TO max_tokens - 1)
+    FOR i = 0 TO input_count - 1
+        context_tokens(i) = input_tokens(i)
+    NEXT i
+    context_len = input_count
+    previous_text = ""
+    generated_text = ""
+    generated_count = 0
+
+    GPT2BasicBeginGeneration input_count
+    FOR i = 0 TO max_tokens - 1
+        next_token = GPT2BasicNextToken(context_tokens(), context_len, 0.0, ASSIST_DEFAULT_TOP_P, ASSIST_DEFAULT_TOP_K)
+        context_tokens(context_len) = next_token
+        context_len = context_len + 1
+        IF next_token = 0 THEN EXIT FOR
+        generated_tokens(generated_count) = next_token
+        generated_count = generated_count + 1
+
+        decoded_text = Decode(generated_tokens(), generated_count)
+        piece = ""
+        IF LEN(decoded_text) > LEN(previous_text) THEN piece = MID$(decoded_text, LEN(previous_text) + 1)
+        IF piece <> "" THEN
+            PRINT piece;
+            generated_text = generated_text + piece
+        END IF
+        previous_text = decoded_text
+
+        IF i >= ASSIST_SENTENCE_STOP_MIN_TOKENS THEN
+            IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
+        END IF
+    NEXT i
+
+    PRINT
+    RETURN TRIM$(generated_text)
 END FUNCTION
 
 SUB AssistRenderFrame()
@@ -616,19 +692,31 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM prompt AS STRING
     DIM generated AS STRING
     DIM bubble AS STRING
+    DIM model_path AS STRING
 
     pack_index = g_assist_active_pack
     intent_name = AssistClassifyIntent(query)
     actions = AssistActionsForIntent(intent_name)
     retrieved = AssistRetrieve(pack_index, query)
     IF retrieved = "" THEN retrieved = "I can answer from this pack, switch packs, or offer action buttons."
+    model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
+
+    IF use_generation <> 0 THEN
+        PRINT "+------------------------------------------------------------+"
+        PRINT "| Assistant                                                  |"
+        PRINT "+------------------------------------------------------------+"
+        IF GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path THEN
+            PRINT "Loading model..."
+        END IF
+    END IF
 
     IF AssistInitializeModel(pack_index) = 0 THEN
         IF g_assist_emit_records <> 0 THEN
             PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
                   "|intent=" + intent_name + "|status=model_unavailable"
         END IF
-        AssistAddHistory "ASSISTANT: Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
+        IF use_generation <> 0 THEN PRINT "Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
+        AssistAddHistory "ASSISTANT: " + retrieved + " Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
         RETURN
     END IF
 
@@ -636,14 +724,18 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     IF use_generation <> 0 THEN
         prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query + _
                  " Note: " + retrieved + " Assistant:"
-        generated = AssistGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
+        PRINT "Generating: ";
+        generated = AssistStreamGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
     END IF
 
-    bubble = retrieved
-    IF generated <> "" THEN
-        IF INSTR(LCASE$(retrieved), LCASE$(TRIM$(generated))) = 0 THEN
-            bubble = bubble + " " + generated
+    IF use_generation <> 0 THEN
+        bubble = generated
+        IF bubble = "" THEN
+            bubble = retrieved
+            PRINT bubble
         END IF
+    ELSE
+        bubble = retrieved
     END IF
     IF LEN(bubble) > 360 THEN bubble = LEFT$(bubble, 360)
 
@@ -655,11 +747,13 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
               "|retrieval=" + AssistSafeText(retrieved) + _
               "|generated=" + AssistSafeText(generated)
     END IF
-    PRINT "+------------------------------------------------------------+"
-    PRINT "| Assistant                                                  |"
-    PRINT "+------------------------------------------------------------+"
-    PRINT bubble
-    PRINT
+    IF use_generation = 0 THEN
+        PRINT "+------------------------------------------------------------+"
+        PRINT "| Assistant                                                  |"
+        PRINT "+------------------------------------------------------------+"
+        PRINT bubble
+        PRINT
+    END IF
     PRINT "[ "; actions; " ]"
     PRINT
     AssistAddHistory "ASSISTANT: " + bubble

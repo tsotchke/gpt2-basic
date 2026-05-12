@@ -212,11 +212,56 @@ def runtime_note(row: HelpRow) -> str:
 
 
 def query_variants(pack: Pack, row: HelpRow) -> list[str]:
-    variants = [
-        row.title,
-        f"Help me with {row.key}.",
-        f"What should I do about {row.title}?",
-    ]
+    if pack.pack_id == "CHAT":
+        chat_variants = {
+            "hello": [
+                "Hello.",
+                "Hi.",
+                "Hello",
+            ],
+            "how are you": [
+                "How are you?",
+                "[ask] how are you",
+                "Are you working?",
+            ],
+            "what can you do": [
+                "Hello, what can you do?",
+                "What can you do?",
+                "What are you good at?",
+                "Tell me what this assistant can do.",
+            ],
+            "limits": [
+                "What are your limits?",
+                "Can you use the network?",
+            ],
+            "idea": [
+                "Give me one idea for improving the demo.",
+                "Suggest a next step.",
+            ],
+            "demo": [
+                "I want to talk about this DOS demo.",
+                "Explain the demo.",
+            ],
+            "status": [
+                "Is this demo live?",
+                "Should the answer stream?",
+            ],
+            "name": [
+                "What are you?",
+                "What is your name?",
+            ],
+        }
+        variants = chat_variants.get(row.key.lower(), []) + [
+            row.title,
+            f"Help me with {row.key}.",
+            f"What should I do about {row.title}?",
+        ]
+    else:
+        variants = [
+            row.title,
+            f"Help me with {row.key}.",
+            f"What should I do about {row.title}?",
+        ]
     if pack.pack_id == "DOSHELP":
         if row.key in {"memory", "config.sys"}:
             variants.append("How do I tune CONFIG.SYS memory for this assistant?")
@@ -259,7 +304,24 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
         )
         for query in query_variants(pack, row):
             paragraphs.append(f"{runtime_prompt(pack, row, query)} {row.body}")
+        if pack.pack_id == "CHAT" and row.key.lower() == "hello":
+            for _repeat in range(48):
+                paragraphs.append(f"{pack.persona} User: Hello. Assistant: {row.body}")
+                paragraphs.append(f"{pack.persona} User: Hi. Assistant: {row.body}")
+                paragraphs.append(f"{pack.persona} User: Hello Note: {runtime_note(row)} Assistant: {row.body}")
+        if pack.pack_id == "CHAT" and row.key.lower() == "what can you do":
+            for _repeat in range(32):
+                paragraphs.append(f"{pack.persona} User: Hello, what can you do? Assistant: {row.body}")
+                paragraphs.append(f"{pack.persona} User: What can you do? Assistant: {row.body}")
         focus_repeats = 4
+        if pack.pack_id == "CHAT":
+            focus_repeats = 16
+            if row.key.lower() == "hello":
+                focus_repeats = 72
+            elif row.key.lower() == "thanks":
+                focus_repeats = 2
+            elif row.key.lower() in {"how are you", "what can you do", "limits"}:
+                focus_repeats = 24
         if pack.pack_id == "DOSHELP" and row.key in {"memory", "config.sys", "autoexec", "batch"}:
             focus_repeats = 12
         if pack.pack_id == "OFFICE" and row.key in {"professional", "summar"}:

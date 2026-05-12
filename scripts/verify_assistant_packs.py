@@ -105,6 +105,9 @@ def verify_source() -> None:
         "ASSIST_REPLY",
         "USAGE",
         "AssistPrintPackUsage",
+        "AssistStreamGenerate",
+        'PRINT "Generating: ";',
+        "Decode(generated_tokens(), generated_count)",
         'LCASE$(command_text) = "/about"',
         "SPRITE",
         "ICONS",
@@ -114,7 +117,7 @@ def verify_source() -> None:
 
 def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path) -> None:
     pack_by_id = {pack.pack_id: pack for pack in packs}
-    for pack_id in ("DOSHELP", "OFFICE"):
+    for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
         require("Quality status: `PASS`" in report, f"pack_quality_not_pass={pack.pack_id}")
@@ -137,6 +140,7 @@ def verify_qemu_logs(packs: list[PackInfo], assistant_log: Path, compile_log: Pa
     require("CHAT pack" in assist, "chat_usage_missing")
     require("DOSHELP pack" in assist, "doshelp_usage_missing")
     require("OFFICE pack" in assist, "office_usage_missing")
+    require("You are a small friendly DOS conversation assistant. User:" not in assist, "chat_prompt_echo_in_log")
     require("ASSIST_REPLY|pack=CHAT|intent=general_chat" in assist, "chat_reply_missing")
     require("ASSIST_REPLY|pack=DOSHELP|intent=dos_memory" in assist, "doshelp_reply_missing")
     require("ASSIST_REPLY|pack=OFFICE|intent=office_rewrite" in assist, "office_reply_missing")
