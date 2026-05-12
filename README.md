@@ -299,6 +299,9 @@ stays open until you type `/quit`. It starts in `/pack CHAT`, which is the
 normal conversation pack. Use `/about` for current-pack instructions, `/packs`
 to list packs, `/pack DOSHELP` for DOS/486 questions, `/pack OFFICE` for
 writing tasks, and `/history`, `/up`, and `/down` for the in-DOS transcript.
+The active pack model loads before the first `>` prompt is displayed, and a
+new pack model loads immediately after `/pack NAME`, so the first question does
+not pay the model-load cost.
 During generation, the DOS shell prints `Thinking:` progress while the prompt is
 prefilled and streams `Answer:` pieces as the fixed-point model produces
 tokens.

@@ -231,6 +231,10 @@ Inside DOS, type questions directly. The demo starts in `/pack CHAT`, the
 general conversation pack. Use `/about` for current-pack instructions, `/packs`,
 `/pack CHAT`, `/pack DOSHELP`, `/pack OFFICE`, `/history`, `/up`, `/down`,
 `/home`, `/end`, `/clear`, and `/quit`.
+`ASSIST.EXE` loads the active pack model before it prints the first `>` prompt.
+When you switch with `/pack NAME`, the selected pack model loads before the
+next prompt returns, so generation starts immediately after the first question
+for that pack.
 During generation, `ASSIST.EXE` prints `Thinking:` progress while the prompt is
 prefilled and streams `Answer:` pieces as fixed-point inference produces
 tokens.

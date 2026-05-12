@@ -38,6 +38,23 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('LCASE$(command_text) = "/history"', text)
         self.assertIn('LCASE$(command_text) = "/about"', text)
 
+    def test_interactive_assistant_preloads_active_pack_before_prompt(self) -> None:
+        text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
+
+        self.assertIn("SUB AssistPreloadActivePackModel()", text)
+        self.assertIn('PRINT "Loading "; pack_id; " model before prompt..."', text)
+        self.assertIn("AssistInitializeModel(g_assist_active_pack)", text)
+
+        commands_pos = text.index('PRINT "Commands: /about')
+        preload_pos = text.index("AssistPreloadActivePackModel", commands_pos)
+        prompt_pos = text.index('PRINT "> ";', commands_pos)
+        self.assertLess(preload_pos, prompt_pos)
+
+        pack_branch_pos = text.index('ELSEIF LEFT$(LCASE$(command_text), 6) = "/pack "')
+        pack_preload_pos = text.index("AssistPreloadActivePackModel", pack_branch_pos)
+        unknown_pack_pos = text.index('PRINT "Unknown pack."', pack_branch_pos)
+        self.assertLess(pack_preload_pos, unknown_pack_pos)
+
     def test_assistant_streams_generated_tokens_without_prompt_echo(self) -> None:
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
 

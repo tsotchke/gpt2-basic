@@ -77,6 +77,7 @@ DECLARE SUB AssistPrintPackList()
 DECLARE FUNCTION AssistSelectPack(pack_id AS STRING) AS INTEGER
 DECLARE FUNCTION AssistTokenizerModeName(mode_value AS INTEGER) AS STRING
 DECLARE FUNCTION AssistInitializeModel(pack_index AS INTEGER) AS INTEGER
+DECLARE SUB AssistPreloadActivePackModel()
 DECLARE SUB AssistShutdownModel()
 DECLARE FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
 DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
@@ -431,6 +432,23 @@ assist_vocab_error:
     END IF
     RETURN 0
 END FUNCTION
+
+SUB AssistPreloadActivePackModel()
+    DIM model_path AS STRING
+    DIM pack_id AS STRING
+
+    IF g_assist_active_pack < 0 OR g_assist_active_pack >= g_assist_pack_count THEN RETURN
+    model_path = AssistTrimFixed(g_assist_packs(g_assist_active_pack).model_path)
+    IF model_path = "" THEN model_path = "MODEL"
+    IF GPT2BasicIsLoaded() <> 0 AND g_assist_model_path = model_path THEN RETURN
+
+    pack_id = AssistTrimFixed(g_assist_packs(g_assist_active_pack).id)
+    PRINT "Loading "; pack_id; " model before prompt..."
+    IF AssistInitializeModel(g_assist_active_pack) = 0 THEN
+        PRINT "Model unavailable for "; pack_id; ". You can switch packs or use retrieval replies."
+    END IF
+    PRINT
+END SUB
 
 SUB AssistShutdownModel()
     IF GPT2BasicIsLoaded() <> 0 THEN GPT2BasicFreeModel
@@ -892,6 +910,7 @@ SUB AssistInteractive()
     AssistRenderPackStatus
     PRINT "Commands: /about, /pack NAME, /packs, /up, /down, /home, /end, /history, /clear, /quit"
     PRINT
+    AssistPreloadActivePackModel
 
     DO
         PRINT "> ";
@@ -924,6 +943,7 @@ SUB AssistInteractive()
             IF AssistSelectPack(MID$(command_text, 7)) <> 0 THEN
                 AssistRenderFrame
                 AssistRenderPackStatus
+                AssistPreloadActivePackModel
             ELSE
                 PRINT "Unknown pack."
             END IF

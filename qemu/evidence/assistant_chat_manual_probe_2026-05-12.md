@@ -8,6 +8,9 @@ Runtime path:
 - CHAT model profile: `486dx2-usable`
 - CHAT tokenizer: lexicon, `vocab=4096`
 - CHAT fixed quality report: `PASS`, `25/25`
+- Interactive preload check: `Loading CHAT model before prompt...` appeared
+  before the first `>` prompt; the first typed question did not print
+  `Loading model...`.
 
 Typed prompts and observed DOS console replies:
 
@@ -26,4 +29,5 @@ dialogue. The prompt-definition replies were checked after narrowing
 mistaken for leaked prompt labels. The scripted QEMU evidence still covers the
 other packs and structured `ASSIST_MODEL` records. The DOS console showed
 `Thinking:` progress followed by streamed `Answer:` text from the loaded CHAT
-model.
+model. The current interactive path preloads the active pack model during
+startup and after `/pack NAME`, before returning control to the prompt.
