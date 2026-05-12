@@ -46,6 +46,7 @@ TYPE AssistantPack
     model_path AS STRING * 80
     persona AS STRING * 160
     help_path AS STRING * 80
+    usage_path AS STRING * 80
     sprite_path AS STRING * 80
     icons_path AS STRING * 80
     actions AS STRING * 80
@@ -83,6 +84,7 @@ DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRIN
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 DECLARE SUB AssistRenderFrame()
 DECLARE SUB AssistRenderPackStatus()
+DECLARE SUB AssistPrintPackUsage(pack_index AS INTEGER)
 DECLARE SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 DECLARE SUB AssistScriptedDemo()
 DECLARE SUB AssistInteractive()
@@ -253,6 +255,9 @@ FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
     value_text = AssistReadIniValue(ini_path, "HELP", "HELP.TXT")
     IF INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).help_path = value_text
+    value_text = AssistReadIniValue(ini_path, "USAGE", "USAGE.TXT")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).usage_path = value_text
     value_text = AssistReadIniValue(ini_path, "SPRITE", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).sprite_path = value_text
@@ -272,6 +277,7 @@ SUB AssistUseBuiltinPack()
     g_assist_packs(0).model_path = "MODEL"
     g_assist_packs(0).persona = "Helpful concise DOS assistant."
     g_assist_packs(0).help_path = ""
+    g_assist_packs(0).usage_path = ""
     g_assist_packs(0).sprite_path = ""
     g_assist_packs(0).icons_path = ""
     g_assist_packs(0).actions = "explain,chat,cancel"
@@ -455,6 +461,7 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM key_text AS STRING
     DIM title_text AS STRING
     DIM body_text AS STRING
+    DIM default_text AS STRING
     DIM first_pipe AS INTEGER
     DIM second_pipe AS INTEGER
     DIM q AS STRING
@@ -464,6 +471,7 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     IF help_path = "" OR DIR(help_path) = "" THEN RETURN ""
 
     q = LCASE$(query)
+    default_text = ""
     file_num = FREEFILE
     ON ERROR GOTO assist_retrieve_error
     OPEN help_path FOR INPUT AS #file_num
@@ -480,6 +488,7 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
                     key_text = LCASE$(TRIM$(LEFT$(line_text, first_pipe - 1)))
                     title_text = TRIM$(MID$(line_text, first_pipe + 1, second_pipe - first_pipe - 1))
                     body_text = TRIM$(MID$(line_text, second_pipe + 1))
+                    IF key_text = "default" THEN default_text = title_text + ": " + body_text
                     IF INSTR(q, key_text) > 0 OR INSTR(LCASE$(body_text), q) > 0 THEN
                         CLOSE #file_num
                         RETURN title_text + ": " + body_text
@@ -490,6 +499,7 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     WEND
 
     CLOSE #file_num
+    IF default_text <> "" THEN RETURN default_text
     RETURN ""
 
 assist_retrieve_error:
@@ -551,6 +561,7 @@ SUB AssistRenderPackStatus()
     p = g_assist_packs(g_assist_active_pack)
     PRINT "Pack : "; AssistTrimFixed(p.id); " - "; AssistTrimFixed(p.title)
     PRINT "Model: "; AssistTrimFixed(p.model_path)
+    IF AssistTrimFixed(p.usage_path) <> "" THEN PRINT "Usage: /about"
     IF AssistTrimFixed(p.sprite_path) <> "" THEN PRINT "Sprite asset: "; AssistTrimFixed(p.sprite_path)
     IF AssistTrimFixed(p.icons_path) <> "" THEN PRINT "Icon asset  : "; AssistTrimFixed(p.icons_path)
     IF g_assist_emit_records <> 0 THEN
@@ -561,6 +572,40 @@ SUB AssistRenderPackStatus()
               "|icons=" + AssistSafeText(AssistTrimFixed(p.icons_path))
     END IF
     PRINT
+END SUB
+
+SUB AssistPrintPackUsage(pack_index AS INTEGER)
+    DIM usage_path AS STRING
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+
+    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN
+    usage_path = AssistTrimFixed(g_assist_packs(pack_index).usage_path)
+    IF usage_path = "" OR DIR(usage_path) = "" THEN
+        PRINT "No usage instructions for this pack."
+        RETURN
+    END IF
+
+    PRINT "+------------------------------------------------------------+"
+    PRINT "| Pack instructions                                          |"
+    PRINT "+------------------------------------------------------------+"
+    file_num = FREEFILE
+    ON ERROR GOTO assist_usage_error
+    OPEN usage_path FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_text
+        PRINT line_text
+    WEND
+
+    CLOSE #file_num
+    PRINT
+    RETURN
+
+assist_usage_error:
+    ON ERROR GOTO 0
+    PRINT "Could not read pack instructions."
 END SUB
 
 SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
@@ -626,12 +671,19 @@ SUB AssistScriptedDemo()
     AssistPrintPackList
     PRINT
 
+    AssistSelectPack "CHAT"
+    AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
+    AssistRenderReply "Hello, what can you do?", 0
+
     AssistSelectPack "DOSHELP"
     AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
     AssistRenderReply "How do I tune CONFIG.SYS memory for this assistant?", 0
 
     AssistSelectPack "OFFICE"
     AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
     AssistRenderReply "Rewrite this memo in a professional tone.", 0
 
     PRINT "ASSIST_END|packs=" + LTRIM$(STR$(g_assist_pack_count))
@@ -646,7 +698,7 @@ SUB AssistInteractive()
     AssistPrintPackList
     PRINT
     AssistRenderPackStatus
-    PRINT "Commands: /pack NAME, /packs, /up, /down, /home, /end, /history, /clear, /quit"
+    PRINT "Commands: /about, /pack NAME, /packs, /up, /down, /home, /end, /history, /clear, /quit"
     PRINT
 
     DO
@@ -659,6 +711,8 @@ SUB AssistInteractive()
             EXIT DO
         ELSEIF LCASE$(command_text) = "/packs" THEN
             AssistPrintPackList
+        ELSEIF LCASE$(command_text) = "/about" THEN
+            AssistPrintPackUsage g_assist_active_pack
         ELSEIF LCASE$(command_text) = "/history" THEN
             AssistRenderHistory
         ELSEIF LCASE$(command_text) = "/up" THEN

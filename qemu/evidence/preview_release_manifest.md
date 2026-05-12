@@ -5,7 +5,7 @@ Generated: `2026-05-11`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `240 files, 34,764,619 bytes`
+Package status: `249 files, 34,780,791 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,14 +24,14 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
-| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.954 (float, assistant-pack) | 11 files / 3,855,402 B |
-| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.966 (float, assistant-pack) | 11 files / 3,845,910 B |
+| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.954 (float, assistant-pack) | 12 files / 3,856,004 B |
+| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.966 (float, assistant-pack) | 12 files / 3,846,533 B |
 
 ## Included Runtime Surface
 
 - `bin/GPT2.EXE` when current QEMU evidence includes the compiled DOS binary.
 - `assets/gpt2_basic/MODEL*` for the release models listed above.
-- `assets/gpt2_basic/PACKS` with DOSHELP and OFFICE pack-local models plus sprite/icon slots.
+- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, and OFFICE packs, per-pack `USAGE.TXT`, pack-local models where available, and sprite/icon slots.
 - `src`, `scripts`, `tests`, selected `qemu` helpers, and `data/domain_curriculum` for rebuild and repair iteration.
 - Selected QEMU and quality evidence under `qemu/evidence`.
 

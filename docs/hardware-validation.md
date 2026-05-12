@@ -76,7 +76,8 @@ python3 scripts/verify_hardware_capture.py --capture-dir /path/to/capture
 
 - `QUAL.LOG` shows the same prompt suite completing without runtime failure.
 - `PERF.LOG` contains all `PERF_*` rows and reports runtime memory.
-- `ASSIST.LOG` includes both DOSHELP and OFFICE pack records.
+- `ASSIST.LOG` includes CHAT, DOSHELP, and OFFICE pack records plus per-pack
+  usage instructions.
 - `ASSISTC.LOG` includes `ASSIST_COMPILE_OK` when target-side compilation is
   attempted.
 - The hardware notes identify CPU, clock, RAM, DOS version, FreeBASIC version,

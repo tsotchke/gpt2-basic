@@ -227,18 +227,22 @@ bash qemu/run_assistant_interactive_486.sh
 That launcher stages the same source, model, and packs, then boots a graphical
 QEMU display and starts `ASSIST.EXE` normally. It does not pass `--scripted`,
 does not redirect output to `ASSIST.LOG`, and does not power off after startup.
-Inside DOS, type questions directly. Use `/packs`, `/pack DOSHELP`, `/pack
-OFFICE`, `/history`, `/up`, `/down`, `/home`, `/end`, `/clear`, and `/quit`.
+Inside DOS, type questions directly. The demo starts in `/pack CHAT`, the
+general conversation pack. Use `/about` for current-pack instructions, `/packs`,
+`/pack CHAT`, `/pack DOSHELP`, `/pack OFFICE`, `/history`, `/up`, `/down`,
+`/home`, `/end`, `/clear`, and `/quit`.
 The `/up` and `/down` commands page through the in-DOS transcript because QEMU
 graphics windows do not provide terminal scrollback.
 
 The assistant shell is intentionally separate from `GPT2.EXE`. Packs are
-listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, and optional
-`SPRITE`/`ICONS` assets. `PACK.INI` can point `MODEL=` at `C:\MODEL` or a
-pack-local checkpoint, so a future DOS, Windows, or OS/2 shell can share the
-same pack format while rendering a richer UI. The current release focus is the
-DOS reference shell and DOS demo package; the OS/2/Warp package is deferred to
-a later release. The current DOS renderer uses a text-mode assistant bubble and
+listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, `USAGE.TXT`,
+and optional `SPRITE`/`ICONS` assets. `USAGE.TXT` explains what the individual
+pack is for, how it works, and what to type; `ASSIST.EXE` displays it through
+`/about`. `PACK.INI` can point `MODEL=` at `C:\MODEL` or a pack-local
+checkpoint, so a future DOS, Windows, or OS/2 shell can share the same pack
+format while rendering a richer UI. The current release focus is the DOS
+reference shell and DOS demo package; the OS/2/Warp package is deferred to a
+later release. The current DOS renderer uses a text-mode assistant bubble and
 action list, which keeps it compatible with plain VGA text, serial capture, and
 OS/2 DOS sessions.
 

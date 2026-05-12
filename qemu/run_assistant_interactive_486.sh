@@ -60,7 +60,7 @@ echo "Opening GPT2-BASIC interactive assistant under QEMU 486."
 echo "Model directory: $MODEL_DIR"
 echo "Pack directory: $PACK_DIR"
 echo "QEMU display: $QEMU_DISPLAY"
-echo "Inside DOS: use /packs, /pack DOSHELP, /pack OFFICE, /up, /down, /history, /quit."
+echo "Inside DOS: use /about, /packs, /pack CHAT, /pack DOSHELP, /pack OFFICE, /up, /down, /history, /quit."
 echo "If the FreeDOS language menu appears, press Enter for English."
 
 exec qemu-system-i386 \

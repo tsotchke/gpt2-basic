@@ -338,12 +338,13 @@ contract, and has ICC-verified closure for the formerly aspirational software
 subsystems. The new optional `ASSIST.EXE` surface starts the next product
 direction: a pack-driven Clippy-style assistant that can switch model paths,
 retrieve pack-local notes, expose structured action replies, and reserve
-sprite/icon assets without bloating `GPT2.EXE`. DOSHELP and OFFICE now have
+sprite/icon assets without bloating `GPT2.EXE`. CHAT is the default
+conversation pack using the shared release model; DOSHELP and OFFICE have
 pack-local trained checkpoints with host model reports, short assistant-window
 quality reports, and FreeDOS evidence that `ASSIST.EXE` loads
 `PACKS\<ID>\MODEL`. The main architectural weakness is now choosing the right
 release variant for the user's memory/speed target and proving richer assistant
-packs. Physical-board timing remains a deferred validation step; emulator
-evidence is the accepted gate for current work. The next improvements should be
-a measured shortlist sweep, broader prompt coverage, and a real VGA/Windows/OS2
-shell over the pack format.
+pack behavior. Physical-board timing remains a deferred validation step;
+emulator evidence is the accepted gate for current work. The next improvements
+should be a measured shortlist sweep, broader prompt coverage, and a real
+VGA/Windows/OS2 shell over the pack format.

@@ -15,6 +15,8 @@ host-path portability guard, plus the workspace tracking verifier.
   verifier and probe evidence.
 - The repository has `804` tracked files after adding the real interactive
   QEMU assistant demo launcher, DOS entry batch, and regression tests.
+- The repository has `813` tracked files after adding the CHAT conversation
+  pack and per-pack usage instructions for CHAT, DOSHELP, and OFFICE.
 - The stale pre-cleanup ICC report was archived at
   `qemu/evidence/archive/release_diff_audit_pre_cleanup.md`.
 - The current top-level release surface is the DOS preview and hardware-transfer
@@ -40,6 +42,9 @@ host-path portability guard, plus the workspace tracking verifier.
   `qemu/fdauto_assist_interactive.bat` are the product demo path: they launch
   `ASSIST.EXE` without `--scripted`, without redirecting to `ASSIST.LOG`, and
   without powering off QEMU after startup.
+- `assets/gpt2_basic/PACKS/CHAT` is the default conversation pack, and every
+  listed assistant pack now has a tracked `USAGE.TXT` surfaced through
+  `ASSIST.EXE` with `/about`.
 - `qemu/make_dos_staging.py` now recreates `qemu/staging/GPT2SRC` from scratch
   before writing staged DOS source files, so stale ignored staging files cannot
   enter the transfer bundle.

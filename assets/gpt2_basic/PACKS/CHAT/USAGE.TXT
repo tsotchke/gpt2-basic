@@ -1,0 +1,24 @@
+CHAT pack
+
+Purpose:
+  Use this pack for ordinary conversation. It is the default pack in the
+  interactive QEMU demo because it is meant for talking, not a specific
+  DOS or office task.
+
+How it works:
+  The pack uses the shared C:\MODEL checkpoint and retrieves broad chat
+  notes from HELP.TXT. If your wording does not match a specific note,
+  it falls back to a general conversation note so the assistant still has
+  useful context.
+
+How to use it:
+  Just type a sentence at the > prompt. Use /about to see this help again.
+
+Good prompts:
+  Hello, what can you do?
+  I want to talk about this DOS demo.
+  Give me one idea for improving the demo.
+  What are your limits?
+
+Actions:
+  chat, ask, idea, explain, cancel

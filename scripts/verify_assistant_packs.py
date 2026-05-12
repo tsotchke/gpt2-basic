@@ -20,6 +20,7 @@ class PackInfo:
     pack_id: str
     model_path: str
     pack_dir: Path
+    usage_path: Path
 
 
 def require(condition: bool, message: str) -> None:
@@ -70,7 +71,10 @@ def verify_pack_model(pack_root: Path, pack_id: str, model_value: str) -> None:
 
 def verify_pack_files(pack_root: Path) -> list[PackInfo]:
     ids = pack_ids(pack_root)
-    require(len(ids) >= 2, "pack_count_lt_2")
+    require(len(ids) >= 3, "pack_count_lt_3")
+    require(ids[0] == "CHAT", "chat_pack_not_default")
+    for expected in ("CHAT", "DOSHELP", "OFFICE"):
+        require(expected in ids, f"missing_pack={expected}")
     packs: list[PackInfo] = []
     for pack_id in ids:
         pack_dir = pack_root / pack_id
@@ -78,11 +82,14 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         values = parse_ini(ini)
         help_text = read(pack_dir / "HELP.TXT")
         require(f"ID={pack_id}" in ini.upper(), f"pack_id_mismatch={pack_id}")
-        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "SPRITE=", "ICONS=", "ACTIONS="):
+        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
             require(key in ini.upper(), f"missing_{key.rstrip('=')}={pack_id}")
         require("|" in help_text, f"missing_retrieval_rows={pack_id}")
+        usage_text = read(pack_dir / values["USAGE"])
+        for marker in ("Purpose:", "How it works:", "How to use it:", "Good prompts:", "Actions:"):
+            require(marker in usage_text, f"missing_usage_marker_{marker.rstrip(':').lower().replace(' ', '_')}={pack_id}")
         verify_pack_model(pack_root, pack_id, values["MODEL"])
-        packs.append(PackInfo(pack_id, values["MODEL"], pack_dir))
+        packs.append(PackInfo(pack_id, values["MODEL"], pack_dir, pack_dir / values["USAGE"]))
     return packs
 
 
@@ -96,6 +103,9 @@ def verify_source() -> None:
         "ASSIST_PACK",
         "ASSIST_MODEL",
         "ASSIST_REPLY",
+        "USAGE",
+        "AssistPrintPackUsage",
+        'LCASE$(command_text) = "/about"',
         "SPRITE",
         "ICONS",
     ):
@@ -103,7 +113,9 @@ def verify_source() -> None:
 
 
 def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path) -> None:
-    for pack in packs[:2]:
+    pack_by_id = {pack.pack_id: pack for pack in packs}
+    for pack_id in ("DOSHELP", "OFFICE"):
+        pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
         require("Quality status: `PASS`" in report, f"pack_quality_not_pass={pack.pack_id}")
         require("Prompt pass rate: `4/4`" in report, f"pack_quality_pass_rate={pack.pack_id}")
@@ -115,13 +127,17 @@ def verify_qemu_logs(packs: list[PackInfo], assistant_log: Path, compile_log: Pa
     require("ASSIST_COMPILE_OK" in compile_text, "compile_marker_missing")
     require("ASSIST_BEGIN|suite=pack-shell|version=1" in assist, "begin_marker_missing")
     require("ASSIST_END|packs=" in assist, "end_marker_missing")
-    for pack in packs[:2]:
+    for pack in packs:
         require(f"ASSIST_PACK|id={pack.pack_id}" in assist, f"pack_log_missing={pack.pack_id}")
         require(f"ASSIST_MODEL|pack={pack.pack_id}" in assist, f"model_log_missing={pack.pack_id}")
         require(
             f"path={pack.model_path}" in assist,
             f"model_path_log_missing={pack.pack_id}",
         )
+    require("CHAT pack" in assist, "chat_usage_missing")
+    require("DOSHELP pack" in assist, "doshelp_usage_missing")
+    require("OFFICE pack" in assist, "office_usage_missing")
+    require("ASSIST_REPLY|pack=CHAT|intent=general_chat" in assist, "chat_reply_missing")
     require("ASSIST_REPLY|pack=DOSHELP|intent=dos_memory" in assist, "doshelp_reply_missing")
     require("ASSIST_REPLY|pack=OFFICE|intent=office_rewrite" in assist, "office_reply_missing")
     require("status=model_unavailable" not in assist, "model_unavailable_in_assistant_log")

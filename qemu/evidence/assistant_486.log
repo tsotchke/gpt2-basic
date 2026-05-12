@@ -5,14 +5,87 @@
 
 ASSIST_BEGIN|suite=pack-shell|version=1
 Available packs:
+  CHAT - Conversation Pack
   DOSHELP - DOS Help Assistant
   OFFICE - Office Assistant
 
+Pack : CHAT - Conversation Pack
+Model: MODEL
+Usage: /about
+Sprite asset: PACKS\CHAT\CHAT.SPR
+Icon asset  : PACKS\CHAT\CHAT.ICN
+ASSIST_PACK|id=CHAT|title=Conversation Pack|model=MODEL|sprite=PACKS\CHAT\CHAT.SPR|icons=PACKS\CHAT\CHAT.ICN
+
++------------------------------------------------------------+
+| Pack instructions                                          |
++------------------------------------------------------------+
+CHAT pack
+
+Purpose:
+  Use this pack for ordinary conversation. It is the default pack in the
+  interactive QEMU demo because it is meant for talking, not a specific
+  DOS or office task.
+
+How it works:
+  The pack uses the shared C:\MODEL checkpoint and retrieves broad chat
+  notes from HELP.TXT. If your wording does not match a specific note,
+  it falls back to a general conversation note so the assistant still has
+  useful context.
+
+How to use it:
+  Just type a sentence at the > prompt. Use /about to see this help again.
+
+Good prompts:
+  Hello, what can you do?
+  I want to talk about this DOS demo.
+  Give me one idea for improving the demo.
+  What are your limits?
+
+Actions:
+  chat, ask, idea, explain, cancel
+
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+ASSIST_MODEL|pack=CHAT|path=MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Starting a conversation: Say hello, ask what I can do, or tell me what you want to talk about.|generated=
++------------------------------------------------------------+
+| Assistant                                                  |
++------------------------------------------------------------+
+Starting a conversation: Say hello, ask what I can do, or tell me what you want to talk about.
+
+[ chat,ask,idea,explain,cancel ]
+
 Pack : DOSHELP - DOS Help Assistant
 Model: PACKS\DOSHELP\MODEL
+Usage: /about
 Sprite asset: PACKS\DOSHELP\DOSHELP.SPR
 Icon asset  : PACKS\DOSHELP\DOSHELP.ICN
 ASSIST_PACK|id=DOSHELP|title=DOS Help Assistant|model=PACKS\DOSHELP\MODEL|sprite=PACKS\DOSHELP\DOSHELP.SPR|icons=PACKS\DOSHELP\DOSHELP.ICN
+
++------------------------------------------------------------+
+| Pack instructions                                          |
++------------------------------------------------------------+
+DOSHELP pack
+
+Purpose:
+  Use this pack when the conversation is about FreeDOS, 486-era
+  configuration, CONFIG.SYS, AUTOEXEC.BAT, memory, or batch files.
+
+How it works:
+  The pack loads PACKS\DOSHELP\MODEL and retrieves short DOS notes from
+  HELP.TXT before generating a reply. It is tuned for concrete fixes, not
+  open-ended chat.
+
+How to use it:
+  Type /pack DOSHELP, then ask for a DOS task.
+
+Good prompts:
+  How do I tune CONFIG.SYS memory?
+  Write a safe DOS batch file.
+  What should AUTOEXEC.BAT contain for this demo?
+
+Actions:
+  show_config, explain_xms, write_batch, cancel
 
 Initialized tokenizer with  258 tokens
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
@@ -27,9 +100,35 @@ CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFER
 
 Pack : OFFICE - Office Assistant
 Model: PACKS\OFFICE\MODEL
+Usage: /about
 Sprite asset: PACKS\OFFICE\OFFICE.SPR
 Icon asset  : PACKS\OFFICE\OFFICE.ICN
 ASSIST_PACK|id=OFFICE|title=Office Assistant|model=PACKS\OFFICE\MODEL|sprite=PACKS\OFFICE\OFFICE.SPR|icons=PACKS\OFFICE\OFFICE.ICN
+
++------------------------------------------------------------+
+| Pack instructions                                          |
++------------------------------------------------------------+
+OFFICE pack
+
+Purpose:
+  Use this pack when the conversation is about writing, rewriting,
+  shortening, summarizing, or making a note sound more professional.
+
+How it works:
+  The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from
+  HELP.TXT before generating a reply. It behaves like a small DOS office
+  assistant with action buttons.
+
+How to use it:
+  Type /pack OFFICE, then paste or describe the text task.
+
+Good prompts:
+  Rewrite this memo in a professional tone.
+  Summarize this paragraph.
+  Make this note shorter and clearer.
+
+Actions:
+  rewrite, shorten, summarize, formalize, cancel
 
 Initialized tokenizer with  258 tokens
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
@@ -42,4 +141,4 @@ Rewrite selected text: Use rewrite when the user has selected prose and wants a 
 
 [ rewrite,shorten,formalize,cancel ]
 
-ASSIST_END|packs=2
+ASSIST_END|packs=3

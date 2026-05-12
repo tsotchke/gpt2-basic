@@ -1,0 +1,8 @@
+# key|title|body
+default|Conversation mode|This is the general chat pack. Type a sentence, question, or thought; I will answer briefly and keep the conversation going.
+hello|Starting a conversation|Say hello, ask what I can do, or tell me what you want to talk about.
+talk|Open conversation|Use this pack for normal back-and-forth chat when DOSHELP and OFFICE are too narrow.
+name|Assistant identity|I am GPT2-BASIC running inside DOS through FreeBASIC and a tiny local model.
+limits|Model limits|I can give short local replies, but I do not have network access or modern large-model knowledge inside DOS.
+idea|Idea help|Give me a topic and I can suggest a next step, a small plan, or a few wording options.
+status|Demo status|This demo is interactive: switch packs, talk, view history, and quit without the VM shutting down.

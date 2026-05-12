@@ -286,7 +286,7 @@ That is the scripted evidence path: it compiles the optional `ASSIST.EXE`
 utility, loads `PACKS\PACKS.TXT`, discovers pack-local `PACK.INI` metadata,
 switches the active model path per pack, retrieves pack notes, and emits
 structured `ASSIST_*` records to `qemu/evidence/assistant_486.log`. The first
-packs are `DOSHELP` and `OFFICE`.
+packs are `CHAT`, `DOSHELP`, and `OFFICE`.
 
 Run the real interactive QEMU demo with:
 
@@ -295,9 +295,14 @@ bash qemu/run_assistant_interactive_486.sh
 ```
 
 This opens a QEMU window instead of a scripted evidence run. The DOS assistant
-stays open until you type `/quit`. Use `/packs`, `/pack DOSHELP`, `/pack
-OFFICE`, `/history`, `/up`, and `/down` inside the assistant; transcript paging
-is implemented inside DOS so it does not depend on terminal scrollback.
+stays open until you type `/quit`. It starts in `/pack CHAT`, which is the
+normal conversation pack. Use `/about` for current-pack instructions, `/packs`
+to list packs, `/pack DOSHELP` for DOS/486 questions, `/pack OFFICE` for
+writing tasks, and `/history`, `/up`, and `/down` for the in-DOS transcript.
+Transcript paging is implemented inside DOS so it does not depend on terminal
+scrollback.
+Each pack has its own `USAGE.TXT`; the repo-level index is
+`assets/gpt2_basic/PACKS/README.md`.
 Train and test every listed assistant pack model with:
 
 ```sh

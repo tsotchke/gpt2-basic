@@ -15,6 +15,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertNotIn("ASSIST.EXE --scripted", text)
         self.assertNotIn("> ASSIST.LOG", text)
         self.assertNotIn("FDAPM.COM POWEROFF", text)
+        self.assertIn("/about", text)
+        self.assertIn("/pack CHAT", text)
         self.assertIn("/up, /down, /history", text)
 
     def test_interactive_launcher_uses_windowed_qemu_display(self) -> None:
@@ -34,6 +36,21 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('LCASE$(command_text) = "/up"', text)
         self.assertIn('LCASE$(command_text) = "/down"', text)
         self.assertIn('LCASE$(command_text) = "/history"', text)
+        self.assertIn('LCASE$(command_text) = "/about"', text)
+
+    def test_chat_pack_is_first_and_has_usage_instructions(self) -> None:
+        pack_list = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "PACKS.TXT").read_text(encoding="ascii")
+        first_pack = next(line.strip() for line in pack_list.splitlines() if line.strip() and not line.startswith("#"))
+        self.assertEqual(first_pack, "CHAT")
+
+        chat_ini = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "CHAT" / "PACK.INI").read_text(encoding="ascii")
+        chat_usage = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "CHAT" / "USAGE.TXT").read_text(encoding="ascii")
+        self.assertIn("TITLE=Conversation Pack", chat_ini)
+        self.assertIn("MODEL=MODEL", chat_ini)
+        self.assertIn("USAGE=USAGE.TXT", chat_ini)
+        self.assertIn("Purpose:", chat_usage)
+        self.assertIn("How it works:", chat_usage)
+        self.assertIn("How to use it:", chat_usage)
 
 
 if __name__ == "__main__":

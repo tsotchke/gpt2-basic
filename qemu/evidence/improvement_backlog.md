@@ -19,8 +19,8 @@ This backlog is evidence-driven. The preview release can iterate now, while low-
 | Preview release | Package only passing release models, assistant packs, source, and selected QEMU evidence. | `python3 scripts/build_preview_release.py --manifest-only` and `--force` for a package tree. |
 | Model quality | Retrain 386-min and 486DX2 profiles from the gold curriculum; keep rejected repairs out of release payloads. | `python3 scripts/refresh_model_quality_reports.py` then `python3 scripts/plan_model_quality_repairs.py`. |
 | Runtime speed/RAM | Keep measuring full, head-shortlist, q4 token+head, and q4 streamed modes on 486 profiles. | `bash qemu/run_perf_486.sh 486dx2-66 <model-dir>` and `qemu/evidence/hardware_perf_report.md`. |
-| Assistant packs | Improve DOSHELP/OFFICE prompt corpora, action routing, and sprite/icon renderer without bloating `GPT2.EXE`. | `bash qemu/run_assistant_486.sh` and `python3 scripts/verify_assistant_packs.py`. |
-| Windows/OS2 shells | Reuse `PACK.INI`, `HELP.TXT`, `SPRITE`, `ICONS`, and pack-local model directories in native shells. | Shared pack parser tests plus one DOS, one Windows, and one OS/2 scripted probe. |
+| Assistant packs | Improve CHAT/DOSHELP/OFFICE prompt corpora, usage instructions, action routing, and sprite/icon renderer without bloating `GPT2.EXE`. | `bash qemu/run_assistant_486.sh` and `python3 scripts/verify_assistant_packs.py`. |
+| Windows/OS2 shells | Reuse `PACK.INI`, `HELP.TXT`, `USAGE.TXT`, `SPRITE`, `ICONS`, and pack-local model directories in native shells. | Shared pack parser tests plus one DOS, one Windows, and one OS/2 scripted probe. |
 | Real hardware | Move the emulator-passing release to one physical 486-class DOS machine first; Pentium data is optional scaling evidence. | `docs/hardware-validation.md` plus real-machine `--quality-all`, `--perf`, and assistant logs. |
 
 ## Release Payload

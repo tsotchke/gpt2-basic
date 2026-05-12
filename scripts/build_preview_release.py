@@ -335,7 +335,7 @@ def write_manifest(
             "",
             "- `bin/GPT2.EXE` when current QEMU evidence includes the compiled DOS binary.",
             "- `assets/gpt2_basic/MODEL*` for the release models listed above.",
-            "- `assets/gpt2_basic/PACKS` with DOSHELP and OFFICE pack-local models plus sprite/icon slots.",
+            "- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, and OFFICE packs, per-pack `USAGE.TXT`, pack-local models where available, and sprite/icon slots.",
             "- `src`, `scripts`, `tests`, selected `qemu` helpers, and `data/domain_curriculum` for rebuild and repair iteration.",
             "- Selected QEMU and quality evidence under `qemu/evidence`.",
             "",

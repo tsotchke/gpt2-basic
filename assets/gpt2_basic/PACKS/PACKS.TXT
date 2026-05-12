@@ -1,3 +1,4 @@
 # GPT2-BASIC assistant pack order.
+CHAT
 DOSHELP
 OFFICE
