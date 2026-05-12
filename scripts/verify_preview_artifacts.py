@@ -44,7 +44,9 @@ REQUIRED_PREVIEW_FILES = (
     "assets/gpt2_basic/PACKS/DOSHELP/PACK.INI",
     "assets/gpt2_basic/PACKS/OFFICE/PACK.INI",
     "qemu/evidence/run_main_486.log",
+    "qemu/evidence/workspace_tracking_probe.log",
     "tests/test_build_preview_release.py",
+    "tests/test_workspace_tracking.py",
     "preview_release_manifest.md",
     "SHA256SUMS.txt",
 )
@@ -65,6 +67,7 @@ REQUIRED_MANIFEST_MARKERS = (
     "This preview release is the DOS demo and DOS transfer package.",
     "OS/2/Warp package, stay on the later-release track.",
     "qemu/evidence/run_main_486.log",
+    "qemu/evidence/workspace_tracking_probe.log",
 )
 REQUIRED_HARDWARE_FILES = (
     "GPT2/GPT2.EXE",
@@ -398,6 +401,7 @@ def self_test() -> None:
             "assets/gpt2_basic/PACKS/DOSHELP/PACK.INI",
             "assets/gpt2_basic/PACKS/OFFICE/PACK.INI",
             "tests/test_build_preview_release.py",
+            "tests/test_workspace_tracking.py",
         ):
             path = preview / rel
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -405,6 +409,8 @@ def self_test() -> None:
         demo_log = preview / "qemu" / "evidence" / "run_main_486.log"
         demo_log.parent.mkdir(parents=True, exist_ok=True)
         demo_log.write_text("\n".join(REQUIRED_DEMO_LOG_MARKERS) + "\n", encoding="ascii")
+        workspace_probe = preview / "qemu" / "evidence" / "workspace_tracking_probe.log"
+        workspace_probe.write_text("PROBE_OK workspace_tracking_no_untracked=1\n", encoding="ascii")
         preview_manifest = preview / "preview_release_manifest.md"
         status = "pending"
         for _ in range(10):
@@ -478,6 +484,7 @@ def self_test() -> None:
             pass
         else:
             raise RuntimeError("self-test did not reject host absolute path leak")
+    print("PROBE_OK preview_artifacts_workspace_tracking_probe_required=1")
     print("PROBE_OK preview_artifacts_host_path_rejection=1")
     print("PROBE_OK preview_artifacts_self_test=1")
 

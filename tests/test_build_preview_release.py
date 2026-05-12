@@ -94,6 +94,16 @@ class BuildPreviewReleaseTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 verify_preview_contract(root)
 
+    def test_verify_preview_contract_requires_workspace_tracking_probe(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_minimal_preview_contract(root)
+            probe = root / "qemu" / "evidence" / "workspace_tracking_probe.log"
+            probe.unlink()
+
+            with self.assertRaises(SystemExit):
+                verify_preview_contract(root)
+
     def test_zip_payload_rejects_unsafe_members(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

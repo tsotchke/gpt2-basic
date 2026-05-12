@@ -38,7 +38,7 @@ host-path portability guard, plus the workspace tracking verifier.
   before writing staged DOS source files, so stale ignored staging files cannot
   enter the transfer bundle.
 - Verified preview zip hash after the tracked-input and host-path guards:
-  `e3eb616fa5b5857e0e30b62276d2fafa7d99592c37ab9657e949d07dd9f4b6da`.
+  `1cde42b3c1ba765de5895de2273f5979e70ed5864e312f03b774c86e2300f097`.
 - Verified hardware-transfer zip hash:
   `96291d959e33250fd3ac82150ccf2505ab939ce8e41d8b2cc23c4d6bd34c3c72`.
 
