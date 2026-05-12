@@ -6,10 +6,10 @@ Purpose:
   DOS or office task.
 
 How it works:
-  The pack uses the shared C:\MODEL checkpoint and retrieves broad chat
-  notes from HELP.TXT. If your wording does not match a specific note,
-  it falls back to a general conversation note so the assistant still has
-  useful context.
+  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
+  chat notes from HELP.TXT. The answers are deliberately brief so the DOS
+  console can show Thinking progress, stream Answer pieces as they are
+  generated, and return to the prompt quickly.
 
 How to use it:
   Just type a sentence at the > prompt. Use /about to see this help again.

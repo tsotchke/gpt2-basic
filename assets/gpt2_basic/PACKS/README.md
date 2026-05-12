@@ -7,8 +7,10 @@ inside DOS.
 ## CHAT
 
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
-interactive QEMU demo starts here. It uses the shared `C:\MODEL` checkpoint and
-general notes from `CHAT\HELP.TXT`.
+interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
+conversation notes from `CHAT\HELP.TXT`. The DOS shell prints `Thinking:`
+progress while it pre-fills the prompt, then streams the generated `Answer:`
+pieces as the model produces them.
 
 Good prompts:
 

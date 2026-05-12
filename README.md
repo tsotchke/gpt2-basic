@@ -299,6 +299,9 @@ stays open until you type `/quit`. It starts in `/pack CHAT`, which is the
 normal conversation pack. Use `/about` for current-pack instructions, `/packs`
 to list packs, `/pack DOSHELP` for DOS/486 questions, `/pack OFFICE` for
 writing tasks, and `/history`, `/up`, and `/down` for the in-DOS transcript.
+During generation, the DOS shell prints `Thinking:` progress while the prompt is
+prefilled and streams `Answer:` pieces as the fixed-point model produces
+tokens.
 Transcript paging is implemented inside DOS so it does not depend on terminal
 scrollback.
 Each pack has its own `USAGE.TXT`; the repo-level index is

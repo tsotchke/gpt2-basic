@@ -231,6 +231,9 @@ Inside DOS, type questions directly. The demo starts in `/pack CHAT`, the
 general conversation pack. Use `/about` for current-pack instructions, `/packs`,
 `/pack CHAT`, `/pack DOSHELP`, `/pack OFFICE`, `/history`, `/up`, `/down`,
 `/home`, `/end`, `/clear`, and `/quit`.
+During generation, `ASSIST.EXE` prints `Thinking:` progress while the prompt is
+prefilled and streams `Answer:` pieces as fixed-point inference produces
+tokens.
 The `/up` and `/down` commands page through the in-DOS transcript because QEMU
 graphics windows do not provide terminal scrollback.
 

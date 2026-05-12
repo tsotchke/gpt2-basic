@@ -272,6 +272,7 @@ DECLARE FUNCTION GPT2BasicParameterCount() AS LONG
 DECLARE FUNCTION GPT2BasicFixedWeightBytes() AS LONG
 DECLARE FUNCTION GPT2BasicRuntimeMemoryBytes() AS LONG
 DECLARE SUB GPT2BasicBeginGeneration(prompt_token_count AS INTEGER)
+DECLARE FUNCTION GPT2BasicPrefillToken(token_id AS INTEGER, cache_pos AS INTEGER) AS INTEGER
 DECLARE FUNCTION GPT2BasicNextToken(context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
 DECLARE FUNCTION GPT2BasicForwardFixedLogits(context() AS INTEGER, context_len AS INTEGER, logits() AS LONG) AS INTEGER
 DECLARE FUNCTION GPT2BasicForwardFloatLogits(context() AS INTEGER, context_len AS INTEGER, logits() AS SINGLE) AS INTEGER
@@ -1187,6 +1188,25 @@ END FUNCTION
 SUB GPT2BasicBeginGeneration(prompt_token_count AS INTEGER)
     TinyGPTBeginGeneration prompt_token_count
 END SUB
+
+FUNCTION GPT2BasicPrefillToken(token_id AS INTEGER, cache_pos AS INTEGER) AS INTEGER
+    IF g_tiny_loaded = 0 THEN RETURN 0
+    IF cache_pos < 0 OR cache_pos >= g_tiny_n_positions THEN RETURN 0
+
+    IF g_tiny_fixed_loaded <> 0 THEN
+        IF g_tiny_fx_cache_len <> cache_pos THEN RETURN 0
+        TinyGPTFixedForwardCachedToken token_id, cache_pos, 0, g_tiny_fx_logits_vec()
+        g_tiny_fx_cache_tokens(cache_pos) = token_id
+        g_tiny_fx_cache_len = cache_pos + 1
+        RETURN 1
+    END IF
+
+    IF g_tiny_cache_len <> cache_pos THEN RETURN 0
+    TinyGPTForwardCachedToken token_id, cache_pos, 0, g_tiny_logits_vec()
+    g_tiny_cache_tokens(cache_pos) = token_id
+    g_tiny_cache_len = cache_pos + 1
+    RETURN 1
+END FUNCTION
 
 FUNCTION GPT2BasicNextToken(context() AS INTEGER, context_len AS INTEGER, temperature AS SINGLE, top_p AS SINGLE, top_k AS INTEGER) AS INTEGER
     RETURN TinyGPTNextToken(context(), context_len, temperature, top_p, top_k)

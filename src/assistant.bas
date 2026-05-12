@@ -34,7 +34,7 @@ CONST ASSIST_PACK_ROOT = "PACKS"
 CONST ASSIST_PACK_LIST = "PACKS\PACKS.TXT"
 CONST ASSIST_MAX_PACKS = 8
 CONST ASSIST_MAX_REPLY_TOKENS = 16
-CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 4
+CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 1
 CONST ASSIST_DEFAULT_TOP_P = 0.9
 CONST ASSIST_DEFAULT_TOP_K = 24
 CONST ASSIST_HISTORY_MAX = 96
@@ -83,6 +83,9 @@ DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 DECLARE FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+DECLARE FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
+DECLARE SUB AssistPrepareGenerationPrompt(input_tokens() AS INTEGER, BYREF input_count AS INTEGER, max_tokens AS INTEGER)
+DECLARE SUB AssistPrefillPrompt(input_tokens() AS INTEGER, input_count AS INTEGER)
 DECLARE SUB AssistRenderFrame()
 DECLARE SUB AssistRenderPackStatus()
 DECLARE SUB AssistPrintPackUsage(pack_index AS INTEGER)
@@ -530,12 +533,7 @@ FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 
     IF GPT2BasicIsLoaded() = 0 THEN RETURN ""
     Encode prompt, input_tokens(), input_count
-    IF input_count > GPT2BasicContextLength() THEN input_count = GPT2BasicContextLength()
-    IF input_count < 1 THEN
-        REDIM input_tokens(0 TO 0)
-        input_tokens(0) = 0
-        input_count = 1
-    END IF
+    AssistPrepareGenerationPrompt input_tokens(), input_count, max_tokens
 
     REDIM context_tokens(0 TO input_count + max_tokens - 1)
     REDIM generated_tokens(0 TO max_tokens - 1)
@@ -560,8 +558,112 @@ FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 
     IF generated_count = 0 THEN RETURN ""
     decoded_text = Decode(generated_tokens(), generated_count)
-    RETURN TRIM$(decoded_text)
+    RETURN TRIM$(AssistCleanGeneratedText(decoded_text))
 END FUNCTION
+
+FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
+    DIM lower_text AS STRING
+    DIM cut_pos AS INTEGER
+    DIM marker_pos AS INTEGER
+
+    lower_text = LCASE$(raw_text)
+    cut_pos = LEN(raw_text) + 1
+
+    marker_pos = INSTR(raw_text, ". ")
+    IF marker_pos > 0 AND marker_pos + 1 < cut_pos THEN cut_pos = marker_pos + 1
+    marker_pos = INSTR(raw_text, "! ")
+    IF marker_pos > 0 AND marker_pos + 1 < cut_pos THEN cut_pos = marker_pos + 1
+    marker_pos = INSTR(raw_text, "? ")
+    IF marker_pos > 0 AND marker_pos + 1 < cut_pos THEN cut_pos = marker_pos + 1
+
+    marker_pos = INSTR(lower_text, " user:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " user")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " assistant:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " assistant")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " note:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " note")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " prompt:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " prompt")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " reply:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " reply")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " q:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " a:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+
+    IF cut_pos <= LEN(raw_text) THEN RETURN RTRIM$(LEFT$(raw_text, cut_pos - 1))
+    RETURN raw_text
+END FUNCTION
+
+SUB AssistPrepareGenerationPrompt(input_tokens() AS INTEGER, BYREF input_count AS INTEGER, max_tokens AS INTEGER)
+    DIM context_limit AS INTEGER
+    DIM reserve_count AS INTEGER
+    DIM keep_count AS INTEGER
+    DIM start_idx AS INTEGER
+    DIM i AS INTEGER
+    DIM trimmed_tokens() AS INTEGER
+
+    IF input_count > 0 THEN
+        IF input_tokens(input_count - 1) = 0 THEN input_count = input_count - 1
+    END IF
+
+    context_limit = GPT2BasicContextLength()
+    reserve_count = max_tokens
+    IF reserve_count < 1 THEN reserve_count = 1
+    IF reserve_count >= context_limit THEN reserve_count = context_limit - 1
+    keep_count = context_limit - reserve_count
+    IF keep_count < 1 THEN keep_count = 1
+
+    IF input_count > keep_count THEN
+        REDIM trimmed_tokens(0 TO keep_count - 1)
+        start_idx = input_count - keep_count
+        FOR i = 0 TO keep_count - 1
+            trimmed_tokens(i) = input_tokens(start_idx + i)
+        NEXT i
+        REDIM input_tokens(0 TO keep_count - 1)
+        FOR i = 0 TO keep_count - 1
+            input_tokens(i) = trimmed_tokens(i)
+        NEXT i
+        input_count = keep_count
+    END IF
+
+    IF input_count < 1 THEN
+        REDIM input_tokens(0 TO 0)
+        input_tokens(0) = 0
+        input_count = 1
+    END IF
+END SUB
+
+SUB AssistPrefillPrompt(input_tokens() AS INTEGER, input_count AS INTEGER)
+    DIM i AS INTEGER
+    DIM dot_count AS INTEGER
+    DIM prefill_count AS INTEGER
+
+    prefill_count = input_count - 1
+    IF prefill_count <= 0 THEN RETURN
+
+    PRINT "Thinking: ";
+    dot_count = 0
+    FOR i = 0 TO prefill_count - 1
+        IF GPT2BasicPrefillToken(input_tokens(i), i) = 0 THEN EXIT FOR
+        IF (i MOD 4) = 0 THEN
+            PRINT ".";
+            dot_count = dot_count + 1
+        END IF
+    NEXT i
+    IF dot_count = 0 THEN PRINT ".";
+    PRINT
+END SUB
 
 FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     DIM input_tokens() AS INTEGER
@@ -573,18 +675,15 @@ FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     DIM next_token AS INTEGER
     DIM i AS INTEGER
     DIM decoded_text AS STRING
+    DIM cleaned_text AS STRING
     DIM previous_text AS STRING
     DIM piece AS STRING
     DIM generated_text AS STRING
+    DIM progress_visible AS INTEGER
 
     IF GPT2BasicIsLoaded() = 0 THEN RETURN ""
     Encode prompt, input_tokens(), input_count
-    IF input_count > GPT2BasicContextLength() THEN input_count = GPT2BasicContextLength()
-    IF input_count < 1 THEN
-        REDIM input_tokens(0 TO 0)
-        input_tokens(0) = 0
-        input_count = 1
-    END IF
+    AssistPrepareGenerationPrompt input_tokens(), input_count, max_tokens
 
     REDIM context_tokens(0 TO input_count + max_tokens - 1)
     REDIM generated_tokens(0 TO max_tokens - 1)
@@ -597,8 +696,16 @@ FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     generated_count = 0
 
     GPT2BasicBeginGeneration input_count
+    AssistPrefillPrompt input_tokens(), input_count
+    PRINT "Answer: ";
     FOR i = 0 TO max_tokens - 1
+        PRINT ".";
+        progress_visible = 1
         next_token = GPT2BasicNextToken(context_tokens(), context_len, 0.0, ASSIST_DEFAULT_TOP_P, ASSIST_DEFAULT_TOP_K)
+        IF progress_visible <> 0 THEN
+            PRINT CHR$(8); " "; CHR$(8);
+            progress_visible = 0
+        END IF
         context_tokens(context_len) = next_token
         context_len = context_len + 1
         IF next_token = 0 THEN EXIT FOR
@@ -606,13 +713,16 @@ FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
         generated_count = generated_count + 1
 
         decoded_text = Decode(generated_tokens(), generated_count)
+        cleaned_text = AssistCleanGeneratedText(decoded_text)
         piece = ""
-        IF LEN(decoded_text) > LEN(previous_text) THEN piece = MID$(decoded_text, LEN(previous_text) + 1)
+        IF LEN(cleaned_text) > LEN(previous_text) THEN piece = MID$(cleaned_text, LEN(previous_text) + 1)
         IF piece <> "" THEN
             PRINT piece;
             generated_text = generated_text + piece
         END IF
-        previous_text = decoded_text
+        previous_text = cleaned_text
+
+        IF LEN(cleaned_text) < LEN(decoded_text) THEN EXIT FOR
 
         IF i >= ASSIST_SENTENCE_STOP_MIN_TOKENS THEN
             IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
@@ -724,7 +834,6 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     IF use_generation <> 0 THEN
         prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query + _
                  " Note: " + retrieved + " Assistant:"
-        PRINT "Generating: ";
         generated = AssistStreamGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
     END IF
 

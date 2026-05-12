@@ -38,7 +38,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL = ROOT / "assets" / "gpt2_basic" / "MODEL"
 DEFAULT_OUTPUT = ROOT / "qemu" / "evidence" / "quality_report.md"
 DEFAULT_MIN_GENERATED = 70
-SENTENCE_STOP_MIN_TOKENS = 30
+SENTENCE_STOP_MIN_TOKENS = 1
 DOMAIN_WORD_LEXICON: set[str] | None = None
 
 

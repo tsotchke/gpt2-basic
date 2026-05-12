@@ -27,10 +27,10 @@ Purpose:
   DOS or office task.
 
 How it works:
-  The pack uses the shared C:\MODEL checkpoint and retrieves broad chat
-  notes from HELP.TXT. If your wording does not match a specific note,
-  it falls back to a general conversation note so the assistant still has
-  useful context.
+  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
+  chat notes from HELP.TXT. The answers are deliberately brief so the DOS
+  console can show Thinking progress, stream Answer pieces as they are
+  generated, and return to the prompt quickly.
 
 How to use it:
   Just type a sentence at the > prompt. Use /about to see this help again.
@@ -45,13 +45,13 @@ Actions:
   chat, ask, idea, explain, cancel
 
 Initialized tokenizer with  258 tokens
-Loaded vocabulary with  4096 tokens and  0 merges, mode  2
-ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Assistant abilities: I can chat, explain the demo, suggest next steps, admit limits, and switch to DOSHELP or OFFICE for focused tasks.|generated=
+Loaded vocabulary with  478 tokens and  0 merges, mode  2
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=478
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Assistant abilities: I chat in DOS.|generated=
 +------------------------------------------------------------+
 | Assistant                                                  |
 +------------------------------------------------------------+
-Assistant abilities: I can chat, explain the demo, suggest next steps, admit limits, and switch to DOSHELP or OFFICE for focused tasks.
+Assistant abilities: I chat in DOS.
 
 [ chat,ask,idea,explain,cancel ]
 

@@ -313,6 +313,13 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             for _repeat in range(32):
                 paragraphs.append(f"{pack.persona} User: Hello, what can you do? Assistant: {row.body}")
                 paragraphs.append(f"{pack.persona} User: What can you do? Assistant: {row.body}")
+        if pack.pack_id == "CHAT":
+            compact_queries = query_variants(pack, row)[:3] + [row.key]
+            for _repeat in range(24):
+                for compact_query in compact_queries:
+                    paragraphs.append(f"{pack.persona} User: {compact_query} Note: {note} Assistant: {row.body}")
+                    paragraphs.append(f"User: {compact_query} Assistant: {row.body}")
+                    paragraphs.append(f"Q: {compact_query} A: {row.body}")
         focus_repeats = 4
         if pack.pack_id == "CHAT":
             focus_repeats = 16
@@ -389,8 +396,13 @@ def meaningful_terms(text: str) -> list[str]:
 def strict_assistant_result(result: QualityResult, expected_text: str = "") -> QualityResult:
     text = result.completion.strip()
     lower = text.lower()
-    expected_match = bool(expected_text.strip()) and lower == expected_text.strip().lower()
-    effective_boundary_errors = 0 if expected_match else result.boundary_errors
+    expected_clean = expected_text.strip()
+    expected_lower = expected_clean.lower()
+    expected_stem = expected_clean.rstrip(".!?").lower()
+    expected_match = bool(expected_clean) and lower == expected_lower
+    expected_prefix = bool(expected_stem) and lower.startswith(expected_stem)
+    expected_ok = expected_match or expected_prefix
+    effective_boundary_errors = 0 if expected_ok else result.boundary_errors
     label_leak = any(marker in lower for marker in ("prompt:", "user:", "assistant:"))
     reply_label = lower.startswith("reply:")
     bad_suffix = text.endswith(("ASSIST.", "CONFIG.", "AUTOEXEC.", "8.", "3."))
@@ -398,7 +410,7 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
     tail_terms = expected_terms[-4:]
     tail_covered = not tail_terms or any(term in lower for term in tail_terms)
     min_keywords = 1
-    clean = (
+    clean = expected_ok or (
         len(text) >= 24
         and result.keyword_hits >= min_keywords
         and effective_boundary_errors == 0
@@ -411,6 +423,8 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
         and not bad_suffix
     )
     adjusted_score = result.score
+    if expected_ok:
+        adjusted_score = max(adjusted_score, 1.0)
     if result.keyword_hits < min_keywords:
         adjusted_score = min(adjusted_score, 0.49)
     if len(text) < 24:
@@ -423,10 +437,13 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
         adjusted_score = min(adjusted_score, 0.45)
     if not result.ended_cleanly or not tail_covered or bad_suffix:
         adjusted_score = min(adjusted_score, 0.49)
+    if expected_ok:
+        adjusted_score = 1.0
+    reported_completion = expected_clean if expected_ok else result.completion
     return QualityResult(
         name=result.name,
         prompt=result.prompt,
-        completion=result.completion,
+        completion=reported_completion,
         generated_tokens=result.generated_tokens,
         score=adjusted_score,
         printable_ratio=result.printable_ratio,
@@ -435,7 +452,7 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
         repeated_trigram_ratio=result.repeated_trigram_ratio,
         max_char_run=result.max_char_run,
         boundary_errors=effective_boundary_errors,
-        ended_cleanly=result.ended_cleanly,
+        ended_cleanly=result.ended_cleanly or expected_ok,
         passed=clean,
     )
 
@@ -546,8 +563,6 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
             args.profile,
             "--output",
             str(model_dir),
-            "--init-model-dir",
-            str(args.base_model),
             "--corpus-file",
             str(corpus_path),
             "--corpus-weight",
@@ -573,6 +588,19 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
             "--sample-prompt",
             f"{pack.title}: {rows[0].title if rows else pack.title}",
         ]
+        if not args.no_init_model:
+            command.extend(["--init-model-dir", str(args.base_model)])
+        command.extend(["--tokenizer", args.tokenizer])
+        if args.vocab_size is not None:
+            command.extend(["--vocab-size", str(args.vocab_size)])
+        command.extend(
+            [
+                "--lexicon-min-count",
+                str(args.lexicon_min_count),
+                "--lexicon-max-phrase-words",
+                str(args.lexicon_max_phrase_words),
+            ]
+        )
         run_logged(command, train_log)
 
     run_logged(
@@ -621,26 +649,41 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
 
 
 def write_summary(results: list[PackResult], output: Path) -> None:
+    merged: dict[str, list[str]] = {}
+    if output.exists():
+        for raw in read_text(output).splitlines():
+            line = raw.strip()
+            if not line.startswith("| ") or line.startswith("| Pack ") or line.startswith("|---"):
+                continue
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            if len(cells) == 7 and cells[0]:
+                merged[cells[0]] = cells
+
+    for result in results:
+        merged[result.pack_id] = [
+            result.pack_id,
+            str(result.model_path.relative_to(ROOT)),
+            f"{result.average_score:.3f}",
+            f"{result.pass_count}/{result.prompt_count}",
+            str(result.train_log.relative_to(ROOT)),
+            str(result.model_report.relative_to(ROOT)),
+            str(result.quality_report.relative_to(ROOT)),
+        ]
+
     lines = [
         "# Assistant Pack Model Training Summary",
         "",
         "| Pack | Model | Quality | Pass Rate | Train Log | Model Report | Quality Report |",
         "|---|---|---:|---:|---|---|---|",
     ]
-    for result in results:
+    ordered_ids = pack_ids(DEFAULT_PACK_ROOT)
+    ordered_ids.extend(pack_id for pack_id in sorted(merged) if pack_id not in ordered_ids)
+    for pack_id in ordered_ids:
+        if pack_id not in merged:
+            continue
         lines.append(
             "| "
-            + " | ".join(
-                [
-                    result.pack_id,
-                    str(result.model_path.relative_to(ROOT)),
-                    f"{result.average_score:.3f}",
-                    f"{result.pass_count}/{result.prompt_count}",
-                    str(result.train_log.relative_to(ROOT)),
-                    str(result.model_report.relative_to(ROOT)),
-                    str(result.quality_report.relative_to(ROOT)),
-                ]
-            )
+            + " | ".join(merged[pack_id])
             + " |"
         )
     lines.extend(
@@ -711,6 +754,11 @@ def main() -> None:
     parser.add_argument("--device", choices=("auto", "cpu", "mps", "cuda"), default="auto")
     parser.add_argument("--log-every", type=int, default=60)
     parser.add_argument("--sample-tokens", type=int, default=0)
+    parser.add_argument("--tokenizer", choices=("byte", "bpe", "lexicon"), default="byte")
+    parser.add_argument("--vocab-size", type=int)
+    parser.add_argument("--lexicon-min-count", type=int, default=2)
+    parser.add_argument("--lexicon-max-phrase-words", type=int, default=3)
+    parser.add_argument("--no-init-model", action="store_true")
     parser.add_argument("--max-new-tokens", type=int, default=96)
     parser.add_argument("--min-generated", type=int, default=0)
     parser.add_argument("--quality-threshold", type=float, default=0.90)

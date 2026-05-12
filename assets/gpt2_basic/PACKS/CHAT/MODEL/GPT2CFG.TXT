@@ -1,6 +1,6 @@
 # GPT2-BASIC fixed-point model config
 profile=486sx-safe
-vocab_size=4096
+vocab_size=478
 n_positions=192
 n_embd=48
 n_head=4

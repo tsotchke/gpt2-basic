@@ -42,10 +42,21 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
 
         self.assertIn("FUNCTION AssistStreamGenerate", text)
-        self.assertIn("PRINT \"Generating: \";", text)
+        self.assertIn("SUB AssistPrepareGenerationPrompt", text)
+        self.assertIn("SUB AssistPrefillPrompt", text)
+        self.assertIn("FUNCTION AssistCleanGeneratedText", text)
+        self.assertIn("GPT2BasicPrefillToken", text)
+        self.assertIn("PRINT \"Thinking: \";", text)
+        self.assertIn("PRINT \"Answer: \";", text)
+        self.assertIn("PRINT \".\";", text)
+        self.assertIn("PRINT CHR$(8); \" \"; CHR$(8);", text)
         self.assertIn("PRINT piece;", text)
         self.assertIn("Decode(generated_tokens(), generated_count)", text)
         self.assertIn("bubble = generated", text)
+        self.assertIn("IF input_tokens(input_count - 1) = 0 THEN input_count = input_count - 1", text)
+        self.assertIn("keep_count = context_limit - reserve_count", text)
+        self.assertIn('INSTR(raw_text, ". ")', text)
+        self.assertIn('INSTR(lower_text, " user:")', text)
         self.assertNotIn("MID$(decoded_text, LEN(prompt) + 1)", text)
 
     def test_assistant_retrieval_prefers_specific_pack_rows(self) -> None:

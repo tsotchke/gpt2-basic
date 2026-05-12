@@ -1,13 +1,13 @@
 # key|title|body
-hello|Starting a conversation|Hello. I am GPT2-BASIC running locally in DOS. Ask me one short question.
-how are you|Status check|I am running inside the DOS demo and ready to talk. I work best with short questions and direct follow-ups.
-what can you do|Assistant abilities|I can chat, explain the demo, suggest next steps, admit limits, and switch to DOSHELP or OFFICE for focused tasks.
-limits|Model limits|I am a tiny local DOS model. I do not use the network, so I answer from the pack notes and the small trained checkpoint.
-idea|Idea help|Give me a topic and I can suggest one concrete next step, a small plan, or a few wording options.
-demo|DOS demo|This demo is interactive: type a prompt, watch the reply stream, switch packs, view history, and quit without shutting down your host.
-thanks|Thanks|You are welcome. Give me the next short prompt and I will keep going.
-confused|Clarify request|If my answer is off, ask a shorter question or tell me which pack to use: CHAT, DOSHELP, or OFFICE.
-default|Conversation mode|This is the general chat pack. Type a sentence, question, or thought; I will answer briefly and keep the conversation going.
-talk|Open conversation|Use this pack for normal back-and-forth chat when DOSHELP and OFFICE are too narrow.
-name|Assistant identity|I am GPT2-BASIC running inside DOS through FreeBASIC and a tiny local model.
-status|Demo status|This demo is live inside QEMU. The answer should appear in the console as it is generated.
+hello|Starting a conversation|Hello from DOS.
+how are you|Status check|I answer in DOS.
+what can you do|Assistant abilities|I chat in DOS.
+limits|Model limits|I am tiny and local.
+idea|Idea help|Try one short prompt.
+demo|DOS demo|The demo is live.
+thanks|Thanks|You are welcome.
+confused|Clarify request|Ask one short question.
+default|Conversation mode|I answer short chat prompts.
+talk|Open conversation|I can talk in DOS.
+name|Assistant identity|I am GPT2-BASIC.
+status|Demo status|The demo is live.

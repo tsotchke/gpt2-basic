@@ -72,6 +72,7 @@ SELECTED_EVIDENCE_NAMES = {
     "GPT2.EXE",
     "assistant_486.log",
     "assistant_compile_486.log",
+    "assistant_interactive_chat_486.md",
     "assistant_pack_probe.log",
     "compile_main_486.log",
     "exported_model_quality_inventory.md",

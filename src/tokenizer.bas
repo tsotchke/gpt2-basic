@@ -729,12 +729,13 @@ END FUNCTION
 ' phrases, or punctuation chunks; bytes remain the fallback for all text.
 SUB LexiconTokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, tokens() AS INTEGER, BYREF token_count AS INTEGER)
     DIM idx AS INTEGER
-    DIM j AS INTEGER
     DIM best_idx AS INTEGER
     DIM best_len AS INTEGER
-    DIM best_token_id AS INTEGER
     DIM piece_len AS INTEGER
     DIM token_id AS INTEGER
+    DIM max_len AS INTEGER
+    DIM candidate AS STRING
+    DIM k AS INTEGER
 
     REDIM tokens(0 TO byte_count)
     token_count = 0
@@ -743,20 +744,28 @@ SUB LexiconTokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEG
     WHILE idx < byte_count
         best_idx = -1
         best_len = 0
-        best_token_id = 32767
 
-        FOR j = 0 TO tokenizer.vocab_size - 1
-            piece_len = tokenizer.vocab(j).token_len
-            token_id = tokenizer.vocab(j).token_id
-            IF token_id >= BYTE_VOCAB_SIZE AND (piece_len > best_len OR (piece_len = best_len AND token_id < best_token_id)) THEN
-                IF TokenPieceMatchesBytes(tokenizer, j, bytes(), idx, byte_count) <> 0 AND _
-                   TokenPieceBoundaryMatches(tokenizer, j, bytes(), idx, byte_count) <> 0 THEN
-                    best_idx = j
+        max_len = tokenizer.max_token_length
+        IF max_len > byte_count - idx THEN max_len = byte_count - idx
+
+        FOR piece_len = max_len TO 1 STEP -1
+            candidate = ""
+            FOR k = 0 TO piece_len - 1
+                candidate = candidate + CHR$(bytes(idx + k))
+            NEXT k
+
+            best_idx = FindToken(tokenizer, candidate)
+            IF best_idx >= 0 THEN
+                token_id = tokenizer.vocab(best_idx).token_id
+                IF token_id >= BYTE_VOCAB_SIZE AND _
+                   TokenPieceBoundaryMatches(tokenizer, best_idx, bytes(), idx, byte_count) <> 0 THEN
                     best_len = piece_len
-                    best_token_id = token_id
+                    EXIT FOR
+                ELSE
+                    best_idx = -1
                 END IF
             END IF
-        NEXT j
+        NEXT piece_len
 
         IF best_idx >= 0 THEN
             tokens(token_count) = tokenizer.vocab(best_idx).token_id
