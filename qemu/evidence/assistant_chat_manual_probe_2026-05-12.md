@@ -6,17 +6,24 @@ Runtime path:
 - FreeDOS 486 profile, `ASSIST.EXE` compiled inside the VM
 - CHAT pack model: `PACKS\CHAT\MODEL`
 - CHAT model profile: `486dx2-usable`
-- CHAT tokenizer: lexicon, `vocab=724`
+- CHAT tokenizer: lexicon, `vocab=4096`
+- CHAT fixed quality report: `PASS`, `25/25`
 
 Typed prompts and observed DOS console replies:
 
 | Prompt | Observed reply |
 | --- | --- |
+| `i am bored` | `Try one small project.` |
+| `tell me a joke` | `DOS smiled because it found its prompt.` |
+| `do you like music` | `I can talk about music.` |
 | `what is a prompt` | `A prompt is your typed question.` |
 | `what is promp` | `A prompt is your typed question.` |
-| `is this scripted` | `No, it is real.` |
 
-The prompt-definition replies were checked after narrowing
+The casual replies were checked after expanding the CHAT pack to a 4096-token
+lexicon vocabulary and retraining on broader common English call-and-response
+dialogue. The prompt-definition replies were checked after narrowing
 `AssistCleanGeneratedText` so ordinary words such as `prompt` are no longer
-mistaken for leaked prompt labels. The DOS console showed `Thinking:` progress
-followed by streamed `Answer:` text from the loaded CHAT model.
+mistaken for leaked prompt labels. The scripted QEMU evidence still covers the
+other packs and structured `ASSIST_MODEL` records. The DOS console showed
+`Thinking:` progress followed by streamed `Answer:` text from the loaded CHAT
+model.

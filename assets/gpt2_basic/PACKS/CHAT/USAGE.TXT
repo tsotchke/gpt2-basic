@@ -9,15 +9,19 @@ How it works:
   The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
   chat notes from HELP.TXT when a topic matches. It is also trained from
   GOLDEN.TXT common English dialogue and LEXICON.TSV grammar entries, so
-  ordinary short prompts do not depend on a lookup hit. The answers are
-  deliberately brief so the DOS console can show Thinking progress, stream
-  Answer pieces as they are generated, and return to the prompt quickly.
+  ordinary short prompts do not depend on a lookup hit. The current model
+  uses a 4096-token lexicon vocabulary. The answers are deliberately brief so
+  the DOS console can show Thinking progress, stream Answer pieces as they
+  are generated, and return to the prompt quickly.
 
 How to use it:
   Just type a sentence at the > prompt. Use /about to see this help again.
 
 Good prompts:
   Hello, what can you do?
+  I am bored.
+  Tell me a joke.
+  Do you like music?
   I want to talk about this DOS demo.
   Give me one idea for improving the demo.
   What are your limits?

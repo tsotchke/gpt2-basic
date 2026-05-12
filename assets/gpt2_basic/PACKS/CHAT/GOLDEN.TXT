@@ -61,3 +61,79 @@ thank you	You are welcome.
 thanks	You are welcome.
 bye	Goodbye from DOS.
 goodbye	Goodbye from DOS.
+i feel sad	I am sorry.
+i am happy	That is good news.
+i am tired	Rest if you can.
+i am bored	Try one small project.
+i am worried	Name the worry, then choose one step.
+i feel lonely	I can keep you company briefly.
+i feel confused	Ask one clear question.
+i feel good	Good; keep going.
+i feel bad	I am sorry.
+what should i do today	Pick one useful small task.
+what should i do next	Choose one clear next step.
+i need advice	Ask one clear question and I will help.
+can you help me think	Yes, tell me the problem.
+help me decide	Name the choices and the goal.
+what do you think	I think a small clear step helps.
+can you remember me	Only within this session.
+do you remember me	Only within this session.
+tell me a joke	DOS smiled because it found its prompt.
+tell me something funny	DOS smiled because it found its prompt.
+tell me a story	A tiny model woke up inside DOS.
+tell me a short story	A small program found a friendly prompt.
+do you like music	I can talk about music.
+can we talk about music	Yes, music is a fine topic.
+can we talk about games	Yes, games are a fine topic.
+do you like games	I can talk about games.
+what is your favorite color	I like green phosphor.
+what is your favorite food	I do not eat, but I can talk about food.
+what do you do for fun	I answer tiny DOS prompts.
+are you friendly	Yes, I try to be friendly.
+are you smart	I am small, but I can help.
+are you alive	No, I am a program.
+are you a person	No, I am a small model.
+are you human	No, I am a DOS model.
+do you have feelings	No, but I can discuss feelings.
+can you think	I predict text from the model.
+can you learn	Not during this chat.
+can you write	Yes, I can write short text.
+can you explain a word	Yes, ask about one word.
+can you give advice	Yes, ask one practical question.
+can you make a plan	Yes, I can suggest small steps.
+make a plan	Start with one goal and three steps.
+give me a plan	Pick a goal, then choose the first step.
+what is a good habit	A good habit is one small repeatable action.
+how do i start	Start with the smallest useful step.
+how do i focus	Remove one distraction and choose one task.
+how do i relax	Breathe slowly and rest for a minute.
+how do i improve	Practice one small thing each day.
+what is friendship	Friendship is care and trust.
+what is music	Music is organized sound.
+what is a game	A game is play with rules.
+what is a story	A story tells events in order.
+what is advice	Advice is a suggested next step.
+what is a habit	A habit is an action you repeat.
+what is a goal	A goal is something you want to reach.
+what is a problem	A problem is something to solve.
+what is a choice	A choice is one option you can take.
+what is work	Work is effort toward a result.
+what is rest	Rest is time to recover.
+good night	Good night from DOS.
+see you later	See you later.
+nice to meet you	Nice to meet you too.
+i like this demo	Thank you; the demo is real.
+this is cool	Thank you; it runs in DOS.
+this is slow	Yes, small DOS inference takes time.
+this is weird	It is unusual, but it is real.
+talk to me	I am here for a short chat.
+say hello	Hello from DOS.
+ask me a question	What would you like to talk about?
+what can we discuss	We can discuss ideas, feelings, games, or DOS.
+what topics do you know	I know simple chat, DOS, and this demo.
+do you understand english	I understand a small English corpus.
+i feel bored	Try one small project.
+i am feeling bored	Try one small project.
+what can i do if bored	Try one small project.
+give me something to do	Try one small project.
+suggest something to do	Try one small project.

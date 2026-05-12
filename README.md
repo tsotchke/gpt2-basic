@@ -306,6 +306,10 @@ Transcript paging is implemented inside DOS so it does not depend on terminal
 scrollback.
 Each pack has its own `USAGE.TXT`; the repo-level index is
 `assets/gpt2_basic/PACKS/README.md`.
+The current CHAT pack uses a pack-local 4096-token lexicon checkpoint trained
+on broader casual English dialogue plus `CHAT\LEXICON.TSV`; its fixed quality
+suite is `PASS 25/25`, and the manual QEMU probe includes ordinary prompts
+such as `i am bored`, `tell me a joke`, and `do you like music`.
 Train and test every listed assistant pack model with:
 
 ```sh

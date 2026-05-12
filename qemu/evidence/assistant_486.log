@@ -96,9 +96,9 @@ Actions:
 
 Initialized tokenizer with  258 tokens
 
-Loaded vocabulary with  724 tokens and  0 merges, mode  2
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 
-ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=724
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096
 
 ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Assistant abilities: I chat in DOS.|generated=
 

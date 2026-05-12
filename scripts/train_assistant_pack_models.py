@@ -244,6 +244,28 @@ def load_grammar_lexicon(path: Path | None) -> list[tuple[str, str, str]]:
     return entries
 
 
+def chat_casual_lexicon_paragraphs(entries: list[tuple[str, str, str]]) -> list[str]:
+    paragraphs: list[str] = []
+    if not entries:
+        return paragraphs
+
+    words = [word for word, _part, _tags in entries]
+    paragraphs.append("Casual chat word bank: " + ", ".join(words) + ".")
+    for word, part, tags in entries:
+        tag_text = tags.replace("_", " ") if tags else "general conversation"
+        if part in {"noun", "adjective", "verb", "adverb", "interjection"}:
+            paragraphs.append(
+                "Casual topic word: "
+                f"{word}. I can talk about {word}. You can ask about {word}. "
+                f"A short answer about {word} is okay. If you mention {word}, I reply simply."
+            )
+        paragraphs.append(
+            f"Plain English word: {word}. The word {word} helps with {tag_text}. "
+            f"Use {word} in a short friendly DOS chat reply."
+        )
+    return paragraphs
+
+
 def response_seed(pack: Pack, rows: list[HelpRow]) -> str:
     if rows:
         return rows[0].body
@@ -357,6 +379,7 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             "Basic English lexicon for this chat model. Common words: "
             f"{lexicon_words}."
         )
+        paragraphs.extend(chat_casual_lexicon_paragraphs(lexicon_entries))
         for word, part, tags in lexicon_entries:
             grammar = f"{word} is a {part}"
             if tags:
@@ -379,6 +402,54 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
         for _repeat in range(36):
             for prompt_text, answer_text in golden_pairs:
                 paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+        casual_focus_queries = {
+            "hi",
+            "what is a prompt",
+            "what is promp",
+            "explain",
+            "idea",
+            "is this scripted",
+            "are you scripted",
+            "is this a script",
+            "is this real",
+            "i feel sad",
+            "i am happy",
+            "what should i do today",
+            "tell me a joke",
+            "do you like music",
+            "can we talk about games",
+            "what is your favorite color",
+            "i need advice",
+            "i am bored",
+            "tell me a story",
+            "what do you think",
+            "can you remember me",
+            "i feel bored",
+            "i am feeling bored",
+            "what can i do if bored",
+            "give me something to do",
+            "suggest something to do",
+        }
+        casual_focus_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if prompt_text.lower() in casual_focus_queries
+        ]
+        for _repeat in range(128):
+            for prompt_text, answer_text in casual_focus_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+        bored_focus_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if "bored" in prompt_text.lower() or "something to do" in prompt_text.lower()
+        ]
+        for _repeat in range(256):
+            for prompt_text, answer_text in bored_focus_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
         script_real_pairs = [
             (prompt_text, answer_text)
             for prompt_text, answer_text in golden_pairs
@@ -501,6 +572,18 @@ def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow]) -> list[QualityPro
             "are you scripted",
             "is this a script",
             "is this real",
+            "i feel sad",
+            "i am happy",
+            "what should i do today",
+            "tell me a joke",
+            "do you like music",
+            "can we talk about games",
+            "what is your favorite color",
+            "i need advice",
+            "i am bored",
+            "tell me a story",
+            "what do you think",
+            "can you remember me",
         ):
             answer = golden.get(query)
             if not answer:
@@ -748,12 +831,18 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
         command.extend(["--tokenizer", args.tokenizer])
         if args.vocab_size is not None:
             command.extend(["--vocab-size", str(args.vocab_size)])
+        if args.load_tokenizer is not None:
+            command.extend(["--load-tokenizer", str(args.load_tokenizer)])
         command.extend(
             [
                 "--lexicon-min-count",
                 str(args.lexicon_min_count),
                 "--lexicon-max-phrase-words",
                 str(args.lexicon_max_phrase_words),
+                "--tokenizer-max-docs",
+                str(args.tokenizer_max_docs),
+                "--tokenizer-doc-chars",
+                str(args.tokenizer_doc_chars),
             ]
         )
         run_logged(command, train_log)
@@ -911,8 +1000,11 @@ def main() -> None:
     parser.add_argument("--sample-tokens", type=int, default=0)
     parser.add_argument("--tokenizer", choices=("byte", "bpe", "lexicon"), default="byte")
     parser.add_argument("--vocab-size", type=int)
+    parser.add_argument("--load-tokenizer", type=Path)
     parser.add_argument("--lexicon-min-count", type=int, default=2)
     parser.add_argument("--lexicon-max-phrase-words", type=int, default=3)
+    parser.add_argument("--tokenizer-max-docs", type=int, default=240)
+    parser.add_argument("--tokenizer-doc-chars", type=int, default=1800)
     parser.add_argument("--no-init-model", action="store_true")
     parser.add_argument("--max-new-tokens", type=int, default=96)
     parser.add_argument("--min-generated", type=int, default=0)

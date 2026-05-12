@@ -236,6 +236,11 @@ prefilled and streams `Answer:` pieces as fixed-point inference produces
 tokens.
 The `/up` and `/down` commands page through the in-DOS transcript because QEMU
 graphics windows do not provide terminal scrollback.
+The current CHAT model is a pack-local 4096-token lexicon checkpoint. It is
+trained from broader casual English dialogue plus `CHAT\LEXICON.TSV`, passes
+the fixed quality suite at `25/25`, and has been manually probed in QEMU with
+casual prompts including `i am bored`, `tell me a joke`, and
+`do you like music`.
 
 The assistant shell is intentionally separate from `GPT2.EXE`. Packs are
 listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, `USAGE.TXT`,

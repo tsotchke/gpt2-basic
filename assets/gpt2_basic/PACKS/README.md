@@ -11,12 +11,16 @@ interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
 conversation notes from `CHAT\HELP.TXT`. The DOS shell prints `Thinking:`
 progress while it pre-fills the prompt, then streams the generated `Answer:`
 pieces as the model produces them. `CHAT\GOLDEN.TXT` supplies common English
-call-and-response training examples, and `CHAT\LEXICON.TSV` supplies a small
-grammatical word table for the pack corpus.
+call-and-response training examples, and `CHAT\LEXICON.TSV` supplies a broad
+casual English word table for the pack corpus. The current CHAT checkpoint is
+the 4096-token lexicon model tested in QEMU.
 
 Good prompts:
 
 - `Hello, what can you do?`
+- `I am bored.`
+- `Tell me a joke.`
+- `Do you like music?`
 - `I want to talk about this DOS demo.`
 - `Give me one idea for improving the demo.`
 - `What are your limits?`
