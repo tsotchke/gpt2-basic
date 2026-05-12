@@ -65,6 +65,7 @@ DIM SHARED g_assist_history_scroll AS INTEGER
 DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
 DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
 DECLARE FUNCTION AssistSafeText(value AS STRING) AS STRING
+DECLARE FUNCTION AssistVisibleToken(token_id AS INTEGER) AS STRING
 DECLARE SUB AssistAddHistory(line_text AS STRING)
 DECLARE SUB AssistClearHistory()
 DECLARE SUB AssistRenderHistory()
@@ -130,6 +131,36 @@ FUNCTION AssistSafeText(value AS STRING) AS STRING
     RETURN result
 END FUNCTION
 
+FUNCTION AssistVisibleToken(token_id AS INTEGER) AS STRING
+    DIM raw_text AS STRING
+    DIM result AS STRING
+    DIM i AS INTEGER
+    DIM code AS INTEGER
+    DIM ch AS STRING
+
+    IF token_id = 0 THEN RETURN "<eot>"
+    raw_text = TinyGPTTokenText(token_id)
+    IF raw_text = "" THEN RETURN "<tok" + LTRIM$(STR$(token_id)) + ">"
+
+    result = ""
+    FOR i = 1 TO LEN(raw_text)
+        ch = MID$(raw_text, i, 1)
+        code = ASC(ch)
+        IF code = 32 THEN
+            result = result + "_"
+        ELSEIF code < 32 OR code > 126 THEN
+            result = result + "."
+        ELSE
+            result = result + ch
+        END IF
+        IF LEN(result) >= 12 THEN EXIT FOR
+    NEXT i
+
+    IF result = "" THEN result = "<blank>"
+    IF LEN(raw_text) > 12 THEN result = result + "+"
+    RETURN result
+END FUNCTION
+
 SUB AssistAddHistory(line_text AS STRING)
     DIM i AS INTEGER
 
@@ -166,7 +197,7 @@ SUB AssistRenderHistory()
 
     AssistRenderFrame
     AssistRenderPackStatus
-    PRINT "Transcript: /up, /down, /home, /end, /clear, /packs, /pack NAME, /quit"
+    PRINT "Transcript: /u or /up, /d or /down, /home, /end, /clear, /packs, /pack NAME, /quit"
     PRINT
 
     IF g_assist_history_count = 0 THEN
@@ -650,22 +681,21 @@ END SUB
 
 SUB AssistPrefillPrompt(input_tokens() AS INTEGER, input_count AS INTEGER)
     DIM i AS INTEGER
-    DIM dot_count AS INTEGER
     DIM prefill_count AS INTEGER
 
     prefill_count = input_count - 1
     IF prefill_count <= 0 THEN RETURN
 
     PRINT "Thinking: ";
-    dot_count = 0
+    PRINT "prompt "; prefill_count; " tokens"
     FOR i = 0 TO prefill_count - 1
-        IF GPT2BasicPrefillToken(input_tokens(i), i) = 0 THEN EXIT FOR
-        IF (i MOD 4) = 0 THEN
-            PRINT ".";
-            dot_count = dot_count + 1
+        IF (i MOD 8) = 0 THEN
+            IF i > 0 THEN PRINT
+            PRINT "  ctx"; i + 1; ": ";
         END IF
+        PRINT AssistVisibleToken(input_tokens(i)); " ";
+        IF GPT2BasicPrefillToken(input_tokens(i), i) = 0 THEN EXIT FOR
     NEXT i
-    IF dot_count = 0 THEN PRINT ".";
     PRINT
 END SUB
 
@@ -683,7 +713,8 @@ FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     DIM previous_text AS STRING
     DIM piece AS STRING
     DIM generated_text AS STRING
-    DIM progress_visible AS INTEGER
+    DIM progress_text AS STRING
+    DIM erase_idx AS INTEGER
 
     IF GPT2BasicIsLoaded() = 0 THEN RETURN ""
     Encode prompt, input_tokens(), input_count
@@ -701,15 +732,15 @@ FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 
     GPT2BasicBeginGeneration input_count
     AssistPrefillPrompt input_tokens(), input_count
+    PRINT "Thinking: sampling output tokens"
     PRINT "Answer: ";
     FOR i = 0 TO max_tokens - 1
-        PRINT ".";
-        progress_visible = 1
+        progress_text = "<t" + LTRIM$(STR$(i + 1)) + ">"
+        PRINT progress_text;
         next_token = GPT2BasicNextToken(context_tokens(), context_len, 0.0, ASSIST_DEFAULT_TOP_P, ASSIST_DEFAULT_TOP_K)
-        IF progress_visible <> 0 THEN
+        FOR erase_idx = 1 TO LEN(progress_text)
             PRINT CHR$(8); " "; CHR$(8);
-            progress_visible = 0
-        END IF
+        NEXT erase_idx
         context_tokens(context_len) = next_token
         context_len = context_len + 1
         IF next_token = 0 THEN EXIT FOR
@@ -908,7 +939,7 @@ SUB AssistInteractive()
     AssistPrintPackList
     PRINT
     AssistRenderPackStatus
-    PRINT "Commands: /about, /pack NAME, /packs, /up, /down, /home, /end, /history, /clear, /quit"
+    PRINT "Commands: /about, /pack NAME, /packs, /u, /d, /home, /end, /h, /clear, /quit"
     PRINT
     AssistPreloadActivePackModel
 
@@ -924,11 +955,11 @@ SUB AssistInteractive()
             AssistPrintPackList
         ELSEIF LCASE$(command_text) = "/about" THEN
             AssistPrintPackUsage g_assist_active_pack
-        ELSEIF LCASE$(command_text) = "/history" THEN
+        ELSEIF LCASE$(command_text) = "/history" OR LCASE$(command_text) = "/h" THEN
             AssistRenderHistory
-        ELSEIF LCASE$(command_text) = "/up" THEN
+        ELSEIF LCASE$(command_text) = "/up" OR LCASE$(command_text) = "/u" THEN
             AssistHistoryPage ASSIST_HISTORY_PAGE
-        ELSEIF LCASE$(command_text) = "/down" THEN
+        ELSEIF LCASE$(command_text) = "/down" OR LCASE$(command_text) = "/d" THEN
             AssistHistoryPage -ASSIST_HISTORY_PAGE
         ELSEIF LCASE$(command_text) = "/home" THEN
             AssistHistoryPage ASSIST_HISTORY_MAX

@@ -9,11 +9,13 @@ inside DOS.
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
 interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
 conversation notes from `CHAT\HELP.TXT`. The DOS shell prints `Thinking:`
-progress while it pre-fills the prompt, then streams the generated `Answer:`
-pieces as the model produces them. `CHAT\GOLDEN.TXT` supplies common English
-call-and-response training examples, and `CHAT\LEXICON.TSV` supplies a broad
-casual English word table for the pack corpus. The current CHAT checkpoint is
-the 4096-token lexicon model tested in QEMU.
+progress with visible prompt/context token pieces and output-token sampling,
+then streams the generated `Answer:` pieces as the model produces them. Use
+`/u`, `/d`, and `/h` for transcript paging in the DOS UI. `CHAT\GOLDEN.TXT`
+supplies common English call-and-response training examples, and
+`CHAT\LEXICON.TSV` supplies a broad casual English word table for the pack
+corpus. The current CHAT checkpoint is the 4096-token lexicon model tested in
+QEMU.
 
 Good prompts:
 

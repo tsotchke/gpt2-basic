@@ -302,11 +302,11 @@ writing tasks, and `/history`, `/up`, and `/down` for the in-DOS transcript.
 The active pack model loads before the first `>` prompt is displayed, and a
 new pack model loads immediately after `/pack NAME`, so the first question does
 not pay the model-load cost.
-During generation, the DOS shell prints `Thinking:` progress while the prompt is
-prefilled and streams `Answer:` pieces as the fixed-point model produces
-tokens.
-Transcript paging is implemented inside DOS so it does not depend on terminal
-scrollback.
+During generation, the DOS shell streams `Thinking:` progress for prompt
+tokens, context prefill, and output-token sampling, then streams `Answer:`
+pieces as the fixed-point model produces tokens. Transcript paging is
+implemented inside DOS so it does not depend on terminal scrollback; use `/u`
+and `/d` as short aliases for `/up` and `/down`, or `/h` for history.
 Each pack has its own `USAGE.TXT`; the repo-level index is
 `assets/gpt2_basic/PACKS/README.md`.
 The current CHAT pack uses a pack-local 4096-token lexicon checkpoint trained

@@ -11,6 +11,10 @@ Runtime path:
 - Interactive preload check: `Loading CHAT model before prompt...` appeared
   before the first `>` prompt; the first typed question did not print
   `Loading model...`.
+- Thinking stream check: the DOS console printed prompt token count, `ctx`
+  token pieces, and output-token sampling before the answer text.
+- Transcript check: `/u` displayed the in-DOS transcript without relying on
+  QEMU terminal scrollback.
 
 Typed prompts and observed DOS console replies:
 
@@ -30,4 +34,6 @@ mistaken for leaked prompt labels. The scripted QEMU evidence still covers the
 other packs and structured `ASSIST_MODEL` records. The DOS console showed
 `Thinking:` progress followed by streamed `Answer:` text from the loaded CHAT
 model. The current interactive path preloads the active pack model during
-startup and after `/pack NAME`, before returning control to the prompt.
+startup and after `/pack NAME`, before returning control to the prompt. The
+current transcript path supports short `/u`, `/d`, and `/h` commands for paging
+inside DOS.

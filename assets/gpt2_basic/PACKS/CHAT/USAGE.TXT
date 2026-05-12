@@ -11,11 +11,12 @@ How it works:
   GOLDEN.TXT common English dialogue and LEXICON.TSV grammar entries, so
   ordinary short prompts do not depend on a lookup hit. The current model
   uses a 4096-token lexicon vocabulary. The answers are deliberately brief so
-  the DOS console can show Thinking progress, stream Answer pieces as they
-  are generated, and return to the prompt quickly.
+  the DOS console can show Thinking token progress, stream Answer pieces as
+  they are generated, and return to the prompt quickly.
 
 How to use it:
   Just type a sentence at the > prompt. Use /about to see this help again.
+  Use /u and /d to page through the transcript, or /h to show history.
 
 Good prompts:
   Hello, what can you do?

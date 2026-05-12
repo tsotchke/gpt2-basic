@@ -235,11 +235,12 @@ general conversation pack. Use `/about` for current-pack instructions, `/packs`,
 When you switch with `/pack NAME`, the selected pack model loads before the
 next prompt returns, so generation starts immediately after the first question
 for that pack.
-During generation, `ASSIST.EXE` prints `Thinking:` progress while the prompt is
-prefilled and streams `Answer:` pieces as fixed-point inference produces
-tokens.
+During generation, `ASSIST.EXE` streams `Thinking:` progress for prompt tokens,
+context prefill, and output-token sampling, then streams `Answer:` pieces as
+fixed-point inference produces tokens.
 The `/up` and `/down` commands page through the in-DOS transcript because QEMU
-graphics windows do not provide terminal scrollback.
+graphics windows do not provide terminal scrollback. The shorter `/u`, `/d`,
+and `/h` aliases do the same paging/history work with less typing.
 The current CHAT model is a pack-local 4096-token lexicon checkpoint. It is
 trained from broader casual English dialogue plus `CHAT\LEXICON.TSV`, passes
 the fixed quality suite at `25/25`, and has been manually probed in QEMU with

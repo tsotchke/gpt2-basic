@@ -28,7 +28,7 @@ fbc -x ASSIST.EXE GPT2SRC\ASSIST.BAS > ASSISTC.LOG
 if errorlevel 1 goto assist_compile_failed
 echo ASSIST_COMPILE_OK
 echo.
-echo Starting ASSIST.EXE. Use /about, /packs, /pack CHAT, /pack DOSHELP, /pack OFFICE, /up, /down, /history, /quit.
+echo Starting ASSIST.EXE. Use /about, /packs, /pack CHAT, /pack DOSHELP, /pack OFFICE, /u, /d, /h, /quit.
 echo.
 ASSIST.EXE
 echo.

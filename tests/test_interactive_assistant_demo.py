@@ -17,7 +17,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertNotIn("FDAPM.COM POWEROFF", text)
         self.assertIn("/about", text)
         self.assertIn("/pack CHAT", text)
-        self.assertIn("/up, /down, /history", text)
+        self.assertIn("/u, /d, /h", text)
 
     def test_interactive_launcher_uses_windowed_qemu_display(self) -> None:
         text = (ROOT / "qemu" / "run_assistant_interactive_486.sh").read_text(encoding="ascii")
@@ -25,6 +25,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("fdauto_assist_interactive.bat", text)
         self.assertIn('-display "$QEMU_DISPLAY"', text)
         self.assertIn('QEMU_DISPLAY="cocoa"', text)
+        self.assertIn("/u, /d, /h", text)
         self.assertNotIn("-display curses", text)
         self.assertNotIn("--get ASSIST.LOG", text)
 
@@ -36,6 +37,9 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('LCASE$(command_text) = "/up"', text)
         self.assertIn('LCASE$(command_text) = "/down"', text)
         self.assertIn('LCASE$(command_text) = "/history"', text)
+        self.assertIn('LCASE$(command_text) = "/u"', text)
+        self.assertIn('LCASE$(command_text) = "/d"', text)
+        self.assertIn('LCASE$(command_text) = "/h"', text)
         self.assertIn('LCASE$(command_text) = "/about"', text)
 
     def test_interactive_assistant_preloads_active_pack_before_prompt(self) -> None:
@@ -61,12 +65,17 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("FUNCTION AssistStreamGenerate", text)
         self.assertIn("SUB AssistPrepareGenerationPrompt", text)
         self.assertIn("SUB AssistPrefillPrompt", text)
+        self.assertIn("FUNCTION AssistVisibleToken", text)
         self.assertIn("FUNCTION AssistCleanGeneratedText", text)
         self.assertIn("GPT2BasicPrefillToken", text)
         self.assertIn("PRINT \"Thinking: \";", text)
+        self.assertIn('PRINT "  ctx"; i + 1; ": ";', text)
+        self.assertIn("PRINT AssistVisibleToken(input_tokens(i));", text)
+        self.assertIn('PRINT "Thinking: sampling output tokens"', text)
+        self.assertIn('progress_text = "<t" + LTRIM$(STR$(i + 1)) + ">"', text)
         self.assertIn("PRINT \"Answer: \";", text)
-        self.assertIn("PRINT \".\";", text)
-        self.assertIn("PRINT CHR$(8); \" \"; CHR$(8);", text)
+        self.assertIn("FOR erase_idx = 1 TO LEN(progress_text)", text)
+        self.assertIn('PRINT CHR$(8); " "; CHR$(8);', text)
         self.assertIn("PRINT piece;", text)
         self.assertIn("Decode(generated_tokens(), generated_count)", text)
         self.assertIn("bubble = generated", text)

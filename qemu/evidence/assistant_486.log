@@ -66,15 +66,17 @@ How it works:
 
   uses a 4096-token lexicon vocabulary. The answers are deliberately brief so
 
-  the DOS console can show Thinking progress, stream Answer pieces as they
+  the DOS console can show Thinking token progress, stream Answer pieces as
 
-  are generated, and return to the prompt quickly.
+  they are generated, and return to the prompt quickly.
 
 
 
 How to use it:
 
   Just type a sentence at the > prompt. Use /about to see this help again.
+
+  Use /u and /d to page through the transcript, or /h to show history.
 
 
 

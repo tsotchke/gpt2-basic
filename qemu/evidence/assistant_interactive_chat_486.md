@@ -19,8 +19,11 @@ Observed sequence:
 - Before the first `>` prompt, the shell printed
   `Loading CHAT model before prompt...`, loaded the 4096-token CHAT vocabulary,
   and then printed `Loaded model: PACKS\CHAT\MODEL (486dx2-usable)`.
-- Prompt `i am bored` did not reload the model. It went directly to
-  `Thinking:` progress and returned `Answer: Try one small project.`
+- Prompt `i am bored` did not reload the model. It streamed visible
+  `Thinking:` progress including prompt token count, `ctx` token pieces, and
+  output-token sampling before returning `Answer: Try one small project.`
+- `/u` opened the in-DOS transcript view and showed the user prompt plus
+  assistant reply; `/d` returned toward the latest page.
 - Earlier manual prompt `how are you` loaded `PACKS\CHAT\MODEL`, printed
   `Thinking:` progress, and returned `Answer: I answer in DOS.`
 - Prompt `hello` reused the loaded CHAT model, printed `Thinking: .....`, and
@@ -31,4 +34,7 @@ This confirms the product demo path can be talked to directly and that CHAT
 answers are produced by the fixed-point model inside DOS rather than by the
 retrieval-only scripted evidence path. As of the preload fix, the first typed
 question no longer pays the model-load cost; startup and `/pack NAME` perform
-the active-pack load before returning to the prompt.
+the active-pack load before returning to the prompt. The visible `Thinking:`
+stream is inference progress, not a scripted answer: it exposes prompt/context
+token prefill and output-token sampling while keeping the final answer stream
+separate.
