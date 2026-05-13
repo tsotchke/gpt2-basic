@@ -92,6 +92,9 @@ def complete_piece_inventory(documents: list[str], max_piece_chars: int = MAX_TO
                     if 1 <= len(variant) <= max_piece_chars:
                         pieces.add(variant.encode("ascii"))
 
+        for piece in response_sentence_pieces(text, max_piece_chars, max_phrase_words=4):
+            pieces.add(piece.encode("ascii"))
+
     for punct in [" ", ". ", ", ", ": ", "; ", "! ", "? ", " - ", " / ", "(", ")", "%", "_", "-", "+", "'", '"']:
         if len(punct) <= max_piece_chars:
             pieces.add(punct.encode("ascii"))
@@ -128,14 +131,17 @@ def lexicon_candidates(
         if not text:
             continue
 
-        words = re.findall(token_pattern, text)
+        word_matches = list(re.finditer(token_pattern, text))
+        words = [match.group(0) for match in word_matches]
         for phrase_len in range(1, max_phrase_words + 1):
             if phrase_len > len(words):
                 break
             for idx in range(0, len(words) - phrase_len + 1):
+                if not plain_spaced_word_phrase(text, word_matches, idx, phrase_len):
+                    continue
                 phrase = " ".join(words[idx : idx + phrase_len])
                 piece = " " + phrase
-                if 2 <= len(piece) <= max_piece_chars and piece in text:
+                if 2 <= len(piece) <= max_piece_chars and word_matches[idx].start() > 0:
                     counts[piece] += 1
                 if idx == 0 and 1 <= len(phrase) <= max_piece_chars and text.startswith(phrase):
                     counts[phrase] += 1
@@ -144,6 +150,13 @@ def lexicon_candidates(
             piece = match.group(0)
             if 2 <= len(piece) <= max_piece_chars:
                 counts[piece] += 1
+
+        for piece in response_sentence_pieces(text, max_piece_chars, max_phrase_words=max_phrase_words):
+            # These are the highest-value pieces for a tiny chat model: short
+            # response endings such as " in DOS.", " is real.", and
+            # " small project." keep the model from spelling common answers
+            # byte by byte while preserving real token sampling.
+            counts[piece] += 8
 
     ranked: list[tuple[int, int, int, str]] = []
     for piece, count in counts.items():
@@ -157,6 +170,64 @@ def lexicon_candidates(
         ranked.append((-savings, -count, -len(piece), piece))
 
     return [piece.encode("ascii") for _savings, _count, _length, piece in sorted(ranked)]
+
+
+def plain_spaced_word_phrase(text: str, matches: list[re.Match[str]], start_idx: int, phrase_len: int) -> bool:
+    """Return true when adjacent word matches are separated only by one space."""
+    if phrase_len <= 1:
+        return True
+    for idx in range(start_idx, start_idx + phrase_len - 1):
+        gap = text[matches[idx].end() : matches[idx + 1].start()]
+        if gap != " ":
+            return False
+    return True
+
+
+def response_sentence_spans(text: str) -> list[str]:
+    """Extract short assistant/answer spans from dialogue-like training text."""
+    spans: list[str] = []
+    for match in re.finditer(r"(?:Assistant:| A:)\s*([^.!?]{2,96}[.!?])", text):
+        span = clean_ascii(match.group(1))
+        if span:
+            spans.append(span)
+    return spans
+
+
+def response_sentence_pieces(
+    text: str,
+    max_piece_chars: int = MAX_TOKEN_LENGTH,
+    max_phrase_words: int = 4,
+) -> set[str]:
+    """Return bounded phrase pieces that preserve answer punctuation.
+
+    VOCAB.BIN currently stores 16-byte pieces for DOS compatibility, so this
+    intentionally builds sentence *pieces* rather than whole arbitrary
+    sentences. The selected pieces are still more expressive than plain word
+    n-grams because the best answer tails include punctuation and stop cleanly.
+    """
+    pieces: set[str] = set()
+    token_pattern = r"[A-Za-z0-9][A-Za-z0-9.+/_-]*"
+
+    def add_piece(piece: str) -> None:
+        if 1 <= len(piece) <= max_piece_chars:
+            pieces.add(piece)
+
+    for span in response_sentence_spans(text):
+        words = re.findall(token_pattern, span)
+        if not words:
+            continue
+        terminal = span.rstrip()[-1] if span.rstrip()[-1:] in ".!?" else ""
+        for start in range(len(words)):
+            for end in range(start + 1, min(len(words), start + max_phrase_words) + 1):
+                phrase = " ".join(words[start:end])
+                for variant in (phrase, " " + phrase):
+                    add_piece(variant)
+                if terminal and end == len(words):
+                    punct_phrase = phrase + terminal
+                    for variant in (punct_phrase, " " + punct_phrase):
+                        add_piece(variant)
+
+    return pieces
 
 
 class GPT2BasicTokenizer:
@@ -189,13 +260,22 @@ class GPT2BasicTokenizer:
             if existing is None or merge.priority < existing.priority:
                 self.merge_by_pair[pair] = merge
         self.lexicon_by_first: dict[int, list[tuple[bytes, int]]] = {}
+        self.lexicon_by_piece: dict[bytes, int] = {}
+        self.lexicon_lengths_by_first: dict[int, tuple[int, ...]] = {}
         if self.mode == "lexicon":
+            lengths_by_first: dict[int, set[int]] = {}
             for token_id in range(BYTE_VOCAB_SIZE, len(self.id_to_piece)):
                 piece = self.id_to_piece[token_id]
                 if piece:
+                    self.lexicon_by_piece[piece] = token_id
+                    lengths_by_first.setdefault(piece[0], set()).add(len(piece))
                     self.lexicon_by_first.setdefault(piece[0], []).append((piece, token_id))
             for first in self.lexicon_by_first:
                 self.lexicon_by_first[first].sort(key=lambda item: (-len(item[0]), item[1]))
+            self.lexicon_lengths_by_first = {
+                first: tuple(sorted(lengths, reverse=True))
+                for first, lengths in lengths_by_first.items()
+            }
         self._prompt_start_cache: dict[str, set[int] | None] = {}
 
     @property
@@ -436,8 +516,12 @@ class GPT2BasicTokenizer:
         while idx < len(byte_text):
             matched_piece: bytes | None = None
             matched_token = -1
-            for piece, token_id in self.lexicon_by_first.get(byte_text[idx], []):
-                if byte_text.startswith(piece, idx) and self._lexicon_piece_boundary_ok(byte_text, idx, piece):
+            for piece_len in self.lexicon_lengths_by_first.get(byte_text[idx], ()):
+                if idx + piece_len > len(byte_text):
+                    continue
+                piece = byte_text[idx : idx + piece_len]
+                token_id = self.lexicon_by_piece.get(piece, -1)
+                if token_id >= 0 and self._lexicon_piece_boundary_ok(byte_text, idx, piece):
                     matched_piece = piece
                     matched_token = token_id
                     break
@@ -692,6 +776,16 @@ def self_test() -> None:
         min_count=1,
         max_phrase_words=2,
     )
+    sentence_tokenizer = build_lexicon_tokenizer(
+        [
+            "User: how are you Assistant: I answer in DOS.",
+            "User: is this real Assistant: Yes, it is real.",
+            "Q: i am bored A: Try one small project.",
+        ],
+        340,
+        min_count=1,
+        max_phrase_words=4,
+    )
     encoded = tokenizer.encode("the transformer tokenizer", append_eot=True)
     safe_encoded = complete_tokenizer.encode("the transformer tokenizer", append_eot=True, output_safe=True)
     lexicon_encoded = lexicon_tokenizer.encode("the transformer runtime uses the tokenizer", append_eot=True)
@@ -714,6 +808,12 @@ def self_test() -> None:
     dotted_sentence = boundary_tokenizer.encode("arithmetic. A no FPU machine")
     if not any(boundary_tokenizer.id_to_piece[token] == b" machine" for token in dotted_sentence):
         raise AssertionError("lexicon boundary check rejected word before sentence punctuation")
+    sentence_response_encoded = sentence_tokenizer.encode("Yes, it is real.")
+    sentence_response_pieces = [sentence_tokenizer.id_to_piece[token] for token in sentence_response_encoded]
+    if not any(piece in {b" it is real.", b" is real.", b" real."} for piece in sentence_response_pieces):
+        raise AssertionError(f"sentence-piece tokenizer missed answer tail: {sentence_response_pieces!r}")
+    if not sentence_tokenizer.token_ends_sentence(sentence_response_encoded[-1]):
+        raise AssertionError("sentence-piece tokenizer did not preserve ending punctuation")
     sentence_encoded = lexicon_tokenizer.encode("the transformer runtime works.", output_safe=True)
     if not lexicon_tokenizer.token_ends_sentence(sentence_encoded[-1]):
         raise AssertionError("lexicon sentence-ending token was not recognized")
@@ -801,12 +901,16 @@ def self_test() -> None:
     print("trace GPT2BasicTokenizer.token_can_follow_generated")
     print("trace GPT2BasicTokenizer.token_follow_penalty")
     print("trace GPT2BasicTokenizer.encode_output_safe")
+    print("trace GPT2BasicTokenizer.lexicon_lengths_by_first")
     print("trace GPT2BasicTokenizer._apply_lexicon")
     print("trace GPT2BasicTokenizer._lexicon_piece_boundary_ok")
     print("trace GPT2BasicTokenizer._lexicon_word_byte")
     print("trace GPT2BasicTokenizer._apply_dos_merges")
     print("trace complete_piece_inventory")
     print("trace complete_output_allowed")
+    print("trace plain_spaced_word_phrase")
+    print("trace response_sentence_spans")
+    print("trace response_sentence_pieces")
     print("trace lexicon_candidates")
     print("trace build_lexicon_tokenizer")
     print("trace ranked_bpe_merge_order")

@@ -358,7 +358,7 @@ def plain_dialogue_prompt(pack: Pack, query: str) -> str:
     return f"{pack.persona} User: {query} Assistant:"
 
 
-def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
+def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_training: bool = True) -> str:
     golden_pairs = load_golden_dialogue(pack.golden_path)
     lexicon_entries = load_grammar_lexicon(pack.lexicon_path)
     paragraphs: list[str] = [
@@ -373,7 +373,7 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             f"A good reply starts with the relevant fact: {response_seed(pack, rows)}"
         ),
     ]
-    if pack.pack_id == "CHAT" and lexicon_entries:
+    if pack.pack_id == "CHAT" and lexicon_entries and include_chat_lexicon_training:
         lexicon_words = ", ".join(word for word, _part, _tags in lexicon_entries[:160])
         paragraphs.append(
             "Basic English lexicon for this chat model. Common words: "
@@ -472,6 +472,39 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             for prompt_text, answer_text in live_demo_pairs:
                 paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
                 paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+        topic_contrast_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if "music" in prompt_text.lower()
+            or "games" in prompt_text.lower()
+            or "game" in prompt_text.lower()
+            or "favorite color" in prompt_text.lower()
+        ]
+        for _repeat in range(128):
+            for prompt_text, answer_text in topic_contrast_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+        music_focus_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if "music" in prompt_text.lower()
+        ]
+        for _repeat in range(512):
+            for prompt_text, answer_text in music_focus_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+        explain_focus_pairs = [
+            (prompt_text, answer_text)
+            for prompt_text, answer_text in golden_pairs
+            if prompt_text.lower() in {"explain", "explain prompt", "explain this demo"}
+        ]
+        for _repeat in range(512):
+            for prompt_text, answer_text in explain_focus_pairs:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
+                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
     for row in rows:
         note = runtime_note(row)
         paragraphs.extend(
@@ -528,6 +561,10 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow]) -> str:
             paragraphs.append(f"{runtime_prompt(pack, row, row.title)} {row.body}")
             paragraphs.append(f"{runtime_prompt(pack, row, f'Use {row.title.lower()}.')} {row.body}")
     return "\n\n".join(clean_ascii(paragraph) for paragraph in paragraphs if clean_ascii(paragraph)) + "\n"
+
+
+def build_pack_tokenizer_corpus(pack: Pack, rows: list[HelpRow]) -> str:
+    return build_pack_corpus(pack, rows, include_chat_lexicon_training=True)
 
 
 def keyword_terms(text: str, limit: int = 6) -> tuple[str, ...]:
@@ -784,9 +821,17 @@ def append_pack_backend_probe(args: argparse.Namespace, pack: Pack) -> None:
 def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
     append_pack_backend_probe(args, pack)
     rows = load_help_rows(pack.help_path)
-    corpus_text = build_pack_corpus(pack, rows)
+    corpus_text = build_pack_corpus(
+        pack,
+        rows,
+        include_chat_lexicon_training=(pack.pack_id != "CHAT"),
+    )
     corpus_path = pack.directory / "TRAIN.TXT"
     write_text(corpus_path, corpus_text)
+    tokenizer_corpus_path: Path | None = None
+    if pack.pack_id == "CHAT":
+        tokenizer_corpus_path = pack.directory / "TOKBASE.TXT"
+        write_text(tokenizer_corpus_path, build_pack_tokenizer_corpus(pack, rows))
 
     model_dir = pack.directory / "MODEL"
     train_log = args.evidence_dir / f"train_assistant_{pack.pack_id.lower()}.log"
@@ -833,6 +878,8 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
             command.extend(["--vocab-size", str(args.vocab_size)])
         if args.load_tokenizer is not None:
             command.extend(["--load-tokenizer", str(args.load_tokenizer)])
+        elif tokenizer_corpus_path is not None and args.tokenizer in {"bpe", "lexicon"}:
+            command.extend(["--tokenizer-corpus-file", str(tokenizer_corpus_path)])
         command.extend(
             [
                 "--lexicon-min-count",

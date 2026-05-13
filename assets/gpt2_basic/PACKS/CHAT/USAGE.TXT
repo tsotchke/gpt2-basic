@@ -8,11 +8,12 @@ Purpose:
 How it works:
   The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
   chat notes from HELP.TXT when a topic matches. It is also trained from
-  GOLDEN.TXT common English dialogue and LEXICON.TSV grammar entries, so
-  ordinary short prompts do not depend on a lookup hit. The current model
-  uses a 4096-token lexicon vocabulary. The answers are deliberately brief so
-  the DOS console can show Thinking token progress, stream Answer pieces as
-  they are generated, and return to the prompt quickly.
+  GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
+  sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
+  grammar entries. Ordinary short prompts do not depend on a lookup hit. The
+  answers are deliberately brief so the DOS console can show Thinking token
+  progress, stream Answer pieces as they are generated, and return to the
+  prompt quickly.
 
 How to use it:
   Just type a sentence at the > prompt. Use /about to see this help again.

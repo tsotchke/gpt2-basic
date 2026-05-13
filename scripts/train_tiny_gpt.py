@@ -840,6 +840,14 @@ def train(args: argparse.Namespace) -> tuple[GPT2BasicModel, GPT2BasicTokenizer]
 
     tokenizer_basis_count = 0
     tokenizer_basis_chars = 0
+    tokenizer_document_groups = document_groups
+    tokenizer_external_documents: list[str] = []
+    for corpus_path in args.tokenizer_corpus_file or []:
+        loaded = load_corpus_file(corpus_path, args.tokenizer_doc_chars, args.tokenizer_max_docs)
+        tokenizer_external_documents.extend(loaded)
+        print(f"loaded_tokenizer_corpus_file: {corpus_path} docs={len(loaded)}", flush=True)
+    if tokenizer_external_documents:
+        tokenizer_document_groups = [(tokenizer_external_documents, 1)]
     if args.load_tokenizer is not None:
         tokenizer = GPT2BasicTokenizer.read_vocab_bin(args.load_tokenizer)
     elif (
@@ -851,7 +859,7 @@ def train(args: argparse.Namespace) -> tuple[GPT2BasicModel, GPT2BasicTokenizer]
         tokenizer = GPT2BasicTokenizer.read_vocab_bin(args.init_model_dir / "VOCAB.BIN")
     elif args.tokenizer in {"bpe", "lexicon"}:
         tokenizer_documents = tokenizer_basis_documents(
-            document_groups,
+            tokenizer_document_groups,
             max_docs=args.tokenizer_max_docs,
             doc_chars=args.tokenizer_doc_chars,
         )
@@ -957,6 +965,7 @@ def main() -> None:
     parser.add_argument("--corpus-weight", type=int, default=1)
     parser.add_argument("--corpus-doc-chars", type=int, default=2400)
     parser.add_argument("--corpus-max-docs", type=int, default=0)
+    parser.add_argument("--tokenizer-corpus-file", action="append", type=Path)
     parser.add_argument("--tokenizer", choices=("byte", "bpe", "lexicon"), default="byte")
     parser.add_argument("--vocab-size", type=int)
     parser.add_argument("--load-tokenizer", type=Path)

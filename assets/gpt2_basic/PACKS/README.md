@@ -12,10 +12,11 @@ conversation notes from `CHAT\HELP.TXT`. The DOS shell prints `Thinking:`
 progress with visible prompt/context token pieces and output-token sampling,
 then streams the generated `Answer:` pieces as the model produces them. Use
 `/u`, `/d`, and `/h` for transcript paging in the DOS UI. `CHAT\GOLDEN.TXT`
-supplies common English call-and-response training examples, and
-`CHAT\LEXICON.TSV` supplies a broad casual English word table for the pack
-corpus. The current CHAT checkpoint is the 4096-token lexicon model tested in
-QEMU.
+supplies common English call-and-response training examples.
+`CHAT\TOKBASE.TXT` is the richer tokenizer basis: it includes dialogue,
+response-style sentence pieces, and `CHAT\LEXICON.TSV` grammar words without
+forcing all of that scaffolding into the model training stream. The current
+CHAT checkpoint is the 4096-token sentence-piece lexicon model tested in QEMU.
 
 Good prompts:
 

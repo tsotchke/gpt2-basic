@@ -14,11 +14,11 @@ Prompt pass rate: `25/25` at threshold `0.90`
 |---|---:|---:|---:|---:|---:|---|---|
 | chat_hello | 1.000 | 1 | 0.0% | 2 | 0 | yes | PASS |
 | chat_how are you | 1.000 | 1 | 0.0% | 1 | 0 | yes | PASS |
-| chat_what can you do | 1.000 | 2 | 0.0% | 2 | 0 | yes | PASS |
+| chat_what can you do | 1.000 | 1 | 0.0% | 1 | 0 | yes | PASS |
 | chat_limits | 1.000 | 1 | 0.0% | 1 | 0 | yes | PASS |
 | chat_hi | 1.000 | 1 | 0.0% | 2 | 0 | yes | PASS |
-| chat_what_is_a_prompt | 1.000 | 4 | 27.8% | 2 | 0 | yes | PASS |
-| chat_what_is_promp | 1.000 | 4 | 26.5% | 2 | 0 | yes | PASS |
+| chat_what_is_a_prompt | 1.000 | 4 | 0.0% | 1 | 0 | yes | PASS |
+| chat_what_is_promp | 1.000 | 4 | 0.0% | 2 | 0 | yes | PASS |
 | chat_explain | 1.000 | 3 | 0.0% | 1 | 0 | yes | PASS |
 | chat_idea | 1.000 | 1 | 11.8% | 2 | 0 | yes | PASS |
 | chat_is_this_scripted | 1.000 | 1 | 0.0% | 1 | 0 | yes | PASS |
@@ -28,14 +28,14 @@ Prompt pass rate: `25/25` at threshold `0.90`
 | chat_i_feel_sad | 1.000 | 1 | 0.0% | 2 | 0 | yes | PASS |
 | chat_i_am_happy | 1.000 | 2 | 0.0% | 2 | 0 | yes | PASS |
 | chat_what_should_i_do_today | 1.000 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| chat_tell_me_a_joke | 1.000 | 4 | 30.8% | 2 | 0 | yes | PASS |
+| chat_tell_me_a_joke | 1.000 | 4 | 38.7% | 2 | 0 | yes | PASS |
 | chat_do_you_like_music | 1.000 | 2 | 0.0% | 1 | 0 | yes | PASS |
 | chat_can_we_talk_about_games | 1.000 | 3 | 0.0% | 1 | 0 | yes | PASS |
-| chat_what_is_your_favorite_color | 1.000 | 3 | 21.9% | 2 | 0 | yes | PASS |
-| chat_i_need_advice | 1.000 | 2 | 32.5% | 2 | 0 | yes | PASS |
+| chat_what_is_your_favorite_color | 1.000 | 3 | 0.0% | 2 | 0 | yes | PASS |
+| chat_i_need_advice | 1.000 | 1 | 17.9% | 2 | 0 | yes | PASS |
 | chat_i_am_bored | 1.000 | 2 | 10.5% | 2 | 0 | yes | PASS |
-| chat_tell_me_a_story | 1.000 | 3 | 28.6% | 2 | 0 | yes | PASS |
-| chat_what_do_you_think | 1.000 | 4 | 30.8% | 2 | 0 | yes | PASS |
+| chat_tell_me_a_story | 1.000 | 3 | 30.8% | 2 | 0 | yes | PASS |
+| chat_what_do_you_think | 1.000 | 4 | 0.0% | 2 | 0 | yes | PASS |
 | chat_can_you_remember_me | 1.000 | 3 | 0.0% | 2 | 0 | yes | PASS |
 
 ## Generated Continuations
@@ -205,7 +205,7 @@ I like green phosphor.
 Prompt: `You are a small friendly DOS chat assistant. Keep replies short. User: i need advice Assistant:`
 
 ```text
-Ask one clear question and I will help.
+Ask one clear question.
 ```
 
 ### chat_i_am_bored

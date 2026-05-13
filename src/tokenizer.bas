@@ -69,6 +69,10 @@ TYPE Tokenizer
     merge_count AS INTEGER
     output_allowed(0 TO MAX_VOCAB_SIZE - 1) AS BYTE
     vocab_hash(0 TO TOKEN_HASH_SIZE - 1) AS INTEGER ' Simple hash table for token lookup
+    lexicon_bucket_start(0 TO 255) AS INTEGER ' First-byte buckets for fast longest-match lexicon scans
+    lexicon_bucket_count(0 TO 255) AS INTEGER
+    lexicon_length_present(0 TO 255, 1 TO MAX_TOKEN_LENGTH) AS BYTE
+    lexicon_order(0 TO MAX_VOCAB_SIZE - 1) AS INTEGER
     tokenizer_mode AS INTEGER ' byte, BPE, or longest-match lexicon
     use_bpe AS INTEGER ' Whether to use BPE or just byte-level tokenization
     max_token_length AS INTEGER
@@ -86,6 +90,7 @@ DECLARE FUNCTION TokenizerLexiconWordByte(byte_value AS INTEGER) AS INTEGER
 DECLARE FUNCTION TokenizerLexiconBoundaryNextOK(bytes() AS BYTE, next_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
 DECLARE FUNCTION TokenPieceMatchesBytes(tokenizer AS Tokenizer, vocab_idx AS INTEGER, bytes() AS BYTE, start_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
 DECLARE FUNCTION TokenPieceBoundaryMatches(tokenizer AS Tokenizer, vocab_idx AS INTEGER, bytes() AS BYTE, start_idx AS INTEGER, byte_count AS INTEGER) AS INTEGER
+DECLARE SUB TokenizerBuildLexiconBuckets(BYREF tokenizer AS Tokenizer)
 DECLARE SUB BPETokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, tokens() AS INTEGER, BYREF token_count AS INTEGER)
 DECLARE SUB LexiconTokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, tokens() AS INTEGER, BYREF token_count AS INTEGER)
 
@@ -110,8 +115,16 @@ SUB InitTokenizer(BYREF tokenizer AS Tokenizer)
     FOR i = 0 TO TOKEN_HASH_SIZE - 1
         tokenizer.vocab_hash(i) = -1
     NEXT i
+    FOR i = 0 TO 255
+        tokenizer.lexicon_bucket_start(i) = 0
+        tokenizer.lexicon_bucket_count(i) = 0
+        FOR added_index = 1 TO MAX_TOKEN_LENGTH
+            tokenizer.lexicon_length_present(i, added_index) = 0
+        NEXT added_index
+    NEXT i
     FOR i = 0 TO MAX_VOCAB_SIZE - 1
         tokenizer.output_allowed(i) = 0
+        tokenizer.lexicon_order(i) = -1
     NEXT i
 
     ' Initialize with basic tokens (special tokens and ASCII chars)
@@ -535,6 +548,9 @@ SUB LoadVocabulary(BYREF tokenizer AS Tokenizer, filename AS STRING)
     ELSE
         tokenizer.use_bpe = 0
     END IF
+    IF tokenizer.tokenizer_mode = TOKENIZER_MODE_LEXICON THEN
+        TokenizerBuildLexiconBuckets tokenizer
+    END IF
 
     CLOSE file
 
@@ -741,6 +757,94 @@ FUNCTION TokenPieceBoundaryMatches(tokenizer AS Tokenizer, vocab_idx AS INTEGER,
     RETURN 1
 END FUNCTION
 
+' Build first-byte metadata for lexicon pieces. The tokenizer can then try only
+' token lengths that exist for the current byte and use the exact hash lookup,
+' longest length first. Buckets are retained for diagnostics and future trie
+' experiments, but generation uses the length table to avoid scanning thousands
+' of space-prefixed tokens.
+SUB TokenizerBuildLexiconBuckets(BYREF tokenizer AS Tokenizer)
+    DIM i AS INTEGER
+    DIM b AS INTEGER
+    DIM order_idx AS INTEGER
+    DIM start_idx AS INTEGER
+    DIM end_idx AS INTEGER
+    DIM scan_idx AS INTEGER
+    DIM best_pos AS INTEGER
+    DIM tmp_idx AS INTEGER
+    DIM vocab_idx AS INTEGER
+    DIM best_vocab_idx AS INTEGER
+    DIM token_len AS INTEGER
+    DIM best_len AS INTEGER
+    DIM token_id AS INTEGER
+    DIM best_token_id AS INTEGER
+
+    FOR b = 0 TO 255
+        tokenizer.lexicon_bucket_start(b) = 0
+        tokenizer.lexicon_bucket_count(b) = 0
+        FOR i = 1 TO MAX_TOKEN_LENGTH
+            tokenizer.lexicon_length_present(b, i) = 0
+        NEXT i
+    NEXT b
+    FOR i = 0 TO MAX_VOCAB_SIZE - 1
+        tokenizer.lexicon_order(i) = -1
+    NEXT i
+
+    FOR i = 0 TO tokenizer.vocab_size - 1
+        IF tokenizer.vocab(i).token_id >= BYTE_VOCAB_SIZE AND tokenizer.vocab(i).token_len > 0 THEN
+            b = ASC(LEFT$(tokenizer.vocab(i).token, 1))
+            tokenizer.lexicon_bucket_count(b) = tokenizer.lexicon_bucket_count(b) + 1
+            IF tokenizer.vocab(i).token_len >= 1 AND tokenizer.vocab(i).token_len <= MAX_TOKEN_LENGTH THEN
+                tokenizer.lexicon_length_present(b, tokenizer.vocab(i).token_len) = 1
+            END IF
+        END IF
+    NEXT i
+
+    order_idx = 0
+    FOR b = 0 TO 255
+        tokenizer.lexicon_bucket_start(b) = order_idx
+        order_idx = order_idx + tokenizer.lexicon_bucket_count(b)
+        tokenizer.lexicon_bucket_count(b) = 0
+    NEXT b
+
+    FOR i = 0 TO tokenizer.vocab_size - 1
+        IF tokenizer.vocab(i).token_id >= BYTE_VOCAB_SIZE AND tokenizer.vocab(i).token_len > 0 THEN
+            b = ASC(LEFT$(tokenizer.vocab(i).token, 1))
+            order_idx = tokenizer.lexicon_bucket_start(b) + tokenizer.lexicon_bucket_count(b)
+            tokenizer.lexicon_order(order_idx) = i
+            tokenizer.lexicon_bucket_count(b) = tokenizer.lexicon_bucket_count(b) + 1
+        END IF
+    NEXT i
+
+    FOR b = 0 TO 255
+        start_idx = tokenizer.lexicon_bucket_start(b)
+        end_idx = start_idx + tokenizer.lexicon_bucket_count(b) - 1
+        IF end_idx > start_idx THEN
+            FOR i = start_idx TO end_idx - 1
+                best_pos = i
+                best_vocab_idx = tokenizer.lexicon_order(i)
+                best_len = tokenizer.vocab(best_vocab_idx).token_len
+                best_token_id = tokenizer.vocab(best_vocab_idx).token_id
+                FOR scan_idx = i + 1 TO end_idx
+                    vocab_idx = tokenizer.lexicon_order(scan_idx)
+                    token_len = tokenizer.vocab(vocab_idx).token_len
+                    token_id = tokenizer.vocab(vocab_idx).token_id
+                    IF token_len > best_len OR (token_len = best_len AND token_id < best_token_id) THEN
+                        best_pos = scan_idx
+                        best_vocab_idx = vocab_idx
+                        best_len = token_len
+                        best_token_id = token_id
+                    END IF
+                NEXT scan_idx
+                IF best_pos <> i THEN
+                    tmp_idx = tokenizer.lexicon_order(i)
+                    tokenizer.lexicon_order(i) = tokenizer.lexicon_order(best_pos)
+                    tokenizer.lexicon_order(best_pos) = tmp_idx
+                END IF
+            NEXT i
+        END IF
+    NEXT b
+END SUB
+
 ' Longest-match lexicon tokenization. Lexicon entries are complete words,
 ' phrases, or punctuation chunks; bytes remain the fallback for all text.
 SUB LexiconTokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEGER, tokens() AS INTEGER, BYREF token_count AS INTEGER)
@@ -749,6 +853,7 @@ SUB LexiconTokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEG
     DIM best_len AS INTEGER
     DIM piece_len AS INTEGER
     DIM token_id AS INTEGER
+    DIM first_byte AS INTEGER
     DIM max_len AS INTEGER
     DIM candidate AS STRING
     DIM k AS INTEGER
@@ -761,24 +866,27 @@ SUB LexiconTokenize(tokenizer AS Tokenizer, bytes() AS BYTE, byte_count AS INTEG
         best_idx = -1
         best_len = 0
 
+        first_byte = bytes(idx)
         max_len = tokenizer.max_token_length
         IF max_len > byte_count - idx THEN max_len = byte_count - idx
 
         FOR piece_len = max_len TO 1 STEP -1
-            candidate = ""
-            FOR k = 0 TO piece_len - 1
-                candidate = candidate + CHR$(bytes(idx + k))
-            NEXT k
+            IF tokenizer.lexicon_length_present(first_byte, piece_len) <> 0 THEN
+                candidate = ""
+                FOR k = 0 TO piece_len - 1
+                    candidate = candidate + CHR$(bytes(idx + k))
+                NEXT k
 
-            best_idx = FindToken(tokenizer, candidate)
-            IF best_idx >= 0 THEN
-                token_id = tokenizer.vocab(best_idx).token_id
-                IF token_id >= BYTE_VOCAB_SIZE AND _
-                   TokenPieceBoundaryMatches(tokenizer, best_idx, bytes(), idx, byte_count) <> 0 THEN
-                    best_len = piece_len
-                    EXIT FOR
-                ELSE
-                    best_idx = -1
+                best_idx = FindToken(tokenizer, candidate)
+                IF best_idx >= 0 THEN
+                    token_id = tokenizer.vocab(best_idx).token_id
+                    IF token_id >= BYTE_VOCAB_SIZE AND _
+                       TokenPieceBoundaryMatches(tokenizer, best_idx, bytes(), idx, byte_count) <> 0 THEN
+                        best_len = piece_len
+                        EXIT FOR
+                    ELSE
+                        best_idx = -1
+                    END IF
                 END IF
             END IF
         NEXT piece_len

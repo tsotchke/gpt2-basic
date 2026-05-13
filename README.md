@@ -309,14 +309,25 @@ implemented inside DOS so it does not depend on terminal scrollback; use `/u`
 and `/d` as short aliases for `/up` and `/down`, or `/h` for history.
 Each pack has its own `USAGE.TXT`; the repo-level index is
 `assets/gpt2_basic/PACKS/README.md`.
-The current CHAT pack uses a pack-local 4096-token lexicon checkpoint trained
-on broader casual English dialogue plus `CHAT\LEXICON.TSV`; its fixed quality
-suite is `PASS 25/25`, and the manual QEMU probe includes ordinary prompts
-such as `i am bored`, `tell me a joke`, and `do you like music`.
+The current CHAT pack uses a pack-local 4096-token sentence-piece lexicon
+checkpoint trained on broader casual English dialogue. `CHAT\TOKBASE.TXT`
+is the tokenizer-basis corpus, including `CHAT\LEXICON.TSV` grammar words and
+response-style phrase endings; `CHAT\TRAIN.TXT` is kept closer to clean
+dialogue so the model does not learn lexicon scaffolding as answer text. Its
+fixed quality suite is `PASS 25/25`, and the manual QEMU probe includes
+ordinary prompts such as `i am bored`, `tell me a joke`, and `do you like
+music`.
 Train and test every listed assistant pack model with:
 
 ```sh
 python3 scripts/train_assistant_pack_models.py
+```
+
+To reproduce the current larger CHAT checkpoint exactly, train it as a
+pack-local 486DX2 model instead of initializing from the smaller default model:
+
+```sh
+python3 scripts/train_assistant_pack_models.py --pack CHAT --profile 486dx2-usable --steps 3000 --tokenizer lexicon --vocab-size 4096 --quality-backend fixed --max-new-tokens 24 --no-init-model
 ```
 
 That builds pack corpora from `PACK.INI` and `HELP.TXT`, fine-tunes one

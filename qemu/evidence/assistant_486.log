@@ -1,301 +1,152 @@
 +------------------------------------------------------------+
-
 | GPT2-BASIC Assistant Shell                                 |
-
 | Pack-driven text UI; VGA sprite/icon slots are pack assets. |
-
 +------------------------------------------------------------+
-
-
 
 ASSIST_BEGIN|suite=pack-shell|version=1
-
 Available packs:
-
   CHAT - Conversation Pack
-
   DOSHELP - DOS Help Assistant
-
   OFFICE - Office Assistant
 
-
-
 Pack : CHAT - Conversation Pack
-
 Model: PACKS\CHAT\MODEL
-
 Usage: /about
-
 Sprite asset: PACKS\CHAT\CHAT.SPR
-
 Icon asset  : PACKS\CHAT\CHAT.ICN
-
 ASSIST_PACK|id=CHAT|title=Conversation Pack|model=PACKS\CHAT\MODEL|sprite=PACKS\CHAT\CHAT.SPR|icons=PACKS\CHAT\CHAT.ICN
 
-
-
 +------------------------------------------------------------+
-
 | Pack instructions                                          |
-
 +------------------------------------------------------------+
-
 CHAT pack
 
-
-
 Purpose:
-
   Use this pack for ordinary conversation. It is the default pack in the
-
   interactive QEMU demo because it is meant for talking, not a specific
-
   DOS or office task.
 
-
-
 How it works:
-
   The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
-
   chat notes from HELP.TXT when a topic matches. It is also trained from
-
-  GOLDEN.TXT common English dialogue and LEXICON.TSV grammar entries, so
-
-  ordinary short prompts do not depend on a lookup hit. The current model
-
-  uses a 4096-token lexicon vocabulary. The answers are deliberately brief so
-
-  the DOS console can show Thinking token progress, stream Answer pieces as
-
-  they are generated, and return to the prompt quickly.
-
-
+  GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
+  sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
+  grammar entries. Ordinary short prompts do not depend on a lookup hit. The
+  answers are deliberately brief so the DOS console can show Thinking token
+  progress, stream Answer pieces as they are generated, and return to the
+  prompt quickly.
 
 How to use it:
-
   Just type a sentence at the > prompt. Use /about to see this help again.
-
   Use /u and /d to page through the transcript, or /h to show history.
 
-
-
 Good prompts:
-
   Hello, what can you do?
-
   I am bored.
-
   Tell me a joke.
-
   Do you like music?
-
   I want to talk about this DOS demo.
-
   Give me one idea for improving the demo.
-
   What are your limits?
 
-
-
 Actions:
-
   chat, ask, idea, explain, cancel
 
-
-
 Initialized tokenizer with  258 tokens
-
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
-
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096
-
 ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Assistant abilities: I chat in DOS.|generated=
-
 +------------------------------------------------------------+
-
 | Assistant                                                  |
-
 +------------------------------------------------------------+
-
 Assistant abilities: I chat in DOS.
-
-
 
 [ chat,ask,idea,explain,cancel ]
 
-
-
 Pack : DOSHELP - DOS Help Assistant
-
 Model: PACKS\DOSHELP\MODEL
-
 Usage: /about
-
 Sprite asset: PACKS\DOSHELP\DOSHELP.SPR
-
 Icon asset  : PACKS\DOSHELP\DOSHELP.ICN
-
 ASSIST_PACK|id=DOSHELP|title=DOS Help Assistant|model=PACKS\DOSHELP\MODEL|sprite=PACKS\DOSHELP\DOSHELP.SPR|icons=PACKS\DOSHELP\DOSHELP.ICN
 
-
-
 +------------------------------------------------------------+
-
 | Pack instructions                                          |
-
 +------------------------------------------------------------+
-
 DOSHELP pack
 
-
-
 Purpose:
-
   Use this pack when the conversation is about FreeDOS, 486-era
-
   configuration, CONFIG.SYS, AUTOEXEC.BAT, memory, or batch files.
 
-
-
 How it works:
-
   The pack loads PACKS\DOSHELP\MODEL and retrieves short DOS notes from
-
   HELP.TXT before generating a reply. It is tuned for concrete fixes, not
-
   open-ended chat.
 
-
-
 How to use it:
-
   Type /pack DOSHELP, then ask for a DOS task.
 
-
-
 Good prompts:
-
   How do I tune CONFIG.SYS memory?
-
   Write a safe DOS batch file.
-
   What should AUTOEXEC.BAT contain for this demo?
 
-
-
 Actions:
-
   show_config, explain_xms, write_batch, cancel
 
-
-
 Initialized tokenizer with  258 tokens
-
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
-
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-
 ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.|generated=
-
 +------------------------------------------------------------+
-
 | Assistant                                                  |
-
 +------------------------------------------------------------+
-
 CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.
-
-
 
 [ show_config,explain_xms,more,cancel ]
 
-
-
 Pack : OFFICE - Office Assistant
-
 Model: PACKS\OFFICE\MODEL
-
 Usage: /about
-
 Sprite asset: PACKS\OFFICE\OFFICE.SPR
-
 Icon asset  : PACKS\OFFICE\OFFICE.ICN
-
 ASSIST_PACK|id=OFFICE|title=Office Assistant|model=PACKS\OFFICE\MODEL|sprite=PACKS\OFFICE\OFFICE.SPR|icons=PACKS\OFFICE\OFFICE.ICN
 
-
-
 +------------------------------------------------------------+
-
 | Pack instructions                                          |
-
 +------------------------------------------------------------+
-
 OFFICE pack
 
-
-
 Purpose:
-
   Use this pack when the conversation is about writing, rewriting,
-
   shortening, summarizing, or making a note sound more professional.
 
-
-
 How it works:
-
   The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from
-
   HELP.TXT before generating a reply. It behaves like a small DOS office
-
   assistant with action buttons.
 
-
-
 How to use it:
-
   Type /pack OFFICE, then paste or describe the text task.
 
-
-
 Good prompts:
-
   Rewrite this memo in a professional tone.
-
   Summarize this paragraph.
-
   Make this note shorter and clearer.
 
-
-
 Actions:
-
   rewrite, shorten, summarize, formalize, cancel
 
-
-
 Initialized tokenizer with  258 tokens
-
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
-
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-
 ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|generated=
-
 +------------------------------------------------------------+
-
 | Assistant                                                  |
-
 +------------------------------------------------------------+
-
 Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
 
-
-
 [ rewrite,shorten,formalize,cancel ]
-
-
 
 ASSIST_END|packs=3

@@ -72,7 +72,7 @@ i feel good	Good; keep going.
 i feel bad	I am sorry.
 what should i do today	Pick one useful small task.
 what should i do next	Choose one clear next step.
-i need advice	Ask one clear question and I will help.
+i need advice	Ask one clear question.
 can you help me think	Yes, tell me the problem.
 help me decide	Name the choices and the goal.
 what do you think	I think a small clear step helps.

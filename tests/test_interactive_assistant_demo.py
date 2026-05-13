@@ -87,6 +87,17 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertNotIn('INSTR(lower_text, " assistant")', text)
         self.assertNotIn("MID$(decoded_text, LEN(prompt) + 1)", text)
 
+    def test_tokenizer_has_bucketed_lexicon_path(self) -> None:
+        text = (ROOT / "src" / "tokenizer.bas").read_text(encoding="ascii")
+
+        self.assertIn("lexicon_bucket_start", text)
+        self.assertIn("lexicon_bucket_count", text)
+        self.assertIn("lexicon_length_present", text)
+        self.assertIn("lexicon_order", text)
+        self.assertIn("SUB TokenizerBuildLexiconBuckets", text)
+        self.assertIn("FindToken(tokenizer, candidate)", text)
+        self.assertIn("FOR piece_len = max_len TO 1 STEP -1", text)
+
     def test_assistant_retrieval_prefers_specific_pack_rows(self) -> None:
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
 
