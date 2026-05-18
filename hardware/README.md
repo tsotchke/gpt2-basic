@@ -56,5 +56,13 @@ After copying the logs back to the host:
 python3 scripts/verify_hardware_capture.py --capture-dir /path/to/capture
 ```
 
-For release evidence, rename the accepted logs using the scheme documented in
-`docs/hardware-validation.md`.
+For release evidence, stage the accepted logs with a stable machine key:
+
+```sh
+python3 scripts/stage_hardware_capture_evidence.py \
+  --capture-dir /path/to/capture \
+  --machine-key 486dx2_66_dos622
+```
+
+The staging command writes the normalized `hardware_<machine>_*.log` files and
+manifest documented in `docs/hardware-validation.md`.

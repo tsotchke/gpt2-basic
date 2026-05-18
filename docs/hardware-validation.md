@@ -72,6 +72,18 @@ Back on the host, verify the captured directory with:
 python3 scripts/verify_hardware_capture.py --capture-dir /path/to/capture
 ```
 
+Then stage the accepted logs into release evidence filenames:
+
+```sh
+python3 scripts/stage_hardware_capture_evidence.py \
+  --capture-dir /path/to/capture \
+  --machine-key 486dx2_66_dos622
+```
+
+The staging command reruns the verifier first, refuses to overwrite existing
+evidence unless `--force` is passed, and writes a manifest plus normalized log
+names under `qemu/evidence/`.
+
 ## Acceptance Criteria
 
 - `QUAL.LOG` shows the same prompt suite completing without runtime failure.
@@ -88,11 +100,13 @@ python3 scripts/verify_hardware_capture.py --capture-dir /path/to/capture
 Use stable filenames so the reports can be added without ambiguity:
 
 ```text
+qemu/evidence/hardware_<machine>_capture.log
 qemu/evidence/hardware_<machine>_quality.log
 qemu/evidence/hardware_<machine>_perf.log
 qemu/evidence/hardware_<machine>_assistant.log
 qemu/evidence/hardware_<machine>_assistant_compile.log
 qemu/evidence/hardware_<machine>_notes.md
+qemu/evidence/hardware_<machine>_manifest.md
 ```
 
 Example machine keys:

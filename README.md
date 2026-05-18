@@ -427,8 +427,9 @@ until the same quality, performance, and assistant probes are captured from a
 physical 486-class DOS machine. Pentium timing is useful scaling evidence, but
 it is not a blocker for the solid 486-focused release. The hardware ladder is
 tracked in [`docs/hardware-validation.md`](docs/hardware-validation.md), with a
-DOS capture batch under `hardware/HWVALID.BAT` and host verification through
-`python3 scripts/verify_hardware_capture.py --capture-dir <logs>`.
+DOS capture batch under `hardware/HWVALID.BAT`, host verification through
+`scripts/verify_hardware_capture.py`, and release evidence staging through
+`scripts/stage_hardware_capture_evidence.py`.
 Use `bash qemu/run_hardware_capture_486.sh` first to rehearse the same
 `C:\GPT2\HWVALID.BAT` capture path in FreeDOS before transferring it to a
 physical machine.

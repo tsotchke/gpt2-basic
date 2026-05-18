@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `261 files, 47,395,953 bytes`
+Package status: `265 files, 47,423,391 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -53,6 +53,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 - A physical 486-class DOS machine is the solid-release baseline.
 - `qemu/run_hardware_capture_486.sh` rehearses the same `C:\GPT2\HWVALID.BAT` capture path before physical transfer.
 - `scripts/build_hardware_transfer.py` creates the minimal `C:\GPT2` transfer bundle for the physical machine.
+- `scripts/stage_hardware_capture_evidence.py` verifies returned physical logs and stages stable release evidence names.
 - Pentium hardware is useful for scaling evidence, but it is not a blocker for the 486-focused release.
 
 ## Release Notes
@@ -124,6 +125,7 @@ python3 -m unittest discover tests
 python3 scripts/audit_exported_models.py
 python3 scripts/verify_assistant_packs.py
 python3 scripts/verify_hardware_capture.py --self-test
+python3 scripts/stage_hardware_capture_evidence.py --self-test
 python3 scripts/build_hardware_transfer.py --self-test
 python3 scripts/build_preview_release.py --self-test
 python3 scripts/verify_preview_artifacts.py --self-test

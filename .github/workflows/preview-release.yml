@@ -37,6 +37,7 @@ jobs:
             scripts/train_assistant_pack_models.py \
             scripts/train_subword_prototype.py \
             scripts/verify_hardware_capture.py \
+            scripts/stage_hardware_capture_evidence.py \
             scripts/verify_assistant_packs.py \
             scripts/verify_preview_artifacts.py \
             scripts/verify_workspace_tracking.py
@@ -49,6 +50,7 @@ jobs:
           python scripts/audit_exported_models.py --self-test
           python scripts/train_assistant_pack_models.py --self-test
           python scripts/verify_hardware_capture.py --self-test
+          python scripts/stage_hardware_capture_evidence.py --self-test
           python scripts/build_hardware_transfer.py --self-test
           python scripts/build_preview_release.py --self-test
           python scripts/verify_preview_artifacts.py --self-test
