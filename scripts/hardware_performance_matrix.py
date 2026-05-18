@@ -94,6 +94,11 @@ def capture_from_perf_log(perf_log: Path, require_notes: bool) -> PerfCapture | 
         return None
 
     machine = match.group("machine")
+    try:
+        stage_hardware_capture_evidence.verify_staged_manifest(perf_log.parent, machine)
+    except SystemExit as exc:
+        require(False, f"staged_manifest_invalid={exc}")
+
     notes = perf_log.with_name(f"hardware_{machine}_notes.md")
     if not notes.exists():
         require(not require_notes, f"notes_missing={notes}")

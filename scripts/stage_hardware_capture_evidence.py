@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover - used when run as scripts/foo.py
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EVIDENCE_DIR = ROOT / "qemu" / "evidence"
 MACHINE_KEY_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{1,63}$")
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 STAGED_FILES = (
     ("capture", "HWVALID.LOG", "capture.log"),
     ("quality", "QUAL.LOG", "quality.log"),
@@ -142,6 +143,43 @@ def write_manifest(
         lines.extend(["", "## Performance Summary", "", f"`{summary}`"])
     lines.append("")
     manifest_path.write_text("\n".join(lines), encoding="ascii")
+
+
+def parse_manifest_checksum_rows(manifest_path: Path) -> list[tuple[str, int, str]]:
+    rows: list[tuple[str, int, str]] = []
+    for raw_line in read_text(manifest_path).splitlines():
+        line = raw_line.strip()
+        if not line.startswith("| `"):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) != 3:
+            continue
+        digest = cells[0].strip("`")
+        size_text = cells[1]
+        rel_path = cells[2].strip("`")
+        require(SHA256_RE.fullmatch(digest) is not None, f"manifest_bad_sha256={manifest_path}")
+        require(size_text.isdecimal(), f"manifest_bad_size={manifest_path}")
+        rows.append((digest, int(size_text), rel_path))
+    return rows
+
+
+def verify_staged_manifest(evidence_dir: Path, machine_key: str) -> None:
+    validate_machine_key(machine_key)
+    evidence_dir = evidence_dir.resolve()
+    manifest = evidence_dir / staged_log_name(machine_key, "manifest.md")
+    require(manifest.is_file(), f"manifest_missing={manifest}")
+    rows = parse_manifest_checksum_rows(manifest)
+    require(rows, f"manifest_checksums_missing={manifest}")
+    seen: set[str] = set()
+    for expected_sha, expected_size, rel_path in rows:
+        path = Path(rel_path)
+        require(not path.is_absolute() and ".." not in path.parts, f"manifest_bad_path={rel_path}")
+        require(rel_path not in seen, f"manifest_duplicate_path={rel_path}")
+        seen.add(rel_path)
+        staged = evidence_dir / path
+        require(staged.is_file(), f"manifest_file_missing={rel_path}")
+        require(staged.stat().st_size == expected_size, f"manifest_size_mismatch={rel_path}")
+        require(sha256(staged) == expected_sha, f"manifest_sha256_mismatch={rel_path}")
 
 
 def output_paths(evidence_dir: Path, machine_key: str, include_notes: bool = True) -> list[Path]:
@@ -297,6 +335,7 @@ def main() -> None:
     parser.add_argument("--allow-missing-notes", action="store_true")
     parser.add_argument("--allow-template-notes", action="store_true")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--verify-staged", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
@@ -305,6 +344,11 @@ def main() -> None:
         return
 
     require(args.machine_key is not None, "missing_machine_key")
+    if args.verify_staged:
+        verify_staged_manifest(args.evidence_dir, args.machine_key)
+        print(f"PROBE_OK hardware_staged_manifest={args.machine_key}")
+        return
+
     stage_capture(
         args.capture_dir,
         args.evidence_dir,

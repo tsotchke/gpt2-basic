@@ -99,7 +99,8 @@ python3 scripts/hardware_performance_matrix.py
 ```
 
 That report only reads normalized `hardware_<machine>_perf.log` files. It does
-not ingest QEMU `perf_486_*` logs or estimates.
+not ingest QEMU `perf_486_*` logs or estimates. Before adding a row, it also
+verifies the paired `hardware_<machine>_manifest.md` checksum table.
 
 ## Acceptance Criteria
 

@@ -59,6 +59,7 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
             self.assertIn("| SHA256 | Bytes | Path |", manifest)
             self.assertIn("hardware_486dx2_66_dos622_perf.log", manifest)
             self.assertRegex(manifest, r"`[0-9a-f]{64}`")
+            stage_hardware_capture_evidence.verify_staged_manifest(evidence, "486dx2_66_dos622")
 
     def test_stage_capture_refuses_overwrite_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -102,6 +103,33 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                     require_filled_notes=True,
                     force=True,
                 )
+
+    def test_verify_staged_manifest_rejects_modified_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            capture = root / "capture"
+            evidence = root / "evidence"
+            capture.mkdir()
+            stage_hardware_capture_evidence.write_sample_capture(capture)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                stage_hardware_capture_evidence.stage_capture(
+                    capture,
+                    evidence,
+                    "486dx2_66_dos622",
+                    require_assistant=True,
+                    require_notes=True,
+                    require_filled_notes=True,
+                    force=False,
+                )
+
+            (evidence / "hardware_486dx2_66_dos622_perf.log").write_text(
+                "PERF_SUMMARY|runs=1|tokens=1|seconds=1|tokens_per_sec=1\n",
+                encoding="ascii",
+            )
+            with self.assertRaises(SystemExit) as raised:
+                stage_hardware_capture_evidence.verify_staged_manifest(evidence, "486dx2_66_dos622")
+            self.assertIn("manifest_size_mismatch=hardware_486dx2_66_dos622_perf.log", str(raised.exception))
 
     def test_stage_capture_rejects_template_notes_by_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

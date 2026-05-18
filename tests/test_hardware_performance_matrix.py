@@ -86,17 +86,48 @@ class HardwarePerformanceMatrixTests(unittest.TestCase):
                     output,
                     require_notes=True,
                 )
-            self.assertIn("notes_missing=", str(raised.exception))
+            self.assertIn("staged_manifest_invalid=", str(raised.exception))
+            self.assertIn("manifest_missing=", str(raised.exception))
+
+            with self.assertRaises(SystemExit) as raised_without_notes:
+                hardware_performance_matrix.build_matrix(
+                    evidence,
+                    output,
+                    require_notes=False,
+                )
+            self.assertIn("staged_manifest_invalid=", str(raised_without_notes.exception))
+            self.assertIn("manifest_missing=", str(raised_without_notes.exception))
+
+    def test_matrix_allows_missing_notes_only_with_valid_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            capture = root / "capture"
+            evidence = root / "evidence"
+            output = root / "matrix.md"
+            capture.mkdir()
+            stage_hardware_capture_evidence.write_sample_capture(capture)
+            (capture / "HWNOTES.TXT").unlink()
 
             with contextlib.redirect_stdout(io.StringIO()):
+                stage_hardware_capture_evidence.stage_capture(
+                    capture,
+                    evidence,
+                    "486dx2_66_dos622",
+                    require_assistant=True,
+                    require_notes=False,
+                    require_filled_notes=False,
+                    force=False,
+                )
                 captures = hardware_performance_matrix.build_matrix(
                     evidence,
                     output,
                     require_notes=False,
                 )
-            self.assertEqual(len(captures), 1)
 
-    def test_matrix_rejects_staged_machine_key_mismatch(self) -> None:
+            self.assertEqual(len(captures), 1)
+            self.assertEqual(captures[0].machine, "486dx2_66_dos622")
+
+    def test_matrix_rejects_modified_staged_notes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             capture = root / "capture"
@@ -130,7 +161,41 @@ class HardwarePerformanceMatrixTests(unittest.TestCase):
                     output,
                     require_notes=True,
                 )
-            self.assertIn("machine_key_mismatch=notes:486dx4_100_dos622", str(raised.exception))
+            self.assertIn("staged_manifest_invalid=", str(raised.exception))
+            self.assertIn("manifest_size_mismatch=hardware_486dx2_66_dos622_notes.md", str(raised.exception))
+
+    def test_matrix_rejects_modified_staged_perf_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            capture = root / "capture"
+            evidence = root / "evidence"
+            output = root / "matrix.md"
+            capture.mkdir()
+            stage_hardware_capture_evidence.write_sample_capture(capture)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                stage_hardware_capture_evidence.stage_capture(
+                    capture,
+                    evidence,
+                    "486dx2_66_dos622",
+                    require_assistant=True,
+                    require_notes=True,
+                    require_filled_notes=True,
+                    force=False,
+                )
+
+            (evidence / "hardware_486dx2_66_dos622_perf.log").write_text(
+                "PERF_MODEL|profile=changed|runtime_bytes=1\n"
+                "PERF_SUMMARY|runs=1|tokens=1|seconds=1|tokens_per_sec=1\n",
+                encoding="ascii",
+            )
+            with self.assertRaises(SystemExit) as raised:
+                hardware_performance_matrix.build_matrix(
+                    evidence,
+                    output,
+                    require_notes=True,
+                )
+            self.assertIn("staged_manifest_invalid=", str(raised.exception))
 
     def test_self_test(self) -> None:
         output = io.StringIO()
