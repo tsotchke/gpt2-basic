@@ -84,6 +84,16 @@ The staging command reruns the verifier first, refuses to overwrite existing
 evidence unless `--force` is passed, and writes a manifest plus normalized log
 names under `qemu/evidence/`.
 
+After staging one or more physical captures, regenerate the measured hardware
+performance matrix:
+
+```sh
+python3 scripts/hardware_performance_matrix.py
+```
+
+That report only reads normalized `hardware_<machine>_perf.log` files. It does
+not ingest QEMU `perf_486_*` logs or estimates.
+
 ## Acceptance Criteria
 
 - `QUAL.LOG` shows the same prompt suite completing without runtime failure.
@@ -107,6 +117,7 @@ qemu/evidence/hardware_<machine>_assistant.log
 qemu/evidence/hardware_<machine>_assistant_compile.log
 qemu/evidence/hardware_<machine>_notes.md
 qemu/evidence/hardware_<machine>_manifest.md
+qemu/evidence/hardware_performance_matrix.md
 ```
 
 Example machine keys:

@@ -66,3 +66,9 @@ python3 scripts/stage_hardware_capture_evidence.py \
 
 The staging command writes the normalized `hardware_<machine>_*.log` files and
 manifest documented in `docs/hardware-validation.md`.
+
+After staging physical captures, regenerate the physical performance matrix:
+
+```sh
+python3 scripts/hardware_performance_matrix.py
+```
