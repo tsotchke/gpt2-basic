@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import shutil
 import tempfile
@@ -41,6 +42,14 @@ def validate_machine_key(machine_key: str) -> None:
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="ascii", errors="ignore")
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def staged_log_name(machine_key: str, suffix: str) -> str:
@@ -125,6 +134,10 @@ def write_manifest(
     ]
     for path in staged_paths:
         lines.append(f"- `{path.relative_to(evidence_dir).as_posix()}`")
+    lines.extend(["", "## File Checksums", "", "| SHA256 | Bytes | Path |", "|---|---:|---|"])
+    for path in staged_paths:
+        rel_path = path.relative_to(evidence_dir).as_posix()
+        lines.append(f"| `{sha256(path)}` | {path.stat().st_size} | `{rel_path}` |")
     if summary:
         lines.extend(["", "## Performance Summary", "", f"`{summary}`"])
     lines.append("")

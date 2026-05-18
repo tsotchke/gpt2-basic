@@ -85,10 +85,11 @@ python3 scripts/stage_hardware_capture_evidence.py \
 ```
 
 The staging command reruns the verifier first, refuses to overwrite existing
-evidence unless `--force` is passed, and writes a manifest plus normalized log
-names under `qemu/evidence/`. It requires filled hardware notes by default;
-`--allow-template-notes` is only for scratch or emulator captures that should
-not be treated as release evidence.
+evidence unless `--force` is passed, and writes normalized log names plus a
+manifest under `qemu/evidence/`. The manifest records SHA-256 hashes and byte
+counts for each staged evidence file. Staging requires filled hardware notes by
+default; `--allow-template-notes` is only for scratch or emulator captures that
+should not be treated as release evidence.
 
 After staging one or more physical captures, regenerate the measured hardware
 performance matrix:

@@ -55,6 +55,10 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
             )
             self.assertIn("486DX2", notes)
             self.assertIn("PERF_SUMMARY|", manifest)
+            self.assertIn("## File Checksums", manifest)
+            self.assertIn("| SHA256 | Bytes | Path |", manifest)
+            self.assertIn("hardware_486dx2_66_dos622_perf.log", manifest)
+            self.assertRegex(manifest, r"`[0-9a-f]{64}`")
 
     def test_stage_capture_refuses_overwrite_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
