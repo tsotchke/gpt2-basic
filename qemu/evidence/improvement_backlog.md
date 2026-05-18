@@ -4,10 +4,10 @@ This backlog is evidence-driven. The preview release can iterate now, while low-
 
 ## Current State
 
-- Models audited: `46`
-- Strict quality pass: `11/46`
+- Models audited: `47`
+- Strict quality pass: `12/47`
 - Release-ready root models: `6`
-- Assistant pack models passing: `2`
+- Assistant pack models passing: `3`
 - Priority retrain/experiment queue: `7`
 - Rejected repair attempts recorded as negative evidence: `6`
 - Retired or host-only exports: `23`
@@ -59,7 +59,7 @@ This backlog is evidence-driven. The preview release can iterate now, while low-
 ## Decision Counts
 
 - `rejected_repair`: 6
-- `keep`: 2
+- `keep`: 3
 - `keep_candidate`: 2
 - `keep_release`: 6
 - `exclude_host_only`: 1
