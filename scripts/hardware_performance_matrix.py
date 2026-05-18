@@ -100,6 +100,9 @@ def capture_from_perf_log(perf_log: Path, require_notes: bool) -> PerfCapture | 
         note_fields: dict[str, str] = {}
     else:
         note_fields = parse_notes_markdown(notes)
+        notes_machine = note_fields.get("Machine key", "")
+        if notes_machine:
+            require(notes_machine == machine, f"machine_key_mismatch=notes:{notes_machine},file:{machine}")
 
     model, summary = parse_perf_log(perf_log)
     return PerfCapture(

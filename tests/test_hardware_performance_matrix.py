@@ -96,6 +96,42 @@ class HardwarePerformanceMatrixTests(unittest.TestCase):
                 )
             self.assertEqual(len(captures), 1)
 
+    def test_matrix_rejects_staged_machine_key_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            capture = root / "capture"
+            evidence = root / "evidence"
+            output = root / "matrix.md"
+            capture.mkdir()
+            stage_hardware_capture_evidence.write_sample_capture(capture)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                stage_hardware_capture_evidence.stage_capture(
+                    capture,
+                    evidence,
+                    "486dx2_66_dos622",
+                    require_assistant=True,
+                    require_notes=True,
+                    require_filled_notes=True,
+                    force=False,
+                )
+            notes = evidence / "hardware_486dx2_66_dos622_notes.md"
+            notes.write_text(
+                notes.read_text(encoding="ascii").replace(
+                    "| Machine key | 486dx2_66_dos622 |",
+                    "| Machine key | 486dx4_100_dos622 |",
+                ),
+                encoding="ascii",
+            )
+
+            with self.assertRaises(SystemExit) as raised:
+                hardware_performance_matrix.build_matrix(
+                    evidence,
+                    output,
+                    require_notes=True,
+                )
+            self.assertIn("machine_key_mismatch=notes:486dx4_100_dos622", str(raised.exception))
+
     def test_self_test(self) -> None:
         output = io.StringIO()
         with contextlib.redirect_stdout(output):

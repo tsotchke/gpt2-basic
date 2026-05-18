@@ -59,6 +59,13 @@ def note_fields(notes_text: str) -> dict[str, str]:
     return fields
 
 
+def verify_notes_machine_key(notes_src: Path, machine_key: str) -> None:
+    fields = note_fields(read_text(notes_src))
+    notes_key = fields.get("Machine key", "")
+    if notes_key:
+        require(notes_key == machine_key, f"machine_key_mismatch=notes:{notes_key},arg:{machine_key}")
+
+
 def perf_summary(perf_text: str) -> str:
     for line in perf_text.splitlines():
         if line.startswith("PERF_SUMMARY|"):
@@ -157,6 +164,8 @@ def stage_capture(
 
     notes_src = capture_dir / verify_hardware_capture.DEFAULT_FILES["notes"]
     include_notes = notes_src.exists()
+    if include_notes:
+        verify_notes_machine_key(notes_src, machine_key)
     staged_paths = output_paths(evidence_dir, machine_key, include_notes=include_notes)
     existing = [path for path in staged_paths if path.exists()]
     require(force or not existing, "staged_exists=" + ",".join(path.name for path in existing[:5]))

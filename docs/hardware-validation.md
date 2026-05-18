@@ -132,6 +132,10 @@ Example machine keys:
 - `486dx4_100_freedos`
 - `pentium133_dos622`
 
+The `--machine-key` argument must match the `Machine key:` value in
+`HWNOTES.TXT`. Release staging and the physical performance matrix both reject
+mismatches so evidence filenames cannot drift away from the machine notes.
+
 ## Practical Acquisition Path
 
 Start with whatever 486-class hardware is easiest to borrow, buy, or assemble.

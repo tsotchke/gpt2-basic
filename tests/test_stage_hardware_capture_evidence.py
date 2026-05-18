@@ -143,6 +143,35 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                 )
             self.assertTrue(written)
 
+    def test_stage_capture_rejects_machine_key_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            capture = root / "capture"
+            evidence = root / "evidence"
+            capture.mkdir()
+            stage_hardware_capture_evidence.write_sample_capture(capture)
+            notes = capture / "HWNOTES.TXT"
+            notes.write_text(
+                notes.read_text(encoding="ascii").replace(
+                    "Machine key: 486dx2_66_dos622",
+                    "Machine key: 486dx4_100_dos622",
+                ),
+                encoding="ascii",
+            )
+
+            with self.assertRaises(SystemExit) as raised:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    stage_hardware_capture_evidence.stage_capture(
+                        capture,
+                        evidence,
+                        "486dx2_66_dos622",
+                        require_assistant=True,
+                        require_notes=True,
+                        require_filled_notes=True,
+                        force=False,
+                    )
+            self.assertIn("machine_key_mismatch=notes:486dx4_100_dos622", str(raised.exception))
+
     def test_stage_capture_rejects_unsafe_machine_key(self) -> None:
         with self.assertRaises(SystemExit) as raised:
             stage_hardware_capture_evidence.validate_machine_key("../bad")

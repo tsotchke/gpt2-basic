@@ -48,6 +48,8 @@ ASSISTC.LOG
 
 Fill in `HWNOTES.TXT` with CPU, clock, RAM, DOS version, storage, cache/turbo
 state, FreeBASIC version, and any setup notes.
+The `Machine key:` value must match the host `--machine-key` argument used when
+staging release evidence.
 
 `RETURN.TXT` is included inside `C:\GPT2` as the DOS-side copy-back checklist.
 Use it after the run to make sure every required log returns to the host.

@@ -173,7 +173,8 @@ def return_instructions() -> str:
         "  python3 scripts/stage_hardware_capture_evidence.py --capture-dir CAPTURE --machine-key MACHINE\n"
         "  python3 scripts/hardware_performance_matrix.py\n"
         "\n"
-        "Keep MACHINE lowercase, for example 486dx2_66_dos622.\n"
+        "Keep MACHINE lowercase and identical to the Machine key in HWNOTES.TXT.\n"
+        "Example: 486dx2_66_dos622.\n"
     )
 
 
