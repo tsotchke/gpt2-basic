@@ -20,6 +20,7 @@ C:\GPT2\PACKS\OFFICE\...
 C:\GPT2\GPT2SRC\ASSIST.BAS
 C:\GPT2\HWVALID.BAT
 C:\GPT2\HWNOTES.TXT
+C:\GPT2\RETURN.TXT
 ```
 
 The release zip keeps source paths readable for host systems, so copy the files
@@ -47,6 +48,9 @@ ASSISTC.LOG
 
 Fill in `HWNOTES.TXT` with CPU, clock, RAM, DOS version, storage, cache/turbo
 state, FreeBASIC version, and any setup notes.
+
+`RETURN.TXT` is included inside `C:\GPT2` as the DOS-side copy-back checklist.
+Use it after the run to make sure every required log returns to the host.
 
 ## Verify On The Host
 

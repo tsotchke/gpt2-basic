@@ -366,6 +366,7 @@ def write_manifest(
             "- A physical 486-class DOS machine is the solid-release baseline.",
             "- `qemu/run_hardware_capture_486.sh` rehearses the same `C:\\GPT2\\HWVALID.BAT` capture path before physical transfer.",
             "- `scripts/build_hardware_transfer.py` creates the minimal `C:\\GPT2` transfer bundle for the physical machine.",
+            "- `C:\\GPT2\\RETURN.TXT` gives the DOS-side copy-back checklist for real machine logs.",
             "- `scripts/stage_hardware_capture_evidence.py` verifies returned physical logs and stages stable release evidence names.",
             "- `scripts/hardware_performance_matrix.py` builds the physical-only performance table from staged logs.",
             "- Pentium hardware is useful for scaling evidence, but it is not a blocker for the 486-focused release.",

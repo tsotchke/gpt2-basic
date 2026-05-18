@@ -72,8 +72,21 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
         self.assertIn("PROBE_OK hardware_transfer_readme=README.TXT", text)
         self.assertIn("PROBE_OK hardware_transfer_manifest=1", text)
         self.assertIn("PROBE_OK hardware_transfer_tracked_inputs=1", text)
+        self.assertIn("PROBE_OK hardware_transfer_return_checklist=RETURN.TXT", text)
         self.assertIn("PROBE_OK hardware_transfer_zip=1", text)
         self.assertIn("PROBE_OK hardware_transfer_zip_sha256=1", text)
+
+    def test_hardware_transfer_return_instructions_are_dos_friendly(self) -> None:
+        text = build_hardware_transfer.return_instructions()
+
+        self.assertIn("HWVALID.LOG", text)
+        self.assertIn("QUAL.LOG", text)
+        self.assertIn("PERF.LOG", text)
+        self.assertIn("ASSIST.LOG", text)
+        self.assertIn("ASSISTC.LOG", text)
+        self.assertIn("HWNOTES.TXT", text)
+        self.assertIn("--require-filled-notes", text)
+        text.encode("ascii")
 
     def test_hardware_transfer_copied_tree_files_excludes_transient_cache_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -147,6 +147,36 @@ def manifest_lines(output_dir: Path) -> list[str]:
     return lines
 
 
+def return_instructions() -> str:
+    return (
+        "GPT2-BASIC hardware capture return checklist\n"
+        "\n"
+        "Before running HWVALID.BAT, fill HWNOTES.TXT with the machine key,\n"
+        "CPU, clock, RAM, DOS version, FreeBASIC version, storage, and\n"
+        "cache/turbo state.\n"
+        "\n"
+        "Run on the DOS machine:\n"
+        "  C:\n"
+        "  CD \\GPT2\n"
+        "  HWVALID.BAT\n"
+        "\n"
+        "Copy these files back to one host capture directory:\n"
+        "  HWVALID.LOG\n"
+        "  QUAL.LOG\n"
+        "  PERF.LOG\n"
+        "  ASSIST.LOG\n"
+        "  ASSISTC.LOG\n"
+        "  HWNOTES.TXT\n"
+        "\n"
+        "Then run on the host:\n"
+        "  python3 scripts/verify_hardware_capture.py --capture-dir CAPTURE --require-filled-notes\n"
+        "  python3 scripts/stage_hardware_capture_evidence.py --capture-dir CAPTURE --machine-key MACHINE\n"
+        "  python3 scripts/hardware_performance_matrix.py\n"
+        "\n"
+        "Keep MACHINE lowercase, for example 486dx2_66_dos622.\n"
+    )
+
+
 def write_zip(output_dir: Path, zip_path: Path, force: bool) -> None:
     if zip_path.exists():
         require(force, f"zip_exists={zip_path}")
@@ -192,6 +222,7 @@ def build_transfer(
     copy_file(gpt2_exe, dos_root / "GPT2.EXE")
     copy_file(ROOT / "hardware" / "HWVALID.BAT", dos_root / "HWVALID.BAT")
     copy_file(ROOT / "hardware" / "HWNOTES.TXT", dos_root / "HWNOTES.TXT")
+    (dos_root / "RETURN.TXT").write_text(return_instructions(), encoding="ascii")
     copy_tree(model_dir, dos_root / "MODEL")
     copy_tree(pack_dir, dos_root / "PACKS")
     copy_tree(staged_src, dos_root / "GPT2SRC")
@@ -199,7 +230,8 @@ def build_transfer(
     validate_83(dos_root)
     (output_dir / "README.TXT").write_text(
         "GPT2-BASIC hardware transfer bundle.\n"
-        "Copy GPT2 to C:\\GPT2 on the DOS target, fill HWNOTES.TXT, then run HWVALID.BAT.\n",
+        "Copy GPT2 to C:\\GPT2 on the DOS target, fill HWNOTES.TXT, then run HWVALID.BAT.\n"
+        "After the run, use C:\\GPT2\\RETURN.TXT as the host copy-back checklist.\n",
         encoding="ascii",
     )
     (output_dir / "MANIFEST.TXT").write_text("\n".join(manifest_lines(output_dir)) + "\n", encoding="ascii")
@@ -226,6 +258,7 @@ def self_test() -> None:
         zip_sha256 = root / "OUT.SHA"
         build_transfer(out, zip_path, zip_sha256, model, packs, root / "GPT2.EXE", staged, force=True, refresh_staging=False)
         require((out / "GPT2" / "HWVALID.BAT").exists(), "self_test_missing_hwvalid")
+        require((out / "GPT2" / "RETURN.TXT").exists(), "self_test_missing_return")
         require((out / "README.TXT").exists(), "self_test_missing_readme")
         require((out / "MANIFEST.TXT").exists(), "self_test_missing_manifest")
         require(zip_path.exists(), "self_test_missing_zip")
@@ -241,6 +274,7 @@ def self_test() -> None:
     print("PROBE_OK hardware_transfer_readme=README.TXT")
     print("PROBE_OK hardware_transfer_manifest=1")
     print("PROBE_OK hardware_transfer_tracked_inputs=1")
+    print("PROBE_OK hardware_transfer_return_checklist=RETURN.TXT")
     print("PROBE_OK hardware_transfer_zip=1")
     print("PROBE_OK hardware_transfer_zip_sha256=1")
 

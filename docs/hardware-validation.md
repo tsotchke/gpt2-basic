@@ -20,8 +20,9 @@ it is not a blocker for a credible 486-focused release.
 ## Minimum Physical Test Set
 
 The release package includes `hardware/HWVALID.BAT`, `hardware/HWNOTES.TXT`,
-and `hardware/README.md`. Stage the package into a short `C:\GPT2` DOS layout,
-copy `HWVALID.BAT` and `HWNOTES.TXT` into that directory, then run:
+`RETURN.TXT`, and `hardware/README.md`. Stage the package into a short
+`C:\GPT2` DOS layout, copy `HWVALID.BAT`, `HWNOTES.TXT`, and `RETURN.TXT` into
+that directory, then run:
 
 ```bat
 C:
@@ -65,6 +66,7 @@ fbc -x ASSIST.EXE GPT2SRC\ASSIST.BAS > ASSISTC.LOG
 
 If the machine cannot compile `ASSIST.EXE`, record that separately and run the
 prebuilt assistant only if the binary was produced from the same release tree.
+Use `C:\GPT2\RETURN.TXT` as the machine-side copy-back checklist after the run.
 
 Back on the host, verify the captured directory with:
 
