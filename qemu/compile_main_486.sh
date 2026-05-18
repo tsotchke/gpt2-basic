@@ -67,5 +67,5 @@ fi
 
 mkdir -p "$ROOT/qemu/evidence"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get COMPILE.LOG "$ROOT/qemu/evidence/compile_main_486.log" \
+    --get-text COMPILE.LOG "$ROOT/qemu/evidence/compile_main_486.log" \
     --get GPT2.EXE "$ROOT/qemu/evidence/GPT2.EXE"

@@ -70,5 +70,5 @@ fi
 mkdir -p "$ROOT/qemu/evidence"
 visual_log="$ROOT/qemu/evidence/visual_trace_486${suffix}.log"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get VISUAL.LOG "$visual_log"
+    --get-text VISUAL.LOG "$visual_log"
 echo "wrote $visual_log"

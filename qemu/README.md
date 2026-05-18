@@ -399,6 +399,10 @@ entry metadata as well. The release notes include the equivalent consumer-side
 command for verifying both downloaded zips from inside an extracted preview
 tree.
 
+QEMU scripts extract DOS `.LOG` files through `fat_image_put.py --get-text` so
+tracked evidence stays LF-normalized after a fresh FreeDOS run. Raw `--get` is
+reserved for binary artifacts such as `GPT2.EXE`.
+
 Refresh the evidence-driven improvement queue with:
 
 ```sh

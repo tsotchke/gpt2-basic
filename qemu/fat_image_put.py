@@ -325,6 +325,10 @@ def put_tree(image: FATImage, source: Path, dest: str) -> None:
             image.write_file(dest_root + "/" + filename, path.read_bytes())
 
 
+def normalize_dos_text(data: bytes) -> bytes:
+    return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def self_test() -> None:
     source_image = Path(__file__).resolve().parent / "boot-test.img"
     if not source_image.exists():
@@ -340,6 +344,7 @@ def self_test() -> None:
             image.list_dir(None)
             image.write_file("ICC/TST", b"fat image probe")
             assert image.read_file("ICC/TST") == b"fat image probe"
+            assert normalize_dos_text(b"a\r\nb\rc\n") == b"a\nb\nc\n"
             image.resolve_parent("ICC/TST")
             tree_source = tmp_path / "tree"
             tree_source.mkdir()
@@ -376,6 +381,7 @@ def self_test() -> None:
     print("trace FATImage.write_file")
     print("trace FATImage.read_file")
     print("trace put_tree")
+    print("trace normalize_dos_text")
     print("PROBE_OK fat_image_put self_test=1")
 
 
@@ -385,6 +391,7 @@ def main() -> None:
     parser.add_argument("--put", nargs=2, action="append", metavar=("SOURCE", "DEST"), default=[])
     parser.add_argument("--put-tree", nargs=2, action="append", metavar=("SOURCE_DIR", "DEST_DIR"), default=[])
     parser.add_argument("--get", nargs=2, action="append", metavar=("SOURCE", "DEST"), default=[])
+    parser.add_argument("--get-text", nargs=2, action="append", metavar=("SOURCE", "DEST"), default=[])
     parser.add_argument("--remove", action="append", default=[])
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
@@ -407,6 +414,10 @@ def main() -> None:
             dest_path = Path(dest)
             dest_path.parent.mkdir(parents=True, exist_ok=True)
             dest_path.write_bytes(image.read_file(source))
+        for source, dest in args.get_text:
+            dest_path = Path(dest)
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            dest_path.write_bytes(normalize_dos_text(image.read_file(source)))
     finally:
         image.close()
 

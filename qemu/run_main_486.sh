@@ -65,4 +65,4 @@ fi
 
 mkdir -p "$ROOT/qemu/evidence"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get RUN.LOG "$ROOT/qemu/evidence/run_main_486.log"
+    --get-text RUN.LOG "$ROOT/qemu/evidence/run_main_486.log"

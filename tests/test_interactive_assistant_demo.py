@@ -29,6 +29,23 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertNotIn("-display curses", text)
         self.assertNotIn("--get ASSIST.LOG", text)
 
+    def test_scripted_qemu_logs_are_extracted_as_normalized_text(self) -> None:
+        for script in (
+            "compile_main_486.sh",
+            "run_assistant_486.sh",
+            "run_hardware_capture_486.sh",
+            "run_main_486.sh",
+            "run_perf_486.sh",
+            "run_quality_486.sh",
+            "run_sampling_486.sh",
+            "run_trace_486.sh",
+            "run_vectors_486.sh",
+            "run_visual_trace_486.sh",
+        ):
+            text = (ROOT / "qemu" / script).read_text(encoding="ascii")
+            self.assertNotIn("--get ", text.replace("--get GPT2.EXE", ""))
+            self.assertIn("--get-text", text)
+
     def test_assistant_source_has_transcript_paging_commands(self) -> None:
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
 

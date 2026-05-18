@@ -67,4 +67,4 @@ fi
 
 mkdir -p "$ROOT/qemu/evidence"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get VECTOR.LOG "$ROOT/qemu/evidence/vector_486${suffix}.log"
+    --get-text VECTOR.LOG "$ROOT/qemu/evidence/vector_486${suffix}.log"

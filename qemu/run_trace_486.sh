@@ -66,5 +66,5 @@ fi
 mkdir -p "$ROOT/qemu/evidence"
 trace_log="$ROOT/qemu/evidence/trace_486${suffix}.log"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get TRACE.LOG "$trace_log"
+    --get-text TRACE.LOG "$trace_log"
 echo "wrote $trace_log"

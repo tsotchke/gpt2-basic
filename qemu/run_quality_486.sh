@@ -66,7 +66,7 @@ fi
 mkdir -p "$ROOT/qemu/evidence"
 quality_log="$ROOT/qemu/evidence/quality_486${suffix}.log"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get QUAL.LOG "$quality_log"
+    --get-text QUAL.LOG "$quality_log"
 
 python3 "$ROOT/scripts/evaluate_dos_quality_log.py" \
     --model-dir "$MODEL_DIR" \

@@ -96,12 +96,12 @@ fi
 
 mkdir -p "$CAPTURE_DIR"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get GPT2/HWVALID.LOG "$CAPTURE_DIR/HWVALID.LOG" \
-    --get GPT2/QUAL.LOG "$CAPTURE_DIR/QUAL.LOG" \
-    --get GPT2/PERF.LOG "$CAPTURE_DIR/PERF.LOG" \
-    --get GPT2/ASSIST.LOG "$CAPTURE_DIR/ASSIST.LOG" \
-    --get GPT2/ASSISTC.LOG "$CAPTURE_DIR/ASSISTC.LOG" \
-    --get GPT2/HWNOTES.TXT "$CAPTURE_DIR/HWNOTES.TXT"
+    --get-text GPT2/HWVALID.LOG "$CAPTURE_DIR/HWVALID.LOG" \
+    --get-text GPT2/QUAL.LOG "$CAPTURE_DIR/QUAL.LOG" \
+    --get-text GPT2/PERF.LOG "$CAPTURE_DIR/PERF.LOG" \
+    --get-text GPT2/ASSIST.LOG "$CAPTURE_DIR/ASSIST.LOG" \
+    --get-text GPT2/ASSISTC.LOG "$CAPTURE_DIR/ASSISTC.LOG" \
+    --get-text GPT2/HWNOTES.TXT "$CAPTURE_DIR/HWNOTES.TXT"
 
 python3 "$ROOT/scripts/verify_hardware_capture.py" \
     --capture-dir "$CAPTURE_DIR" \

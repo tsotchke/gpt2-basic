@@ -198,7 +198,7 @@ else
     out_log="$ROOT/qemu/evidence/perf_486_${profile}${suffix}.log"
 fi
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get PERF.LOG "$out_log"
+    --get-text PERF.LOG "$out_log"
 
 {
     echo "PERF_RUNNER|basis=qemu-emulation|profile=$profile|label=$label|model_dir=$model_display|qemu_machine=isapc|qemu_cpu=$cpu_model|icount_shift=${icount_shift:-off}|accel=tcg|mode=$perf_mode"

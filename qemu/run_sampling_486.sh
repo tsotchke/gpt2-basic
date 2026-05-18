@@ -66,5 +66,5 @@ fi
 mkdir -p "$ROOT/qemu/evidence"
 sampling_log="$ROOT/qemu/evidence/sampling_486${suffix}.log"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get SAMPLE.LOG "$sampling_log"
+    --get-text SAMPLE.LOG "$sampling_log"
 echo "wrote $sampling_log"

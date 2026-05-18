@@ -83,7 +83,7 @@ mkdir -p "$ROOT/qemu/evidence"
 assistant_log="$ROOT/qemu/evidence/assistant_486${suffix}.log"
 compile_log="$ROOT/qemu/evidence/assistant_compile_486${suffix}.log"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get ASSIST.LOG "$assistant_log" \
-    --get ASSISTC.LOG "$compile_log"
+    --get-text ASSIST.LOG "$assistant_log" \
+    --get-text ASSISTC.LOG "$compile_log"
 echo "wrote $assistant_log"
 echo "wrote $compile_log"
