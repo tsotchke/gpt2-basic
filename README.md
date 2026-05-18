@@ -309,6 +309,9 @@ implemented inside DOS so it does not depend on terminal scrollback; use `/u`
 and `/d` as short aliases for `/up` and `/down`, or `/h` for history.
 Each pack has its own `USAGE.TXT`; the repo-level index is
 `assets/gpt2_basic/PACKS/README.md`.
+The shared pack metadata contract for future Windows and OS/2 shells is
+documented in `docs/pack-shell-parity.md` and validated by
+`scripts/assistant_pack_contract.py`.
 The current CHAT pack uses a pack-local 4096-token sentence-piece lexicon
 checkpoint trained on broader casual English dialogue. `CHAT\TOKBASE.TXT`
 is the tokenizer-basis corpus, including `CHAT\LEXICON.TSV` grammar words and
