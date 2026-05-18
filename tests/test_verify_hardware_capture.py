@@ -31,6 +31,36 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
             if line.lower().startswith("echo ") and "|" in line:
                 self.assertIn("^|", line)
 
+    def test_verify_notes_requires_filled_fields_when_requested(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            notes = Path(tmp) / "HWNOTES.TXT"
+            notes.write_text(
+                "Machine key:\n"
+                "CPU:\n"
+                "Clock:\n"
+                "RAM:\n"
+                "DOS version:\n"
+                "FreeBASIC version:\n"
+                "Storage:\n"
+                "Cache/turbo state:\n",
+                encoding="ascii",
+            )
+
+            self.assertTrue(
+                verify_hardware_capture.verify_notes(
+                    notes,
+                    required=True,
+                    require_values=False,
+                )
+            )
+            with self.assertRaises(SystemExit) as raised:
+                verify_hardware_capture.verify_notes(
+                    notes,
+                    required=True,
+                    require_values=True,
+                )
+            self.assertIn("notes_field_empty=Machine key", str(raised.exception))
+
     def test_hardware_transfer_self_test(self) -> None:
         output = io.StringIO()
 

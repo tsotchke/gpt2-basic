@@ -53,7 +53,9 @@ state, FreeBASIC version, and any setup notes.
 After copying the logs back to the host:
 
 ```sh
-python3 scripts/verify_hardware_capture.py --capture-dir /path/to/capture
+python3 scripts/verify_hardware_capture.py \
+  --capture-dir /path/to/capture \
+  --require-filled-notes
 ```
 
 For release evidence, stage the accepted logs with a stable machine key:

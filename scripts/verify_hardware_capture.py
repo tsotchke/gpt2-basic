@@ -17,6 +17,16 @@ DEFAULT_FILES = {
     "assistant_compile": "ASSISTC.LOG",
     "notes": "HWNOTES.TXT",
 }
+NOTE_FIELDS = (
+    "Machine key:",
+    "CPU:",
+    "Clock:",
+    "RAM:",
+    "DOS version:",
+    "FreeBASIC version:",
+    "Storage:",
+    "Cache/turbo state:",
+)
 
 
 def require(condition: bool, message: str) -> None:
@@ -90,12 +100,25 @@ def verify_assistant_compile_log(path: Path, required: bool) -> bool:
     return True
 
 
-def verify_notes(path: Path, required: bool) -> bool:
+def note_field_values(text: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        if ":" not in raw_line:
+            continue
+        key, value = raw_line.split(":", 1)
+        values[f"{key.strip()}:"] = value.strip()
+    return values
+
+
+def verify_notes(path: Path, required: bool, require_values: bool) -> bool:
     text = read(path, required=required)
     if not text:
         return False
-    for field in ("CPU:", "RAM:", "DOS version:", "Storage:"):
-        require(field in text, f"notes_field_missing={field.rstrip(':')}")
+    values = note_field_values(text)
+    for field in NOTE_FIELDS:
+        require(field in values, f"notes_field_missing={field.rstrip(':')}")
+        if require_values:
+            require(values[field] != "", f"notes_field_empty={field.rstrip(':')}")
     return True
 
 
@@ -129,21 +152,40 @@ def self_test() -> None:
             encoding="ascii",
         )
         (root / "ASSISTC.LOG").write_text("ASSIST_COMPILE_OK\n", encoding="ascii")
-        (root / "HWNOTES.TXT").write_text("CPU:\nRAM:\nDOS version:\nStorage:\n", encoding="ascii")
-        verify_capture(root, require_assistant=True, require_notes=True)
+        (root / "HWNOTES.TXT").write_text(
+            "Machine key: 486dx2_66_dos622\n"
+            "CPU: 486DX2\n"
+            "Clock: 66 MHz\n"
+            "RAM: 32 MB\n"
+            "DOS version: MS-DOS 6.22\n"
+            "FreeBASIC version: 1.10\n"
+            "Storage: IDE CF\n"
+            "Cache/turbo state: cache on, turbo on\n",
+            encoding="ascii",
+        )
+        verify_capture(root, require_assistant=True, require_notes=True, require_filled_notes=True)
     print("PROBE_OK hardware_capture_self_test=1")
     print("PROBE_OK hardware_capture_quality_gate=1")
     print("PROBE_OK hardware_capture_perf_gate=1")
     print("PROBE_OK hardware_capture_assistant_gate=1")
 
 
-def verify_capture(capture_dir: Path, require_assistant: bool, require_notes: bool) -> None:
+def verify_capture(
+    capture_dir: Path,
+    require_assistant: bool,
+    require_notes: bool,
+    require_filled_notes: bool = False,
+) -> None:
     verify_capture_log(capture_dir / DEFAULT_FILES["capture"])
     quality_count = verify_quality_log(capture_dir / DEFAULT_FILES["quality"])
     perf_count = verify_perf_log(capture_dir / DEFAULT_FILES["perf"])
     assistant_count = verify_assistant_log(capture_dir / DEFAULT_FILES["assistant"], require_assistant)
     assistant_compiled = verify_assistant_compile_log(capture_dir / DEFAULT_FILES["assistant_compile"], require_assistant)
-    notes_present = verify_notes(capture_dir / DEFAULT_FILES["notes"], require_notes)
+    notes_present = verify_notes(
+        capture_dir / DEFAULT_FILES["notes"],
+        require_notes,
+        require_values=require_filled_notes,
+    )
 
     print(f"PROBE_OK hardware_capture_log={DEFAULT_FILES['capture']}")
     print(f"PROBE_OK hardware_quality_log={DEFAULT_FILES['quality']}")
@@ -170,6 +212,7 @@ def main() -> None:
     parser.add_argument("--capture-dir", type=Path, default=Path("."))
     parser.add_argument("--allow-missing-assistant", action="store_true")
     parser.add_argument("--allow-missing-notes", action="store_true")
+    parser.add_argument("--require-filled-notes", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
@@ -181,6 +224,7 @@ def main() -> None:
         args.capture_dir,
         require_assistant=not args.allow_missing_assistant,
         require_notes=not args.allow_missing_notes,
+        require_filled_notes=args.require_filled_notes,
     )
 
 

@@ -52,6 +52,7 @@ class HardwarePerformanceMatrixTests(unittest.TestCase):
                     "486dx2_66_dos622",
                     require_assistant=True,
                     require_notes=True,
+                    require_filled_notes=True,
                     force=False,
                 )
                 captures = hardware_performance_matrix.build_matrix(

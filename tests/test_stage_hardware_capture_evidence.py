@@ -26,6 +26,7 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                     "486dx2_66_dos622",
                     require_assistant=True,
                     require_notes=True,
+                    require_filled_notes=True,
                     force=False,
                 )
 
@@ -70,6 +71,7 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                     "486dx2_66_dos622",
                     require_assistant=True,
                     require_notes=True,
+                    require_filled_notes=True,
                     force=False,
                 )
 
@@ -81,6 +83,7 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                         "486dx2_66_dos622",
                         require_assistant=True,
                         require_notes=True,
+                        require_filled_notes=True,
                         force=False,
                     )
             self.assertIn("staged_exists=", str(raised.exception))
@@ -92,8 +95,53 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                     "486dx2_66_dos622",
                     require_assistant=True,
                     require_notes=True,
+                    require_filled_notes=True,
                     force=True,
                 )
+
+    def test_stage_capture_rejects_template_notes_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            capture = root / "capture"
+            evidence = root / "evidence"
+            capture.mkdir()
+            stage_hardware_capture_evidence.write_sample_capture(capture)
+            (capture / "HWNOTES.TXT").write_text(
+                "Machine key:\n"
+                "CPU:\n"
+                "Clock:\n"
+                "RAM:\n"
+                "DOS version:\n"
+                "FreeBASIC version:\n"
+                "Storage:\n"
+                "Cache/turbo state:\n",
+                encoding="ascii",
+            )
+
+            with self.assertRaises(SystemExit) as raised:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    stage_hardware_capture_evidence.stage_capture(
+                        capture,
+                        evidence,
+                        "486dx2_66_dos622",
+                        require_assistant=True,
+                        require_notes=True,
+                        require_filled_notes=True,
+                        force=False,
+                    )
+            self.assertIn("notes_field_empty=Machine key", str(raised.exception))
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                written = stage_hardware_capture_evidence.stage_capture(
+                    capture,
+                    evidence,
+                    "486dx2_66_dos622",
+                    require_assistant=True,
+                    require_notes=True,
+                    require_filled_notes=False,
+                    force=False,
+                )
+            self.assertTrue(written)
 
     def test_stage_capture_rejects_unsafe_machine_key(self) -> None:
         with self.assertRaises(SystemExit) as raised:

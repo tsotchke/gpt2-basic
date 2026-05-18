@@ -236,6 +236,7 @@ def self_test() -> None:
             "486dx2_66_dos622",
             require_assistant=True,
             require_notes=True,
+            require_filled_notes=True,
             force=False,
         )
         captures = build_matrix(evidence_dir, output, require_notes=True)

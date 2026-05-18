@@ -69,7 +69,9 @@ prebuilt assistant only if the binary was produced from the same release tree.
 Back on the host, verify the captured directory with:
 
 ```sh
-python3 scripts/verify_hardware_capture.py --capture-dir /path/to/capture
+python3 scripts/verify_hardware_capture.py \
+  --capture-dir /path/to/capture \
+  --require-filled-notes
 ```
 
 Then stage the accepted logs into release evidence filenames:
@@ -82,7 +84,9 @@ python3 scripts/stage_hardware_capture_evidence.py \
 
 The staging command reruns the verifier first, refuses to overwrite existing
 evidence unless `--force` is passed, and writes a manifest plus normalized log
-names under `qemu/evidence/`.
+names under `qemu/evidence/`. It requires filled hardware notes by default;
+`--allow-template-notes` is only for scratch or emulator captures that should
+not be treated as release evidence.
 
 After staging one or more physical captures, regenerate the measured hardware
 performance matrix:
@@ -102,8 +106,8 @@ not ingest QEMU `perf_486_*` logs or estimates.
   usage instructions.
 - `ASSISTC.LOG` includes `ASSIST_COMPILE_OK` when target-side compilation is
   attempted.
-- The hardware notes identify CPU, clock, RAM, DOS version, FreeBASIC version,
-  storage type, and whether caches/turbo were enabled.
+- The hardware notes identify machine key, CPU, clock, RAM, DOS version,
+  FreeBASIC version, storage type, and whether caches/turbo were enabled.
 
 ## Evidence Naming
 

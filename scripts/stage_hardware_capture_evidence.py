@@ -141,6 +141,7 @@ def stage_capture(
     machine_key: str,
     require_assistant: bool,
     require_notes: bool,
+    require_filled_notes: bool,
     force: bool,
 ) -> list[Path]:
     validate_machine_key(machine_key)
@@ -151,6 +152,7 @@ def stage_capture(
         capture_dir,
         require_assistant=require_assistant,
         require_notes=require_notes,
+        require_filled_notes=require_filled_notes,
     )
 
     notes_src = capture_dir / verify_hardware_capture.DEFAULT_FILES["notes"]
@@ -245,6 +247,7 @@ def self_test() -> None:
             "486dx2_66_dos622",
             require_assistant=True,
             require_notes=True,
+            require_filled_notes=True,
             force=False,
         )
         require(
@@ -270,6 +273,7 @@ def main() -> None:
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR)
     parser.add_argument("--allow-missing-assistant", action="store_true")
     parser.add_argument("--allow-missing-notes", action="store_true")
+    parser.add_argument("--allow-template-notes", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
@@ -285,6 +289,7 @@ def main() -> None:
         args.machine_key,
         require_assistant=not args.allow_missing_assistant,
         require_notes=not args.allow_missing_notes,
+        require_filled_notes=not args.allow_template_notes,
         force=args.force,
     )
 
