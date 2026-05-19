@@ -1,0 +1,38 @@
+name: Hardware validation
+description: Track a physical DOS machine validation run.
+title: "[Hardware]: "
+labels: ["hardware-validation", "release-follow-up"]
+body:
+  - type: textarea
+    id: machine
+    attributes:
+      label: Machine profile
+      description: CPU, clock, RAM, cache state, storage, DOS version, and FreeBASIC version.
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands run
+      description: Include the transfer, validation, quality, performance, and assistant commands.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: returned_logs
+    attributes:
+      label: Returned logs
+      description: List the returned `HWVALID.LOG`, `QUAL.LOG`, `PERF.LOG`, assistant logs, and notes files.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verification
+      options:
+        - label: `scripts/verify_hardware_capture.py --require-filled-notes` passes.
+          required: true
+        - label: `scripts/stage_hardware_capture_evidence.py` stages stable evidence names.
+          required: true
+        - label: `scripts/hardware_performance_matrix.py` includes the machine row.
+          required: false
