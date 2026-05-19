@@ -140,13 +140,15 @@ This extensive documentation includes:
 
 The paper bridges technical implementation details with historical analysis to provide both practical insights and thought-provoking exploration of an alternate AI timeline.
 
-Public launch and media planning:
+Public release and media:
 
+- [v0.1.0-preview release](https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview)
+- [Passing public release gate](https://github.com/tsotchke/gpt2-basic/actions/runs/26080991744)
 - [Public launch plan](docs/public-launch.md)
 - [Video production plan](docs/marketing/video-plan.md)
 - [Public demo script](docs/marketing/public-demo-script.md)
 - [Promotional copy kit](docs/marketing/promo-kit.md)
-- Launch handoff kit: `/private/tmp/gpt2-basic-launch-kit.zip`
+- Launch handoff kit: `gpt2-basic-launch-kit.zip` on the preview release
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
@@ -453,10 +455,11 @@ python3 scripts/build_launch_kit.py --force
 ```
 
 The launch kit writes `/private/tmp/gpt2-basic-launch-kit.zip` plus a `.sha256`
-sidecar. It bundles the verified release payloads, hardware-transfer payload,
-preview manifest, generated MP4 launch clips, thumbnail, release notes, public
-launch plan, and reusable promotional copy into one deterministic handoff
-archive.
+sidecar for local rebuilds. The public preview release attaches the same
+archive as `gpt2-basic-launch-kit.zip`. It bundles the verified release
+payloads, hardware-transfer payload, preview manifest, generated MP4 launch
+clips, thumbnail, release notes, public launch plan, and reusable promotional
+copy into one deterministic handoff archive.
 
 Build the minimal DOS transfer bundle with:
 
