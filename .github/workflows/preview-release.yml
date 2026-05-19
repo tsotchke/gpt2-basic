@@ -31,6 +31,7 @@ jobs:
           python -m py_compile \
             scripts/audit_exported_models.py \
             scripts/build_hardware_transfer.py \
+            scripts/build_launch_kit.py \
             scripts/build_preview_release.py \
             scripts/evaluate_gpt2_basic_quality.py \
             scripts/model_report.py \
@@ -54,6 +55,7 @@ jobs:
           python scripts/stage_hardware_capture_evidence.py --self-test
           python scripts/hardware_performance_matrix.py --self-test
           python scripts/build_hardware_transfer.py --self-test
+          python scripts/build_launch_kit.py --self-test
           python scripts/build_preview_release.py --self-test
           python scripts/verify_preview_artifacts.py --self-test
           python scripts/verify_workspace_tracking.py --self-test

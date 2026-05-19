@@ -61,6 +61,8 @@ python3 scripts/build_hardware_transfer.py --force
 python3 scripts/verify_preview_artifacts.py
 python3 scripts/build_promo_materials.py --self-test
 python3 scripts/build_promo_materials.py --force
+python3 scripts/build_launch_kit.py --self-test
+python3 scripts/build_launch_kit.py --force
 git diff --check
 ```
 
@@ -109,6 +111,7 @@ Keep these out of normal git history:
 - [ ] Verify `qemu/evidence/preview_release_manifest.md`.
 - [ ] Capture one clean QEMU demo video.
 - [ ] Capture one real-hardware teaser if hardware is available.
+- [ ] Build `/private/tmp/gpt2-basic-launch-kit.zip`.
 - [ ] Publish public repository.
 - [ ] Create a prerelease using `docs/releases/v0.1.0-preview.md`.
 - [ ] Attach release zips and checksums.

@@ -146,6 +146,7 @@ Public launch and media planning:
 - [Video production plan](docs/marketing/video-plan.md)
 - [Public demo script](docs/marketing/public-demo-script.md)
 - [Promotional copy kit](docs/marketing/promo-kit.md)
+- Launch handoff kit: `/private/tmp/gpt2-basic-launch-kit.zip`
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
@@ -443,6 +444,20 @@ files only.
 Use `bash qemu/run_hardware_capture_486.sh` first to rehearse the same
 `C:\GPT2\HWVALID.BAT` capture path in FreeDOS before transferring it to a
 physical machine.
+
+After rebuilding the preview zip, hardware-transfer zip, and generated launch
+videos, build the launch handoff kit with:
+
+```sh
+python3 scripts/build_launch_kit.py --force
+```
+
+The launch kit writes `/private/tmp/gpt2-basic-launch-kit.zip` plus a `.sha256`
+sidecar. It bundles the verified release payloads, hardware-transfer payload,
+preview manifest, generated MP4 launch clips, thumbnail, release notes, public
+launch plan, and reusable promotional copy into one deterministic handoff
+archive.
+
 Build the minimal DOS transfer bundle with:
 
 ```sh
