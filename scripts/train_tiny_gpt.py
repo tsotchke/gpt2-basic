@@ -421,14 +421,39 @@ def load_corpus_file(path: Path, doc_chars: int, max_docs: int) -> list[str]:
             documents.append(clean_ascii(" ".join(current)))
             current = []
             current_len = 0
-            if max_docs > 0 and len(documents) >= max_docs:
-                return documents
         current.append(paragraph)
         current_len += len(paragraph) + 1
 
-    if current and (max_docs <= 0 or len(documents) < max_docs):
+    if current:
         documents.append(clean_ascii(" ".join(current)))
-    return [doc for doc in documents if len(doc) > 40]
+    documents = [doc for doc in documents if len(doc) > 40]
+    if max_docs > 0 and len(documents) > max_docs:
+        documents = select_evenly_documents(documents, max_docs)
+    return documents
+
+
+def select_evenly_documents(documents: list[str], limit: int) -> list[str]:
+    if limit <= 0 or len(documents) <= limit:
+        return list(documents)
+    if limit == 1:
+        return [documents[0]]
+    last = len(documents) - 1
+    selected: list[str] = []
+    used: set[int] = set()
+    for idx in range(limit):
+        source_idx = round(idx * last / (limit - 1))
+        if source_idx in used:
+            continue
+        used.add(source_idx)
+        selected.append(documents[source_idx])
+    if len(selected) < limit:
+        for source_idx, document in enumerate(documents):
+            if source_idx in used:
+                continue
+            selected.append(document)
+            if len(selected) >= limit:
+                break
+    return selected
 
 
 def encode_text(text: str, tokenizer: GPT2BasicTokenizer | None = None, output_safe: bool = False) -> list[int]:

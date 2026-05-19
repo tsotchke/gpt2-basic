@@ -63,6 +63,10 @@ DOC_FILES = (
     "gpt2_basic_tldr.md",
     "LICENSE",
     "docs/hardware-validation.md",
+    "docs/public-launch.md",
+    "docs/marketing/promo-kit.md",
+    "docs/marketing/public-demo-script.md",
+    "docs/marketing/video-plan.md",
     "docs/releases/v0.1.0-preview.md",
     ".github/workflows/preview-release.yml",
 )
@@ -109,6 +113,20 @@ SELECTED_EVIDENCE_DIRS = {
 }
 TREE_COPY_IGNORED_NAMES = {".DS_Store", "__pycache__"}
 TREE_COPY_IGNORED_SUFFIXES = {".pyc", ".pyo"}
+SANITIZED_TEXT_SUFFIXES = {
+    ".bat",
+    ".cfg",
+    ".csv",
+    ".ini",
+    ".json",
+    ".log",
+    ".md",
+    ".py",
+    ".sh",
+    ".tsv",
+    ".txt",
+    ".yml",
+}
 
 
 def rel(path: Path) -> str:
@@ -207,6 +225,19 @@ def tree_copy_skips(path: Path) -> bool:
     return any(part in TREE_COPY_IGNORED_NAMES for part in path.parts)
 
 
+def sanitize_public_text(text: str) -> str:
+    root_text = ROOT.as_posix()
+    resolved_text = ROOT.resolve().as_posix()
+    data_volume_text = "/System/Volumes/Data" + resolved_text
+    for local_path in (data_volume_text, resolved_text, root_text):
+        text = text.replace(local_path, "<repo>")
+    return text
+
+
+def should_sanitize_text(path: Path) -> bool:
+    return path.suffix.lower() in SANITIZED_TEXT_SUFFIXES
+
+
 def copied_tree_files(src: Path) -> list[Path]:
     if not src.exists():
         return []
@@ -274,11 +305,15 @@ def copy_tree(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo", ".DS_Store"))
 
 
-def copy_if_exists(src: Path, dst: Path) -> bool:
+def copy_if_exists(src: Path, dst: Path, sanitize_text: bool = False) -> bool:
     if not src.exists():
         return False
     dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src, dst)
+    if sanitize_text and should_sanitize_text(src):
+        text = src.read_text(encoding="ascii", errors="ignore")
+        dst.write_text(sanitize_public_text(text), encoding="ascii")
+    else:
+        shutil.copy2(src, dst)
     return True
 
 
@@ -444,7 +479,7 @@ def build_package(
 
     copy_if_exists(DEFAULT_EVIDENCE / "GPT2.EXE", output_dir / "bin" / "GPT2.EXE")
     for path in evidence_files:
-        copy_if_exists(path, output_dir / rel(path))
+        copy_if_exists(path, output_dir / rel(path), sanitize_text=True)
 
     (output_dir / "preview_release_manifest.md").write_text(manifest_text, encoding="ascii")
 
@@ -500,6 +535,11 @@ def self_test(rows: list[AuditRow], evidence_dir: Path, pack_root: Path) -> None
         raise RuntimeError("manifest missing DOS-only preview scope")
     if "qemu/evidence/run_main_486.log" not in manifest:
         raise RuntimeError("manifest missing DOS demo run log")
+    home_fragment = "/" + "Users/"
+    if home_fragment in sanitize_public_text(str(ROOT)):
+        raise RuntimeError("release text sanitizer did not replace local root")
+    if sanitize_public_text(f"model_dir: {ROOT}/assets/gpt2_basic/MODEL") != "model_dir: <repo>/assets/gpt2_basic/MODEL":
+        raise RuntimeError("release text sanitizer changed paths unexpectedly")
     require_release_sources_tracked(release_source_files(selected, evidence, pack_root))
     with tempfile.TemporaryDirectory() as tmp:
         package_dir = Path(tmp) / "preview"

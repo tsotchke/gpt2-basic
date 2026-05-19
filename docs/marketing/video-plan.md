@@ -1,0 +1,166 @@
+# GPT2-BASIC Video Plan
+
+The first public videos should prove three things quickly:
+
+1. This is real DOS inference.
+2. The project is technically serious and reproducible.
+3. The constraints are the point, not a defect.
+
+## Primary Launch Video
+
+Target length: 4 to 6 minutes.
+
+### Structure
+
+1. Cold open, 10 seconds
+   - Show DOS assistant prompt.
+   - Type: `are you real`
+   - Let the answer generate on screen.
+   - Suggested caption: `Real fixed-point inference in DOS`.
+
+2. Project thesis, 30 seconds
+   - Explain the alternate-history question.
+   - Show README title and source tree.
+   - Make the honest scale claim: tiny GPT-style model, not modern LLM scale.
+
+3. How it works, 60 to 90 seconds
+   - Host trains compact model.
+   - Export writes `GPT2FX.BIN`, `GPT2EXP.BIN`, `VOCAB.BIN`, and optional
+     `GPT2HSL.BIN`.
+   - DOS FreeBASIC runtime loads fixed-point weights.
+   - Assistant shell builds a prompt and streams tokens.
+
+4. Demo segment, 90 to 150 seconds
+   - Prompt: `what are you`
+   - Prompt: `what is a prompt`
+   - Prompt: `is this a script`
+   - Prompt: `help me decide`
+   - Prompt: `how do i focus`
+   - Show waiting time honestly.
+
+5. Evidence segment, 45 seconds
+   - Show `qemu/evidence/quality_report_assistant_chat.md`.
+   - Show `48/48`, average `1.000`.
+   - Show model report status OK.
+   - Explain QEMU evidence versus pending physical-hardware timing.
+
+6. Release/package segment, 30 seconds
+   - Show preview-release zip and hardware-transfer builder.
+   - Mention source, tests, release manifests, and checksums.
+
+7. Close, 15 seconds
+   - Invite people to try it, inspect the BASIC source, and help test physical
+     hardware.
+
+## Shorts / Clips
+
+Make these as separate vertical clips:
+
+- `GPT in DOS?` Show one prompt and answer.
+- `Not a script` Ask whether the demo is scripted.
+- `Transformer loop in BASIC` Flash source, then output.
+- `486-era AI` Show QEMU/hardware screen and model artifacts.
+- `Tiny model, real inference` Show quality report and generated answer.
+
+Target length: 15 to 45 seconds each.
+
+## Capture List
+
+Required captures:
+
+- QEMU boot to DOS prompt.
+- Running assistant shell.
+- CHAT prompt examples with visible generation.
+- `quality_report_assistant_chat.md` with pass rate visible.
+- `model_report.py --strict` output.
+- Release zip build or GitHub Actions workflow.
+- Source snippets from `src/real_gpt.bas`, `src/assistant.bas`, and
+  `src/tokenizer.bas`.
+
+## ffmpeg-Generated Starter Assets
+
+The repository includes an ffmpeg-based material builder for launch cards,
+thumbnail art, a horizontal teaser, and a vertical short:
+
+```sh
+python3 scripts/build_promo_materials.py --force
+```
+
+By default it writes to `promo/renders/`, which is intentionally ignored by
+git. The generated cards use current CHAT examples from
+`qemu/evidence/quality_report_assistant_chat.md`, so the promotional copy stays
+aligned with the checked-in quality evidence. The builder also renders terminal
+demo videos with typed prompts and streaming answers:
+
+- `promo/renders/gpt2_basic_terminal_demo_1080p.mp4`
+- `promo/renders/gpt2_basic_terminal_demo_vertical.mp4`
+- `promo/renders/gpt2_basic_real_dos_session_1080p.mp4`
+- `promo/renders/gpt2_basic_real_dos_session_vertical.mp4`
+
+It uses Pillow for text/card frame rendering and ffmpeg for MP4 assembly; this
+handles ffmpeg builds that do not include the optional `drawtext` filter.
+
+Optional captures:
+
+- Physical 486 or Pentium machine booting to DOS.
+- Copying the hardware-transfer bundle.
+- Close-up of real CRT/LCD output.
+- FreeBASIC compile inside DOS.
+
+## Demo Prompt Script
+
+Use prompts that are already covered by the current quality suite:
+
+```text
+hi
+what are you
+what can you do
+what is a prompt
+are you real
+is this a script
+what is inference
+help me decide
+how do i focus
+suggest something to do
+```
+
+Avoid long open-ended prompts in the first public video. The current model is
+best at short, direct chat and educational replies.
+
+## B-Roll Checklist
+
+- ASCII title from README.
+- `src/real_gpt.bas` output-head and fixed-point code.
+- `src/assistant.bas` streaming generation code.
+- `assets/gpt2_basic/PACKS/CHAT/MODEL`.
+- `qemu/evidence/quality_report_assistant_chat.md`.
+- `docs/releases/v0.1.0-preview.md`.
+- Terminal running unit tests.
+- QEMU text-mode DOS screen.
+
+## Voiceover Notes
+
+Use precise language:
+
+- Say "GPT-style" instead of "GPT-2 scale".
+- Say "QEMU 486 path" unless physical hardware is on screen.
+- Say "small model" and "real fixed-point inference".
+- Say "assistant pack" for CHAT, DOSHELP, and OFFICE.
+
+Do not hide the latency. The wait is part of the story.
+
+## End Card
+
+Text:
+
+```text
+GPT2-BASIC
+Transformer inference in DOS
+Source, evidence, and preview release available now
+```
+
+Links:
+
+- Repository: publish-time link
+- Release: publish-time link
+- Hardware validation guide: `docs/hardware-validation.md`
