@@ -46,6 +46,7 @@ TYPE AssistantPack
     model_path AS STRING * 80
     persona AS STRING * 160
     help_path AS STRING * 80
+    golden_path AS STRING * 80
     usage_path AS STRING * 80
     sprite_path AS STRING * 80
     icons_path AS STRING * 80
@@ -83,9 +84,13 @@ DECLARE SUB AssistShutdownModel()
 DECLARE FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
 DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
+DECLARE FUNCTION AssistGoldenReply(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 DECLARE FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
 DECLARE FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
+DECLARE FUNCTION AssistTextHasRepeatedChunk(value AS STRING) AS INTEGER
+DECLARE FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGER
+DECLARE FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query AS STRING, retrieved AS STRING) AS STRING
 DECLARE SUB AssistPrepareGenerationPrompt(input_tokens() AS INTEGER, BYREF input_count AS INTEGER, max_tokens AS INTEGER)
 DECLARE SUB AssistPrefillPrompt(input_tokens() AS INTEGER, input_count AS INTEGER)
 DECLARE SUB AssistRenderFrame()
@@ -93,6 +98,7 @@ DECLARE SUB AssistRenderPackStatus()
 DECLARE SUB AssistPrintPackUsage(pack_index AS INTEGER)
 DECLARE SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 DECLARE SUB AssistScriptedDemo()
+DECLARE SUB AssistGuardProbe()
 DECLARE SUB AssistInteractive()
 DECLARE SUB AssistMain()
 
@@ -291,6 +297,9 @@ FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
     value_text = AssistReadIniValue(ini_path, "HELP", "HELP.TXT")
     IF INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).help_path = value_text
+    value_text = AssistReadIniValue(ini_path, "GOLDEN", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).golden_path = value_text
     value_text = AssistReadIniValue(ini_path, "USAGE", "USAGE.TXT")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).usage_path = value_text
@@ -313,6 +322,7 @@ SUB AssistUseBuiltinPack()
     g_assist_packs(0).model_path = "MODEL"
     g_assist_packs(0).persona = "Helpful concise DOS assistant."
     g_assist_packs(0).help_path = ""
+    g_assist_packs(0).golden_path = ""
     g_assist_packs(0).usage_path = ""
     g_assist_packs(0).sprite_path = ""
     g_assist_packs(0).icons_path = ""
@@ -565,6 +575,61 @@ assist_retrieve_error:
     RETURN ""
 END FUNCTION
 
+FUNCTION AssistGoldenReply(pack_index AS INTEGER, query AS STRING) AS STRING
+    DIM golden_path AS STRING
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+    DIM prompt_text AS STRING
+    DIM answer_text AS STRING
+    DIM tab_pos AS INTEGER
+    DIM q AS STRING
+    DIM best_text AS STRING
+    DIM best_score AS INTEGER
+    DIM row_score AS INTEGER
+
+    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN ""
+    golden_path = AssistTrimFixed(g_assist_packs(pack_index).golden_path)
+    IF golden_path = "" OR DIR(golden_path) = "" THEN RETURN ""
+
+    q = LCASE$(TRIM$(query))
+    best_text = ""
+    best_score = 0
+    file_num = FREEFILE
+    ON ERROR GOTO assist_golden_error
+    OPEN golden_path FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" THEN
+            tab_pos = INSTR(line_text, CHR$(9))
+            IF tab_pos > 1 THEN
+                prompt_text = LCASE$(TRIM$(LEFT$(line_text, tab_pos - 1)))
+                answer_text = TRIM$(MID$(line_text, tab_pos + 1))
+                row_score = 0
+                IF q = prompt_text THEN
+                    CLOSE #file_num
+                    RETURN answer_text
+                END IF
+                IF LEN(prompt_text) > 3 AND INSTR(q, prompt_text) > 0 THEN row_score = LEN(prompt_text)
+                IF LEN(q) > 3 AND INSTR(prompt_text, q) > 0 THEN row_score = LEN(q)
+                IF row_score > best_score THEN
+                    best_score = row_score
+                    best_text = answer_text
+                END IF
+            END IF
+        END IF
+    WEND
+
+    CLOSE #file_num
+    RETURN best_text
+
+assist_golden_error:
+    ON ERROR GOTO 0
+    RETURN ""
+END FUNCTION
+
 FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
     DIM input_tokens() AS INTEGER
     DIM generated_tokens() AS INTEGER
@@ -631,6 +696,127 @@ FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
 
     IF cut_pos <= LEN(raw_text) THEN RETURN RTRIM$(LEFT$(raw_text, cut_pos - 1))
     RETURN raw_text
+END FUNCTION
+
+FUNCTION AssistTextHasRepeatedChunk(value AS STRING) AS INTEGER
+    DIM lower_text AS STRING
+    DIM chunk_len AS INTEGER
+    DIM idx AS INTEGER
+    DIM max_pos AS INTEGER
+    DIM chunk AS STRING
+
+    lower_text = LCASE$(TRIM$(value))
+    IF LEN(lower_text) < 12 THEN RETURN 0
+
+    FOR chunk_len = 4 TO 20
+        max_pos = LEN(lower_text) - (chunk_len * 3) + 1
+        IF max_pos > 0 THEN
+            FOR idx = 1 TO max_pos
+                chunk = MID$(lower_text, idx, chunk_len)
+                IF TRIM$(chunk) <> "" THEN
+                    IF MID$(lower_text, idx + chunk_len, chunk_len) = chunk THEN
+                        IF MID$(lower_text, idx + (chunk_len * 2), chunk_len) = chunk THEN RETURN 1
+                    END IF
+                END IF
+            NEXT idx
+        END IF
+    NEXT chunk_len
+
+    RETURN 0
+END FUNCTION
+
+FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGER
+    DIM text AS STRING
+    DIM lower_text AS STRING
+    DIM lower_query AS STRING
+    DIM i AS INTEGER
+    DIM ch AS STRING
+    DIM previous_ch AS STRING
+    DIM run_count AS INTEGER
+    DIM alpha_count AS INTEGER
+
+    text = TRIM$(generated)
+    IF text = "" THEN RETURN 1
+    IF LEN(text) < 4 THEN RETURN 1
+    IF LEN(text) > 360 THEN RETURN 1
+
+    lower_text = LCASE$(text)
+    lower_query = LCASE$(TRIM$(query))
+
+    IF LEFT$(lower_text, 6) = "reply:" THEN RETURN 1
+    IF INSTR(lower_text, " user:") > 0 THEN RETURN 1
+    IF INSTR(lower_text, " assistant:") > 0 THEN RETURN 1
+    IF INSTR(lower_text, " prompt:") > 0 THEN RETURN 1
+    IF INSTR(lower_text, " note:") > 0 THEN RETURN 1
+    IF INSTR(lower_text, " q:") > 0 THEN RETURN 1
+    IF INSTR(lower_text, " a:") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "use two brief sentences") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "use to brief sentences") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "brief sentences") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "small friendly dos chat assistant") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "concise dos") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "you are ") > 0 THEN RETURN 1
+    IF INSTR(lower_text, "the assistant") > 0 THEN RETURN 1
+    IF AssistTextHasRepeatedChunk(text) <> 0 THEN RETURN 1
+
+    previous_ch = ""
+    run_count = 0
+    alpha_count = 0
+    FOR i = 1 TO LEN(text)
+        ch = MID$(text, i, 1)
+        IF ch >= "A" AND ch <= "Z" THEN alpha_count = alpha_count + 1
+        IF ch >= "a" AND ch <= "z" THEN alpha_count = alpha_count + 1
+        IF ch = previous_ch THEN
+            run_count = run_count + 1
+            IF run_count >= 4 THEN RETURN 1
+        ELSE
+            previous_ch = ch
+            run_count = 1
+        END IF
+    NEXT i
+
+    IF alpha_count < 3 THEN RETURN 1
+    ch = RIGHT$(RTRIM$(text), 1)
+    IF ch <> "." AND ch <> "!" AND ch <> "?" THEN RETURN 1
+
+    IF lower_query <> "" AND LEN(lower_query) > 8 THEN
+        IF lower_text = lower_query THEN RETURN 1
+    END IF
+
+    RETURN 0
+END FUNCTION
+
+FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query AS STRING, retrieved AS STRING) AS STRING
+    DIM pack_id AS STRING
+    DIM q AS STRING
+
+    IF TRIM$(retrieved) <> "" THEN RETURN retrieved
+    IF pack_index >= 0 AND pack_index < g_assist_pack_count THEN
+        pack_id = AssistTrimFixed(g_assist_packs(pack_index).id)
+    ELSE
+        pack_id = "DEFAULT"
+    END IF
+    q = LCASE$(TRIM$(query))
+
+    IF pack_id = "DOSHELP" THEN
+        IF intent_name = "dos_batch" THEN RETURN "Use short batch files with IF EXIST checks, clear messages, and 8.3 names."
+        RETURN "Ask about CONFIG.SYS, AUTOEXEC.BAT, memory, batches, or where the model files live."
+    END IF
+
+    IF pack_id = "OFFICE" THEN
+        IF intent_name = "office_summary" THEN RETURN "Paste the text and ask for a short summary with names, dates, and next actions kept."
+        RETURN "Paste a short line and ask for rewrite, summary, formal tone, or shortening."
+    END IF
+
+    IF INSTR(q, "sad") > 0 OR INSTR(q, "worried") > 0 OR INSTR(q, "lonely") > 0 THEN
+        RETURN "I can listen briefly. Name the worry, then choose one small next step."
+    END IF
+    IF INSTR(q, "joke") > 0 THEN RETURN "DOS smiled because it found its prompt."
+    IF INSTR(q, "story") > 0 THEN RETURN "A tiny model woke up inside DOS and answered one prompt at a time."
+    IF INSTR(q, "plan") > 0 THEN RETURN "Pick one goal, list three steps, then start with the smallest step."
+    IF INSTR(q, "help") > 0 THEN RETURN "Ask one clear question, or use /packs to switch to DOSHELP or OFFICE."
+
+    RETURN "I am here in DOS. Ask one short question or switch packs with /pack NAME."
 END FUNCTION
 
 SUB AssistPrepareGenerationPrompt(input_tokens() AS INTEGER, BYREF input_count AS INTEGER, max_tokens AS INTEGER)
@@ -827,64 +1013,88 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM intent_name AS STRING
     DIM actions AS STRING
     DIM retrieved AS STRING
+    DIM retrieved_note AS STRING
+    DIM golden AS STRING
     DIM note_text AS STRING
     DIM prompt AS STRING
     DIM generated AS STRING
     DIM bubble AS STRING
     DIM model_path AS STRING
+    DIM model_ready AS INTEGER
+    DIM reply_source AS STRING
 
     pack_index = g_assist_active_pack
     intent_name = AssistClassifyIntent(query)
     actions = AssistActionsForIntent(intent_name)
     retrieved = AssistRetrieve(pack_index, query)
-    note_text = retrieved
-    IF retrieved = "" THEN retrieved = "I can answer from this pack, switch packs, or offer action buttons."
+    retrieved_note = retrieved
+    golden = AssistGoldenReply(pack_index, query)
+    note_text = retrieved_note
     model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
+    model_ready = 0
+    generated = ""
+    bubble = ""
+    reply_source = "fallback"
 
     IF use_generation <> 0 THEN
         PRINT "+------------------------------------------------------------+"
         PRINT "| Assistant                                                  |"
         PRINT "+------------------------------------------------------------+"
-        IF GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path THEN
+        IF golden = "" AND retrieved_note = "" AND (GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path) THEN
             PRINT "Loading model..."
         END IF
     END IF
 
-    IF AssistInitializeModel(pack_index) = 0 THEN
+    IF use_generation <> 0 OR g_assist_emit_records <> 0 THEN
+        model_ready = AssistInitializeModel(pack_index)
+    END IF
+
+    IF model_ready = 0 AND use_generation <> 0 AND golden = "" AND retrieved_note = "" THEN
         IF g_assist_emit_records <> 0 THEN
             PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
                   "|intent=" + intent_name + "|status=model_unavailable"
         END IF
-        IF use_generation <> 0 THEN PRINT "Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
-        AssistAddHistory "ASSISTANT: " + retrieved + " Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
-        RETURN
+        bubble = AssistFallbackReply(pack_index, intent_name, query, retrieved_note)
+        reply_source = "fallback"
     END IF
 
-    generated = ""
-    IF use_generation <> 0 THEN
-        prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query
+    IF bubble = "" AND golden <> "" THEN
+        bubble = golden
+        reply_source = "golden"
+    END IF
+
+    IF bubble = "" AND retrieved_note <> "" THEN
+        bubble = retrieved_note
+        reply_source = "retrieval"
+    END IF
+
+    IF bubble = "" AND use_generation <> 0 AND model_ready <> 0 THEN
+        PRINT "Thinking: checking model answer"
+        prompt = "User: " + query
         IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
         prompt = prompt + " Assistant:"
-        generated = AssistStreamGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
+        generated = AssistGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
+        IF AssistGeneratedLooksBad(generated, query) = 0 THEN
+            bubble = generated
+            reply_source = "model"
+        END IF
     END IF
 
-    IF use_generation <> 0 THEN
-        bubble = generated
-        IF bubble = "" THEN
-            bubble = retrieved
-            PRINT bubble
-        END IF
-    ELSE
-        bubble = retrieved
+    IF bubble = "" THEN
+        bubble = AssistFallbackReply(pack_index, intent_name, query, retrieved_note)
+        reply_source = "fallback"
     END IF
+
     IF LEN(bubble) > 360 THEN bubble = LEFT$(bubble, 360)
 
     IF g_assist_emit_records <> 0 THEN
         PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
               "|intent=" + intent_name + _
               "|ui=text" + _
+              "|source=" + reply_source + _
               "|actions=" + AssistSafeText(actions) + _
-              "|retrieval=" + AssistSafeText(retrieved) + _
+              "|retrieval=" + AssistSafeText(retrieved_note) + _
+              "|golden=" + AssistSafeText(golden) + _
               "|generated=" + AssistSafeText(generated)
     END IF
     IF use_generation = 0 THEN
@@ -893,6 +1103,8 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         PRINT "+------------------------------------------------------------+"
         PRINT bubble
         PRINT
+    ELSE
+        PRINT "Answer: "; bubble
     END IF
     PRINT "[ "; actions; " ]"
     PRINT
@@ -921,6 +1133,23 @@ SUB AssistScriptedDemo()
     AssistRenderReply "Rewrite this memo in a professional tone.", 0
 
     PRINT "ASSIST_END|packs=" + LTRIM$(STR$(g_assist_pack_count))
+    AssistShutdownModel
+END SUB
+
+SUB AssistGuardProbe()
+    AssistRenderFrame
+    PRINT "ASSIST_BEGIN|suite=guard-probe|version=1"
+    AssistPrintPackList
+    PRINT
+
+    AssistSelectPack "CHAT"
+    AssistRenderPackStatus
+    AssistPreloadActivePackModel
+    AssistRenderReply "what are you", 1
+    AssistRenderReply "what is the meaning of life", 1
+    AssistRenderReply "thanks", 1
+
+    PRINT "ASSIST_END|suite=guard-probe|pack=" + AssistTrimFixed(g_assist_packs(g_assist_active_pack).id)
     AssistShutdownModel
 END SUB
 
@@ -992,6 +1221,12 @@ SUB AssistMain()
     IF command_line = "--scripted" OR command_line = "--probe" THEN
         g_assist_emit_records = 1
         AssistScriptedDemo
+        RETURN
+    END IF
+
+    IF command_line = "--guard-probe" THEN
+        g_assist_emit_records = 1
+        AssistGuardProbe
         RETURN
     END IF
 

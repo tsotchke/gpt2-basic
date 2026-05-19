@@ -20,7 +20,11 @@ DEFAULT_ZIP_SHA256 = Path("/private/tmp/gpt2-basic-hardware-transfer.zip.sha256"
 DEFAULT_MODEL_DIR = ROOT / "assets" / "gpt2_basic" / "MODEL"
 DEFAULT_PACK_DIR = ROOT / "assets" / "gpt2_basic" / "PACKS"
 DEFAULT_GPT2_EXE = ROOT / "qemu" / "evidence" / "GPT2.EXE"
+DEFAULT_ASSIST_EXE = ROOT / "qemu" / "evidence" / "ASSIST.EXE"
 DEFAULT_STAGED_SRC = ROOT / "qemu" / "staging" / "GPT2SRC"
+DEFAULT_DPMI_HOST = ROOT / "third_party" / "cwsdpmi" / "CWSDPMI.EXE"
+DEFAULT_DPMI_LICENSE = ROOT / "third_party" / "cwsdpmi" / "COPYING.CWS"
+DEFAULT_DPMI_LSM = ROOT / "third_party" / "cwsdpmi" / "CWSDPMI.LSM"
 DETERMINISTIC_ZIP_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
 TREE_COPY_IGNORED_NAMES = {".DS_Store", "__pycache__"}
 TREE_COPY_IGNORED_SUFFIXES = {".pyc", ".pyo"}
@@ -84,12 +88,19 @@ def hardware_source_files(
     gpt2_exe: Path,
     staged_src: Path,
     refresh_staging: bool,
+    assist_exe: Path | None = DEFAULT_ASSIST_EXE,
+    dpmi_host: Path | None = DEFAULT_DPMI_HOST,
+    dpmi_license: Path | None = DEFAULT_DPMI_LICENSE,
+    dpmi_lsm: Path | None = DEFAULT_DPMI_LSM,
 ) -> list[Path]:
     files = [
         ROOT / "hardware" / "HWVALID.BAT",
         ROOT / "hardware" / "HWNOTES.TXT",
         gpt2_exe,
     ]
+    if assist_exe is not None:
+        files.append(assist_exe)
+    files.extend(path for path in (dpmi_host, dpmi_license, dpmi_lsm) if path is not None)
     files.extend(copied_tree_files(model_dir))
     files.extend(copied_tree_files(pack_dir))
     if refresh_staging:
@@ -123,6 +134,23 @@ def copy_file(src: Path, dst: Path) -> None:
     require(src.is_file(), f"missing_file={src}")
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dst)
+
+
+def copy_dpmi_files(dos_root: Path, dpmi_host: Path | None, dpmi_license: Path | None, dpmi_lsm: Path | None) -> None:
+    if dpmi_host is None:
+        return
+    copy_file(dpmi_host, dos_root / "CWSDPMI.EXE")
+    if dpmi_license is not None:
+        copy_file(dpmi_license, dos_root / "COPYING.CWS")
+    if dpmi_lsm is not None:
+        copy_file(dpmi_lsm, dos_root / "CWSDPMI.LSM")
+    (dos_root / "CWSRC.TXT").write_text(
+        "CWSDPMI 7a DPMI host for DOS protected-mode programs.\n"
+        "Author: Charles W Sandmann.\n"
+        "Primary source site: http://sandmann.dotster.com/cwsdpmi/\n"
+        "The bundled CWSDPMI.EXE is unmodified from the FreeDOS package.\n",
+        encoding="ascii",
+    )
 
 
 def sha256(path: Path) -> str:
@@ -207,11 +235,27 @@ def build_transfer(
     staged_src: Path,
     force: bool,
     refresh_staging: bool,
+    assist_exe: Path | None = DEFAULT_ASSIST_EXE,
+    dpmi_host: Path | None = DEFAULT_DPMI_HOST,
+    dpmi_license: Path | None = DEFAULT_DPMI_LICENSE,
+    dpmi_lsm: Path | None = DEFAULT_DPMI_LSM,
 ) -> None:
     if refresh_staging:
         subprocess.run([sys.executable, str(ROOT / "qemu" / "make_dos_staging.py")], check=True)
 
-    require_release_sources_tracked(hardware_source_files(model_dir, pack_dir, gpt2_exe, staged_src, refresh_staging))
+    require_release_sources_tracked(
+        hardware_source_files(
+            model_dir,
+            pack_dir,
+            gpt2_exe,
+            staged_src,
+            refresh_staging,
+            assist_exe,
+            dpmi_host,
+            dpmi_license,
+            dpmi_lsm,
+        )
+    )
 
     if output_dir.exists():
         require(force, f"output_exists={output_dir}")
@@ -221,6 +265,9 @@ def build_transfer(
     dos_root = output_dir / "GPT2"
     dos_root.mkdir()
     copy_file(gpt2_exe, dos_root / "GPT2.EXE")
+    if assist_exe is not None:
+        copy_file(assist_exe, dos_root / "ASSIST.EXE")
+    copy_dpmi_files(dos_root, dpmi_host, dpmi_license, dpmi_lsm)
     copy_file(ROOT / "hardware" / "HWVALID.BAT", dos_root / "HWVALID.BAT")
     copy_file(ROOT / "hardware" / "HWNOTES.TXT", dos_root / "HWNOTES.TXT")
     (dos_root / "RETURN.TXT").write_text(return_instructions(), encoding="ascii")
@@ -231,7 +278,7 @@ def build_transfer(
     validate_83(dos_root)
     (output_dir / "README.TXT").write_text(
         "GPT2-BASIC hardware transfer bundle.\n"
-        "Copy GPT2 to C:\\GPT2 on the DOS target, fill HWNOTES.TXT, then run HWVALID.BAT.\n"
+        "Copy GPT2 to C:\\GPT2 on the DOS target, keep CWSDPMI.EXE with GPT2.EXE, fill HWNOTES.TXT, then run HWVALID.BAT.\n"
         "After the run, use C:\\GPT2\\RETURN.TXT as the host copy-back checklist.\n",
         encoding="ascii",
     )
@@ -250,6 +297,10 @@ def self_test() -> None:
         packs.mkdir()
         staged.mkdir()
         (root / "GPT2.EXE").write_bytes(b"exe")
+        (root / "ASSIST.EXE").write_bytes(b"assistant")
+        (root / "CWSDPMI.EXE").write_bytes(b"dpmi")
+        (root / "COPYING.CWS").write_text("license\n", encoding="ascii")
+        (root / "CWSDPMI.LSM").write_text("source\n", encoding="ascii")
         for name in ("GPT2CFG.TXT", "GPT2FX.BIN", "GPT2EXP.BIN"):
             (model / name).write_bytes(b"model")
         (packs / "PACKS.TXT").write_text("DOSHELP\n", encoding="ascii")
@@ -257,8 +308,25 @@ def self_test() -> None:
         out = root / "OUT"
         zip_path = root / "OUT.ZIP"
         zip_sha256 = root / "OUT.SHA"
-        build_transfer(out, zip_path, zip_sha256, model, packs, root / "GPT2.EXE", staged, force=True, refresh_staging=False)
+        build_transfer(
+            out,
+            zip_path,
+            zip_sha256,
+            model,
+            packs,
+            root / "GPT2.EXE",
+            staged,
+            force=True,
+            refresh_staging=False,
+            assist_exe=root / "ASSIST.EXE",
+            dpmi_host=root / "CWSDPMI.EXE",
+            dpmi_license=root / "COPYING.CWS",
+            dpmi_lsm=root / "CWSDPMI.LSM",
+        )
         require((out / "GPT2" / "HWVALID.BAT").exists(), "self_test_missing_hwvalid")
+        require((out / "GPT2" / "ASSIST.EXE").exists(), "self_test_missing_assist")
+        require((out / "GPT2" / "CWSDPMI.EXE").exists(), "self_test_missing_dpmi")
+        require((out / "GPT2" / "CWSRC.TXT").exists(), "self_test_missing_dpmi_source")
         require((out / "GPT2" / "RETURN.TXT").exists(), "self_test_missing_return")
         require((out / "README.TXT").exists(), "self_test_missing_readme")
         require((out / "MANIFEST.TXT").exists(), "self_test_missing_manifest")
@@ -288,7 +356,13 @@ def main() -> None:
     parser.add_argument("--model-dir", type=Path, default=DEFAULT_MODEL_DIR)
     parser.add_argument("--pack-dir", type=Path, default=DEFAULT_PACK_DIR)
     parser.add_argument("--gpt2-exe", type=Path, default=DEFAULT_GPT2_EXE)
+    parser.add_argument("--assist-exe", type=Path, default=DEFAULT_ASSIST_EXE)
     parser.add_argument("--staged-src", type=Path, default=DEFAULT_STAGED_SRC)
+    parser.add_argument("--no-assist-exe", action="store_true")
+    parser.add_argument("--dpmi-host", type=Path, default=DEFAULT_DPMI_HOST)
+    parser.add_argument("--dpmi-license", type=Path, default=DEFAULT_DPMI_LICENSE)
+    parser.add_argument("--dpmi-lsm", type=Path, default=DEFAULT_DPMI_LSM)
+    parser.add_argument("--no-dpmi-host", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--no-refresh-staging", action="store_true")
     parser.add_argument("--self-test", action="store_true")
@@ -308,6 +382,10 @@ def main() -> None:
         args.staged_src,
         force=args.force,
         refresh_staging=not args.no_refresh_staging,
+        assist_exe=None if args.no_assist_exe else args.assist_exe,
+        dpmi_host=None if args.no_dpmi_host else args.dpmi_host,
+        dpmi_license=None if args.no_dpmi_host else args.dpmi_license,
+        dpmi_lsm=None if args.no_dpmi_host else args.dpmi_lsm,
     )
     print(f"HARDWARE_TRANSFER_TREE|path={args.output_dir}")
     print(f"HARDWARE_TRANSFER_ZIP|path={args.zip_path}")
