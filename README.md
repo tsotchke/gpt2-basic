@@ -456,7 +456,9 @@ python3 scripts/build_dosbox_bundle.py --force
 
 That writes `/private/tmp/gpt2-basic-dosbox.zip` plus a `.sha256` sidecar. The
 bundle contains the short `GPT2` DOS tree, DOSBox config profiles under
-`DOSBOX/`, and host launchers such as `run-demo.sh` and `RUNDEMO.BAT`.
+`DOSBOX/`, `CWSDPMI.EXE` for FreeBASIC protected-mode execution, and host
+launchers such as `run-chat.sh`, `run-completion.sh`, `run-demo.sh`, and
+`RUNDEMO.BAT`.
 See [`docs/dosbox.md`](docs/dosbox.md) for the supported profiles. DOSBox is a
 demo/smoke-test path; QEMU remains the preview release gate and physical 486
 captures remain the solid-release gate.
