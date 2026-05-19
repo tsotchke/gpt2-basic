@@ -454,6 +454,10 @@ videos, build the launch handoff kit with:
 python3 scripts/build_launch_kit.py --force
 ```
 
+The promo video builder requires Pillow plus `ffmpeg`; install the Python
+dependency in the environment used for launch-media generation with
+`python3 -m pip install -r requirements-promo.txt`.
+
 The launch kit writes `/private/tmp/gpt2-basic-launch-kit.zip` plus a `.sha256`
 sidecar for local rebuilds. The public preview release attaches the same
 archive as `gpt2-basic-launch-kit.zip`. It bundles the verified release

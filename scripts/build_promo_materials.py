@@ -165,7 +165,7 @@ def teaser_scenes(examples: dict[str, str]) -> list[Scene]:
             "Source, Evidence, Release Zips",
             "Rebuild scripts, tests, QEMU evidence, and hardware-transfer tooling.",
             "python3 scripts/build_preview_release.py --force\npython3 scripts/verify_preview_artifacts.py\n\nArtifacts: preview zip + hardware-transfer zip",
-            "Repo link and release link go here after publish.",
+            "github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview",
             5.0,
         ),
     ]
