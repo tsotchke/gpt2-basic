@@ -218,6 +218,28 @@ qemu/evidence/assistant_486.log
 qemu/evidence/assistant_compile_486.log
 ```
 
+Run the headless assistant stress gate with:
+
+```sh
+bash qemu/run_assistant_stress_486.sh
+```
+
+That path compiles `C:\ASSIST.EXE`, runs `ASSIST.EXE --stress-probe`, asks 18
+original prompts across `CHAT`, `DOSHELP`, and `OFFICE`, then validates the
+structured `ASSIST_REPLY` records with `scripts/stress_assistant_behavior.py`.
+The validator rejects visible prompt leakage, repeated chunks, token-soup
+outputs, empty answers, off-topic answers, and model-unavailable records. It
+writes:
+
+```text
+qemu/evidence/assistant_stress_486.log
+qemu/evidence/assistant_stress_compile_486.log
+qemu/evidence/assistant_stress_report.md
+```
+
+The stress launcher uses QEMU curses mode and a timeout watchdog, so it does
+not open or focus a GUI window.
+
 Run the interactive QEMU window demo with:
 
 ```sh
@@ -250,9 +272,10 @@ casual prompts including `i am bored`, `tell me a joke`, and
 The assistant shell is intentionally separate from `GPT2.EXE`. Packs are
 listed in `PACKS\PACKS.TXT`; each pack has `PACK.INI`, `HELP.TXT`, `USAGE.TXT`,
 and optional pack assets. `CHAT` also ships `GOLDEN.TXT` common English
-dialogue and `LEXICON.TSV` grammar entries; these are training corpus inputs,
-not runtime lookup rules. `USAGE.TXT` explains what the individual pack is for,
-how it works, and what to type; `ASSIST.EXE` displays it through `/about`.
+dialogue and `LEXICON.TSV` grammar entries; exact `GOLDEN.TXT` matches are used
+as high-confidence runtime answers before retrieval and generation. `USAGE.TXT`
+explains what the individual pack is for, how it works, and what to type;
+`ASSIST.EXE` displays it through `/about`.
 `PACK.INI` can point `MODEL=` at `C:\MODEL` or a pack-local checkpoint, so a
 future DOS, Windows, or OS/2 shell can share the same pack format while
 rendering a richer UI. The current release focus is the DOS reference shell and
@@ -283,7 +306,7 @@ The host quality gate uses a 96-token assistant reply window and requires all
 pack prompts to pass at `0.90`. It rejects prompt-label leakage, truncated
 endings, triple-character spelling glitches, and replies that do not reach the
 tail of the expected pack answer. `ASSIST.EXE` keeps interactive generation
-bounded to 24 tokens with early sentence stopping, and the scripted 486 probe
+bounded to 64 tokens with early sentence stopping, and the scripted 486 probe
 uses retrieval-only bubbles so the DOS evidence run still exercises pack-local
 model loading without turning every release check into a long generation run.
 

@@ -53,6 +53,7 @@ what is basic	BASIC is a simple programming language.
 what is qemu	QEMU is the emulator running this DOS machine.
 what is a model	A model is trained weights that predict text.
 what is inference	Inference is the model producing an answer.
+can you explain what local inference means	Local inference means the DOS program reads model weights and produces the answer on this machine.
 what is a token	A token is a small piece of text.
 why are answers short	Short answers run faster in DOS.
 say something	Hello from DOS.

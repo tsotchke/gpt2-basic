@@ -7,6 +7,13 @@ idea|Idea help|Try asking one clear question.
 prompt|Prompt meaning|A prompt is your typed question.
 explain|Explain mode|I can explain simple ideas.
 demo|DOS demo|The demo is live.
+repeat|Repeat control|If I repeat, ask a shorter question or switch packs.
+bug|Debug plan|Start with the failing command, expected result, and first error line, then test one small fix.
+debug|Debug plan|Start with the failing command, expected result, and first error line, then test one small fix.
+local inference|Local inference|Local inference means the DOS program reads model weights and produces the answer on this machine.
+old computer|Old hardware|The demo matters because a tiny local model can run on old DOS-style hardware without a network.
+weird|Retry advice|Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.
+release|Release status|Check the tag target, release assets, checksums, and test result before calling the release done.
 thanks|Thanks|You are welcome.
 confused|Clarify request|Ask one short question.
 talk|Open conversation|I can talk in DOS.
