@@ -31,6 +31,7 @@ jobs:
         run: |
           python -m py_compile \
             scripts/audit_exported_models.py \
+            scripts/build_dosbox_bundle.py \
             scripts/build_hardware_transfer.py \
             scripts/build_launch_kit.py \
             scripts/build_preview_release.py \
@@ -55,6 +56,7 @@ jobs:
           python scripts/verify_hardware_capture.py --self-test
           python scripts/stage_hardware_capture_evidence.py --self-test
           python scripts/hardware_performance_matrix.py --self-test
+          python scripts/build_dosbox_bundle.py --self-test
           python scripts/build_hardware_transfer.py --self-test
           python scripts/build_launch_kit.py --self-test
           python scripts/build_preview_release.py --self-test
@@ -99,6 +101,17 @@ jobs:
             --hardware-zip /tmp/gpt2-basic-hardware-transfer.zip \
             --hardware-zip-sha256 /tmp/gpt2-basic-hardware-transfer.zip.sha256
 
+      - name: Check DOSBox bundle can be built
+        run: |
+          set -euo pipefail
+          python scripts/build_dosbox_bundle.py --force --output-dir /tmp/gpt2-basic-dosbox --zip-path /tmp/gpt2-basic-dosbox.zip --zip-sha256 /tmp/gpt2-basic-dosbox.zip.sha256
+          dosbox_sha="$(cut -d' ' -f1 /tmp/gpt2-basic-dosbox.zip.sha256)"
+          python scripts/build_dosbox_bundle.py --force --output-dir /tmp/gpt2-basic-dosbox --zip-path /tmp/gpt2-basic-dosbox.zip --zip-sha256 /tmp/gpt2-basic-dosbox.zip.sha256
+          test "$dosbox_sha" = "$(cut -d' ' -f1 /tmp/gpt2-basic-dosbox.zip.sha256)"
+          test -f /tmp/gpt2-basic-dosbox/DOSBOX/GPT2DEMO.CONF
+          grep -F "mount c ." /tmp/gpt2-basic-dosbox/DOSBOX/GPT2DEMO.CONF
+          grep -F "cd \\GPT2" /tmp/gpt2-basic-dosbox/DOSBOX/GPT2DEMO.CONF
+
       - name: Upload preview release artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -107,6 +120,8 @@ jobs:
           path: |
             /tmp/gpt2-basic-preview.zip
             /tmp/gpt2-basic-preview.zip.sha256
+            /tmp/gpt2-basic-dosbox.zip
+            /tmp/gpt2-basic-dosbox.zip.sha256
             /tmp/gpt2-basic-hardware-transfer.zip
             /tmp/gpt2-basic-hardware-transfer.zip.sha256
             qemu/evidence/preview_release_manifest.md

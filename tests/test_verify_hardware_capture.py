@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from scripts import build_dosbox_bundle
 from scripts import build_hardware_transfer
 from scripts import verify_hardware_capture
 
@@ -116,3 +117,24 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
             )
 
         self.assertEqual(missing, ["MODEL/LOCAL.TXT"])
+
+    def test_dosbox_bundle_self_test(self) -> None:
+        output = io.StringIO()
+
+        with contextlib.redirect_stdout(output):
+            build_dosbox_bundle.self_test()
+
+        text = output.getvalue()
+        self.assertIn("PROBE_OK dosbox_bundle_profiles=6", text)
+        self.assertIn("PROBE_OK dosbox_bundle_relative_mount=1", text)
+        self.assertIn("PROBE_OK dosbox_bundle_launchers=1", text)
+        self.assertIn("PROBE_OK dosbox_bundle_zip=1", text)
+        self.assertIn("PROBE_OK dosbox_bundle_zip_sha256=1", text)
+
+    def test_dosbox_configs_use_relative_mounts(self) -> None:
+        for profile in build_dosbox_bundle.DOSBOX_PROFILES:
+            text = build_dosbox_bundle.profile_conf(profile)
+            self.assertIn("mount c .", text)
+            self.assertIn("cd \\GPT2", text)
+            self.assertNotIn(str(ROOT), text)
+            text.encode("ascii")

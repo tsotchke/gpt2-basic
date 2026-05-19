@@ -33,6 +33,8 @@ class KitAsset:
 RELEASE_ASSETS = (
     KitAsset(Path("/private/tmp/gpt2-basic-preview.zip"), "release/gpt2-basic-preview.zip"),
     KitAsset(Path("/private/tmp/gpt2-basic-preview.zip.sha256"), "release/gpt2-basic-preview.zip.sha256"),
+    KitAsset(Path("/private/tmp/gpt2-basic-dosbox.zip"), "release/gpt2-basic-dosbox.zip"),
+    KitAsset(Path("/private/tmp/gpt2-basic-dosbox.zip.sha256"), "release/gpt2-basic-dosbox.zip.sha256"),
     KitAsset(Path("/private/tmp/gpt2-basic-hardware-transfer.zip"), "release/gpt2-basic-hardware-transfer.zip"),
     KitAsset(
         Path("/private/tmp/gpt2-basic-hardware-transfer.zip.sha256"),
@@ -61,6 +63,7 @@ COPY_ASSETS = (
     KitAsset(ROOT / "README.md", "copy/README.md"),
     KitAsset(ROOT / "CONTRIBUTING.md", "copy/CONTRIBUTING.md"),
     KitAsset(ROOT / "SECURITY.md", "copy/SECURITY.md"),
+    KitAsset(ROOT / "docs/dosbox.md", "copy/dosbox.md"),
     KitAsset(ROOT / "docs/public-launch.md", "copy/public-launch.md"),
     KitAsset(ROOT / "docs/marketing/promo-kit.md", "copy/promo-kit.md"),
     KitAsset(ROOT / "docs/marketing/video-plan.md", "copy/video-plan.md"),
@@ -70,6 +73,7 @@ COPY_ASSETS = (
 
 RELEASE_ZIP_SIDECARS = (
     (Path("/private/tmp/gpt2-basic-preview.zip"), Path("/private/tmp/gpt2-basic-preview.zip.sha256")),
+    (Path("/private/tmp/gpt2-basic-dosbox.zip"), Path("/private/tmp/gpt2-basic-dosbox.zip.sha256")),
     (
         Path("/private/tmp/gpt2-basic-hardware-transfer.zip"),
         Path("/private/tmp/gpt2-basic-hardware-transfer.zip.sha256"),
@@ -155,7 +159,7 @@ def write_manifest(output_dir: Path, version: str, release_url: str, generated_d
         f"Release: {release_url}",
         f"Generated: `{generated_date}`",
         "",
-        "This handoff bundle contains the verified preview release zips, hardware-transfer zip, launch media, thumbnail, and reusable launch copy.",
+        "This handoff bundle contains the verified preview release zips, DOSBox bundle, hardware-transfer zip, launch media, thumbnail, and reusable launch copy.",
         "",
         "## Recommended Use",
         "",
@@ -163,6 +167,7 @@ def write_manifest(output_dir: Path, version: str, release_url: str, generated_d
         "- Use `thumbnail_gpt_in_dos.png` as the default video thumbnail.",
         "- Use `copy/promo-kit.md` for social posts, descriptions, and press copy.",
         "- Use `release/gpt2-basic-preview.zip` as the main downloadable preview payload.",
+        "- Use `release/gpt2-basic-dosbox.zip` for a ready-to-mount DOSBox demo.",
         "- Use `release/gpt2-basic-hardware-transfer.zip` for DOS-machine transfer tests.",
         "",
         "## Assets",
