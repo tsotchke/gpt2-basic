@@ -24,7 +24,11 @@ DEFAULT_ZIP_SHA256 = Path("/private/tmp/gpt2-basic-dosbox.zip.sha256")
 DEFAULT_MODEL_DIR = ROOT / "assets" / "gpt2_basic" / "MODEL"
 DEFAULT_PACK_DIR = ROOT / "assets" / "gpt2_basic" / "PACKS"
 DEFAULT_GPT2_EXE = ROOT / "qemu" / "evidence" / "GPT2.EXE"
+DEFAULT_ASSIST_EXE = ROOT / "qemu" / "evidence" / "ASSIST.EXE"
 DEFAULT_STAGED_SRC = ROOT / "qemu" / "staging" / "GPT2SRC"
+DEFAULT_DPMI_HOST = ROOT / "third_party" / "cwsdpmi" / "CWSDPMI.EXE"
+DEFAULT_DPMI_LICENSE = ROOT / "third_party" / "cwsdpmi" / "COPYING.CWS"
+DEFAULT_DPMI_LSM = ROOT / "third_party" / "cwsdpmi" / "CWSDPMI.LSM"
 DETERMINISTIC_ZIP_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
 
 
@@ -43,10 +47,38 @@ DOSBOX_PROFILES = (
         "Mount the bundle and leave DOSBox at C:\\GPT2.",
         (
             "echo GPT2-BASIC mounted at C:\\GPT2",
+            "echo Try: ASSIST.EXE",
+            "echo Try: GPT2.EXE",
             "echo Try: GPT2.EXE --demo",
             "echo Try: GPT2.EXE --quality-all",
             "echo Try: GPT2.EXE --perf",
             "dir",
+        ),
+    ),
+    DosboxProfile(
+        "chat",
+        "GPT2CHAT.CONF",
+        "Run the pack-driven GPT2-BASIC conversational assistant.",
+        (
+            "echo GPT2-BASIC assistant shell",
+            "echo Commands: /packs, /pack CHAT, /pack DOSHELP, /pack OFFICE, /about, /quit",
+            "echo.",
+            "ASSIST.EXE",
+            "echo.",
+            "echo Assistant exited. You are back at C:\\GPT2.",
+        ),
+    ),
+    DosboxProfile(
+        "completion",
+        "GPT2INT.CONF",
+        "Run GPT2-BASIC prompt-based interactive completion.",
+        (
+            "echo GPT2-BASIC interactive completion",
+            "echo Enter a prompt, finish with a blank line, then wait for output.",
+            "echo.",
+            "GPT2.EXE",
+            "echo.",
+            "echo Interactive session exited. You are back at C:\\GPT2.",
         ),
     ),
     DosboxProfile(
@@ -201,13 +233,17 @@ def write_readme(output_dir: Path) -> None:
         "Recommended commands:",
         "",
         "  dosbox -conf DOSBOX/GPT2MAN.CONF",
+        "  dosbox -conf DOSBOX/GPT2CHAT.CONF",
+        "  dosbox -conf DOSBOX/GPT2INT.CONF",
         "  dosbox -conf DOSBOX/GPT2DEMO.CONF",
         "  dosbox -conf DOSBOX/GPT2QUAL.CONF",
         "  dosbox -conf DOSBOX/GPT2PERF.CONF",
         "",
         "On Unix-like hosts you can also run:",
         "",
+        "  ./run-chat.sh",
         "  ./run-demo.sh",
+        "  ./run-completion.sh",
         "  ./run-quality.sh",
         "  ./run-perf.sh",
         "",
@@ -258,9 +294,13 @@ def build_dosbox_bundle(
     model_dir: Path,
     pack_dir: Path,
     gpt2_exe: Path,
+    assist_exe: Path | None,
     staged_src: Path,
     force: bool,
     refresh_staging: bool,
+    dpmi_host: Path | None = DEFAULT_DPMI_HOST,
+    dpmi_license: Path | None = DEFAULT_DPMI_LICENSE,
+    dpmi_lsm: Path | None = DEFAULT_DPMI_LSM,
 ) -> None:
     if output_dir.exists():
         require(force, f"output_exists={output_dir} use --force")
@@ -280,6 +320,10 @@ def build_dosbox_bundle(
             staged_src,
             force=True,
             refresh_staging=refresh_staging,
+            assist_exe=assist_exe,
+            dpmi_host=dpmi_host,
+            dpmi_license=dpmi_license,
+            dpmi_lsm=dpmi_lsm,
         )
 
     write_dosbox_files(output_dir)
@@ -297,6 +341,10 @@ def self_test() -> None:
         packs.mkdir()
         staged.mkdir()
         (root / "GPT2.EXE").write_bytes(b"exe")
+        (root / "ASSIST.EXE").write_bytes(b"assistant")
+        (root / "CWSDPMI.EXE").write_bytes(b"dpmi")
+        (root / "COPYING.CWS").write_text("license\n", encoding="ascii")
+        (root / "CWSDPMI.LSM").write_text("source\n", encoding="ascii")
         for name in ("GPT2CFG.TXT", "GPT2FX.BIN", "GPT2EXP.BIN", "VOCAB.BIN"):
             (model / name).write_bytes(b"model")
         (packs / "PACKS.TXT").write_text("CHAT\n", encoding="ascii")
@@ -304,19 +352,42 @@ def self_test() -> None:
         out = root / "dosbox"
         zip_path = root / "dosbox.zip"
         zip_sha = root / "dosbox.zip.sha256"
-        build_dosbox_bundle(out, zip_path, zip_sha, model, packs, root / "GPT2.EXE", staged, True, False)
+        build_dosbox_bundle(
+            out,
+            zip_path,
+            zip_sha,
+            model,
+            packs,
+            root / "GPT2.EXE",
+            root / "ASSIST.EXE",
+            staged,
+            True,
+            False,
+            dpmi_host=root / "CWSDPMI.EXE",
+            dpmi_license=root / "COPYING.CWS",
+            dpmi_lsm=root / "CWSDPMI.LSM",
+        )
 
         manual_conf = (out / "DOSBOX" / "GPT2MAN.CONF").read_text(encoding="ascii")
         require("mount c ." in manual_conf, "self_test_missing_relative_mount")
         require("cd \\GPT2" in manual_conf, "self_test_missing_gpt2_cd")
         require(str(out) not in manual_conf, "self_test_conf_leaks_host_path")
+        require((out / "GPT2" / "CWSDPMI.EXE").exists(), "self_test_missing_dpmi")
+        require((out / "GPT2" / "ASSIST.EXE").exists(), "self_test_missing_assist")
+        require((out / "DOSBOX" / "GPT2CHAT.CONF").exists(), "self_test_missing_chat_conf")
+        require("ASSIST.EXE" in (out / "DOSBOX" / "GPT2CHAT.CONF").read_text(encoding="ascii"), "self_test_chat_conf")
+        require((out / "DOSBOX" / "GPT2INT.CONF").exists(), "self_test_missing_interactive_conf")
+        require("GPT2.EXE" in (out / "DOSBOX" / "GPT2INT.CONF").read_text(encoding="ascii"), "self_test_interactive_conf")
         require((out / "run-demo.sh").exists(), "self_test_missing_shell_launcher")
         require((out / "RUNDEMO.BAT").exists(), "self_test_missing_windows_launcher")
         require((out / "MANIFEST.TXT").exists(), "self_test_missing_manifest")
         require(zip_path.exists() and zip_sha.exists(), "self_test_missing_zip")
 
-    print("PROBE_OK dosbox_bundle_profiles=6")
+    print("PROBE_OK dosbox_bundle_profiles=8")
     print("PROBE_OK dosbox_bundle_relative_mount=1")
+    print("PROBE_OK dosbox_bundle_dpmi_host=1")
+    print("PROBE_OK dosbox_bundle_assistant_shell=1")
+    print("PROBE_OK dosbox_bundle_interactive_profile=1")
     print("PROBE_OK dosbox_bundle_launchers=1")
     print("PROBE_OK dosbox_bundle_zip=1")
     print("PROBE_OK dosbox_bundle_zip_sha256=1")
@@ -330,7 +401,13 @@ def main() -> None:
     parser.add_argument("--model-dir", type=Path, default=DEFAULT_MODEL_DIR)
     parser.add_argument("--pack-dir", type=Path, default=DEFAULT_PACK_DIR)
     parser.add_argument("--gpt2-exe", type=Path, default=DEFAULT_GPT2_EXE)
+    parser.add_argument("--assist-exe", type=Path, default=DEFAULT_ASSIST_EXE)
     parser.add_argument("--staged-src", type=Path, default=DEFAULT_STAGED_SRC)
+    parser.add_argument("--no-assist-exe", action="store_true")
+    parser.add_argument("--dpmi-host", type=Path, default=DEFAULT_DPMI_HOST)
+    parser.add_argument("--dpmi-license", type=Path, default=DEFAULT_DPMI_LICENSE)
+    parser.add_argument("--dpmi-lsm", type=Path, default=DEFAULT_DPMI_LSM)
+    parser.add_argument("--no-dpmi-host", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--no-refresh-staging", action="store_true")
     parser.add_argument("--self-test", action="store_true")
@@ -347,9 +424,13 @@ def main() -> None:
         args.model_dir,
         args.pack_dir,
         args.gpt2_exe,
+        None if args.no_assist_exe else args.assist_exe,
         args.staged_src,
         args.force,
         not args.no_refresh_staging,
+        dpmi_host=None if args.no_dpmi_host else args.dpmi_host,
+        dpmi_license=None if args.no_dpmi_host else args.dpmi_license,
+        dpmi_lsm=None if args.no_dpmi_host else args.dpmi_lsm,
     )
     print(f"DOSBOX_BUNDLE_TREE|path={args.output_dir}")
     print(f"DOSBOX_BUNDLE_ZIP|path={args.zip_path}")

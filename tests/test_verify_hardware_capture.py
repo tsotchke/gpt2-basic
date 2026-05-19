@@ -125,8 +125,11 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
             build_dosbox_bundle.self_test()
 
         text = output.getvalue()
-        self.assertIn("PROBE_OK dosbox_bundle_profiles=6", text)
+        self.assertIn("PROBE_OK dosbox_bundle_profiles=8", text)
         self.assertIn("PROBE_OK dosbox_bundle_relative_mount=1", text)
+        self.assertIn("PROBE_OK dosbox_bundle_dpmi_host=1", text)
+        self.assertIn("PROBE_OK dosbox_bundle_assistant_shell=1", text)
+        self.assertIn("PROBE_OK dosbox_bundle_interactive_profile=1", text)
         self.assertIn("PROBE_OK dosbox_bundle_launchers=1", text)
         self.assertIn("PROBE_OK dosbox_bundle_zip=1", text)
         self.assertIn("PROBE_OK dosbox_bundle_zip_sha256=1", text)
@@ -138,3 +141,9 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
             self.assertIn("cd \\GPT2", text)
             self.assertNotIn(str(ROOT), text)
             text.encode("ascii")
+
+    def test_dosbox_bundle_has_interactive_profile(self) -> None:
+        profile_names = {profile.name for profile in build_dosbox_bundle.DOSBOX_PROFILES}
+
+        self.assertIn("chat", profile_names)
+        self.assertIn("completion", profile_names)

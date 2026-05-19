@@ -119,6 +119,10 @@ what is a problem	A problem is something to solve.
 what is a choice	A choice is one option you can take.
 what is work	Work is effort toward a result.
 what is rest	Rest is time to recover.
+what is the meaning of life	Meaning comes from care, choices, and the people around you.
+what is life	Life is experience, change, and the chance to care about something.
+why are you repeating yourself	If I repeat, ask a shorter question or switch packs.
+you are repeating yourself	I will reset to a shorter answer.
 good night	Good night from DOS.
 see you later	See you later.
 nice to meet you	Nice to meet you too.

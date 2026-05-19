@@ -53,6 +53,7 @@ third_party/
 !assets/**/*.bin
 !qemu/evidence/*.log
 !qemu/evidence/**/*.log
+!qemu/evidence/ASSIST.EXE
 !qemu/evidence/GPT2.EXE
 
 # Online corpus fetch outputs

@@ -105,6 +105,30 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertNotIn('INSTR(lower_text, " assistant")', text)
         self.assertNotIn("MID$(decoded_text, LEN(prompt) + 1)", text)
 
+    def test_interactive_assistant_guards_bad_model_output(self) -> None:
+        text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
+
+        self.assertIn("FUNCTION AssistGeneratedLooksBad", text)
+        self.assertIn("FUNCTION AssistTextHasRepeatedChunk", text)
+        self.assertIn("FUNCTION AssistFallbackReply", text)
+        self.assertIn("FUNCTION AssistGoldenReply", text)
+        self.assertIn("SUB AssistGuardProbe()", text)
+        self.assertIn('command_line = "--guard-probe"', text)
+        self.assertIn('INSTR(lower_text, "use two brief sentences")', text)
+        self.assertIn('INSTR(lower_text, "use to brief sentences")', text)
+        self.assertIn('INSTR(lower_text, "small friendly dos chat assistant")', text)
+        self.assertIn("AssistGeneratedLooksBad(generated, query) = 0", text)
+        self.assertIn('reply_source = "golden"', text)
+        self.assertIn('reply_source = "retrieval"', text)
+        self.assertIn('reply_source = "model"', text)
+        self.assertIn('reply_source = "fallback"', text)
+        self.assertIn('prompt = "User: " + query', text)
+        self.assertNotIn('prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query', text)
+
+        guard_pos = text.index("AssistGeneratedLooksBad(generated, query) = 0")
+        print_pos = text.index('PRINT "Answer: "; bubble', guard_pos)
+        self.assertLess(guard_pos, print_pos)
+
     def test_tokenizer_has_bucketed_lexicon_path(self) -> None:
         text = (ROOT / "src" / "tokenizer.bas").read_text(encoding="ascii")
 
