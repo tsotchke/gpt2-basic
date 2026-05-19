@@ -1,7 +1,7 @@
 # GPT2-BASIC Public Launch Plan
 
-This document is the working plan for turning the current research/development
-tree into a public project that can be pushed, demonstrated, and promoted
+This document records the public preview launch and the remaining gates for a
+later solid release. The preview is published, demonstrated, and promoted
 without overclaiming real-hardware results.
 
 ## Current Public Position
@@ -31,23 +31,17 @@ specific physical machine has produced evidence.
 
 ## Public Repository Strategy
 
-There are already two configured remotes:
+Canonical public home: https://github.com/tsotchke/gpt2-basic
 
-- `origin`: `https://github.com/tsotchke/gpt2-basic.git`
-- `company`: `https://github.com/Tsotchke-Corporation/gpt2-basic.git`
-
-Canonical public home: `origin`.
-
-The company repository remains the private staging/review surface. Publish the
-public preview from a clean `origin/main` snapshot so old private staging history
-does not become part of the public repository. Keep rendered videos, raw
-captures, and large editing assets out of git; publish them through GitHub
-Releases, YouTube, or a media CDN. Keep release zips and hardware-transfer zips
-as GitHub Release assets, not normal source-tree files.
+The public preview is published from a clean `main` snapshot so private staging
+history is not part of the public repository. Rendered videos, raw captures, and
+large editing assets stay out of git; publish them through GitHub Releases,
+YouTube, or a media CDN. Release zips and hardware-transfer zips are GitHub
+Release assets, not normal source-tree files.
 
 ## Publish Gate
 
-Before the first public push or public prerelease, run:
+To reproduce or respin the public preview, run:
 
 ```sh
 python3 -m unittest discover tests
@@ -99,23 +93,24 @@ Keep these out of normal git history:
 - Unreviewed online-corpus downloads
 - Any credentials, API keys, private notes, or unlicensed third-party media
 
-## Public Readiness Checklist
+## Public Preview Launch Record
 
-- [x] Decide canonical remote: `origin`.
-- [x] Decide first public branch name: `main`.
-- [ ] Confirm README headline and current status match the latest CHAT pack.
-- [ ] Confirm LICENSE is acceptable for public release.
-- [ ] Run the publish gate above.
-- [ ] Build preview and hardware-transfer zips.
-- [ ] Verify `qemu/evidence/preview_release_manifest.md`.
-- [ ] Capture one clean QEMU demo video.
-- [ ] Capture one real-hardware teaser if hardware is available.
-- [ ] Build `/private/tmp/gpt2-basic-launch-kit.zip`.
-- [ ] Publish public repository.
-- [ ] Create a prerelease using `docs/releases/v0.1.0-preview.md`.
-- [ ] Attach release zips and checksums.
-- [ ] Publish launch video and short clips.
-- [ ] Add links from README to the release and video.
+- [x] Canonical public home: https://github.com/tsotchke/gpt2-basic
+- [x] Public default branch: `main`
+- [x] Public stale `master` branch removed
+- [x] README and release notes point at the public repo and release
+- [x] MIT license present
+- [x] Publish gate run locally
+- [x] Public `Preview Release` workflow passing on `main`
+- [x] Preview zip, hardware-transfer zip, and launch-kit zip built
+- [x] `qemu/evidence/preview_release_manifest.md` verified
+- [x] Generated QEMU-style demo MP4s and thumbnail attached to the release
+- [x] Public prerelease created from `docs/releases/v0.1.0-preview.md`
+- [x] Release zips, checksums, manifest, videos, and thumbnail attached
+- [x] Public `main` protected with required `Host release gates`
+
+Real-hardware teaser capture remains a solid-release follow-up, tracked as
+public issues #1 and #2.
 
 ## First Public Release Message
 
@@ -128,12 +123,11 @@ Use this as the release thesis:
 The important distinction is that the project is real inference, but modest
 scale. That honesty makes the demo stronger.
 
-## Immediate Next Work
+## Solid-Release Follow-Up
 
-1. Improve real-hardware experience: quiet prefill, compact prompts, optional
-   continue mode, and smaller output shortlist sweeps.
-2. Refresh README status so CHAT mode is represented as a current assistant
-   pack, not only a side experiment.
-3. Capture a clean live QEMU/terminal recording to pair with the generated
-   ffmpeg starter assets.
-4. Build a clean `v0.1.0-preview` prerelease and verify downloaded artifacts.
+1. Capture physical 486 validation logs:
+   https://github.com/tsotchke/gpt2-basic/issues/1
+2. Capture a real-hardware performance matrix:
+   https://github.com/tsotchke/gpt2-basic/issues/2
+3. Improve real-hardware interaction ergonomics: quiet prefill, compact prompts,
+   optional continue mode, and smaller output-shortlist sweeps.
