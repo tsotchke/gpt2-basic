@@ -59,6 +59,8 @@ MEDIA_ASSETS = (
 
 COPY_ASSETS = (
     KitAsset(ROOT / "README.md", "copy/README.md"),
+    KitAsset(ROOT / "CONTRIBUTING.md", "copy/CONTRIBUTING.md"),
+    KitAsset(ROOT / "SECURITY.md", "copy/SECURITY.md"),
     KitAsset(ROOT / "docs/public-launch.md", "copy/public-launch.md"),
     KitAsset(ROOT / "docs/marketing/promo-kit.md", "copy/promo-kit.md"),
     KitAsset(ROOT / "docs/marketing/video-plan.md", "copy/video-plan.md"),

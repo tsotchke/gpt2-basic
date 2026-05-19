@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Preview release
+    url: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
+    about: Download the current preview package and checksums.

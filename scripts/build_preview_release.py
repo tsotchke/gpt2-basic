@@ -62,6 +62,8 @@ DOC_FILES = (
     "qemu/README.md",
     "gpt2_basic_tldr.md",
     "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "requirements-promo.txt",
     "docs/hardware-validation.md",
     "docs/public-launch.md",
@@ -69,6 +71,9 @@ DOC_FILES = (
     "docs/marketing/public-demo-script.md",
     "docs/marketing/video-plan.md",
     "docs/releases/v0.1.0-preview.md",
+    ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/hardware_validation.yml",
     ".github/workflows/preview-release.yml",
 )
 TREE_DIRS = ("src", "scripts", "tests", "data/domain_curriculum", "hardware")
