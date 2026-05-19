@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT_DIR = ROOT / "data" / "online_corpus"
 DEFAULT_REPORT = ROOT / "qemu" / "evidence" / "online_training_data_audit.md"
-USER_AGENT = "gpt2-basic-corpus-fetcher/1.0 (+https://github.com/local/gpt2-basic)"
+USER_AGENT = "gpt2-basic-corpus-fetcher/1.0 (+https://github.com/tsotchke/gpt2-basic)"
 
 
 @dataclass(frozen=True)
