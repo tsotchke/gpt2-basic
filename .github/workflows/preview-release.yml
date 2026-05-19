@@ -3,6 +3,7 @@ name: Preview Release
 on:
   push:
     branches:
+      - main
       - master
       - "release/**"
   pull_request:
