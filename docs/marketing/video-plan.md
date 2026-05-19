@@ -83,6 +83,7 @@ The repository includes an ffmpeg-based material builder for launch cards,
 thumbnail art, a horizontal teaser, and a vertical short:
 
 ```sh
+python3 -m pip install -r requirements-promo.txt
 python3 scripts/build_promo_materials.py --force
 ```
 

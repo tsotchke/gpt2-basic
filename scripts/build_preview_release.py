@@ -62,6 +62,7 @@ DOC_FILES = (
     "qemu/README.md",
     "gpt2_basic_tldr.md",
     "LICENSE",
+    "requirements-promo.txt",
     "docs/hardware-validation.md",
     "docs/public-launch.md",
     "docs/marketing/promo-kit.md",
