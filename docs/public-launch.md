@@ -50,6 +50,8 @@ python3 scripts/train_assistant_pack_models.py --self-test
 python3 scripts/verify_assistant_packs.py
 python3 scripts/verify_workspace_tracking.py
 python3 scripts/build_preview_release.py --force
+python3 scripts/build_dosbox_bundle.py --self-test
+python3 scripts/build_dosbox_bundle.py --force
 python3 scripts/build_hardware_transfer.py --force
 python3 scripts/verify_preview_artifacts.py
 python3 -m pip install -r requirements-promo.txt

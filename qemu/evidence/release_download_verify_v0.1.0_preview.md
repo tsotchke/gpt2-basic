@@ -1,6 +1,6 @@
 # GPT2-BASIC v0.1.0-preview Clean Download Verification
 
-Verified: `2026-05-19T09:08:00Z`
+Verified: `2026-05-19T19:32:15Z`
 
 Repository: `tsotchke/gpt2-basic`
 
@@ -20,6 +20,8 @@ Downloaded files:
 ```text
 gpt2-basic-preview.zip
 gpt2-basic-preview.zip.sha256
+gpt2-basic-dosbox.zip
+gpt2-basic-dosbox.zip.sha256
 gpt2-basic-hardware-transfer.zip
 gpt2-basic-hardware-transfer.zip.sha256
 gpt2-basic-launch-kit.zip
@@ -33,16 +35,17 @@ The public download was checked with `openssl dgst -sha256`.
 
 | Asset | Size | SHA-256 |
 |---|---:|---|
-| `gpt2-basic-preview.zip` | 27,845,361 B | `c0f5f269d007e23ab004f3097d8b26d0fbd731931d7c6bf958c5a4697539e4a0` |
+| `gpt2-basic-preview.zip` | 27,851,088 B | `6af08a262e2842ad8d0f3c058be4dc87d501ff67e131c852099c2548fd4f16b9` |
+| `gpt2-basic-dosbox.zip` | 13,171,199 B | `a6b705d16c0994fb6e5e7fafeef9f90122819311239945004975aee7cfdba040` |
 | `gpt2-basic-hardware-transfer.zip` | 13,166,526 B | `626e8bb4a5eb6ccda9bf116fec889dd50bd40a7eaba93f72496137f8588017b3` |
-| `gpt2-basic-launch-kit.zip` | 43,466,239 B | `50789f184b0df4c56c095f30e4d9c53f93fbfd5ffce955f3cd7a16aa2afa8762` |
-| `preview_release_manifest.md` | 7,862 B | `095733a79b77b10a9b19f7e25cf73df5fa5dc6fc0f228d96af3a94d3a6cd0425` |
+| `gpt2-basic-launch-kit.zip` | 56,355,885 B | `017ef574b2d843b3f13059195eb99b6e0a5e005ab2874c7cc60a8a3e079e5b50` |
+| `preview_release_manifest.md` | 8,088 B | `d89587d48cd91305befb48827e82a97d2a0dc1dda609a95326c540059b575517` |
 
-The three zip hashes match the contents of the downloaded `.sha256` sidecars.
+The four zip hashes match the contents of the downloaded `.sha256` sidecars.
 
 ## Extraction
 
-The preview, hardware-transfer, and launch-kit zips were extracted into a
+The preview, DOSBox, hardware-transfer, and launch-kit zips were extracted into a
 separate fresh temporary root:
 
 ```text
@@ -79,9 +82,10 @@ PROBE_OK preview_artifacts_hardware_zip_payload=1
 PROBE_OK preview_artifacts_hardware_zip_matches_tree=1
 ```
 
-The launch-kit archive was also tested directly:
+The DOSBox and launch-kit archives were also tested directly:
 
 ```sh
+unzip -t /private/tmp/gpt2-basic-public-download/gpt2-basic-dosbox.zip
 unzip -t /private/tmp/gpt2-basic-public-download/gpt2-basic-launch-kit.zip
 ```
 

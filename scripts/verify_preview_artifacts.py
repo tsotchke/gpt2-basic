@@ -39,6 +39,7 @@ EXPECTED_RELEASE_MODEL_DIRS = {
 }
 REQUIRED_PREVIEW_FILES = (
     "bin/GPT2.EXE",
+    "docs/dosbox.md",
     "docs/releases/v0.1.0-preview.md",
     "assets/gpt2_basic/MODEL/VOCAB.BIN",
     "assets/gpt2_basic/PACKS/CHAT/PACK.INI",
@@ -49,6 +50,7 @@ REQUIRED_PREVIEW_FILES = (
     "assets/gpt2_basic/PACKS/OFFICE/USAGE.TXT",
     "qemu/evidence/run_main_486.log",
     "qemu/evidence/workspace_tracking_probe.log",
+    "scripts/build_dosbox_bundle.py",
     "tests/test_build_preview_release.py",
     "tests/test_workspace_tracking.py",
     "preview_release_manifest.md",
@@ -68,8 +70,9 @@ REQUIRED_DEMO_LOG_MARKERS = (
     "Runtime memory:  2055940 bytes",
 )
 REQUIRED_MANIFEST_MARKERS = (
-    "This preview release is the DOS demo and DOS transfer package.",
+    "This preview release is the DOS demo, DOSBox convenience package, and DOS transfer package.",
     "OS/2/Warp package, stay on the later-release track.",
+    "scripts/build_dosbox_bundle.py",
     "CHAT, DOSHELP, and OFFICE packs",
     "per-pack `USAGE.TXT`",
     "qemu/evidence/run_main_486.log",
@@ -407,6 +410,7 @@ def self_test() -> None:
             (model_dir / "PROFILE.TXT").write_text("profile\n", encoding="ascii")
         for rel in (
             "bin/GPT2.EXE",
+            "docs/dosbox.md",
             "docs/releases/v0.1.0-preview.md",
             "assets/gpt2_basic/MODEL/VOCAB.BIN",
             "assets/gpt2_basic/PACKS/CHAT/PACK.INI",
@@ -415,6 +419,7 @@ def self_test() -> None:
             "assets/gpt2_basic/PACKS/DOSHELP/USAGE.TXT",
             "assets/gpt2_basic/PACKS/OFFICE/PACK.INI",
             "assets/gpt2_basic/PACKS/OFFICE/USAGE.TXT",
+            "scripts/build_dosbox_bundle.py",
             "tests/test_build_preview_release.py",
             "tests/test_workspace_tracking.py",
         ):
