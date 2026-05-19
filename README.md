@@ -148,6 +148,7 @@ Public release and media:
 - [Video production plan](docs/marketing/video-plan.md)
 - [Public demo script](docs/marketing/public-demo-script.md)
 - [Promotional copy kit](docs/marketing/promo-kit.md)
+- [DOSBox integration](docs/dosbox.md)
 - Launch handoff kit: `gpt2-basic-launch-kit.zip` on the preview release
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -428,8 +429,8 @@ The curated preview release body is
 [`docs/releases/v0.1.0-preview.md`](docs/releases/v0.1.0-preview.md). The
 package includes `SHA256SUMS.txt`, and the builder writes a zip-level
 `/private/tmp/gpt2-basic-preview.zip.sha256` sidecar for GitHub release
-attachments. Attach the preview zip, hardware-transfer zip, both `.sha256`
-sidecars, and `qemu/evidence/preview_release_manifest.md` to the GitHub
+attachments. Attach the preview zip, DOSBox zip, hardware-transfer zip, all
+`.sha256` sidecars, and `qemu/evidence/preview_release_manifest.md` to the GitHub
 prerelease. The `Preview Release` GitHub Actions workflow also uploads those
 same files as the `gpt2-basic-v0.1.0-preview` workflow artifact after
 verification. The release is intentionally marked as a QEMU-verified prerelease
@@ -447,8 +448,21 @@ Use `bash qemu/run_hardware_capture_486.sh` first to rehearse the same
 `C:\GPT2\HWVALID.BAT` capture path in FreeDOS before transferring it to a
 physical machine.
 
-After rebuilding the preview zip, hardware-transfer zip, and generated launch
-videos, build the launch handoff kit with:
+Build the DOSBox-ready convenience bundle with:
+
+```sh
+python3 scripts/build_dosbox_bundle.py --force
+```
+
+That writes `/private/tmp/gpt2-basic-dosbox.zip` plus a `.sha256` sidecar. The
+bundle contains the short `GPT2` DOS tree, DOSBox config profiles under
+`DOSBOX/`, and host launchers such as `run-demo.sh` and `RUNDEMO.BAT`.
+See [`docs/dosbox.md`](docs/dosbox.md) for the supported profiles. DOSBox is a
+demo/smoke-test path; QEMU remains the preview release gate and physical 486
+captures remain the solid-release gate.
+
+After rebuilding the preview zip, DOSBox zip, hardware-transfer zip, and
+generated launch videos, build the launch handoff kit with:
 
 ```sh
 python3 scripts/build_launch_kit.py --force
@@ -461,9 +475,9 @@ dependency in the environment used for launch-media generation with
 The launch kit writes `/private/tmp/gpt2-basic-launch-kit.zip` plus a `.sha256`
 sidecar for local rebuilds. The public preview release attaches the same
 archive as `gpt2-basic-launch-kit.zip`. It bundles the verified release
-payloads, hardware-transfer payload, preview manifest, generated MP4 launch
-clips, thumbnail, release notes, public launch plan, and reusable promotional
-copy into one deterministic handoff archive.
+payloads, DOSBox payload, hardware-transfer payload, preview manifest, generated
+MP4 launch clips, thumbnail, release notes, public launch plan, and reusable
+promotional copy into one deterministic handoff archive.
 
 Build the minimal DOS transfer bundle with:
 
@@ -1048,13 +1062,16 @@ Production model shape is controlled by the exported fixed-point checkpoint in `
 
 ### ■ DOSBox Configuration
 
-For testing in DOSBox, we recommend the following settings:
+For testing in DOSBox, use the generated bundle:
 
+```sh
+python3 scripts/build_dosbox_bundle.py --force
+cd /private/tmp/gpt2-basic-dosbox
+dosbox -conf DOSBOX/GPT2DEMO.CONF
 ```
-[cpu]
-core=dynamic
-cycles=max
-```
+
+The generated configs use `core=dynamic`, `cycles=max`, `memsize=64`, and
+`mount c .`, then start in `C:\GPT2`.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
