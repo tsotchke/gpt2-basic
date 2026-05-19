@@ -1,4 +1,4 @@
-model_dir: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_BYTE_BASELINE_PRE_LEXICON_PROMOTION
+model_dir: <repo>/assets/gpt2_basic/MODEL_BYTE_BASELINE_PRE_LEXICON_PROMOTION
 profile: 486sx-safe
 shape: layers=2 emb=48 heads=4 ctx=192 hidden=192 vocab=258
 parameters: 90882

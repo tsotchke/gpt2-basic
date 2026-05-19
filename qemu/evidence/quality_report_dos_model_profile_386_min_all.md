@@ -4,7 +4,7 @@ Model profile: `386-min`
 Shape: `2L 32D 4H ctx128 hidden128 vocab258`
 Evaluation backend: `dos-fixed-qemu`
 Quality suite: `all`
-Source log: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence/quality_486_model_profile_386_min.log`
+Source log: `<repo>/qemu/evidence/quality_486_model_profile_386_min.log`
 Quality status: `NEEDS_TRAINING`
 Average score: `0.612`
 Prompt pass rate: `1/10` at threshold `0.72`

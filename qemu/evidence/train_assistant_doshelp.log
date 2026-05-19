@@ -4,8 +4,8 @@ training_backend_selected: cpu
 training_backend_torch_version: 2.11.0
 training_backend_available_cuda: False
 training_backend_available_mps: False
-loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/TRAIN.TXT docs=133
-initialized_from: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL
+loaded_corpus_file: <repo>/assets/gpt2_basic/PACKS/DOSHELP/TRAIN.TXT docs=133
+initialized_from: <repo>/assets/gpt2_basic/MODEL
 device: cpu
 training_documents_core: 42
 training_documents_core_weight: 1
@@ -47,9 +47,9 @@ Why run a language model in DOS?
 prompt: DOS Help Assistant: CONFIG.SYS memory
 DOS Help Assistant: CONFIG.SYS memory
 
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2CFG.TXT
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2WT.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2FX.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2EXP.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/VOCAB.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/PROFILE.TXT
+wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2CFG.TXT
+wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2WT.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2FX.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2EXP.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/VOCAB.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/PROFILE.TXT

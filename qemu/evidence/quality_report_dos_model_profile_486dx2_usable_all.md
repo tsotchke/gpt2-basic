@@ -4,7 +4,7 @@ Model profile: `486dx2-usable`
 Shape: `3L 64D 4H ctx192 hidden256 vocab258`
 Evaluation backend: `dos-fixed-qemu`
 Quality suite: `all`
-Source log: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence/quality_486_model_profile_486dx2_usable.log`
+Source log: `<repo>/qemu/evidence/quality_486_model_profile_486dx2_usable.log`
 Quality status: `NEEDS_TRAINING`
 Average score: `0.715`
 Prompt pass rate: `2/10` at threshold `0.72`

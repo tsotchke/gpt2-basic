@@ -90,4 +90,4 @@ bash qemu/run_perf_486.sh pentium-60
 bash qemu/run_perf_486.sh pentium-133
 ```
 
-Evidence root: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence`
+Evidence root: `<repo>/qemu/evidence`

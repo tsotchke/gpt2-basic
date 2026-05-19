@@ -31,4 +31,4 @@ KERNEL_PERF|stage=ffn|calls=228|seconds=6.800001965486445
 KERNEL_PERF|stage=final_head|calls=108|seconds=30.74999972153455
 KERNEL_PERF_END
 PERF_END
-PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg|mode=kernel
+PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=<repo>/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg|mode=kernel

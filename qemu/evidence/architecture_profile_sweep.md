@@ -29,4 +29,4 @@ bash qemu/run_quality_486.sh assets/gpt2_basic/MODEL_PROFILE_486DX4_PLUS
 bash qemu/run_perf_486.sh 486dx2-66 assets/gpt2_basic/MODEL_PROFILE_486DX4_PLUS
 ```
 
-Evidence root: `/Users/tyr/Desktop/gpt2-basic/qemu/evidence`
+Evidence root: `<repo>/qemu/evidence`

@@ -1,4 +1,4 @@
-model_dir: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR
+model_dir: <repo>/assets/gpt2_basic/MODEL_PROFILE_486DX2_LEXICON4096_REPAIR
 profile: 486dx2-usable
 shape: layers=3 emb=64 heads=4 ctx=192 hidden=256 vocab=2686
 parameters: 508862

@@ -1,4 +1,4 @@
-model_dir: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_LEXICON4096_ADAPTED_REPAIR_S900
+model_dir: <repo>/assets/gpt2_basic/MODEL_LEXICON4096_ADAPTED_REPAIR_S900
 profile: 486sx-safe
 shape: layers=2 emb=48 heads=4 ctx=192 hidden=192 vocab=4096
 parameters: 463168

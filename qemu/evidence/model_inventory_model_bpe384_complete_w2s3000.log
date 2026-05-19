@@ -1,4 +1,4 @@
-model_dir: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_BPE384_COMPLETE_W2S3000
+model_dir: <repo>/assets/gpt2_basic/MODEL_BPE384_COMPLETE_W2S3000
 profile: 486sx-safe
 shape: layers=2 emb=48 heads=4 ctx=192 hidden=192 vocab=384
 parameters: 103104

@@ -23,4 +23,4 @@ PERF_RUN|name=486_target|prompt_tokens=2|generated_tokens=40|seconds=0.879999876
 PERF_RUN|name=basic_runtime|prompt_tokens=4|generated_tokens=33|seconds=0.7699999809265137|tokens_per_sec=42.85714391874695|last_token=313
 PERF_SUMMARY|runs=3|tokens=108|seconds=2.479999780654907|tokens_per_sec=43.54839094843784
 PERF_END
-PERF_RUNNER|basis=qemu-emulation|profile=host|label=host-speed emulator baseline|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=off|accel=tcg|mode=perf
+PERF_RUNNER|basis=qemu-emulation|profile=host|label=host-speed emulator baseline|model_dir=<repo>/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=off|accel=tcg|mode=perf

@@ -4,8 +4,8 @@ training_backend_selected: mps
 training_backend_torch_version: 2.11.0
 training_backend_available_cuda: False
 training_backend_available_mps: True
-loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TRAIN.TXT docs=113491
-loaded_tokenizer_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TOKBASE.TXT docs=2400
+loaded_corpus_file: <repo>/assets/gpt2_basic/PACKS/CHAT/TRAIN.TXT docs=113491
+loaded_tokenizer_corpus_file: <repo>/assets/gpt2_basic/PACKS/CHAT/TOKBASE.TXT docs=2400
 device: mps
 training_documents_core: 42
 training_documents_core_weight: 1
@@ -162,9 +162,9 @@ Why run a language model in DOS?
 prompt: Conversation Pack: Starting a conversation
 Conversation Pack: Starting a conversation
 
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2CFG.TXT
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2WT.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2FX.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2EXP.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/MODEL/VOCAB.BIN
-wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/MODEL/PROFILE.TXT
+wrote <repo>/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2CFG.TXT
+wrote <repo>/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2WT.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2FX.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/CHAT/MODEL/GPT2EXP.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/CHAT/MODEL/VOCAB.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/CHAT/MODEL/PROFILE.TXT

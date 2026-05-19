@@ -2,7 +2,7 @@
 
 Repo: `gpt2_basic`  Status: `ready`  Score: `100`
 
-Contract gaps: `0`  Liveness actions: `0`  Liveness scanned: `0` (skipped)  Stub/fallback paths: `0`  External backend deps: `0`  Runtime checks: `2`  Oracle: `complete`  Oracle source: `/Users/tyr/Desktop/gpt2-basic/.icc/completion-oracles.json`
+Contract gaps: `0`  Liveness actions: `0`  Liveness scanned: `0` (skipped)  Stub/fallback paths: `0`  External backend deps: `0`  Runtime checks: `2`  Oracle: `complete`  Oracle source: `<repo>/.icc/completion-oracles.json`
 
 ## Completion Oracle
 

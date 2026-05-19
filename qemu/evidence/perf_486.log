@@ -48,4 +48,4 @@ PERF_SUMMARY|runs=3|tokens=127|seconds=51.57000041007996|tokens_per_sec=2.462672
 
 PERF_END
 
-PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg|mode=perf
+PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=<repo>/assets/gpt2_basic/MODEL|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg|mode=perf

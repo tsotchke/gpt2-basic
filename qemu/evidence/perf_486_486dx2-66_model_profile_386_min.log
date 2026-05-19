@@ -34,4 +34,4 @@ Memory Manager Shutdown. Peak memory usage:  0.2471046447753906MB
 Matrix allocations:  0, Frees:  0
 Cache hits:  0, Misses:  0
 Disk reads:  0, Writes:  0
-PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=/Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL_PROFILE_386_MIN|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg
+PERF_RUNNER|basis=qemu-emulation|profile=486dx2-66|label=486DX2/66-era throttle|model_dir=<repo>/assets/gpt2_basic/MODEL_PROFILE_386_MIN|qemu_machine=isapc|qemu_cpu=486|icount_shift=4|accel=tcg
