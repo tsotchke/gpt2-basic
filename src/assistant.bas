@@ -99,6 +99,7 @@ DECLARE SUB AssistPrintPackUsage(pack_index AS INTEGER)
 DECLARE SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 DECLARE SUB AssistScriptedDemo()
 DECLARE SUB AssistGuardProbe()
+DECLARE SUB AssistStressProbe()
 DECLARE SUB AssistInteractive()
 DECLARE SUB AssistMain()
 
@@ -734,6 +735,7 @@ FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGE
     DIM previous_ch AS STRING
     DIM run_count AS INTEGER
     DIM alpha_count AS INTEGER
+    DIM comma_count AS INTEGER
 
     text = TRIM$(generated)
     IF text = "" THEN RETURN 1
@@ -762,10 +764,12 @@ FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGE
     previous_ch = ""
     run_count = 0
     alpha_count = 0
+    comma_count = 0
     FOR i = 1 TO LEN(text)
         ch = MID$(text, i, 1)
         IF ch >= "A" AND ch <= "Z" THEN alpha_count = alpha_count + 1
         IF ch >= "a" AND ch <= "z" THEN alpha_count = alpha_count + 1
+        IF ch = "," THEN comma_count = comma_count + 1
         IF ch = previous_ch THEN
             run_count = run_count + 1
             IF run_count >= 4 THEN RETURN 1
@@ -776,11 +780,34 @@ FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGE
     NEXT i
 
     IF alpha_count < 3 THEN RETURN 1
+    IF comma_count >= 4 THEN RETURN 1
     ch = RIGHT$(RTRIM$(text), 1)
     IF ch <> "." AND ch <> "!" AND ch <> "?" THEN RETURN 1
 
     IF lower_query <> "" AND LEN(lower_query) > 8 THEN
         IF lower_text = lower_query THEN RETURN 1
+    END IF
+
+    IF INSTR(lower_query, "repeat") > 0 THEN
+        IF INSTR(lower_text, "repeat") = 0 AND INSTR(lower_text, "short") = 0 AND INSTR(lower_text, "reset") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "bug") > 0 OR INSTR(lower_query, "debug") > 0 OR INSTR(lower_query, "stuck") > 0 OR INSTR(lower_query, "fix") > 0 THEN
+        IF INSTR(lower_text, "bug") = 0 AND INSTR(lower_text, "debug") = 0 AND INSTR(lower_text, "fix") = 0 AND INSTR(lower_text, "step") = 0 AND INSTR(lower_text, "error") = 0 AND INSTR(lower_text, "command") = 0 AND INSTR(lower_text, "test") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "prompt") > 0 OR INSTR(lower_query, "answer") > 0 THEN
+        IF INSTR(lower_text, "prompt") = 0 AND INSTR(lower_text, "answer") = 0 AND INSTR(lower_text, "question") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "local inference") > 0 OR INSTR(lower_query, "model weights") > 0 THEN
+        IF INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "inference") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "old computer") > 0 OR INSTR(lower_query, "486") > 0 OR INSTR(lower_query, "dos") > 0 THEN
+        IF INSTR(lower_text, "dos") = 0 AND INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "486") = 0 AND INSTR(lower_text, "hardware") = 0 AND INSTR(lower_text, "computer") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "release") > 0 OR INSTR(lower_query, "artifact") > 0 OR INSTR(lower_query, "tag") > 0 OR INSTR(lower_query, "status") > 0 THEN
+        IF INSTR(lower_text, "release") = 0 AND INSTR(lower_text, "artifact") = 0 AND INSTR(lower_text, "tag") = 0 AND INSTR(lower_text, "test") = 0 AND INSTR(lower_text, "status") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "dpmi") > 0 OR INSTR(lower_query, "protected mode") > 0 THEN
+        IF INSTR(lower_text, "dpmi") = 0 AND INSTR(lower_text, "protected") = 0 AND INSTR(lower_text, "dos") = 0 AND INSTR(lower_text, "memory") = 0 THEN RETURN 1
     END IF
 
     RETURN 0
@@ -800,14 +827,41 @@ FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query
 
     IF pack_id = "DOSHELP" THEN
         IF intent_name = "dos_batch" THEN RETURN "Use short batch files with IF EXIST checks, clear messages, and 8.3 names."
+        IF INSTR(q, "dpmi") > 0 OR INSTR(q, "protected mode") > 0 THEN RETURN "Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program."
+        IF INSTR(q, "autoexec") > 0 THEN RETURN "Keep AUTOEXEC.BAT short, keep PATH simple, and load resident tools only when needed."
+        IF INSTR(q, "config.sys") > 0 THEN RETURN "Load HIMEM.SYS, use DOS=HIGH,UMB, and keep FILES and BUFFERS modest."
         RETURN "Ask about CONFIG.SYS, AUTOEXEC.BAT, memory, batches, or where the model files live."
     END IF
 
     IF pack_id = "OFFICE" THEN
         IF intent_name = "office_summary" THEN RETURN "Paste the text and ask for a short summary with names, dates, and next actions kept."
+        IF INSTR(q, "professional") > 0 OR INSTR(q, "polite") > 0 THEN RETURN "Use direct, polite wording, keep the concrete fact, and end with the next action."
+        IF INSTR(q, "clearer") > 0 OR INSTR(q, "clarify") > 0 THEN RETURN "State what happened, why it matters, and the next action in one short paragraph."
+        IF INSTR(q, "shorten") > 0 THEN RETURN "Keep the decision and next action, then remove repeated explanation."
         RETURN "Paste a short line and ask for rewrite, summary, formal tone, or shortening."
     END IF
 
+    IF INSTR(q, "repeat") > 0 OR INSTR(q, "loop") > 0 THEN
+        RETURN "I will reset to a shorter answer. Ask one specific question and I will avoid repeating phrases."
+    END IF
+    IF INSTR(q, "bug") > 0 OR INSTR(q, "debug") > 0 OR INSTR(q, "fix") > 0 OR INSTR(q, "stuck") > 0 THEN
+        RETURN "Start with the failing command, the expected result, and the first error line. Then test one small fix."
+    END IF
+    IF INSTR(q, "local inference") > 0 OR INSTR(q, "model weights") > 0 THEN
+        RETURN "Local inference means the DOS program reads model weights and produces the answer on this machine."
+    END IF
+    IF INSTR(q, "weird") > 0 OR INSTR(q, "bad") > 0 THEN
+        RETURN "Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry."
+    END IF
+    IF INSTR(q, "prompt") > 0 OR INSTR(q, "answer") > 0 THEN
+        RETURN "A prompt is what you type. An answer is the model output after it reads that prompt."
+    END IF
+    IF INSTR(q, "old computer") > 0 OR INSTR(q, "486") > 0 THEN
+        RETURN "It matters because a tiny local model can run on old DOS-style hardware without a network."
+    END IF
+    IF INSTR(q, "release") > 0 OR INSTR(q, "artifact") > 0 OR INSTR(q, "tag") > 0 OR INSTR(q, "status") > 0 THEN
+        RETURN "Check the tag target, release assets, checksums, and test result before calling the release done."
+    END IF
     IF INSTR(q, "sad") > 0 OR INSTR(q, "worried") > 0 OR INSTR(q, "lonely") > 0 THEN
         RETURN "I can listen briefly. Name the worry, then choose one small next step."
     END IF
@@ -1091,11 +1145,13 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
               "|intent=" + intent_name + _
               "|ui=text" + _
+              "|query=" + AssistSafeText(query) + _
               "|source=" + reply_source + _
               "|actions=" + AssistSafeText(actions) + _
               "|retrieval=" + AssistSafeText(retrieved_note) + _
               "|golden=" + AssistSafeText(golden) + _
-              "|generated=" + AssistSafeText(generated)
+              "|generated=" + AssistSafeText(generated) + _
+              "|answer=" + AssistSafeText(bubble)
     END IF
     IF use_generation = 0 THEN
         PRINT "+------------------------------------------------------------+"
@@ -1150,6 +1206,46 @@ SUB AssistGuardProbe()
     AssistRenderReply "thanks", 1
 
     PRINT "ASSIST_END|suite=guard-probe|pack=" + AssistTrimFixed(g_assist_packs(g_assist_active_pack).id)
+    AssistShutdownModel
+END SUB
+
+SUB AssistStressProbe()
+    AssistRenderFrame
+    PRINT "ASSIST_BEGIN|suite=stress-probe|version=1"
+    AssistPrintPackList
+    PRINT
+
+    AssistSelectPack "CHAT"
+    AssistRenderPackStatus
+    AssistPreloadActivePackModel
+    AssistRenderReply "why did my answer repeat itself", 1
+    AssistRenderReply "tell me why this old computer model matters", 1
+    AssistRenderReply "make a tiny plan for fixing a bug", 1
+    AssistRenderReply "what is the difference between a prompt and an answer", 1
+    AssistRenderReply "can you explain what local inference means", 1
+    AssistRenderReply "i feel stuck debugging this", 1
+    AssistRenderReply "what should i do if the answer sounds weird", 1
+    AssistRenderReply "give me a status update about a delayed release", 1
+
+    AssistSelectPack "DOSHELP"
+    AssistRenderPackStatus
+    AssistPreloadActivePackModel
+    AssistRenderReply "how do i keep conventional memory free", 1
+    AssistRenderReply "my autoexec is too long what should i change", 1
+    AssistRenderReply "write a batch command that checks for model files", 1
+    AssistRenderReply "why does protected mode need a dpmi host", 1
+    AssistRenderReply "what does config.sys do", 1
+
+    AssistSelectPack "OFFICE"
+    AssistRenderPackStatus
+    AssistPreloadActivePackModel
+    AssistRenderReply "make this sentence sound professional: the release broke", 1
+    AssistRenderReply "summarize: tests passed but dosbox needed a helper file", 1
+    AssistRenderReply "shorten: we need to verify the release before publishing", 1
+    AssistRenderReply "write a polite status update about a delayed build", 1
+    AssistRenderReply "make this clearer: the artifact uploaded but the tag was stale", 1
+
+    PRINT "ASSIST_END|suite=stress-probe|packs=" + LTRIM$(STR$(g_assist_pack_count))
     AssistShutdownModel
 END SUB
 
@@ -1227,6 +1323,12 @@ SUB AssistMain()
     IF command_line = "--guard-probe" THEN
         g_assist_emit_records = 1
         AssistGuardProbe
+        RETURN
+    END IF
+
+    IF command_line = "--stress-probe" THEN
+        g_assist_emit_records = 1
+        AssistStressProbe
         RETURN
     END IF
 

@@ -14,6 +14,9 @@ DEFAULT_PACK_ROOT = ROOT / "assets" / "gpt2_basic" / "PACKS"
 DEFAULT_ASSISTANT_LOG = ROOT / "qemu" / "evidence" / "assistant_486.log"
 DEFAULT_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_compile_486.log"
 DEFAULT_EVIDENCE_DIR = ROOT / "qemu" / "evidence"
+DEFAULT_STRESS_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_486.log"
+DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_compile_486.log"
+DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
 
 
 @dataclass(frozen=True)
@@ -112,6 +115,7 @@ def verify_source() -> None:
         "AssistFallbackReply",
         "AssistGoldenReply",
         "AssistGuardProbe",
+        "AssistStressProbe",
         "AssistPrepareGenerationPrompt",
         "AssistPrefillPrompt",
         "AssistVisibleToken",
@@ -132,12 +136,16 @@ def verify_source() -> None:
         'INSTR(lower_text, "use two brief sentences")',
         'INSTR(lower_text, "use to brief sentences")',
         'prompt = "User: " + query',
+        'command_line = "--stress-probe"',
+        '"|query=" + AssistSafeText(query)',
+        '"|answer=" + AssistSafeText(bubble)',
         'LCASE$(command_text) = "/about"',
         'LCASE$(command_text) = "/u"',
         'LCASE$(command_text) = "/d"',
         'LCASE$(command_text) = "/h"',
         "SPRITE",
         "ICONS",
+        "ASSIST_BEGIN|suite=stress-probe|version=1",
     ):
         require(needle in source, f"source_missing={needle}")
 
@@ -178,18 +186,37 @@ def verify_qemu_logs(packs: list[PackInfo], assistant_log: Path, compile_log: Pa
     require("status=model_unavailable" not in assist, "model_unavailable_in_assistant_log")
 
 
+def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report: Path) -> None:
+    stress = read(stress_log)
+    compile_text = read(stress_compile_log)
+    report = read(stress_report)
+    require("ASSIST_COMPILE_OK" in compile_text, "stress_compile_marker_missing")
+    require("ASSIST_BEGIN|suite=stress-probe|version=1" in stress, "stress_begin_marker_missing")
+    require("ASSIST_END|suite=stress-probe|packs=3" in stress, "stress_end_marker_missing")
+    require(stress.count("ASSIST_REPLY|") == 18, "stress_reply_count_mismatch")
+    require("status=model_unavailable" not in stress, "model_unavailable_in_stress_log")
+    require("|query=" in stress and "|answer=" in stress, "stress_structured_answer_missing")
+    require("Status: `PASS`" in report, "stress_report_not_pass")
+    require("Reply count: `18`" in report, "stress_report_reply_count")
+    require("Source counts:" in report, "stress_report_source_counts")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pack-root", type=Path, default=DEFAULT_PACK_ROOT)
     parser.add_argument("--assistant-log", type=Path, default=DEFAULT_ASSISTANT_LOG)
     parser.add_argument("--compile-log", type=Path, default=DEFAULT_COMPILE_LOG)
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR)
+    parser.add_argument("--stress-log", type=Path, default=DEFAULT_STRESS_LOG)
+    parser.add_argument("--stress-compile-log", type=Path, default=DEFAULT_STRESS_COMPILE_LOG)
+    parser.add_argument("--stress-report", type=Path, default=DEFAULT_STRESS_REPORT)
     args = parser.parse_args()
 
     packs = verify_pack_files(args.pack_root)
     verify_source()
     verify_pack_quality(packs, args.evidence_dir)
     verify_qemu_logs(packs, args.assistant_log, args.compile_log)
+    verify_stress_logs(args.stress_log, args.stress_compile_log, args.stress_report)
     print(f"PROBE_OK assistant_pack_count={len(packs)}")
     print("PROBE_OK assistant_pack_loader=1")
     print("PROBE_OK assistant_pack_models=1")
@@ -198,6 +225,7 @@ def main() -> None:
     print("PROBE_OK assistant_structured_reply=1")
     print("PROBE_OK assistant_art_slots=1")
     print("PROBE_OK assistant_qemu_evidence=1")
+    print("PROBE_OK assistant_stress_evidence=1")
 
 
 if __name__ == "__main__":
