@@ -1,6 +1,6 @@
 # GPT2-BASIC v0.1.0-preview Clean Download Verification
 
-Verified: `2026-05-19T08:55:00Z`
+Verified: `2026-05-19T09:08:00Z`
 
 Repository: `tsotchke/gpt2-basic`
 
@@ -33,10 +33,10 @@ The public download was checked with `openssl dgst -sha256`.
 
 | Asset | Size | SHA-256 |
 |---|---:|---|
-| `gpt2-basic-preview.zip` | 27,841,567 B | `1bc658d57741f897401193ba5ef7963657f524e3a8aa9e9e2b484731c349ef9c` |
+| `gpt2-basic-preview.zip` | 27,845,361 B | `c0f5f269d007e23ab004f3097d8b26d0fbd731931d7c6bf958c5a4697539e4a0` |
 | `gpt2-basic-hardware-transfer.zip` | 13,166,526 B | `626e8bb4a5eb6ccda9bf116fec889dd50bd40a7eaba93f72496137f8588017b3` |
-| `gpt2-basic-launch-kit.zip` | 43,460,739 B | `25e8d8e95cbd8abbc2d8e9c85c63cf368df8066cd4843ceac2d772153372d5c3` |
-| `preview_release_manifest.md` | 7,862 B | `9fa9ca9a5d2a8adc3a74ea1c626495eb3895273dc6d82cdedec3b1bda52fc2ea` |
+| `gpt2-basic-launch-kit.zip` | 43,466,239 B | `50789f184b0df4c56c095f30e4d9c53f93fbfd5ffce955f3cd7a16aa2afa8762` |
+| `preview_release_manifest.md` | 7,862 B | `095733a79b77b10a9b19f7e25cf73df5fa5dc6fc0f228d96af3a94d3a6cd0425` |
 
 The three zip hashes match the contents of the downloaded `.sha256` sidecars.
 
