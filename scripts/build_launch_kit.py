@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RELEASE_VERSION = "v0.1.0-preview"
-DEFAULT_RELEASE_URL = "https://github.com/Tsotchke-Corporation/gpt2-basic/releases/tag/v0.1.0-preview"
+DEFAULT_RELEASE_URL = "https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview"
 DEFAULT_GENERATED_DATE = "2026-05-19"
 DEFAULT_OUTPUT_DIR = Path("/private/tmp/gpt2-basic-launch-kit")
 DEFAULT_ZIP = Path("/private/tmp/gpt2-basic-launch-kit.zip")

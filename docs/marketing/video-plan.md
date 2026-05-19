@@ -161,6 +161,6 @@ Source, evidence, and preview release available now
 
 Links:
 
-- Repository: https://github.com/Tsotchke-Corporation/gpt2-basic
-- Release: https://github.com/Tsotchke-Corporation/gpt2-basic/releases/tag/v0.1.0-preview
+- Repository: https://github.com/tsotchke/gpt2-basic
+- Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 - Hardware validation guide: `docs/hardware-validation.md`

@@ -36,15 +36,14 @@ There are already two configured remotes:
 - `origin`: `https://github.com/tsotchke/gpt2-basic.git`
 - `company`: `https://github.com/Tsotchke-Corporation/gpt2-basic.git`
 
-Recommended public home:
+Canonical public home: `origin`.
 
-1. Use the organization remote for the canonical public repository if this is a
-   company/project launch.
-2. Use the personal remote for development mirrors or solo experiments.
-3. Keep rendered videos, raw captures, and large editing assets out of git.
-   Publish them through GitHub Releases, YouTube, or a media CDN.
-4. Keep release zips and hardware-transfer zips as GitHub Release assets, not
-   normal source-tree files.
+The company repository remains the private staging/review surface. Publish the
+public preview from a clean `origin/main` snapshot so old private staging history
+does not become part of the public repository. Keep rendered videos, raw
+captures, and large editing assets out of git; publish them through GitHub
+Releases, YouTube, or a media CDN. Keep release zips and hardware-transfer zips
+as GitHub Release assets, not normal source-tree files.
 
 ## Publish Gate
 
@@ -102,8 +101,8 @@ Keep these out of normal git history:
 
 ## Public Readiness Checklist
 
-- [ ] Decide canonical remote: `company` or `origin`.
-- [ ] Decide first public branch name, likely `main` or `release/v0.1.0-preview`.
+- [x] Decide canonical remote: `origin`.
+- [x] Decide first public branch name: `main`.
 - [ ] Confirm README headline and current status match the latest CHAT pack.
 - [ ] Confirm LICENSE is acceptable for public release.
 - [ ] Run the publish gate above.

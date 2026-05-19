@@ -97,8 +97,8 @@ Project goals:
 - preserve reproducible evidence for every release
 - prepare a path from QEMU to physical DOS hardware
 
-Repository: https://github.com/Tsotchke-Corporation/gpt2-basic
-Release: https://github.com/Tsotchke-Corporation/gpt2-basic/releases/tag/v0.1.0-preview
+Repository: https://github.com/tsotchke/gpt2-basic
+Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 
 ## Thumbnail Text Options
 
@@ -111,7 +111,7 @@ Release: https://github.com/Tsotchke-Corporation/gpt2-basic/releases/tag/v0.1.0-
 ## Press/Contact Placeholder
 
 Project: GPT2-BASIC
-Repository: https://github.com/Tsotchke-Corporation/gpt2-basic
-Release: https://github.com/Tsotchke-Corporation/gpt2-basic/releases/tag/v0.1.0-preview
+Repository: https://github.com/tsotchke/gpt2-basic
+Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 Contact: Tsotchke Corporation / project owner
 License: MIT
