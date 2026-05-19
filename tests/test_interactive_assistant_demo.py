@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
+import sys
 import unittest
 
 
@@ -128,6 +130,42 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         guard_pos = text.index("AssistGeneratedLooksBad(generated, query) = 0")
         print_pos = text.index('PRINT "Answer: "; bubble', guard_pos)
         self.assertLess(guard_pos, print_pos)
+
+    def test_interactive_assistant_has_stress_probe(self) -> None:
+        text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
+
+        self.assertIn("SUB AssistStressProbe()", text)
+        self.assertIn('command_line = "--stress-probe"', text)
+        self.assertIn("ASSIST_BEGIN|suite=stress-probe|version=1", text)
+        self.assertIn("why did my answer repeat itself", text)
+        self.assertIn("make a tiny plan for fixing a bug", text)
+        self.assertIn("why does protected mode need a dpmi host", text)
+        self.assertIn("make this clearer: the artifact uploaded but the tag was stale", text)
+        self.assertIn('"|query=" + AssistSafeText(query)', text)
+        self.assertIn('"|answer=" + AssistSafeText(bubble)', text)
+
+    def test_assistant_stress_script_rejects_bad_visible_text(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "stress_assistant_behavior.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_stress_self_test=1", result.stdout)
+
+    def test_qemu_assistant_stress_launcher_is_headless(self) -> None:
+        launcher = (ROOT / "qemu" / "run_assistant_stress_486.sh").read_text(encoding="ascii")
+        batch = (ROOT / "qemu" / "fdauto_assist_stress.bat").read_text(encoding="ascii")
+
+        self.assertIn("-display curses", launcher)
+        self.assertIn("fdauto_assist_stress.bat", launcher)
+        self.assertIn("--get-text ASTRESS.LOG", launcher)
+        self.assertIn("QEMU_TIMEOUT_SECONDS", launcher)
+        self.assertIn("QEMU stress timeout reached", launcher)
+        self.assertIn("scripts/stress_assistant_behavior.py", launcher)
+        self.assertNotIn("-display cocoa", launcher)
+        self.assertIn("ASSIST.EXE --stress-probe", batch)
 
     def test_tokenizer_has_bucketed_lexicon_path(self) -> None:
         text = (ROOT / "src" / "tokenizer.bas").read_text(encoding="ascii")
