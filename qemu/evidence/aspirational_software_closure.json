@@ -1,0 +1,140 @@
+{
+  "artifact_file": "qemu/evidence/aspirational_software_closure.md",
+  "checkpoint": "formerly_aspirational_software",
+  "completion_reason": "aspirational_software_implemented",
+  "done": true,
+  "features": {
+    "benchmarks_and_emulator_evidence": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "component benchmarks",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/benchmark.bas"
+        },
+        {
+          "label": "emulator timing contract",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "qemu/evidence/hardware_perf_report.md"
+        }
+      ]
+    },
+    "block_sparse_attention": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "block-sparse structures",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/block_sparse.bas"
+        },
+        {
+          "label": "block-sparse attention operations",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/block_sparse.bas"
+        }
+      ]
+    },
+    "fixed_point_and_assembly": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "assembly/fallback fixed point",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/asm_optimizations.bas"
+        },
+        {
+          "label": "production fixed point",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/real_gpt.bas"
+        }
+      ]
+    },
+    "memory_tracker": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "documented tracker API",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/memory_manager.bas"
+        },
+        {
+          "label": "matrix pool API",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/memory_manager.bas"
+        }
+      ]
+    },
+    "parameter_streaming": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "layer cache and eviction",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/memory_manager.bas"
+        },
+        {
+          "label": "disk-row streaming",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/file_io.bas"
+        }
+      ]
+    },
+    "simd_like_ops": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "packing and arithmetic",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/simd_ops.bas"
+        },
+        {
+          "label": "adaptive precision and CPU detection",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/simd_ops.bas"
+        },
+        {
+          "label": "matrix integration",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/matrix_ops.bas"
+        }
+      ]
+    },
+    "vga_visual_trace": {
+      "passed": true,
+      "requirements": [
+        {
+          "label": "Mode 13h trace visualizer",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "src/visual_trace.bas"
+        },
+        {
+          "label": "QEMU visual trace runner",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "qemu/run_visual_trace_486.sh"
+        },
+        {
+          "label": "DOS visual trace evidence",
+          "missing_patterns": [],
+          "passed": true,
+          "path": "qemu/evidence/visual_trace_486.log"
+        }
+      ]
+    }
+  },
+  "runtime_backend": "source_probe"
+}

@@ -1,0 +1,7 @@
+trace_scope dos_quality_log_contract
+trace parse_generated_blocks
+trace markdown_report
+PROBE_OK parse_generated_blocks blocks=10
+PROBE_OK dos_quality_report bytes=1542
+PROBE_OK evaluate_dos_quality_log self_test=1
+PROBE_OK main cli_entry=available

@@ -1,0 +1,9 @@
+trace parse_quality_report
+trace estimated_486dx2_tps
+trace measured_tps_by_profile
+trace measured_tps_for_model
+PROBE_OK estimated_486dx2_tps value=2.271
+PROBE_OK find_model_dirs count=36
+PROBE_OK build_rows count=1
+PROBE_OK markdown bytes=1558
+PROBE_OK profile_pareto_cli self_test=1

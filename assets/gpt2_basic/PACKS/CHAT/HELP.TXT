@@ -1,0 +1,14 @@
+# key|title|body
+hello|Starting a conversation|Hello from DOS.
+how are you|Status check|I answer in DOS.
+what can you do|Assistant abilities|I chat in DOS.
+limits|Model limits|I am tiny and local.
+idea|Idea help|Try asking one clear question.
+prompt|Prompt meaning|A prompt is your typed question.
+explain|Explain mode|I can explain simple ideas.
+demo|DOS demo|The demo is live.
+thanks|Thanks|You are welcome.
+confused|Clarify request|Ask one short question.
+talk|Open conversation|I can talk in DOS.
+name|Assistant identity|I am GPT2-BASIC.
+status|Demo status|The demo is live.

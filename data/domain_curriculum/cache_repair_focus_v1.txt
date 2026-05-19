@@ -1,0 +1,23 @@
+Explain why a cache matters for text generation. A cache matters because the model can reuse key and value vectors from earlier tokens instead of rebuilding the full attention history for every new token. On old PCs, that trades a fixed memory budget for less repeated attention work in the decode loop.
+
+Explain why a cache matters for text generation. The cache stores prior token state so the next-token step can focus on the new token and the current context. It improves speed only when the stored vectors fit memory and the implementation keeps the buffer layout predictable.
+
+Explain why a cache matters for text generation. Cache reuse does not change the trained weights or make the model smarter. It reduces repeated computation during generation, which can make a small DOS transformer more practical on real hardware.
+
+A cache matters because each generated token otherwise repeats attention work over the same history. Reusing key and value vectors keeps the context useful while reducing decode-loop cost. The cache must still be bounded because conventional memory is limited.
+
+Cache reuse helps text generation when prompt history is needed across many tokens. The runtime stores reusable attention vectors, updates them for the newest token, and avoids rebuilding everything from scratch. This is a speed and memory tradeoff, not a quality shortcut.
+
+For GPT2-BASIC, the cache should be measured with the same timing probe as the rest of generation. A useful report says how many tokens were generated, how much memory the cache used, and whether the output still matches reference behavior.
+
+Describe fixed point inference in one sentence. Fixed-point inference stores weights as scaled integers and computes transformer logits with predictable integer arithmetic, so an old PC can run the model without relying on fast floating point hardware.
+
+Describe fixed point inference in one sentence. Fixed point replaces floating point tensors with scaled integer math, clamps, and lookup tables while preserving enough precision for the generated text to follow the trained model.
+
+Fixed-point inference is a correctness contract. The DOS runtime must use the same model files, scales, tokenizer, and output masking as the host tools, then prove the result with vector checks before timing claims matter.
+
+Fixed point is not just compression. It is the arithmetic strategy that lets a no-FPU DOS machine run attention, feed-forward layers, normalization, and logits with predictable memory and repeatable behavior.
+
+GPT2 BASIC on a 486 should answer in terms of memory, fixed-point arithmetic, model files, and decode-loop timing. A clean answer should not mention report filenames or training scaffolding.
+
+DOS language models need compact checkpoints, clean tokenizer output, predictable memory use, and local generation from trained weights. They should produce short technical answers and stop cleanly.

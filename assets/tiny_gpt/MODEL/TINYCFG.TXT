@@ -1,0 +1,7 @@
+# GPT2-BASIC real tiny GPT config
+vocab_size=258
+n_positions=192
+n_embd=48
+n_head=4
+n_layer=2
+hidden_dim=192

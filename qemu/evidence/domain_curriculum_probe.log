@@ -1,0 +1,7 @@
+trace_scope domain_curriculum_contract
+trace render_topic
+trace render_cross_topic
+trace render_prompt_families
+trace build_corpus
+artifact: SOURCE_MANIFEST.json
+PROBE_OK domain_curriculum docs=106

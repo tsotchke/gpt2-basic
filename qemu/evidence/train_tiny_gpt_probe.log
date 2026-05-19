@@ -1,0 +1,17 @@
+trace_scope train_tiny_gpt_contract
+trace build_backend_runtime
+trace load_corpus_file
+trace load_repo_documents
+trace build_stream
+trace encode_text_output_safe
+trace tokenizer_basis_documents
+trace base_weight
+trace bpe_output_mode
+trace lexicon_tokenizer_mode
+trace write_exp_table
+trace load_exported_weights
+trace parse_export_config
+trace require_same_config
+PROBE_OK export_model profile=486sx-safe layers=2
+PROBE_OK tokenizer cli=available
+PROBE_OK main cli_entry=available

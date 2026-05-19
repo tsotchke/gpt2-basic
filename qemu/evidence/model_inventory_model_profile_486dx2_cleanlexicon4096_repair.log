@@ -1,0 +1,25 @@
+model_dir: <repo>/assets/gpt2_basic/MODEL_PROFILE_486DX2_CLEANLEXICON4096_REPAIR
+profile: 486dx2-usable
+shape: layers=3 emb=64 heads=4 ctx=192 hidden=256 vocab=4096
+parameters: 690752
+fixed_weight_bytes: 2763008
+config: GPT2CFG.TXT
+fixed_weights: GPT2FX.BIN
+exp_table: GPT2EXP.BIN
+float_reference: GPT2WT.BIN
+profile_metadata: PROFILE.TXT
+artifact GPT2CFG.TXT: OK (136 bytes)
+artifact GPT2WT.BIN: OK (2763008 bytes)
+artifact GPT2FX.BIN: OK (2763008 bytes)
+artifact GPT2EXP.BIN: OK (2052 bytes)
+artifact PROFILE.TXT: OK profile=486dx2-usable
+artifact VOCAB.BIN: OK mode=lexicon vocab=4096 merges=0 output_allowed=3934 (102424 bytes)
+artifact GPT2TQ4.BIN: absent optional compressed token embedding
+artifact GPT2HQ4.BIN: absent optional compressed output head
+artifact GPT2HQS.ON: absent optional q4 output-head streaming marker
+artifact GPT2HSL.BIN: absent optional output-head shortlist
+artifact TINYCFG.TXT: absent optional legacy alias
+artifact TINYWT.BIN: absent optional legacy alias
+artifact TINYFX.BIN: absent optional legacy alias
+artifact TINYEXP.BIN: absent optional legacy alias
+status: OK

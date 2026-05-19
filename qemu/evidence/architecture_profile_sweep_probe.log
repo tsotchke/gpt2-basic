@@ -1,0 +1,21 @@
+training_backend_requested: cpu
+training_backend_selected: cpu
+training_backend_torch_version: 2.11.0
+training_backend_available_cuda: False
+training_backend_available_mps: False
+runtime_backend: architecture_profile_sweep_cpu
+backend_gate: mode=self_test requested=cpu selected=cpu fallback_intentional=0
+trace_scope architecture_profile_contract
+trace same_shape
+trace find_export_dir
+trace preferred_quality
+trace to_era_config
+trace refresh_heldout_reports
+trace run_training
+trace train_command
+trace build_backend_runtime
+trace print_sweep_backend_contract
+PROBE_OK architecture_profiles count=5
+PROBE_OK architecture_rows count=2
+PROBE_OK architecture_report bytes=1757
+PROBE_OK architecture_profile_sweep self_test=1

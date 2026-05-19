@@ -1,0 +1,55 @@
+profile: 486sx-safe - 486SX-safe baseline: current no-FPU production checkpoint shape
+training_backend_requested: auto
+training_backend_selected: cpu
+training_backend_torch_version: 2.11.0
+training_backend_available_cuda: False
+training_backend_available_mps: False
+loaded_corpus_file: <repo>/assets/gpt2_basic/PACKS/OFFICE/TRAIN.TXT docs=101
+initialized_from: <repo>/assets/gpt2_basic/MODEL
+device: cpu
+training_documents_core: 42
+training_documents_core_weight: 1
+training_documents_external: 101
+training tokens: 42206224
+tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
+model: layers=2 emb=48 heads=4 ctx=192 hidden=192
+step     1 loss 9.9033
+step    60 loss 1.9341
+step   120 loss 0.6754
+step   180 loss 0.4164
+step   240 loss 0.2129
+step   300 loss 0.2046
+step   360 loss 0.1762
+step   420 loss 0.1299
+step   480 loss 0.1299
+step   540 loss 0.1109
+step   600 loss 0.1185
+step   660 loss 0.1300
+step   720 loss 0.0846
+step   780 loss 0.0743
+step   840 loss 0.0762
+step   900 loss 0.0674
+step   960 loss 0.0783
+step  1020 loss 0.0728
+step  1080 loss 0.0598
+step  1140 loss 0.0840
+step  1200 loss 0.1446
+
+prompt: Hello there.
+Hello there.
+
+prompt: GPT2 BASIC on a 486
+GPT2 BASIC on a 486
+
+prompt: Why run a language model in DOS?
+Why run a language model in DOS?
+
+prompt: Office Assistant: Rewrite selected text
+Office Assistant: Rewrite selected text
+
+wrote <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL/GPT2CFG.TXT
+wrote <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL/GPT2WT.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL/GPT2FX.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL/GPT2EXP.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL/VOCAB.BIN
+wrote <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL/PROFILE.TXT

@@ -1,0 +1,32 @@
+CHAT pack
+
+Purpose:
+  Use this pack for ordinary conversation. It is the default pack in the
+  interactive QEMU demo because it is meant for talking, not a specific
+  DOS or office task.
+
+How it works:
+  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
+  chat notes from HELP.TXT when a topic matches. It is also trained from
+  GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
+  sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
+  grammar entries. Ordinary short prompts do not depend on a lookup hit. The
+  answers are deliberately brief so the DOS console can show Thinking token
+  progress, stream Answer pieces as they are generated, and return to the
+  prompt quickly.
+
+How to use it:
+  Just type a sentence at the > prompt. Use /about to see this help again.
+  Use /u and /d to page through the transcript, or /h to show history.
+
+Good prompts:
+  Hello, what can you do?
+  I am bored.
+  Tell me a joke.
+  Do you like music?
+  I want to talk about this DOS demo.
+  Give me one idea for improving the demo.
+  What are your limits?
+
+Actions:
+  chat, ask, idea, explain, cancel

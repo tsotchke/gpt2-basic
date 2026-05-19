@@ -1,0 +1,147 @@
+{
+  "generated_by": "scripts/build_domain_curriculum.py",
+  "corpus": "data/domain_curriculum/domain_curriculum.txt",
+  "seed": 486,
+  "variants_per_topic": 48,
+  "cross_variants": 160,
+  "prompt_variants": 36,
+  "anchor_repeats": 0,
+  "answer_bank_repeats": 18,
+  "documents": 760,
+  "clean_chars": 384725,
+  "heldout_prompt_leakage": false,
+  "topics": [
+    {
+      "key": "cache",
+      "concept": "decode cache",
+      "keywords": [
+        "cache",
+        "context",
+        "tokens",
+        "speed",
+        "memory",
+        "reuse"
+      ],
+      "facts": [
+        "The generation cache reuses key and value vectors for tokens that are already inside the context window.",
+        "A cache saves repeated attention work during next-token decoding, which improves speed without changing the trained weights.",
+        "On DOS, cache memory must be fixed-size and predictable because the runtime cannot allocate large temporary buffers freely.",
+        "The cache is useful only when it is measured in the same fixed-point runtime that generates the text.",
+        "Cache design trades memory for speed: more retained vectors reduce recomputation but consume scarce conventional memory."
+      ]
+    },
+    {
+      "key": "timing",
+      "concept": "timing report",
+      "keywords": [
+        "timing",
+        "seconds",
+        "tokens",
+        "measured",
+        "hardware",
+        "QEMU"
+      ],
+      "facts": [
+        "The DOS executable should report generated tokens, elapsed seconds, and tokens per second from inside the timed decode loop.",
+        "A QEMU result should say which CPU profile, icount setting, and machine basis produced the measurement.",
+        "Host stopwatch numbers are not hardware claims; the authoritative record is the PERF log emitted by GPT2.EXE.",
+        "A useful timing row separates model estimates from measured emulator or physical hardware evidence.",
+        "The report must include enough context to repeat the run: model profile, fixed-point arithmetic, prompt length, token count, and seconds."
+      ]
+    },
+    {
+      "key": "limits",
+      "concept": "old PC limits",
+      "keywords": [
+        "memory",
+        "context",
+        "speed",
+        "weights",
+        "small",
+        "hardware"
+      ],
+      "facts": [
+        "A tiny transformer on old PCs is limited by memory, context length, weight bytes, integer arithmetic cost, and bus speed.",
+        "The model must stay small enough to load its weights and work buffers before generation begins.",
+        "Larger profiles can improve quality, but they also reduce speed and raise the runtime memory requirement.",
+        "The context window is a budget: more tokens preserve history, while fewer tokens make attention cheaper.",
+        "Hardware constraints force a tradeoff between useful text, fixed-point accuracy, and tokens per second."
+      ]
+    },
+    {
+      "key": "fixed_point",
+      "concept": "fixed-point inference",
+      "keywords": [
+        "fixed",
+        "integer",
+        "weights",
+        "arithmetic",
+        "logits",
+        "runtime"
+      ],
+      "facts": [
+        "Fixed-point inference stores weights as scaled integers and runs arithmetic with predictable integer operations.",
+        "The Q20.12 path keeps twelve fractional bits, uses a lookup table for attention exponentials, and produces logits for the sampler.",
+        "Fixed-point runtime checks must match the host float phase vectors before the checkpoint is trusted in DOS.",
+        "Integer weights reduce dependence on an FPU and make 486SX-class execution possible, but every scale and clamp must be tested.",
+        "The sampler should choose from fixed-point logits after masking unsupported byte tokens and preserving printable output."
+      ]
+    },
+    {
+      "key": "profiles",
+      "concept": "model profile comparison",
+      "keywords": [
+        "profile",
+        "quality",
+        "speed",
+        "memory",
+        "measure",
+        "tradeoff"
+      ],
+      "facts": [
+        "Profiles must be compared with both quality and speed because a larger checkpoint can be slower without producing better text.",
+        "A profile choice is a tradeoff among memory, measured tokens per second, held-out quality, context length, and parameter count.",
+        "The best profile is not the one with the most layers; it is the one that wins the target hardware evidence contract.",
+        "QEMU profile rows are useful for iteration, but physical hardware logs should replace them when boards are available.",
+        "A production profile needs vector parity, DOS quality evidence, and PERF timing before it becomes the default model."
+      ]
+    },
+    {
+      "key": "runtime",
+      "concept": "BASIC transformer runtime",
+      "keywords": [
+        "BASIC",
+        "arrays",
+        "fixed",
+        "tokens",
+        "loops",
+        "model"
+      ],
+      "facts": [
+        "The BASIC runtime uses arrays for tokens, embeddings, cache vectors, logits, and fixed-point work buffers.",
+        "Generation is real only when GPT2.EXE loads trained weights and computes the next byte through the transformer path.",
+        "The model directory is the contract: GPT2CFG.TXT describes shape, GPT2FX.BIN stores fixed weights, and GPT2EXP.BIN stores the exp table.",
+        "The runtime should stop instead of pretending if the trained model files are absent.",
+        "The useful answer is concrete: it names DOS, weights, arrays, loops, fixed-point math, and measured output."
+      ]
+    },
+    {
+      "key": "real_inference",
+      "concept": "real inference",
+      "keywords": [
+        "logits",
+        "trained",
+        "weights",
+        "transformer",
+        "runtime"
+      ],
+      "facts": [
+        "Real inference means the continuation comes from trained weights, transformer layers, logits, and sampler decisions.",
+        "A fake text table or prompt prior is not the production path; it can only be a diagnostic if it is labeled as such.",
+        "The runtime must load the checkpoint, encode the prompt as byte tokens, run attention and feed-forward layers, and decode printable bytes.",
+        "Correctness comes before speed because a fast fake model says nothing about the actual hardware system.",
+        "Vector parity proves that fixed-point phases still match the exported host checkpoint closely enough to trust the DOS result."
+      ]
+    }
+  ]
+}

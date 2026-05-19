@@ -1,0 +1,43 @@
+profile: 386-min - 386/low-memory minimum: smallest fixed-point transformer that remains useful
+training_backend_requested: auto
+training_backend_selected: cpu
+training_backend_torch_version: 2.11.0
+training_backend_available_cuda: False
+training_backend_available_mps: False
+loaded_corpus_file: data/domain_curriculum/gold_curriculum_v4.txt docs=38
+device: cpu
+training_documents_core: 46
+training_documents_core_weight: 48
+training_documents_external: 38
+tokenizer_basis_documents: 84
+tokenizer_basis_chars: 82487
+training tokens: 11566600
+tokenizer: lexicon vocab=384 merges=0 output_allowed=222
+model: layers=2 emb=32 heads=4 ctx=128 hidden=128
+step     1 loss 6.1311
+step   500 loss 2.5008
+step  1000 loss 2.1360
+step  1500 loss 1.8359
+step  2000 loss 1.6422
+step  2500 loss 1.4673
+step  3000 loss 1.4249
+step  3500 loss 1.3360
+step  4000 loss 1.1800
+step  4500 loss 1.2528
+step  5000 loss 1.1856
+
+prompt: Hello there.
+Hello there. Thave anording Porammetibe are simple.
+
+prompt: GPT2 BASIC on a 486
+GPT2 BASIC on a 486 stric stryste. The Q2. Quame chos caved cops funt a ficicie onte the checkpoint for
+
+prompt: Why run a language model in DOS?
+Why run a language model in DOS? The matrgols refuncers. The onete mode conste that amprove real 482-to am
+
+wrote assets/gpt2_basic/MODEL_PROFILE_386_MIN_LEXICON384_REPAIR/GPT2CFG.TXT
+wrote assets/gpt2_basic/MODEL_PROFILE_386_MIN_LEXICON384_REPAIR/GPT2WT.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_386_MIN_LEXICON384_REPAIR/GPT2FX.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_386_MIN_LEXICON384_REPAIR/GPT2EXP.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_386_MIN_LEXICON384_REPAIR/VOCAB.BIN
+wrote assets/gpt2_basic/MODEL_PROFILE_386_MIN_LEXICON384_REPAIR/PROFILE.TXT

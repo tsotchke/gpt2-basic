@@ -1,0 +1,8 @@
+trace_scope hardware_perf_contract
+trace parse_record
+trace parse_log
+trace markdown
+PROBE_OK parse_log runs=3
+PROBE_OK hardware_perf_report bytes=1031
+PROBE_OK hardware_perf_report self_test=1
+PROBE_OK main cli_entry=available

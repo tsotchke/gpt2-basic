@@ -1,0 +1,4 @@
+PROBE_OK has_pattern exact_symbols=1
+PROBE_OK vga_visual_trace feature=registered
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

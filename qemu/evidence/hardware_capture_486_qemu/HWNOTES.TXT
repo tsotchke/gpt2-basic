@@ -1,0 +1,12 @@
+Machine key:
+CPU:
+Clock:
+RAM:
+DOS version:
+FreeBASIC version:
+Storage:
+Cache/turbo state:
+Video:
+Model directory:
+Pack directory:
+Notes:

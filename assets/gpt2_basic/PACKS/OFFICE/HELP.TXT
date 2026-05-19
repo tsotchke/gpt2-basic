@@ -1,0 +1,6 @@
+# key|title|body
+rewrite|Rewrite selected text|Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.
+professional|Professional tone|Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+formal|Formal memo|Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
+summar|Summary action|Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
+shorten|Shorten action|Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.

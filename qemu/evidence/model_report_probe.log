@@ -1,0 +1,16 @@
+PROBE_OK resolve_file cfg=GPT2CFG.TXT
+PROBE_OK require_int exercised_by=expected_parameter_count
+PROBE_OK expected_parameter_count params=463168
+PROBE_OK validate_file_size fixed_bytes=1852672
+PROBE_OK validate_profile profile=486sx-safe
+trace validate_tokenizer_file
+PROBE_OK validate_tokenizer_file status=OK mode=lexicon vocab=4096 merges=0 output_allowed=3934 (102424 bytes)
+trace validate_q4_artifact
+PROBE_OK validate_head_q4 status=OK q4-log values=196608 packed=98304 original_i32=786432
+PROBE_OK validate_token_q4 status=OK q4-log values=196608 packed=98304 original_i32=786432
+PROBE_OK validate_vector_file vectors=3 phases=39
+PROBE_OK validate_optional_alias status=absent optional legacy alias
+PROBE_OK named_artifact_status status=OK (133 bytes)
+PROBE_OK artifact_line line=artifact GPT2CFG.TXT: OK (133 bytes)
+PROBE_OK self_test exercised=1
+PROBE_OK main cli_entry=available

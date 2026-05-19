@@ -1,0 +1,25 @@
+model_dir: <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL
+profile: 486sx-safe
+shape: layers=2 emb=48 heads=4 ctx=192 hidden=192 vocab=4096
+parameters: 463168
+fixed_weight_bytes: 1852672
+config: GPT2CFG.TXT
+fixed_weights: GPT2FX.BIN
+exp_table: GPT2EXP.BIN
+float_reference: GPT2WT.BIN
+profile_metadata: PROFILE.TXT
+artifact GPT2CFG.TXT: OK (133 bytes)
+artifact GPT2WT.BIN: OK (1852672 bytes)
+artifact GPT2FX.BIN: OK (1852672 bytes)
+artifact GPT2EXP.BIN: OK (2052 bytes)
+artifact PROFILE.TXT: OK profile=486sx-safe
+artifact VOCAB.BIN: OK mode=lexicon vocab=4096 merges=0 output_allowed=3934 (102424 bytes)
+artifact GPT2TQ4.BIN: absent optional compressed token embedding
+artifact GPT2HQ4.BIN: absent optional compressed output head
+artifact GPT2HQS.ON: absent optional q4 output-head streaming marker
+artifact GPT2HSL.BIN: absent optional output-head shortlist
+artifact TINYCFG.TXT: absent optional legacy alias
+artifact TINYWT.BIN: absent optional legacy alias
+artifact TINYFX.BIN: absent optional legacy alias
+artifact TINYEXP.BIN: absent optional legacy alias
+status: OK

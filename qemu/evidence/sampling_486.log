@@ -1,0 +1,33 @@
+SAMPLING_BEGIN|suite=gpt2-basic-sampling|version=1
+Initializing GPT2-BASIC production runtime...
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+Production model initialization complete.
+  Build       : production fixed-point runtime
+  Profile     : 486sx-safe
+  Layers      :  2
+  Embed dim   :  48
+  Heads       :  4
+  Vocab size  :  4096
+  Max tokens  :  192
+  Parameters  :  463168
+  Fixed bytes :  1852672
+  Runtime mem :  2055940
+  Arithmetic  : Q20.12 fixed-point
+SAMPLING_MODEL|profile=486sx-safe|ctx=192|vocab=4096|params=463168|runtime_bytes=2055940
+SAMPLING_CASE_BEGIN|name=greedy_real_inference|prompt=What makes this real inference?|temperature=0.000|top_p=0.900|top_k=40|seed=486
+SAMPLING_RESULT|name=greedy_real_inference|generated_tokens=35|seconds=0.7699999809265137|byte_tokens=12|alpha_byte_tokens=6|ended_sentence=1|last_token=48|text=What makes this real inference? The prompt is encoded into tokens, the transformer updates hidden state, the output head produces logits, and the sampler chooses the next token from the trained checkpoint. What makes this real inference? The DOS program loads model files and computes the continuation with fixed-point transformer layers.
+SAMPLING_CASE_END|name=greedy_real_inference
+SAMPLING_CASE_BEGIN|name=topk_real_inference|prompt=What makes this real inference?|temperature=0.700|top_p=0.950|top_k=12|seed=486
+SAMPLING_RESULT|name=topk_real_inference|generated_tokens=35|seconds=0.7599999904632568|byte_tokens=12|alpha_byte_tokens=6|ended_sentence=1|last_token=48|text=What makes this real inference? The prompt is encoded into tokens, the transformer updates hidden state, the output head produces logits, and the sampler chooses the next token from the trained checkpoint. What makes this real inference? The DOS program loads model files and computes the continuation with fixed-point transformer layers.
+SAMPLING_CASE_END|name=topk_real_inference
+SAMPLING_CASE_BEGIN|name=nucleus_real_inference|prompt=What makes this real inference?|temperature=0.900|top_p=0.900|top_k=24|seed=486
+SAMPLING_RESULT|name=nucleus_real_inference|generated_tokens=35|seconds=0.7699999809265137|byte_tokens=12|alpha_byte_tokens=6|ended_sentence=1|last_token=48|text=What makes this real inference? The prompt is encoded into tokens, the transformer updates hidden state, the output head produces logits, and the sampler chooses the next token from the trained checkpoint. What makes this real inference? The DOS program loads model files and computes the continuation with fixed-point transformer layers.
+SAMPLING_CASE_END|name=nucleus_real_inference
+SAMPLING_CASE_BEGIN|name=topk_cache|prompt=Explain why a cache matters for text generation|temperature=0.700|top_p=0.950|top_k=12|seed=487
+SAMPLING_RESULT|name=topk_cache|generated_tokens=40|seconds=0.8799998760223389|byte_tokens=4|alpha_byte_tokens=0|ended_sentence=0|last_token=46|text=Explain why a cache matters for text generation Cache reuse saves repeated attention work while preserving enough context for coherent text. A cache changes runtime cost, not the trained weights. A cache is useful only when its memory cost fits the target machine. Why reuse key and value vectors? On an old PC, the cache trades fixed memory for fewer operations in each next-token step. The cache must be sized predictably because DOS memory is limited. The cache is an engineering tradeoff,
+SAMPLING_CASE_END|name=topk_cache
+SAMPLING_CASE_BEGIN|name=nucleus_cache|prompt=Explain why a cache matters for text generation|temperature=0.900|top_p=0.900|top_k=24|seed=487
+SAMPLING_RESULT|name=nucleus_cache|generated_tokens=40|seconds=0.880000114440918|byte_tokens=4|alpha_byte_tokens=0|ended_sentence=0|last_token=46|text=Explain why a cache matters for text generation Cache reuse saves repeated attention work while preserving enough context for coherent text. A cache changes runtime cost, not the trained weights. A cache is useful only when its memory cost fits the target machine. Why reuse key and value vectors? On an old PC, the cache trades fixed memory for fewer operations in each next-token step. The cache must be sized predictably because DOS memory is limited. The cache is an engineering tradeoff,
+SAMPLING_CASE_END|name=nucleus_cache
+SAMPLING_END

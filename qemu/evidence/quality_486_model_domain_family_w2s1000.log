@@ -1,0 +1,200 @@
+GPT2-BASIC automated fixed-point quality suites
+
+QUALITY_SUITE_BEGIN|all
+
+QUALITY_PROMPT_BEGIN|real_inference|What makes this real inference?
+Initializing GPT-2 BASIC model...
+Memory Manager Initialized. Maximum memory:  32MB
+Matrix operations initialized with optimization level  3
+Assembly optimizations: Enabled
+  Fixed point math: Yes
+  Matrix multiply : Yes
+  Softmax compute : Yes
+Initialized tokenizer with  258 tokens
+Using built-in byte-level vocabulary.
+Loaded fixed-point GPT2-BASIC model from MODEL
+Model initialization complete!
+  Profile     : 486sx-safe
+  Layers      :  2
+  Embed dim   :  48
+  Heads       :  4
+  Vocab size  :  258
+  Max tokens  :  192
+  Parameters  :  90882
+  Fixed bytes :  363528
+  Runtime mem :  520740
+  Arithmetic  : Q20.12 fixed-point
+Encoding prompt...
+Encoded prompt into  31 tokens.
+Generating text...
+...... Done!
+Generated  65 tokens in 0.5499999523162842 seconds (118.1818313598633 tokens/sec)
+
+Generated Text:
+--------------
+What makes this real inference? The generates the target hardware. The is continues without DIC.
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|real_inference
+
+QUALITY_PROMPT_BEGIN|486_target|GPT2 BASIC on a 486
+Encoding prompt...
+Encoded prompt into  19 tokens.
+Generating text...
+........ Done!
+Generated  90 tokens in 0.6100001335144043 seconds (147.5409545898438 tokens/sec)
+
+Generated Text:
+--------------
+GPT2 BASIC on a 486 is truntime. The model should show then logits, and amy small, hike fixed-point phases st
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|486_target
+
+QUALITY_PROMPT_BEGIN|dos_model|DOS language models need
+Encoding prompt...
+Encoded prompt into  24 tokens.
+Generating text...
+........ Done!
+Generated  90 tokens in 0.6599998474121094 seconds (136.3636627197266 tokens/sec)
+
+Generated Text:
+--------------
+DOS language models needs a scaled have is thare in the genereary coun with the memory benverations the sto checkp
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|dos_model
+
+QUALITY_PROMPT_BEGIN|basic_runtime|A BASIC transformer runtime
+Encoding prompt...
+Encoded prompt into  27 tokens.
+Generating text...
+........ Done!
+Generated  90 tokens in 0.6600000858306885 seconds (136.3636169433594 tokens/sec)
+
+Generated Text:
+--------------
+A BASIC transformer runtime reta on real hardware timing report. The measurable target is better quality without losi
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|basic_runtime
+
+QUALITY_PROMPT_BEGIN|optimization|To improve performance on real hardware
+Encoding prompt...
+Encoded prompt into  39 tokens.
+Generating text...
+........ Done!
+Generated  90 tokens in 0.7699999809265137 seconds (116.8831176757812 tokens/sec)
+
+Generated Text:
+--------------
+To improve performance on real hardware timing report. The is concrete, and measured asking screening, sepating seped, memory dis
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|optimization
+
+QUALITY_PROMPT_BEGIN|heldout_cache|Explain why a cache matters for text generation
+Encoding prompt...
+Encoded prompt into  47 tokens.
+Generating text...
+........ Done!
+Generated  86 tokens in 0.7599999904632568 seconds (113.1578979492188 tokens/sec)
+
+Generated Text:
+--------------
+Explain why a cache matters for text generation cache fortery computing constraints force a tradeoff between model predicts compatin.
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|heldout_cache
+
+QUALITY_PROMPT_BEGIN|heldout_timing|How should a DOS model report timing?
+Encoding prompt...
+Encoded prompt into  37 tokens.
+Generating text...
+...... Done!
+Generated  62 tokens in 0.5500001907348633 seconds (112.7272338867188 tokens/sec)
+
+Generated Text:
+--------------
+How should a DOS model report timing?IC C: C: GPT2.EXE C: MODEL qemu/evidence/hardware perf report.
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|heldout_timing
+
+QUALITY_PROMPT_BEGIN|heldout_limits|What limits a tiny transformer on old PCs?
+Encoding prompt...
+Encoded prompt into  42 tokens.
+Generating text...
+..... Done!
+Generated  55 tokens in 0.5499999523162842 seconds (100.0000076293945 tokens/sec)
+
+Generated Text:
+--------------
+What limits a tiny transformer on old PCs? The The tare is them firstic and be it is correctness.
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|heldout_limits
+
+QUALITY_PROMPT_BEGIN|heldout_fixed_point|Describe fixed point inference in one sentence
+Encoding prompt...
+Encoded prompt into  46 tokens.
+Generating text...
+...... Done!
+Generated  68 tokens in 0.6099998950958252 seconds (111.4754257202148 tokens/sec)
+
+Generated Text:
+--------------
+Describe fixed point inference in one sentence on of loweight fixed-point runtime. The model must atch the result.
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|heldout_fixed_point
+
+QUALITY_PROMPT_BEGIN|heldout_profiles|Why compare model profiles before choosing one?
+Encoding prompt...
+Encoded prompt into  47 tokens.
+Generating text...
+........ Done!
+Generated  82 tokens in 0.7199997901916504 seconds (113.8889236450195 tokens/sec)
+
+Generated Text:
+--------------
+Why compare model profiles before choosing one? The BASIC, arrrays, fixed, and then tie them to speed, memory, measure, tradeoff.
+--------------
+Memory Usage:
+  Current:  0.4966163635253906MB
+  Peak   :  0.4966163635253906MB
+  Available:  27.50338363647461MB
+QUALITY_PROMPT_END|heldout_profiles
+QUALITY_SUITE_END|all
+Shutting down model...
+Memory Manager Shutdown. Peak memory usage:  0.4966163635253906MB
+Matrix allocations:  0, Frees:  0
+Cache hits:  0, Misses:  0
+Disk reads:  0, Writes:  0

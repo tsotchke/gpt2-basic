@@ -1,0 +1,183 @@
+{
+  "profiles": [
+    {
+      "name": "gpt2-basic-486-production",
+      "default": true,
+      "targets": [
+        "gpt2-basic-486-production",
+        "gpt2-basic",
+        "gpt2_basic",
+        "486"
+      ],
+      "required_artifacts": [
+        "index",
+        "memory",
+        "architecture",
+        "git-history"
+      ],
+      "presets": [
+        "shell-hardening",
+        "python-stub-bodies",
+        "python-production-leakage"
+      ],
+      "index_quality_min_lines": 50,
+      "pattern_audit_exclude_path_prefixes": {
+        "python-production-leakage": [
+          "qemu"
+        ]
+      },
+      "require_classified_changes": true,
+      "path_classifications": [
+        {
+          "role": "repo_config",
+          "paths": [
+            ".gitignore"
+          ],
+          "path_prefixes": [
+            ".github/workflows/",
+            ".icc"
+          ],
+          "description": "Repository release automation, ICC oracle, and release-audit policy."
+        },
+        {
+          "role": "production_source",
+          "path_prefixes": [
+            "src"
+          ],
+          "description": "FreeBASIC DOS runtime and production support modules."
+        },
+        {
+          "role": "host_tooling",
+          "path_prefixes": [
+            "scripts"
+          ],
+          "description": "Host training, evaluation, export, and reporting tools."
+        },
+        {
+          "role": "host_tests",
+          "path_prefixes": [
+            "tests"
+          ],
+          "description": "Focused host-side validators for training, export, and evidence tooling."
+        },
+        {
+          "role": "hardware_capture",
+          "path_prefixes": [
+            "hardware"
+          ],
+          "description": "Physical DOS hardware capture batch, notes template, and runbook."
+        },
+        {
+          "role": "runtime_evidence",
+          "path_prefixes": [
+            "qemu/evidence"
+          ],
+          "description": "Compile, vector, quality, performance, strategy, and ICC readiness evidence."
+        },
+        {
+          "role": "qemu_tooling",
+          "path_prefixes": [
+            "qemu"
+          ],
+          "description": "QEMU runners, DOS staging helpers, and harness scripts."
+        },
+        {
+          "role": "promoted_model",
+          "paths": [
+            "assets/gpt2_basic/MODEL"
+          ],
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL/"
+          ],
+          "description": "Promoted default checkpoint packaged for the 486 production target."
+        },
+        {
+          "role": "speed_release_model",
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL_HEADSHORTLIST2048_PROD_PROBE/"
+          ],
+          "description": "Measured output-head shortlist release-mode checkpoint with DOS vector, quality, and kernel-performance evidence."
+        },
+        {
+          "role": "full_release_model",
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL_LEXICON_GOLD_V4_S3000/"
+          ],
+          "description": "Measured gold-v4 full-resident release checkpoint with DOS vector, quality, and performance evidence."
+        },
+        {
+          "role": "assistant_pack",
+          "path_prefixes": [
+            "assets/gpt2_basic/PACKS/"
+          ],
+          "description": "Pack metadata, retrieval notes, and sprite/icon slots for the optional assistant shell."
+        },
+        {
+          "role": "compressed_release_model",
+          "path_prefixes": [
+            "assets/gpt2_basic/MODEL_HEADQ4_PROD_PROBE/"
+          ],
+          "description": "Measured q4/log output-head release-mode checkpoint with DOS vector, quality, and performance evidence."
+        },
+        {
+          "role": "candidate_model",
+          "patterns": [
+            "assets/gpt2_basic/MODEL_*/*",
+            "assets/gpt2_basic/MODEL_SUBWORD512_PROTO/*",
+            "assets/quality_prior/*",
+            "assets/tiny_gpt/*"
+          ],
+          "description": "Experimental or rejected checkpoints that must not be promoted implicitly."
+        },
+        {
+          "role": "curriculum",
+          "path_prefixes": [
+            "data/domain_curriculum"
+          ],
+          "description": "Curated training and evaluation corpus material."
+        },
+        {
+          "role": "documentation",
+          "patterns": [
+            "*.md",
+            "docs/*"
+          ],
+          "description": "Human-facing release, architecture, and usage documentation."
+        },
+        {
+          "role": "diagnostic",
+          "patterns": [
+            "qemu/*smoke*",
+            "qemu/*diagnostic*",
+            "qemu/open_config_test.bas",
+            "qemu/fdauto_open_config.bat",
+            "src/dos_gpt2_basic.bas",
+            "src/quality_prior.bas"
+          ],
+          "description": "Diagnostic or lab paths kept out of production claims unless explicitly promoted."
+        },
+        {
+          "role": "generated_local",
+          "patterns": [
+            "qemu/*.img",
+            "qemu/staging/*",
+            "qemu/performance_table.html",
+            "**/__pycache__/*",
+            "*.pyc"
+          ],
+          "description": "Generated local runtime artifacts that should not drive release signoff."
+        }
+      ],
+      "severity_overrides": {},
+      "verdict": {
+        "fail_on": {
+          "high": 0
+        },
+        "warn_on": {
+          "medium": 0,
+          "low": 0
+        }
+      }
+    }
+  ]
+}

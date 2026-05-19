@@ -1,0 +1,45 @@
++------------------------------------------------------------+
+| GPT2-BASIC Assistant Shell                                 |
+| Pack-driven text UI; VGA sprite/icon slots are pack assets. |
++------------------------------------------------------------+
+
+ASSIST_BEGIN|suite=pack-shell|version=1
+Available packs:
+  DOSHELP - DOS Help Assistant
+  OFFICE - Office Assistant
+
+Pack : DOSHELP - DOS Help Assistant
+Model: PACKS\DOSHELP\MODEL
+Sprite asset: PACKS\DOSHELP\DOSHELP.SPR
+Icon asset  : PACKS\DOSHELP\DOSHELP.ICN
+ASSIST_PACK|id=DOSHELP|title=DOS Help Assistant|model=PACKS\DOSHELP\MODEL|sprite=PACKS\DOSHELP\DOSHELP.SPR|icons=PACKS\DOSHELP\DOSHELP.ICN
+
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|generated=
++------------------------------------------------------------+
+| Assistant                                                  |
++------------------------------------------------------------+
+CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+
+[ show_config,explain_xms,more,cancel ]
+
+Pack : OFFICE - Office Assistant
+Model: PACKS\OFFICE\MODEL
+Sprite asset: PACKS\OFFICE\OFFICE.SPR
+Icon asset  : PACKS\OFFICE\OFFICE.ICN
+ASSIST_PACK|id=OFFICE|title=Office Assistant|model=PACKS\OFFICE\MODEL|sprite=PACKS\OFFICE\OFFICE.SPR|icons=PACKS\OFFICE\OFFICE.ICN
+
+Initialized tokenizer with  258 tokens
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|actions=rewrite,shorten,formalize,cancel|retrieval=Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.|generated=
++------------------------------------------------------------+
+| Assistant                                                  |
++------------------------------------------------------------+
+Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.
+
+[ rewrite,shorten,formalize,cancel ]
+
+ASSIST_END|packs=2

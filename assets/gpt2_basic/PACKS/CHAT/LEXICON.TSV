@@ -1,0 +1,503 @@
+# word	part_of_speech	tags
+a	determiner	article
+an	determiner	article
+the	determiner	article
+i	pronoun	first_person subject
+me	pronoun	first_person object
+my	pronoun	first_person possessive
+you	pronoun	second_person
+your	pronoun	second_person possessive
+it	pronoun	third_person neutral
+this	pronoun	demonstrative
+that	pronoun	demonstrative
+we	pronoun	first_person plural
+am	verb	be present first_person
+are	verb	be present
+is	verb	be present
+be	verb	be base
+can	verb	modal ability
+do	verb	auxiliary action
+does	verb	auxiliary action
+did	verb	auxiliary past
+have	verb	auxiliary possession
+has	verb	auxiliary possession
+use	verb	action
+ask	verb	action
+answer	verb	action
+explain	verb	action
+talk	verb	action
+chat	verb	action
+type	verb	action
+run	verb	action
+running	verb	action progressive
+mean	verb	definition
+means	verb	definition
+what	question	word
+who	question	word
+where	question	word
+when	question	word
+why	question	word
+how	question	word
+hello	interjection	greeting
+hi	interjection	greeting
+hey	interjection	greeting
+thanks	interjection	gratitude
+thank	verb	gratitude
+bye	interjection	farewell
+goodbye	interjection	farewell
+yes	adverb	affirmation
+no	adverb	negation
+not	adverb	negation
+short	adjective	length
+small	adjective	size
+tiny	adjective	size
+local	adjective	location
+plain	adjective	style
+simple	adjective	style
+friendly	adjective	style
+clear	adjective	style
+one	number	count
+two	number	count
+question	noun	dialogue
+prompt	noun	dialogue
+sentence	noun	dialogue
+answer	noun	dialogue
+reply	noun	dialogue
+idea	noun	dialogue
+demo	noun	product
+model	noun	machine_learning
+weights	noun	machine_learning
+inference	noun	machine_learning
+token	noun	machine_learning
+real	adjective	truth
+actual	adjective	truth
+fake	adjective	truth
+live	adjective	status
+generated	adjective	machine_learning
+script	noun	program
+scripted	adjective	program
+typed	adjective	dialogue
+dos	noun	operating_system
+basic	noun	language
+qemu	noun	emulator
+internet	noun	network
+network	noun	network
+limit	noun	ability
+limits	noun	ability
+person	noun	casual
+people	noun	casual
+friend	noun	casual
+family	noun	casual
+home	noun	casual
+work	noun	casual
+school	noun	casual
+day	noun	casual
+night	noun	casual
+morning	noun	casual
+evening	noun	casual
+time	noun	casual
+minute	noun	casual
+hour	noun	casual
+week	noun	casual
+month	noun	casual
+year	noun	casual
+life	noun	casual
+world	noun	casual
+place	noun	casual
+city	noun	casual
+room	noun	casual
+house	noun	casual
+food	noun	casual
+drink	noun	casual
+water	noun	casual
+coffee	noun	casual
+tea	noun	casual
+music	noun	casual
+song	noun	casual
+movie	noun	casual
+book	noun	casual
+game	noun	casual
+story	noun	casual
+joke	noun	casual
+plan	noun	casual
+problem	noun	casual
+feeling	noun	casual
+mood	noun	casual
+worry	noun	casual
+hope	noun	casual
+goal	noun	casual
+task	noun	casual
+project	noun	casual
+computer	noun	casual
+screen	noun	casual
+keyboard	noun	casual
+monitor	noun	casual
+window	noun	casual
+cursor	noun	casual
+command	noun	casual
+menu	noun	casual
+history	noun	casual
+scroll	noun	casual
+package	noun	casual
+release	noun	casual
+archive	noun	casual
+zip	noun	casual
+checksum	noun	casual
+transfer	noun	casual
+hardware	noun	casual
+emulator	noun	casual
+freedos	noun	casual
+transformer	noun	casual
+layer	noun	casual
+logit	noun	casual
+sampler	noun	casual
+vocabulary	noun	casual
+lexicon	noun	casual
+grammar	noun	casual
+corpus	noun	casual
+training	noun	casual
+quality	noun	casual
+evidence	noun	casual
+runtime	noun	casual
+console	noun	casual
+terminal	noun	casual
+paragraph	noun	casual
+phrase	noun	casual
+spelling	noun	casual
+meaning	noun	casual
+context	noun	casual
+cache	noun	casual
+speed	noun	casual
+second	noun	casual
+folder	noun	casual
+path	noun	casual
+drive	noun	casual
+batch	noun	casual
+autoexec	noun	casual
+himem	noun	casual
+xms	noun	casual
+text	noun	casual
+weather	noun	casual
+rain	noun	casual
+sun	noun	casual
+snow	noun	casual
+wind	noun	casual
+travel	noun	casual
+road	noun	casual
+map	noun	casual
+train	noun	casual
+car	noun	casual
+bus	noun	casual
+money	noun	casual
+job	noun	casual
+meeting	noun	casual
+message	noun	casual
+note	noun	casual
+letter	noun	casual
+age	noun	casual
+hobby	noun	casual
+art	noun	casual
+picture	noun	casual
+photo	noun	casual
+sound	noun	casual
+voice	noun	casual
+dream	noun	casual
+fact	noun	casual
+reason	noun	casual
+example	noun	casual
+detail	noun	casual
+step	noun	casual
+list	noun	casual
+rule	noun	casual
+habit	noun	casual
+friendship	noun	casual
+trust	noun	casual
+care	noun	casual
+effort	noun	casual
+result	noun	casual
+option	noun	casual
+advice	noun	casual
+choice	noun	casual
+color	noun	casual
+focus	noun	casual
+distraction	noun	casual
+practice	noun	casual
+energy	noun	casual
+health	noun	casual
+smile	noun	casual
+laugh	noun	casual
+puzzle	noun	casual
+score	noun	casual
+level	noun	casual
+player	noun	casual
+topic	noun	casual
+company	noun	casual
+emotion	noun	casual
+feel	verb	casual action
+think	verb	casual action
+know	verb	casual action
+want	verb	casual action
+need	verb	casual action
+like	verb	casual action
+love	verb	casual action
+prefer	verb	casual action
+remember	verb	casual action
+forget	verb	casual action
+learn	verb	casual action
+teach	verb	casual action
+try	verb	casual action
+start	verb	casual action
+stop	verb	casual action
+continue	verb	casual action
+wait	verb	casual action
+listen	verb	casual action
+hear	verb	casual action
+read	verb	casual action
+write	verb	casual action
+play	verb	casual action
+make	verb	casual action
+build	verb	casual action
+fix	verb	casual action
+improve	verb	casual action
+choose	verb	casual action
+decide	verb	casual action
+guess	verb	casual action
+notice	verb	casual action
+understand	verb	casual action
+believe	verb	casual action
+wonder	verb	casual action
+relax	verb	casual action
+rest	verb	casual action
+sleep	verb	casual action
+eat	verb	casual action
+walk	verb	casual action
+look	verb	casual action
+see	verb	casual action
+find	verb	casual action
+open	verb	casual action
+close	verb	casual action
+save	verb	casual action
+load	verb	casual action
+create	verb	casual action
+change	verb	casual action
+move	verb	casual action
+keep	verb	casual action
+share	verb	casual action
+tell	verb	casual action
+show	verb	casual action
+give	verb	casual action
+take	verb	casual action
+bring	verb	casual action
+send	verb	casual action
+receive	verb	casual action
+discuss	verb	casual action
+describe	verb	casual action
+compare	verb	casual action
+suggest	verb	casual action
+boot	verb	casual action
+compile	verb	casual action
+stream	verb	casual action
+generate	verb	casual action
+test	verb	casual action
+verify	verb	casual action
+browse	verb	casual action
+connect	verb	casual action
+disconnect	verb	casual action
+quit	verb	casual action
+help	verb	casual action
+repeat	verb	casual action
+recover	verb	casual action
+solve	verb	casual action
+follow	verb	casual action
+lead	verb	casual action
+enjoy	verb	casual action
+imagine	verb	casual action
+mention	verb	casual action
+respond	verb	casual action
+begin	verb	casual action
+finish	verb	casual action
+return	verb	casual action
+switch	verb	casual action
+print	verb	casual action
+edit	verb	casual action
+organize	verb	casual action
+clean	verb	casual action
+track	verb	casual action
+commit	verb	casual action
+copy	verb	casual action
+happy	adjective	casual description
+sad	adjective	casual description
+angry	adjective	casual description
+tired	adjective	casual description
+bored	adjective	casual description
+curious	adjective	casual description
+calm	adjective	casual description
+anxious	adjective	casual description
+busy	adjective	casual description
+free	adjective	casual description
+ready	adjective	casual description
+hard	adjective	casual description
+easy	adjective	casual description
+new	adjective	casual description
+old	adjective	casual description
+good	adjective	casual description
+bad	adjective	casual description
+great	adjective	casual description
+big	adjective	casual description
+long	adjective	casual description
+quick	adjective	casual description
+slow	adjective	casual description
+messy	adjective	casual description
+quiet	adjective	casual description
+loud	adjective	casual description
+bright	adjective	casual description
+dark	adjective	casual description
+warm	adjective	casual description
+cold	adjective	casual description
+cool	adjective	casual description
+funny	adjective	casual description
+serious	adjective	casual description
+kind	adjective	casual description
+safe	adjective	casual description
+useful	adjective	casual description
+important	adjective	casual description
+possible	adjective	casual description
+true	adjective	casual description
+false	adjective	casual description
+sure	adjective	casual description
+lonely	adjective	casual description
+confused	adjective	casual description
+worried	adjective	casual description
+practical	adjective	casual description
+helpful	adjective	casual description
+careful	adjective	casual description
+honest	adjective	casual description
+direct	adjective	casual description
+polite	adjective	casual description
+concrete	adjective	casual description
+brief	adjective	casual description
+natural	adjective	casual description
+casual	adjective	casual description
+normal	adjective	casual description
+odd	adjective	casual description
+weird	adjective	casual description
+unusual	adjective	casual description
+interesting	adjective	casual description
+boring	adjective	casual description
+fun	adjective	casual description
+nice	adjective	casual description
+okay	adjective	casual description
+fine	adjective	casual description
+better	adjective	casual description
+worse	adjective	casual description
+best	adjective	casual description
+early	adjective	casual description
+late	adjective	casual description
+first	adjective	casual description
+last	adjective	casual description
+next	adjective	casual description
+previous	adjective	casual description
+current	adjective	casual description
+common	adjective	casual description
+rare	adjective	casual description
+daily	adjective	casual description
+personal	adjective	casual description
+public	adjective	casual description
+private	adjective	casual description
+closed	adjective	casual description
+light	adjective	casual description
+heavy	adjective	casual description
+fast	adjective	casual description
+human	adjective	casual description
+alive	adjective	casual description
+smart	adjective	casual description
+large	adjective	casual description
+green	adjective	casual description
+blue	adjective	casual description
+red	adjective	casual description
+yellow	adjective	casual description
+black	adjective	casual description
+white	adjective	casual description
+gray	adjective	casual description
+soft	adjective	casual description
+healthy	adjective	casual description
+focused	adjective	casual description
+relaxed	adjective	casual description
+maybe	adverb	casual modifier
+really	adverb	casual modifier
+very	adverb	casual modifier
+sometimes	adverb	casual modifier
+always	adverb	casual modifier
+never	adverb	casual modifier
+soon	adverb	casual modifier
+later	adverb	casual modifier
+now	adverb	casual modifier
+today	adverb	casual modifier
+tomorrow	adverb	casual modifier
+yesterday	adverb	casual modifier
+here	adverb	casual modifier
+there	adverb	casual modifier
+together	adverb	casual modifier
+alone	adverb	casual modifier
+slowly	adverb	casual modifier
+quickly	adverb	casual modifier
+briefly	adverb	casual modifier
+simply	adverb	casual modifier
+clearly	adverb	casual modifier
+politely	adverb	casual modifier
+carefully	adverb	casual modifier
+honestly	adverb	casual modifier
+directly	adverb	casual modifier
+locally	adverb	casual modifier
+safely	adverb	casual modifier
+quietly	adverb	casual modifier
+loudly	adverb	casual modifier
+often	adverb	casual modifier
+rarely	adverb	casual modifier
+usually	adverb	casual modifier
+again	adverb	casual modifier
+already	adverb	casual modifier
+still	adverb	casual modifier
+almost	adverb	casual modifier
+just	adverb	casual modifier
+only	adverb	casual modifier
+also	adverb	casual modifier
+more	adverb	casual modifier
+less	adverb	casual modifier
+enough	adverb	casual modifier
+too	adverb	casual modifier
+well	adverb	casual modifier
+badly	adverb	casual modifier
+nearby	adverb	casual modifier
+far	adverb	casual modifier
+inside	adverb	casual modifier
+outside	adverb	casual modifier
+because	preposition	relation
+if	preposition	relation
+then	preposition	relation
+so	preposition	relation
+but	preposition	relation
+and	preposition	relation
+or	preposition	relation
+with	preposition	relation
+without	preposition	relation
+before	preposition	relation
+after	preposition	relation
+while	preposition	relation
+during	preposition	relation
+near	preposition	relation
+around	preposition	relation
+between	preposition	relation
+through	preposition	relation
+into	preposition	relation
+over	preposition	relation
+under	preposition	relation
+beside	preposition	relation
+about	preposition	relation
+above	preposition	relation
+below	preposition	relation
+against	preposition	relation
+toward	preposition	relation
+from	preposition	relation
+plus	preposition	relation
+minus	preposition	relation

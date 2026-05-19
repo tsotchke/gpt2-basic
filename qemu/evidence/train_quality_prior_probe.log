@@ -1,0 +1,16 @@
+trace_scope quality_prior_contract
+trace train_prior
+trace build_teacher
+trace teacher_completion
+trace quality_ok
+trace normalize_completion
+trace build_training_corpus
+trace build_ngram_entries
+trace context_budget
+trace teacher_candidates
+trace weighted_choice_hex
+trace write_prior
+trace write_ngram_prior
+artifact: PRIOR.TXT
+artifact: PRIORLM.TXT
+PROBE_OK train_quality_prior rows=11 ngram_entries=3579

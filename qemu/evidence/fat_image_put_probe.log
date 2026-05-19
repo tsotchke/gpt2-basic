@@ -1,0 +1,19 @@
+trace_scope fat_image_contract
+trace FATImage._find_base
+trace FATImage._read_bpb
+trace FATImage.fat_get
+trace FATImage.fat_set_one
+trace FATImage.alloc_clusters
+trace FATImage.cluster_chain
+trace FATImage.short_name
+trace FATImage.dir_region
+trace FATImage.list_dir
+trace FATImage.find_entry
+trace FATImage.free_slot
+trace FATImage.write_entry
+trace FATImage.mkdir_at
+trace FATImage.resolve_parent
+trace FATImage.write_file
+trace FATImage.read_file
+trace put_tree
+PROBE_OK fat_image_put self_test=1

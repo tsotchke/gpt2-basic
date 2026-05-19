@@ -1,0 +1,1001 @@
+' *******************************************************
+' * GPT2-BASIC Assistant Pack Shell                    *
+' *******************************************************
+' * Optional Clippy-style assistant surface. This file  *
+' * builds ASSIST.EXE, separate from the slim release   *
+' * GPT2.EXE. It loads assistant packs, switches model  *
+' * paths, retrieves pack notes, and renders a text UI  *
+' * that can later be skinned with VGA sprites/icons.   *
+' *******************************************************
+
+#INCLUDE "src/tokenizer.bas"
+
+DIM SHARED g_assist_current_memory AS LONG
+DIM SHARED g_assist_peak_memory AS LONG
+
+DECLARE SUB TrackAllocation(size AS LONG)
+DECLARE SUB TrackDeallocation(size AS LONG)
+
+SUB TrackAllocation(size AS LONG)
+    IF size <= 0 THEN RETURN
+    g_assist_current_memory = g_assist_current_memory + size
+    IF g_assist_current_memory > g_assist_peak_memory THEN g_assist_peak_memory = g_assist_current_memory
+END SUB
+
+SUB TrackDeallocation(size AS LONG)
+    IF size <= 0 THEN RETURN
+    g_assist_current_memory = g_assist_current_memory - size
+    IF g_assist_current_memory < 0 THEN g_assist_current_memory = 0
+END SUB
+
+#INCLUDE "src/real_gpt.bas"
+
+CONST ASSIST_PACK_ROOT = "PACKS"
+CONST ASSIST_PACK_LIST = "PACKS\PACKS.TXT"
+CONST ASSIST_MAX_PACKS = 8
+CONST ASSIST_MAX_REPLY_TOKENS = 64
+CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 10
+CONST ASSIST_DEFAULT_TOP_P = 0.9
+CONST ASSIST_DEFAULT_TOP_K = 24
+CONST ASSIST_HISTORY_MAX = 96
+CONST ASSIST_HISTORY_PAGE = 10
+
+TYPE AssistantPack
+    id AS STRING * 32
+    title AS STRING * 64
+    model_path AS STRING * 80
+    persona AS STRING * 160
+    help_path AS STRING * 80
+    usage_path AS STRING * 80
+    sprite_path AS STRING * 80
+    icons_path AS STRING * 80
+    actions AS STRING * 80
+    loaded AS INTEGER
+END TYPE
+
+DIM SHARED g_assist_packs(0 TO ASSIST_MAX_PACKS - 1) AS AssistantPack
+DIM SHARED g_assist_pack_count AS INTEGER
+DIM SHARED g_assist_active_pack AS INTEGER
+DIM SHARED g_assist_model_path AS STRING
+DIM SHARED g_assist_emit_records AS INTEGER
+DIM SHARED g_assist_history(0 TO ASSIST_HISTORY_MAX - 1) AS STRING
+DIM SHARED g_assist_history_count AS INTEGER
+DIM SHARED g_assist_history_scroll AS INTEGER
+
+DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
+DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
+DECLARE FUNCTION AssistSafeText(value AS STRING) AS STRING
+DECLARE FUNCTION AssistVisibleToken(token_id AS INTEGER) AS STRING
+DECLARE SUB AssistAddHistory(line_text AS STRING)
+DECLARE SUB AssistClearHistory()
+DECLARE SUB AssistRenderHistory()
+DECLARE SUB AssistHistoryPage(delta AS INTEGER)
+DECLARE FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
+DECLARE FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
+DECLARE SUB AssistLoadPackList()
+DECLARE SUB AssistUseBuiltinPack()
+DECLARE SUB AssistPrintPackList()
+DECLARE FUNCTION AssistSelectPack(pack_id AS STRING) AS INTEGER
+DECLARE FUNCTION AssistTokenizerModeName(mode_value AS INTEGER) AS STRING
+DECLARE FUNCTION AssistInitializeModel(pack_index AS INTEGER) AS INTEGER
+DECLARE SUB AssistPreloadActivePackModel()
+DECLARE SUB AssistShutdownModel()
+DECLARE FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
+DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
+DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
+DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+DECLARE FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+DECLARE FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
+DECLARE SUB AssistPrepareGenerationPrompt(input_tokens() AS INTEGER, BYREF input_count AS INTEGER, max_tokens AS INTEGER)
+DECLARE SUB AssistPrefillPrompt(input_tokens() AS INTEGER, input_count AS INTEGER)
+DECLARE SUB AssistRenderFrame()
+DECLARE SUB AssistRenderPackStatus()
+DECLARE SUB AssistPrintPackUsage(pack_index AS INTEGER)
+DECLARE SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
+DECLARE SUB AssistScriptedDemo()
+DECLARE SUB AssistInteractive()
+DECLARE SUB AssistMain()
+
+FUNCTION AssistTrimFixed(value AS STRING) AS STRING
+    RETURN TRIM$(RTRIM$(value))
+END FUNCTION
+
+FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
+    IF left_path = "" THEN RETURN right_path
+    IF right_path = "" THEN RETURN left_path
+    IF RIGHT$(left_path, 1) = "\" THEN RETURN left_path + right_path
+    RETURN left_path + "\" + right_path
+END FUNCTION
+
+FUNCTION AssistSafeText(value AS STRING) AS STRING
+    DIM result AS STRING
+    DIM i AS INTEGER
+    DIM ch AS STRING
+    DIM code AS INTEGER
+
+    result = ""
+    FOR i = 1 TO LEN(value)
+        ch = MID$(value, i, 1)
+        code = ASC(ch)
+        IF ch = "|" THEN
+            result = result + "/"
+        ELSEIF code = 13 OR code = 10 OR code = 9 THEN
+            result = result + " "
+        ELSEIF code < 32 OR code > 126 THEN
+            result = result + "."
+        ELSE
+            result = result + ch
+        END IF
+    NEXT i
+
+    RETURN result
+END FUNCTION
+
+FUNCTION AssistVisibleToken(token_id AS INTEGER) AS STRING
+    DIM raw_text AS STRING
+    DIM result AS STRING
+    DIM i AS INTEGER
+    DIM code AS INTEGER
+    DIM ch AS STRING
+
+    IF token_id = 0 THEN RETURN "<eot>"
+    raw_text = TinyGPTTokenText(token_id)
+    IF raw_text = "" THEN RETURN "<tok" + LTRIM$(STR$(token_id)) + ">"
+
+    result = ""
+    FOR i = 1 TO LEN(raw_text)
+        ch = MID$(raw_text, i, 1)
+        code = ASC(ch)
+        IF code = 32 THEN
+            result = result + "_"
+        ELSEIF code < 32 OR code > 126 THEN
+            result = result + "."
+        ELSE
+            result = result + ch
+        END IF
+        IF LEN(result) >= 12 THEN EXIT FOR
+    NEXT i
+
+    IF result = "" THEN result = "<blank>"
+    IF LEN(raw_text) > 12 THEN result = result + "+"
+    RETURN result
+END FUNCTION
+
+SUB AssistAddHistory(line_text AS STRING)
+    DIM i AS INTEGER
+
+    line_text = TRIM$(line_text)
+    IF line_text = "" THEN RETURN
+    IF LEN(line_text) > 360 THEN line_text = LEFT$(line_text, 360)
+
+    IF g_assist_history_count < ASSIST_HISTORY_MAX THEN
+        g_assist_history(g_assist_history_count) = line_text
+        g_assist_history_count = g_assist_history_count + 1
+    ELSE
+        FOR i = 0 TO ASSIST_HISTORY_MAX - 2
+            g_assist_history(i) = g_assist_history(i + 1)
+        NEXT i
+        g_assist_history(ASSIST_HISTORY_MAX - 1) = line_text
+    END IF
+
+    g_assist_history_scroll = 0
+END SUB
+
+SUB AssistClearHistory()
+    DIM i AS INTEGER
+    FOR i = 0 TO ASSIST_HISTORY_MAX - 1
+        g_assist_history(i) = ""
+    NEXT i
+    g_assist_history_count = 0
+    g_assist_history_scroll = 0
+END SUB
+
+SUB AssistRenderHistory()
+    DIM start_index AS INTEGER
+    DIM end_index AS INTEGER
+    DIM i AS INTEGER
+
+    AssistRenderFrame
+    AssistRenderPackStatus
+    PRINT "Transcript: /u or /up, /d or /down, /home, /end, /clear, /packs, /pack NAME, /quit"
+    PRINT
+
+    IF g_assist_history_count = 0 THEN
+        PRINT "(No transcript yet. Type a question at the prompt.)"
+        PRINT
+        RETURN
+    END IF
+
+    end_index = g_assist_history_count - 1 - g_assist_history_scroll
+    IF end_index < 0 THEN end_index = 0
+    start_index = end_index - ASSIST_HISTORY_PAGE + 1
+    IF start_index < 0 THEN start_index = 0
+
+    FOR i = start_index TO end_index
+        PRINT g_assist_history(i)
+        PRINT
+    NEXT i
+
+    PRINT "Showing "; start_index + 1; "-"; end_index + 1; " of "; g_assist_history_count; "."
+    PRINT
+END SUB
+
+SUB AssistHistoryPage(delta AS INTEGER)
+    DIM max_scroll AS INTEGER
+
+    max_scroll = g_assist_history_count - ASSIST_HISTORY_PAGE
+    IF max_scroll < 0 THEN max_scroll = 0
+
+    g_assist_history_scroll = g_assist_history_scroll + delta
+    IF g_assist_history_scroll < 0 THEN g_assist_history_scroll = 0
+    IF g_assist_history_scroll > max_scroll THEN g_assist_history_scroll = max_scroll
+
+    AssistRenderHistory
+END SUB
+
+FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+    DIM eq_pos AS INTEGER
+    DIM key_text AS STRING
+    DIM value_text AS STRING
+    DIM wanted_key AS STRING
+
+    wanted_key = UCASE$(TRIM$(key_name))
+    file_num = FREEFILE
+    ON ERROR GOTO assist_ini_open_error
+    OPEN filename FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" AND LEFT$(line_text, 1) <> ";" THEN
+            eq_pos = INSTR(line_text, "=")
+            IF eq_pos > 0 THEN
+                key_text = UCASE$(TRIM$(LEFT$(line_text, eq_pos - 1)))
+                value_text = TRIM$(MID$(line_text, eq_pos + 1))
+                IF key_text = wanted_key THEN
+                    CLOSE #file_num
+                    RETURN value_text
+                END IF
+            END IF
+        END IF
+    WEND
+
+    CLOSE #file_num
+    RETURN default_value
+
+assist_ini_open_error:
+    ON ERROR GOTO 0
+    RETURN default_value
+END FUNCTION
+
+FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
+    DIM base_path AS STRING
+    DIM ini_path AS STRING
+    DIM value_text AS STRING
+
+    IF pack_index < 0 OR pack_index >= ASSIST_MAX_PACKS THEN RETURN 0
+    pack_id = UCASE$(TRIM$(pack_id))
+    IF pack_id = "" THEN RETURN 0
+
+    base_path = AssistPathJoin(ASSIST_PACK_ROOT, pack_id)
+    ini_path = AssistPathJoin(base_path, "PACK.INI")
+    IF DIR(ini_path) = "" THEN RETURN 0
+
+    g_assist_packs(pack_index).id = pack_id
+    g_assist_packs(pack_index).title = AssistReadIniValue(ini_path, "TITLE", pack_id)
+    g_assist_packs(pack_index).model_path = AssistReadIniValue(ini_path, "MODEL", "MODEL")
+    g_assist_packs(pack_index).persona = AssistReadIniValue(ini_path, "PERSONA", "Helpful concise assistant.")
+    value_text = AssistReadIniValue(ini_path, "HELP", "HELP.TXT")
+    IF INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).help_path = value_text
+    value_text = AssistReadIniValue(ini_path, "USAGE", "USAGE.TXT")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).usage_path = value_text
+    value_text = AssistReadIniValue(ini_path, "SPRITE", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).sprite_path = value_text
+    value_text = AssistReadIniValue(ini_path, "ICONS", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).icons_path = value_text
+    g_assist_packs(pack_index).actions = AssistReadIniValue(ini_path, "ACTIONS", "explain,more,cancel")
+    g_assist_packs(pack_index).loaded = 1
+    RETURN 1
+END FUNCTION
+
+SUB AssistUseBuiltinPack()
+    g_assist_pack_count = 1
+    g_assist_active_pack = 0
+    g_assist_packs(0).id = "DEFAULT"
+    g_assist_packs(0).title = "GPT2-BASIC Assistant"
+    g_assist_packs(0).model_path = "MODEL"
+    g_assist_packs(0).persona = "Helpful concise DOS assistant."
+    g_assist_packs(0).help_path = ""
+    g_assist_packs(0).usage_path = ""
+    g_assist_packs(0).sprite_path = ""
+    g_assist_packs(0).icons_path = ""
+    g_assist_packs(0).actions = "explain,chat,cancel"
+    g_assist_packs(0).loaded = 1
+END SUB
+
+SUB AssistLoadPackList()
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+
+    g_assist_pack_count = 0
+    g_assist_active_pack = 0
+
+    IF DIR(ASSIST_PACK_LIST) = "" THEN
+        AssistUseBuiltinPack
+        RETURN
+    END IF
+
+    file_num = FREEFILE
+    ON ERROR GOTO assist_pack_list_error
+    OPEN ASSIST_PACK_LIST FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0 AND g_assist_pack_count < ASSIST_MAX_PACKS
+        LINE INPUT #file_num, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" AND LEFT$(line_text, 1) <> ";" THEN
+            IF AssistLoadPack(line_text, g_assist_pack_count) <> 0 THEN
+                g_assist_pack_count = g_assist_pack_count + 1
+            END IF
+        END IF
+    WEND
+
+    CLOSE #file_num
+    IF g_assist_pack_count = 0 THEN AssistUseBuiltinPack
+    RETURN
+
+assist_pack_list_error:
+    ON ERROR GOTO 0
+    AssistUseBuiltinPack
+END SUB
+
+SUB AssistPrintPackList()
+    DIM i AS INTEGER
+    PRINT "Available packs:"
+    FOR i = 0 TO g_assist_pack_count - 1
+        PRINT "  "; AssistTrimFixed(g_assist_packs(i).id); " - "; AssistTrimFixed(g_assist_packs(i).title)
+    NEXT i
+END SUB
+
+FUNCTION AssistSelectPack(pack_id AS STRING) AS INTEGER
+    DIM i AS INTEGER
+    DIM wanted AS STRING
+
+    wanted = UCASE$(TRIM$(pack_id))
+    FOR i = 0 TO g_assist_pack_count - 1
+        IF AssistTrimFixed(g_assist_packs(i).id) = wanted THEN
+            g_assist_active_pack = i
+            RETURN 1
+        END IF
+    NEXT i
+
+    RETURN 0
+END FUNCTION
+
+FUNCTION AssistTokenizerModeName(mode_value AS INTEGER) AS STRING
+    IF mode_value = TOKENIZER_MODE_BYTE THEN RETURN "byte"
+    IF mode_value = TOKENIZER_MODE_BPE THEN RETURN "bpe"
+    IF mode_value = TOKENIZER_MODE_LEXICON THEN RETURN "lexicon"
+    RETURN "unknown"
+END FUNCTION
+
+FUNCTION AssistInitializeModel(pack_index AS INTEGER) AS INTEGER
+    DIM model_path AS STRING
+    DIM vocab_path AS STRING
+
+    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN 0
+    model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
+    IF model_path = "" THEN model_path = "MODEL"
+
+    IF GPT2BasicIsLoaded() <> 0 AND g_assist_model_path = model_path THEN
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_MODEL|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|path=" + AssistSafeText(model_path) + _
+                  "|profile=" + AssistSafeText(GPT2BasicProfileName()) + _
+                  "|tokenizer=" + AssistTokenizerModeName(g_tokenizer.tokenizer_mode) + _
+                  "|ctx=" + LTRIM$(STR$(GPT2BasicContextLength())) + _
+                  "|vocab=" + LTRIM$(STR$(GPT2BasicVocabSize())) + _
+                  "|reuse=1"
+        END IF
+        RETURN 1
+    END IF
+
+    IF GPT2BasicIsLoaded() <> 0 THEN GPT2BasicFreeModel
+    g_assist_model_path = ""
+
+    InitializeDefaultTokenizer
+    vocab_path = AssistPathJoin(model_path, "VOCAB.BIN")
+    IF DIR(vocab_path) <> "" THEN
+        ON ERROR GOTO assist_vocab_error
+        LoadDefaultVocabulary vocab_path
+        ON ERROR GOTO 0
+    END IF
+
+    IF GPT2BasicLoadModel(model_path) = 0 THEN
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|path=" + AssistSafeText(model_path)
+        ELSE
+            PRINT "Model load failed for "; model_path
+        END IF
+        RETURN 0
+    END IF
+
+    IF g_tokenizer.vocab_size <> GPT2BasicVocabSize() THEN
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|reason=vocab_mismatch|tokenizer=" + LTRIM$(STR$(g_tokenizer.vocab_size)) + _
+                  "|model=" + LTRIM$(STR$(GPT2BasicVocabSize()))
+        ELSE
+            PRINT "Model/tokenizer vocabulary mismatch."
+        END IF
+        GPT2BasicFreeModel
+        RETURN 0
+    END IF
+
+    g_assist_model_path = model_path
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_MODEL|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+              "|path=" + AssistSafeText(model_path) + _
+              "|profile=" + AssistSafeText(GPT2BasicProfileName()) + _
+              "|tokenizer=" + AssistTokenizerModeName(g_tokenizer.tokenizer_mode) + _
+              "|ctx=" + LTRIM$(STR$(GPT2BasicContextLength())) + _
+              "|vocab=" + LTRIM$(STR$(GPT2BasicVocabSize()))
+    ELSE
+        PRINT "Loaded model: "; model_path; " ("; GPT2BasicProfileName(); ")"
+    END IF
+    RETURN 1
+
+assist_vocab_error:
+    ON ERROR GOTO 0
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_MODEL_FAILED|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+              "|reason=vocab_load|path=" + AssistSafeText(vocab_path)
+    ELSE
+        PRINT "Tokenizer vocabulary load failed: "; vocab_path
+    END IF
+    RETURN 0
+END FUNCTION
+
+SUB AssistPreloadActivePackModel()
+    DIM model_path AS STRING
+    DIM pack_id AS STRING
+
+    IF g_assist_active_pack < 0 OR g_assist_active_pack >= g_assist_pack_count THEN RETURN
+    model_path = AssistTrimFixed(g_assist_packs(g_assist_active_pack).model_path)
+    IF model_path = "" THEN model_path = "MODEL"
+    IF GPT2BasicIsLoaded() <> 0 AND g_assist_model_path = model_path THEN RETURN
+
+    pack_id = AssistTrimFixed(g_assist_packs(g_assist_active_pack).id)
+    PRINT "Loading "; pack_id; " model before prompt..."
+    IF AssistInitializeModel(g_assist_active_pack) = 0 THEN
+        PRINT "Model unavailable for "; pack_id; ". You can switch packs or use retrieval replies."
+    END IF
+    PRINT
+END SUB
+
+SUB AssistShutdownModel()
+    IF GPT2BasicIsLoaded() <> 0 THEN GPT2BasicFreeModel
+    g_assist_model_path = ""
+END SUB
+
+FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
+    DIM q AS STRING
+
+    q = LCASE$(query)
+    IF INSTR(q, "config.sys") > 0 OR INSTR(q, "autoexec") > 0 OR INSTR(q, "memory") > 0 THEN RETURN "dos_memory"
+    IF INSTR(q, "batch") > 0 OR INSTR(q, ".bat") > 0 OR INSTR(q, "command") > 0 THEN RETURN "dos_batch"
+    IF INSTR(q, "rewrite") > 0 OR INSTR(q, "professional") > 0 OR INSTR(q, "formal") > 0 THEN RETURN "office_rewrite"
+    IF INSTR(q, "summar") > 0 OR INSTR(q, "shorten") > 0 THEN RETURN "office_summary"
+    IF INSTR(q, "help") > 0 OR INSTR(q, "explain") > 0 THEN RETURN "explain"
+    RETURN "general_chat"
+END FUNCTION
+
+FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
+    IF intent_name = "dos_memory" THEN RETURN "show_config,explain_xms,more,cancel"
+    IF intent_name = "dos_batch" THEN RETURN "write_batch,explain_command,more,cancel"
+    IF intent_name = "office_rewrite" THEN RETURN "rewrite,shorten,formalize,cancel"
+    IF intent_name = "office_summary" THEN RETURN "summarize,bullets,shorten,cancel"
+    IF intent_name = "explain" THEN RETURN "explain,example,more,cancel"
+    RETURN AssistTrimFixed(g_assist_packs(g_assist_active_pack).actions)
+END FUNCTION
+
+FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
+    DIM help_path AS STRING
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+    DIM key_text AS STRING
+    DIM title_text AS STRING
+    DIM body_text AS STRING
+    DIM first_pipe AS INTEGER
+    DIM second_pipe AS INTEGER
+    DIM q AS STRING
+    DIM best_text AS STRING
+    DIM best_score AS INTEGER
+    DIM row_score AS INTEGER
+
+    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN ""
+    help_path = AssistTrimFixed(g_assist_packs(pack_index).help_path)
+    IF help_path = "" OR DIR(help_path) = "" THEN RETURN ""
+
+    q = LCASE$(query)
+    best_text = ""
+    best_score = 0
+    file_num = FREEFILE
+    ON ERROR GOTO assist_retrieve_error
+    OPEN help_path FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" THEN
+            first_pipe = INSTR(line_text, "|")
+            IF first_pipe > 0 THEN
+                second_pipe = INSTR(first_pipe + 1, line_text, "|")
+                IF second_pipe > first_pipe THEN
+                    key_text = LCASE$(TRIM$(LEFT$(line_text, first_pipe - 1)))
+                    title_text = TRIM$(MID$(line_text, first_pipe + 1, second_pipe - first_pipe - 1))
+                    body_text = TRIM$(MID$(line_text, second_pipe + 1))
+                    row_score = 0
+                    IF INSTR(q, key_text) > 0 THEN row_score = LEN(key_text)
+                    IF INSTR(LCASE$(body_text), q) > 0 AND row_score < 1 THEN row_score = 1
+                    IF row_score > best_score THEN
+                        best_score = row_score
+                        best_text = title_text + ": " + body_text
+                    END IF
+                END IF
+            END IF
+        END IF
+    WEND
+
+    CLOSE #file_num
+    IF best_text <> "" THEN RETURN best_text
+    RETURN ""
+
+assist_retrieve_error:
+    ON ERROR GOTO 0
+    RETURN ""
+END FUNCTION
+
+FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+    DIM input_tokens() AS INTEGER
+    DIM generated_tokens() AS INTEGER
+    DIM input_count AS INTEGER
+    DIM generated_count AS INTEGER
+    DIM context_tokens() AS INTEGER
+    DIM context_len AS INTEGER
+    DIM next_token AS INTEGER
+    DIM i AS INTEGER
+    DIM decoded_text AS STRING
+
+    IF GPT2BasicIsLoaded() = 0 THEN RETURN ""
+    Encode prompt, input_tokens(), input_count
+    AssistPrepareGenerationPrompt input_tokens(), input_count, max_tokens
+
+    REDIM context_tokens(0 TO input_count + max_tokens - 1)
+    REDIM generated_tokens(0 TO max_tokens - 1)
+    FOR i = 0 TO input_count - 1
+        context_tokens(i) = input_tokens(i)
+    NEXT i
+    context_len = input_count
+    generated_count = 0
+
+    GPT2BasicBeginGeneration input_count
+    FOR i = 0 TO max_tokens - 1
+        next_token = GPT2BasicNextToken(context_tokens(), context_len, 0.0, ASSIST_DEFAULT_TOP_P, ASSIST_DEFAULT_TOP_K)
+        context_tokens(context_len) = next_token
+        context_len = context_len + 1
+        IF next_token = 0 THEN EXIT FOR
+        generated_tokens(generated_count) = next_token
+        generated_count = generated_count + 1
+        IF i >= ASSIST_SENTENCE_STOP_MIN_TOKENS THEN
+            IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
+        END IF
+    NEXT i
+
+    IF generated_count = 0 THEN RETURN ""
+    decoded_text = Decode(generated_tokens(), generated_count)
+    RETURN TRIM$(AssistCleanGeneratedText(decoded_text))
+END FUNCTION
+
+FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
+    DIM lower_text AS STRING
+    DIM cut_pos AS INTEGER
+    DIM marker_pos AS INTEGER
+
+    lower_text = LCASE$(raw_text)
+    cut_pos = LEN(raw_text) + 1
+
+    marker_pos = INSTR(lower_text, " user:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " assistant:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " note:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " prompt:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " reply:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " q:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+    marker_pos = INSTR(lower_text, " a:")
+    IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos
+
+    IF cut_pos <= LEN(raw_text) THEN RETURN RTRIM$(LEFT$(raw_text, cut_pos - 1))
+    RETURN raw_text
+END FUNCTION
+
+SUB AssistPrepareGenerationPrompt(input_tokens() AS INTEGER, BYREF input_count AS INTEGER, max_tokens AS INTEGER)
+    DIM context_limit AS INTEGER
+    DIM reserve_count AS INTEGER
+    DIM keep_count AS INTEGER
+    DIM start_idx AS INTEGER
+    DIM i AS INTEGER
+    DIM trimmed_tokens() AS INTEGER
+
+    IF input_count > 0 THEN
+        IF input_tokens(input_count - 1) = 0 THEN input_count = input_count - 1
+    END IF
+
+    context_limit = GPT2BasicContextLength()
+    reserve_count = max_tokens
+    IF reserve_count < 1 THEN reserve_count = 1
+    IF reserve_count >= context_limit THEN reserve_count = context_limit - 1
+    keep_count = context_limit - reserve_count
+    IF keep_count < 1 THEN keep_count = 1
+
+    IF input_count > keep_count THEN
+        REDIM trimmed_tokens(0 TO keep_count - 1)
+        start_idx = input_count - keep_count
+        FOR i = 0 TO keep_count - 1
+            trimmed_tokens(i) = input_tokens(start_idx + i)
+        NEXT i
+        REDIM input_tokens(0 TO keep_count - 1)
+        FOR i = 0 TO keep_count - 1
+            input_tokens(i) = trimmed_tokens(i)
+        NEXT i
+        input_count = keep_count
+    END IF
+
+    IF input_count < 1 THEN
+        REDIM input_tokens(0 TO 0)
+        input_tokens(0) = 0
+        input_count = 1
+    END IF
+END SUB
+
+SUB AssistPrefillPrompt(input_tokens() AS INTEGER, input_count AS INTEGER)
+    DIM i AS INTEGER
+    DIM prefill_count AS INTEGER
+
+    prefill_count = input_count - 1
+    IF prefill_count <= 0 THEN RETURN
+
+    PRINT "Thinking: ";
+    PRINT "prompt "; prefill_count; " tokens"
+    FOR i = 0 TO prefill_count - 1
+        IF (i MOD 8) = 0 THEN
+            IF i > 0 THEN PRINT
+            PRINT "  ctx"; i + 1; ": ";
+        END IF
+        PRINT AssistVisibleToken(input_tokens(i)); " ";
+        IF GPT2BasicPrefillToken(input_tokens(i), i) = 0 THEN EXIT FOR
+    NEXT i
+    PRINT
+END SUB
+
+FUNCTION AssistStreamGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
+    DIM input_tokens() AS INTEGER
+    DIM generated_tokens() AS INTEGER
+    DIM input_count AS INTEGER
+    DIM generated_count AS INTEGER
+    DIM context_tokens() AS INTEGER
+    DIM context_len AS INTEGER
+    DIM next_token AS INTEGER
+    DIM i AS INTEGER
+    DIM decoded_text AS STRING
+    DIM cleaned_text AS STRING
+    DIM previous_text AS STRING
+    DIM piece AS STRING
+    DIM generated_text AS STRING
+    DIM progress_text AS STRING
+    DIM erase_idx AS INTEGER
+
+    IF GPT2BasicIsLoaded() = 0 THEN RETURN ""
+    Encode prompt, input_tokens(), input_count
+    AssistPrepareGenerationPrompt input_tokens(), input_count, max_tokens
+
+    REDIM context_tokens(0 TO input_count + max_tokens - 1)
+    REDIM generated_tokens(0 TO max_tokens - 1)
+    FOR i = 0 TO input_count - 1
+        context_tokens(i) = input_tokens(i)
+    NEXT i
+    context_len = input_count
+    previous_text = ""
+    generated_text = ""
+    generated_count = 0
+
+    GPT2BasicBeginGeneration input_count
+    AssistPrefillPrompt input_tokens(), input_count
+    PRINT "Thinking: sampling output tokens"
+    PRINT "Answer: ";
+    FOR i = 0 TO max_tokens - 1
+        progress_text = "<t" + LTRIM$(STR$(i + 1)) + ">"
+        PRINT progress_text;
+        next_token = GPT2BasicNextToken(context_tokens(), context_len, 0.0, ASSIST_DEFAULT_TOP_P, ASSIST_DEFAULT_TOP_K)
+        FOR erase_idx = 1 TO LEN(progress_text)
+            PRINT CHR$(8); " "; CHR$(8);
+        NEXT erase_idx
+        context_tokens(context_len) = next_token
+        context_len = context_len + 1
+        IF next_token = 0 THEN EXIT FOR
+        generated_tokens(generated_count) = next_token
+        generated_count = generated_count + 1
+
+        decoded_text = Decode(generated_tokens(), generated_count)
+        cleaned_text = AssistCleanGeneratedText(decoded_text)
+        piece = ""
+        IF LEN(cleaned_text) > LEN(previous_text) THEN piece = MID$(cleaned_text, LEN(previous_text) + 1)
+        IF piece <> "" THEN
+            PRINT piece;
+            generated_text = generated_text + piece
+        END IF
+        previous_text = cleaned_text
+
+        IF LEN(cleaned_text) < LEN(decoded_text) THEN EXIT FOR
+
+        IF i >= ASSIST_SENTENCE_STOP_MIN_TOKENS THEN
+            IF TinyGPTTokenEndsSentence(next_token) <> 0 THEN EXIT FOR
+        END IF
+    NEXT i
+
+    PRINT
+    RETURN TRIM$(generated_text)
+END FUNCTION
+
+SUB AssistRenderFrame()
+    CLS
+    PRINT "+------------------------------------------------------------+"
+    PRINT "| GPT2-BASIC Assistant Shell                                 |"
+    PRINT "| Pack-driven text UI; VGA sprite/icon slots are pack assets. |"
+    PRINT "+------------------------------------------------------------+"
+    PRINT
+END SUB
+
+SUB AssistRenderPackStatus()
+    DIM p AS AssistantPack
+    p = g_assist_packs(g_assist_active_pack)
+    PRINT "Pack : "; AssistTrimFixed(p.id); " - "; AssistTrimFixed(p.title)
+    PRINT "Model: "; AssistTrimFixed(p.model_path)
+    IF AssistTrimFixed(p.usage_path) <> "" THEN PRINT "Usage: /about"
+    IF AssistTrimFixed(p.sprite_path) <> "" THEN PRINT "Sprite asset: "; AssistTrimFixed(p.sprite_path)
+    IF AssistTrimFixed(p.icons_path) <> "" THEN PRINT "Icon asset  : "; AssistTrimFixed(p.icons_path)
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_PACK|id=" + AssistTrimFixed(p.id) + _
+              "|title=" + AssistSafeText(AssistTrimFixed(p.title)) + _
+              "|model=" + AssistSafeText(AssistTrimFixed(p.model_path)) + _
+              "|sprite=" + AssistSafeText(AssistTrimFixed(p.sprite_path)) + _
+              "|icons=" + AssistSafeText(AssistTrimFixed(p.icons_path))
+    END IF
+    PRINT
+END SUB
+
+SUB AssistPrintPackUsage(pack_index AS INTEGER)
+    DIM usage_path AS STRING
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+
+    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN
+    usage_path = AssistTrimFixed(g_assist_packs(pack_index).usage_path)
+    IF usage_path = "" OR DIR(usage_path) = "" THEN
+        PRINT "No usage instructions for this pack."
+        RETURN
+    END IF
+
+    PRINT "+------------------------------------------------------------+"
+    PRINT "| Pack instructions                                          |"
+    PRINT "+------------------------------------------------------------+"
+    file_num = FREEFILE
+    ON ERROR GOTO assist_usage_error
+    OPEN usage_path FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_text
+        PRINT line_text
+    WEND
+
+    CLOSE #file_num
+    PRINT
+    RETURN
+
+assist_usage_error:
+    ON ERROR GOTO 0
+    PRINT "Could not read pack instructions."
+END SUB
+
+SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
+    DIM pack_index AS INTEGER
+    DIM intent_name AS STRING
+    DIM actions AS STRING
+    DIM retrieved AS STRING
+    DIM note_text AS STRING
+    DIM prompt AS STRING
+    DIM generated AS STRING
+    DIM bubble AS STRING
+    DIM model_path AS STRING
+
+    pack_index = g_assist_active_pack
+    intent_name = AssistClassifyIntent(query)
+    actions = AssistActionsForIntent(intent_name)
+    retrieved = AssistRetrieve(pack_index, query)
+    note_text = retrieved
+    IF retrieved = "" THEN retrieved = "I can answer from this pack, switch packs, or offer action buttons."
+    model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
+
+    IF use_generation <> 0 THEN
+        PRINT "+------------------------------------------------------------+"
+        PRINT "| Assistant                                                  |"
+        PRINT "+------------------------------------------------------------+"
+        IF GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path THEN
+            PRINT "Loading model..."
+        END IF
+    END IF
+
+    IF AssistInitializeModel(pack_index) = 0 THEN
+        IF g_assist_emit_records <> 0 THEN
+            PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+                  "|intent=" + intent_name + "|status=model_unavailable"
+        END IF
+        IF use_generation <> 0 THEN PRINT "Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
+        AssistAddHistory "ASSISTANT: " + retrieved + " Model unavailable for " + AssistTrimFixed(g_assist_packs(pack_index).id)
+        RETURN
+    END IF
+
+    generated = ""
+    IF use_generation <> 0 THEN
+        prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query
+        IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
+        prompt = prompt + " Assistant:"
+        generated = AssistStreamGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
+    END IF
+
+    IF use_generation <> 0 THEN
+        bubble = generated
+        IF bubble = "" THEN
+            bubble = retrieved
+            PRINT bubble
+        END IF
+    ELSE
+        bubble = retrieved
+    END IF
+    IF LEN(bubble) > 360 THEN bubble = LEFT$(bubble, 360)
+
+    IF g_assist_emit_records <> 0 THEN
+        PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
+              "|intent=" + intent_name + _
+              "|ui=text" + _
+              "|actions=" + AssistSafeText(actions) + _
+              "|retrieval=" + AssistSafeText(retrieved) + _
+              "|generated=" + AssistSafeText(generated)
+    END IF
+    IF use_generation = 0 THEN
+        PRINT "+------------------------------------------------------------+"
+        PRINT "| Assistant                                                  |"
+        PRINT "+------------------------------------------------------------+"
+        PRINT bubble
+        PRINT
+    END IF
+    PRINT "[ "; actions; " ]"
+    PRINT
+    AssistAddHistory "ASSISTANT: " + bubble
+END SUB
+
+SUB AssistScriptedDemo()
+    AssistRenderFrame
+    PRINT "ASSIST_BEGIN|suite=pack-shell|version=1"
+    AssistPrintPackList
+    PRINT
+
+    AssistSelectPack "CHAT"
+    AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
+    AssistRenderReply "Hello, what can you do?", 0
+
+    AssistSelectPack "DOSHELP"
+    AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
+    AssistRenderReply "How do I tune CONFIG.SYS memory for this assistant?", 0
+
+    AssistSelectPack "OFFICE"
+    AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
+    AssistRenderReply "Rewrite this memo in a professional tone.", 0
+
+    PRINT "ASSIST_END|packs=" + LTRIM$(STR$(g_assist_pack_count))
+    AssistShutdownModel
+END SUB
+
+SUB AssistInteractive()
+    DIM command_text AS STRING
+    DIM query AS STRING
+
+    AssistRenderFrame
+    AssistPrintPackList
+    PRINT
+    AssistRenderPackStatus
+    PRINT "Commands: /about, /pack NAME, /packs, /u, /d, /home, /end, /h, /clear, /quit"
+    PRINT
+    AssistPreloadActivePackModel
+
+    DO
+        PRINT "> ";
+        LINE INPUT command_text
+        command_text = TRIM$(command_text)
+        IF command_text = "" THEN
+            ' no-op
+        ELSEIF LCASE$(command_text) = "/quit" THEN
+            EXIT DO
+        ELSEIF LCASE$(command_text) = "/packs" THEN
+            AssistPrintPackList
+        ELSEIF LCASE$(command_text) = "/about" THEN
+            AssistPrintPackUsage g_assist_active_pack
+        ELSEIF LCASE$(command_text) = "/history" OR LCASE$(command_text) = "/h" THEN
+            AssistRenderHistory
+        ELSEIF LCASE$(command_text) = "/up" OR LCASE$(command_text) = "/u" THEN
+            AssistHistoryPage ASSIST_HISTORY_PAGE
+        ELSEIF LCASE$(command_text) = "/down" OR LCASE$(command_text) = "/d" THEN
+            AssistHistoryPage -ASSIST_HISTORY_PAGE
+        ELSEIF LCASE$(command_text) = "/home" THEN
+            AssistHistoryPage ASSIST_HISTORY_MAX
+        ELSEIF LCASE$(command_text) = "/end" THEN
+            g_assist_history_scroll = 0
+            AssistRenderHistory
+        ELSEIF LCASE$(command_text) = "/clear" THEN
+            AssistClearHistory
+            AssistRenderFrame
+            AssistRenderPackStatus
+        ELSEIF LEFT$(LCASE$(command_text), 6) = "/pack " THEN
+            IF AssistSelectPack(MID$(command_text, 7)) <> 0 THEN
+                AssistRenderFrame
+                AssistRenderPackStatus
+                AssistPreloadActivePackModel
+            ELSE
+                PRINT "Unknown pack."
+            END IF
+        ELSE
+            query = command_text
+            AssistAddHistory "YOU: " + query
+            AssistRenderReply query, 1
+        END IF
+    LOOP
+
+    AssistShutdownModel
+END SUB
+
+SUB AssistMain()
+    DIM command_line AS STRING
+
+    RANDOMIZE TIMER
+    AssistLoadPackList
+    command_line = LCASE$(TRIM$(COMMAND$))
+    g_assist_emit_records = 0
+
+    IF command_line = "--scripted" OR command_line = "--probe" THEN
+        g_assist_emit_records = 1
+        AssistScriptedDemo
+        RETURN
+    END IF
+
+    AssistInteractive
+END SUB
+
+AssistMain
