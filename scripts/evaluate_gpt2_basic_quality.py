@@ -38,7 +38,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL = ROOT / "assets" / "gpt2_basic" / "MODEL"
 DEFAULT_OUTPUT = ROOT / "qemu" / "evidence" / "quality_report.md"
 DEFAULT_MIN_GENERATED = 70
-SENTENCE_STOP_MIN_TOKENS = 1
+SENTENCE_STOP_MIN_TOKENS = 10
 DOMAIN_WORD_LEXICON: set[str] | None = None
 
 
@@ -374,6 +374,13 @@ def domain_word_lexicon() -> set[str]:
         text = path.read_text(encoding="utf-8", errors="ignore").lower()
         words.update(re.findall(r"[a-z]{3,}", text))
 
+    pack_root = ROOT / "assets" / "gpt2_basic" / "PACKS"
+    for path in sorted(pack_root.glob("*/*.TXT")):
+        if path.name.upper() not in {"GOLDEN.TXT", "HELP.TXT", "LEXICON.TXT"}:
+            continue
+        text = path.read_text(encoding="ascii", errors="ignore").lower()
+        words.update(re.findall(r"[a-z]{3,}", text))
+
     for prompt in REGRESSION_PROMPTS + HELDOUT_PROMPTS:
         words.update(re.findall(r"[a-z]{3,}", prompt.prompt.lower()))
         for keyword in prompt.keywords:
@@ -496,6 +503,7 @@ def evaluate_model(
     threshold: float,
     backend: str,
     device_name: str,
+    progress_label: str | None = None,
 ) -> tuple[FixedConfig, list[QualityResult]]:
     cfg = parse_config(model_dir / "GPT2CFG.TXT")
     tokenizer = load_tokenizer_for_model(model_dir, cfg.vocab_size)
@@ -503,7 +511,9 @@ def evaluate_model(
     if backend == "fixed":
         weights = read_weights(model_dir, cfg)
         head_shortlist = read_head_shortlist(model_dir, cfg)
-        for prompt in prompts:
+        for index, prompt in enumerate(prompts, start=1):
+            if progress_label is not None:
+                print(f"QUALITY_EVAL {progress_label} {index}/{len(prompts)} {prompt.name}", flush=True)
             completion, generated_tokens = generate_fixed_completion(
                 cfg, weights, prompt.prompt, max_new_tokens, min_generated, tokenizer, head_shortlist
             )
@@ -511,7 +521,9 @@ def evaluate_model(
     else:
         device = th.device(device_name)
         model = load_float_model(model_dir, cfg, device)
-        for prompt in prompts:
+        for index, prompt in enumerate(prompts, start=1):
+            if progress_label is not None:
+                print(f"QUALITY_EVAL {progress_label} {index}/{len(prompts)} {prompt.name}", flush=True)
             completion, generated_tokens = generate_float_completion(
                 model, prompt.prompt, max_new_tokens, min_generated, device, tokenizer
             )

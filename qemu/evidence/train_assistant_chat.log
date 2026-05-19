@@ -1,71 +1,154 @@
 profile: 486dx2-usable - 486DX2 target: larger model for better text at still-plausible 486 speed
-training_backend_requested: auto
-training_backend_selected: cpu
+training_backend_requested: mps
+training_backend_selected: mps
 training_backend_torch_version: 2.11.0
 training_backend_available_cuda: False
-training_backend_available_mps: False
-loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TRAIN.TXT docs=6804
-loaded_tokenizer_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TOKBASE.TXT docs=240
-device: cpu
+training_backend_available_mps: True
+loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TRAIN.TXT docs=113491
+loaded_tokenizer_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TOKBASE.TXT docs=2400
+device: mps
 training_documents_core: 42
 training_documents_core_weight: 1
-training_documents_external: 6804
-tokenizer_basis_documents: 240
-tokenizer_basis_chars: 417080
-training tokens: 640858672
+training_documents_external: 113491
+tokenizer_basis_documents: 2400
+tokenizer_basis_chars: 4095219
+training tokens: 2224199820
 tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
 model: layers=3 emb=64 heads=4 ctx=192 hidden=256
-step     1 loss 8.4372
-step    60 loss 3.9479
-step   120 loss 2.3729
-step   180 loss 1.8452
-step   240 loss 1.4347
-step   300 loss 1.2925
-step   360 loss 1.1359
-step   420 loss 1.0161
-step   480 loss 0.8160
-step   540 loss 0.7740
-step   600 loss 0.7493
-step   660 loss 0.5182
-step   720 loss 0.5042
-step   780 loss 0.4429
-step   840 loss 0.4523
-step   900 loss 0.3177
-step   960 loss 0.2615
-step  1020 loss 0.2538
-step  1080 loss 0.2442
-step  1140 loss 0.2098
-step  1200 loss 0.3040
-step  1260 loss 0.1682
-step  1320 loss 0.1737
-step  1380 loss 0.1863
-step  1440 loss 0.1823
-step  1500 loss 0.1750
-step  1560 loss 0.1553
-step  1620 loss 0.1661
-step  1680 loss 0.1392
-step  1740 loss 0.1337
-step  1800 loss 0.1601
-step  1860 loss 0.1380
-step  1920 loss 0.1272
-step  1980 loss 0.1383
-step  2040 loss 0.1260
-step  2100 loss 0.1367
-step  2160 loss 0.1460
-step  2220 loss 0.1463
-step  2280 loss 0.1437
-step  2340 loss 0.1334
-step  2400 loss 0.1283
-step  2460 loss 0.1138
-step  2520 loss 0.1290
-step  2580 loss 0.1203
-step  2640 loss 0.1307
-step  2700 loss 0.1218
-step  2760 loss 0.1268
-step  2820 loss 0.1218
-step  2880 loss 0.1253
-step  2940 loss 0.1221
-step  3000 loss 0.1286
+step     1 loss 8.4972
+step    60 loss 2.4936
+step   120 loss 1.4616
+step   180 loss 1.1366
+step   240 loss 1.0423
+step   300 loss 0.9522
+step   360 loss 1.0450
+step   420 loss 0.8722
+step   480 loss 0.8528
+step   540 loss 0.8646
+step   600 loss 0.8219
+step   660 loss 0.8135
+step   720 loss 0.8142
+step   780 loss 0.7718
+step   840 loss 0.7677
+step   900 loss 0.6894
+step   960 loss 0.6493
+step  1020 loss 0.5712
+step  1080 loss 0.5561
+step  1140 loss 0.6372
+step  1200 loss 0.5393
+step  1260 loss 0.5502
+step  1320 loss 0.5389
+step  1380 loss 0.5406
+step  1440 loss 0.5123
+step  1500 loss 0.4963
+step  1560 loss 0.4924
+step  1620 loss 0.5034
+step  1680 loss 0.5134
+step  1740 loss 0.5624
+step  1800 loss 0.5082
+step  1860 loss 0.5190
+step  1920 loss 0.5096
+step  1980 loss 0.5142
+step  2040 loss 0.5013
+step  2100 loss 0.5042
+step  2160 loss 0.4977
+step  2220 loss 0.5140
+step  2280 loss 0.5536
+step  2340 loss 0.4925
+step  2400 loss 0.4915
+step  2460 loss 0.5055
+step  2520 loss 0.5078
+step  2580 loss 0.4922
+step  2640 loss 0.5106
+step  2700 loss 0.4945
+step  2760 loss 0.4930
+step  2820 loss 0.4856
+step  2880 loss 0.4844
+step  2940 loss 0.4994
+step  3000 loss 0.5010
+step  3060 loss 0.5032
+step  3120 loss 0.4876
+step  3180 loss 0.4944
+step  3240 loss 0.5015
+step  3300 loss 0.5030
+step  3360 loss 0.4936
+step  3420 loss 0.4792
+step  3480 loss 0.4929
+step  3540 loss 0.5014
+step  3600 loss 0.4834
+step  3660 loss 0.5032
+step  3720 loss 0.4922
+step  3780 loss 0.4783
+step  3840 loss 0.4845
+step  3900 loss 0.4909
+step  3960 loss 0.4860
+step  4020 loss 0.4843
+step  4080 loss 0.4893
+step  4140 loss 0.4849
+step  4200 loss 0.4824
+step  4260 loss 0.4970
+step  4320 loss 0.4865
+step  4380 loss 0.4992
+step  4440 loss 0.4909
+step  4500 loss 0.4793
+step  4560 loss 0.4992
+step  4620 loss 0.4937
+step  4680 loss 0.4832
+step  4740 loss 0.4860
+step  4800 loss 0.4869
+step  4860 loss 0.5103
+step  4920 loss 0.4886
+step  4980 loss 0.4801
+step  5040 loss 0.4837
+step  5100 loss 0.4763
+step  5160 loss 0.4803
+step  5220 loss 0.4800
+step  5280 loss 0.4800
+step  5340 loss 0.4921
+step  5400 loss 0.4822
+step  5460 loss 0.4861
+step  5520 loss 0.4862
+step  5580 loss 0.4878
+step  5640 loss 0.4919
+step  5700 loss 0.4786
+step  5760 loss 0.4923
+step  5820 loss 0.4669
+step  5880 loss 0.4876
+step  5940 loss 0.4763
+step  6000 loss 0.4892
+step  6060 loss 0.4834
+step  6120 loss 0.4866
+step  6180 loss 0.4895
+step  6240 loss 0.4856
+step  6300 loss 0.4738
+step  6360 loss 0.4712
+step  6420 loss 0.4841
+step  6480 loss 0.4881
+step  6540 loss 0.4583
+step  6600 loss 0.4760
+step  6660 loss 0.4801
+step  6720 loss 0.4869
+step  6780 loss 0.4688
+step  6840 loss 0.4896
+step  6900 loss 0.4832
+step  6960 loss 0.4829
+step  7020 loss 0.4904
+step  7080 loss 0.4752
+step  7140 loss 0.4819
+step  7200 loss 0.4834
+step  7260 loss 0.4812
+step  7320 loss 0.4812
+step  7380 loss 0.4809
+step  7440 loss 0.4788
+step  7500 loss 0.4806
+step  7560 loss 0.5119
+step  7620 loss 0.4732
+step  7680 loss 0.4762
+step  7740 loss 0.4838
+step  7800 loss 0.4689
+step  7860 loss 0.4728
+step  7920 loss 0.4774
+step  7980 loss 0.4778
 
 prompt: Hello there.
 Hello there.

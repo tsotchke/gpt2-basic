@@ -33,8 +33,8 @@ END SUB
 CONST ASSIST_PACK_ROOT = "PACKS"
 CONST ASSIST_PACK_LIST = "PACKS\PACKS.TXT"
 CONST ASSIST_MAX_PACKS = 8
-CONST ASSIST_MAX_REPLY_TOKENS = 24
-CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 1
+CONST ASSIST_MAX_REPLY_TOKENS = 64
+CONST ASSIST_SENTENCE_STOP_MIN_TOKENS = 10
 CONST ASSIST_DEFAULT_TOP_P = 0.9
 CONST ASSIST_DEFAULT_TOP_K = 24
 CONST ASSIST_HISTORY_MAX = 96
@@ -613,13 +613,6 @@ FUNCTION AssistCleanGeneratedText(raw_text AS STRING) AS STRING
 
     lower_text = LCASE$(raw_text)
     cut_pos = LEN(raw_text) + 1
-
-    marker_pos = INSTR(raw_text, ". ")
-    IF marker_pos > 0 AND marker_pos + 1 < cut_pos THEN cut_pos = marker_pos + 1
-    marker_pos = INSTR(raw_text, "! ")
-    IF marker_pos > 0 AND marker_pos + 1 < cut_pos THEN cut_pos = marker_pos + 1
-    marker_pos = INSTR(raw_text, "? ")
-    IF marker_pos > 0 AND marker_pos + 1 < cut_pos THEN cut_pos = marker_pos + 1
 
     marker_pos = INSTR(lower_text, " user:")
     IF marker_pos > 0 AND marker_pos < cut_pos THEN cut_pos = marker_pos

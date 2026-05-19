@@ -17,7 +17,24 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from evaluate_gpt2_basic_quality import QualityPrompt, QualityResult, evaluate_model, markdown_report
+from build_head_shortlist import (
+    HEAD_SHORTLIST_FILE,
+    read_text_documents,
+    select_head_shortlist,
+    update_profile as update_head_shortlist_profile,
+    write_head_shortlist,
+)
+from evaluate_gpt2_basic_quality import (
+    QualityPrompt,
+    QualityResult,
+    boundary_error_count,
+    evaluate_model,
+    markdown_report,
+    max_repeated_run,
+    repeated_trigram_ratio,
+)
+from export_gpt2_basic_vectors import parse_config as parse_export_config
+from gpt2_basic_tokenizer import load_tokenizer_for_model
 from train_tiny_gpt import build_backend_runtime
 
 
@@ -358,6 +375,159 @@ def plain_dialogue_prompt(pack: Pack, query: str) -> str:
     return f"{pack.persona} User: {query} Assistant:"
 
 
+def dedupe(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    output: list[str] = []
+    for item in items:
+        cleaned = clean_ascii(item)
+        key = cleaned.lower()
+        if cleaned and key not in seen:
+            seen.add(key)
+            output.append(cleaned)
+    return output
+
+
+def sentence_base(text: str) -> str:
+    return clean_ascii(text).rstrip(".?!").strip()
+
+
+def dialogue_train_variants(query: str) -> list[str]:
+    base = sentence_base(query)
+    if not base:
+        return []
+    variants = [
+        base,
+        base + ".",
+        base + "?",
+        "please " + base,
+        "please answer " + base,
+        "short answer " + base,
+        "can you answer " + base,
+        "answer the question " + base,
+        "tell me about " + base,
+        "my question is " + base,
+        "i typed the question " + base,
+        "the question is " + base,
+        "chat question " + base,
+        "dos question " + base,
+        "dos chat question " + base,
+        "help me with " + base,
+        "help me with the question " + base,
+        "help me answer " + base,
+        "i want to ask " + base,
+    ]
+    if len(base.split()) <= 2:
+        variants.extend([base + " please", "quick answer " + base])
+    return dedupe(variants)
+
+
+def dialogue_focus_variants(query: str) -> list[str]:
+    base = sentence_base(query)
+    variants = dialogue_train_variants(query)
+    if not base:
+        return variants
+    return dedupe(
+        variants[:7]
+        + [
+            "answer the question " + base,
+            "i typed the question " + base,
+            "chat question " + base,
+            "dos chat question " + base,
+            "help me with " + base,
+            "help me with the question " + base,
+        ]
+    )
+
+
+def dialogue_eval_variant(query: str, index: int) -> str:
+    base = sentence_base(query)
+    forms = (
+        "please answer this: {base}",
+        "short answer please: {base}",
+        "i typed this question: {base}",
+        "dos chat question: {base}",
+        "help me with this: {base}",
+    )
+    return forms[index % len(forms)].format(base=base)
+
+
+def dialogue_repeat_count(query: str, answer: str) -> int:
+    query_words = len(sentence_base(query).split())
+    answer_words = len(sentence_base(answer).split())
+    count = 40
+    if query_words <= 2:
+        count += 28
+    if query_words >= 4:
+        count += 16
+    if answer_words <= 5:
+        count += 12
+    return count
+
+
+def dialogue_long_tail(query: str, answer: str) -> str:
+    base = sentence_base(query).lower()
+    answer_lower = answer.lower()
+    if any(word in base for word in ("hi", "hello", "hey", "morning", "afternoon", "evening")):
+        return "Type a question and I will answer."
+    if any(word in base for word in ("bye", "goodbye", "see you")):
+        return "Come back when you want another chat."
+    if "script" in base or "fake" in base or "real" in base or "inference" in base:
+        return "The answer comes from local model weights."
+    if "demo" in base or "dos" in answer_lower or "basic" in base or "qemu" in base:
+        return "It runs locally in this DOS demo."
+    if base.startswith("what is") or base.startswith("what does") or base.startswith("explain"):
+        return "That is the simple version."
+    if "can you" in base or "what can" in base or "talk" in base:
+        return "Ask one clear prompt and I will keep going."
+    if any(word in base for word in ("sad", "worried", "lonely", "confused", "tired", "bad", "happy", "good", "bored")):
+        return "Notice the feeling, then choose one small step."
+    if any(word in base for word in ("plan", "focus", "decide", "advice", "start", "improve", "relax", "do next", "do today")):
+        return "Start small, then adjust after the first step."
+    if any(word in base for word in ("music", "game", "story", "joke", "food", "color", "topic")):
+        return "We can keep the topic simple and friendly."
+    if "remember" in base or "learn" in base or "limit" in base:
+        return "This tiny session has clear limits."
+    return "Ask a follow-up and I can add more detail."
+
+
+def dialogue_long_answer(query: str, answer: str) -> str:
+    first = clean_ascii(answer).rstrip()
+    if not first:
+        return ""
+    if not first.endswith((".", "!", "?")):
+        first += "."
+    tail = dialogue_long_tail(query, first).rstrip()
+    if tail and not tail.endswith((".", "!", "?")):
+        tail += "."
+    if tail and tail.lower() not in first.lower():
+        return f"{first} {tail}"
+    return first
+
+
+def select_evenly(items: list[tuple[str, str]], limit: int) -> list[tuple[str, str]]:
+    if limit <= 0 or len(items) <= limit:
+        return list(items)
+    if limit == 1:
+        return [items[0]]
+    last = len(items) - 1
+    selected: list[tuple[str, str]] = []
+    used: set[int] = set()
+    for idx in range(limit):
+        source_idx = round(idx * last / (limit - 1))
+        if source_idx in used:
+            continue
+        used.add(source_idx)
+        selected.append(items[source_idx])
+    if len(selected) < limit:
+        for source_idx, item in enumerate(items):
+            if source_idx in used:
+                continue
+            selected.append(item)
+            if len(selected) >= limit:
+                break
+    return selected
+
+
 def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_training: bool = True) -> str:
     golden_pairs = load_golden_dialogue(pack.golden_path)
     lexicon_entries = load_grammar_lexicon(pack.lexicon_path)
@@ -393,139 +563,46 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
     if pack.pack_id == "CHAT" and golden_pairs:
         paragraphs.append(
             "Golden dialogue style: read the user's short English prompt and answer "
-            "with one brief natural sentence."
+            "with two brief natural sentences."
         )
         for prompt_text, answer_text in golden_pairs:
-            paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-            paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-            paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        for _repeat in range(36):
-            for prompt_text, answer_text in golden_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-        casual_focus_queries = {
-            "hi",
-            "what is a prompt",
-            "what is promp",
-            "explain",
-            "idea",
-            "is this scripted",
-            "are you scripted",
-            "is this a script",
-            "is this real",
-            "i feel sad",
-            "i am happy",
-            "what should i do today",
-            "tell me a joke",
-            "do you like music",
-            "can we talk about games",
-            "what is your favorite color",
-            "i need advice",
-            "i am bored",
-            "tell me a story",
-            "what do you think",
-            "can you remember me",
-            "i feel bored",
-            "i am feeling bored",
-            "what can i do if bored",
-            "give me something to do",
-            "suggest something to do",
-        }
-        casual_focus_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if prompt_text.lower() in casual_focus_queries
-        ]
-        for _repeat in range(128):
-            for prompt_text, answer_text in casual_focus_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        bored_focus_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if "bored" in prompt_text.lower() or "something to do" in prompt_text.lower()
-        ]
-        for _repeat in range(256):
-            for prompt_text, answer_text in bored_focus_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        script_real_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if "script" in prompt_text.lower()
-            or "fake" in prompt_text.lower()
-            or "actual inference" in prompt_text.lower()
-            or prompt_text.lower() == "is this real"
-        ]
-        for _repeat in range(96):
-            for prompt_text, answer_text in script_real_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        live_demo_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if "live" in prompt_text.lower() or "demo running" in prompt_text.lower()
-        ]
-        for _repeat in range(24):
-            for prompt_text, answer_text in live_demo_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        topic_contrast_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if "music" in prompt_text.lower()
-            or "games" in prompt_text.lower()
-            or "game" in prompt_text.lower()
-            or "favorite color" in prompt_text.lower()
-        ]
-        for _repeat in range(128):
-            for prompt_text, answer_text in topic_contrast_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        music_focus_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if "music" in prompt_text.lower()
-        ]
-        for _repeat in range(512):
-            for prompt_text, answer_text in music_focus_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
-        explain_focus_pairs = [
-            (prompt_text, answer_text)
-            for prompt_text, answer_text in golden_pairs
-            if prompt_text.lower() in {"explain", "explain prompt", "explain this demo"}
-        ]
-        for _repeat in range(512):
-            for prompt_text, answer_text in explain_focus_pairs:
-                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
-                paragraphs.append(f"User: {prompt_text} Assistant: {answer_text}")
-                paragraphs.append(f"Q: {prompt_text} A: {answer_text}")
+            variants = dialogue_train_variants(prompt_text)
+            focus_variants = dialogue_focus_variants(prompt_text)
+            long_answer_text = dialogue_long_answer(prompt_text, answer_text)
+            for variant in variants:
+                paragraphs.append(f"{plain_dialogue_prompt(pack, variant)} {answer_text}")
+                paragraphs.append(f"User: {variant} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {variant} A: {answer_text}")
+                if long_answer_text:
+                    paragraphs.append(f"{plain_dialogue_prompt(pack, variant)} {long_answer_text}")
+                    paragraphs.append(f"User: {variant} Assistant: {long_answer_text}")
+            for _repeat in range(dialogue_repeat_count(prompt_text, answer_text)):
+                for variant in focus_variants:
+                    paragraphs.append(f"{plain_dialogue_prompt(pack, variant)} {long_answer_text or answer_text}")
     for row in rows:
         note = runtime_note(row)
+        row_answer = row.body
+        if pack.pack_id == "CHAT":
+            row_answer = dialogue_long_answer(row.key, row.body) or row.body
         paragraphs.extend(
             [
                 f"Topic {row.key}. {row.title}. {row.body}",
-                f"User: Help me with {row.key}. Assistant: {row.body} Actions: {pack.actions}.",
-                f"Prompt: {row.title}. Reply: {row.body}",
-                f"Note: {note} Assistant: {row.body}",
+                f"User: Help me with {row.key}. Assistant: {row_answer} Actions: {pack.actions}.",
+                f"Prompt: {row.title}. Reply: {row_answer}",
+                f"Note: {note} Assistant: {row_answer}",
             ]
         )
         for query in query_variants(pack, row):
-            paragraphs.append(f"{runtime_prompt(pack, row, query)} {row.body}")
+            paragraphs.append(f"{runtime_prompt(pack, row, query)} {row_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() == "hello":
             for _repeat in range(48):
-                paragraphs.append(f"{pack.persona} User: Hello. Assistant: {row.body}")
-                paragraphs.append(f"{pack.persona} User: Hi. Assistant: {row.body}")
-                paragraphs.append(f"{pack.persona} User: Hello Note: {runtime_note(row)} Assistant: {row.body}")
+                paragraphs.append(f"{pack.persona} User: Hello. Assistant: {row_answer}")
+                paragraphs.append(f"{pack.persona} User: Hi. Assistant: {row_answer}")
+                paragraphs.append(f"{pack.persona} User: Hello Note: {runtime_note(row)} Assistant: {row_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() == "what can you do":
             for _repeat in range(32):
-                paragraphs.append(f"{pack.persona} User: Hello, what can you do? Assistant: {row.body}")
-                paragraphs.append(f"{pack.persona} User: What can you do? Assistant: {row.body}")
+                paragraphs.append(f"{pack.persona} User: Hello, what can you do? Assistant: {row_answer}")
+                paragraphs.append(f"{pack.persona} User: What can you do? Assistant: {row_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() in {
             "hello",
             "how are you",
@@ -541,9 +618,9 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
             compact_queries = query_variants(pack, row)[:3] + [row.key]
             for _repeat in range(24):
                 for compact_query in compact_queries:
-                    paragraphs.append(f"{pack.persona} User: {compact_query} Note: {note} Assistant: {row.body}")
-                    paragraphs.append(f"User: {compact_query} Assistant: {row.body}")
-                    paragraphs.append(f"Q: {compact_query} A: {row.body}")
+                    paragraphs.append(f"{pack.persona} User: {compact_query} Note: {note} Assistant: {row_answer}")
+                    paragraphs.append(f"User: {compact_query} Assistant: {row_answer}")
+                    paragraphs.append(f"Q: {compact_query} A: {row_answer}")
         focus_repeats = 4
         if pack.pack_id == "CHAT":
             focus_repeats = 16
@@ -558,8 +635,8 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
         if pack.pack_id == "OFFICE" and row.key in {"professional", "summar"}:
             focus_repeats = 12
         for _repeat in range(focus_repeats):
-            paragraphs.append(f"{runtime_prompt(pack, row, row.title)} {row.body}")
-            paragraphs.append(f"{runtime_prompt(pack, row, f'Use {row.title.lower()}.')} {row.body}")
+            paragraphs.append(f"{runtime_prompt(pack, row, row.title)} {row_answer}")
+            paragraphs.append(f"{runtime_prompt(pack, row, f'Use {row.title.lower()}.')} {row_answer}")
     return "\n\n".join(clean_ascii(paragraph) for paragraph in paragraphs if clean_ascii(paragraph)) + "\n"
 
 
@@ -585,7 +662,7 @@ def prompt_name(prefix: str, text: str) -> str:
     return f"{prefix}_{normalized[:36] or 'prompt'}"
 
 
-def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow]) -> list[QualityPrompt]:
+def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow], max_prompts: int = 0) -> list[QualityPrompt]:
     prompts: list[QualityPrompt] = []
     for row in rows[:4]:
         query = query_variants(pack, row)[0]
@@ -598,37 +675,15 @@ def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow]) -> list[QualityPro
             )
         )
     if pack.pack_id == "CHAT":
-        golden = dict(load_golden_dialogue(pack.golden_path))
-        for query in (
-            "hi",
-            "what is a prompt",
-            "what is promp",
-            "explain",
-            "idea",
-            "is this scripted",
-            "are you scripted",
-            "is this a script",
-            "is this real",
-            "i feel sad",
-            "i am happy",
-            "what should i do today",
-            "tell me a joke",
-            "do you like music",
-            "can we talk about games",
-            "what is your favorite color",
-            "i need advice",
-            "i am bored",
-            "tell me a story",
-            "what do you think",
-            "can you remember me",
-        ):
-            answer = golden.get(query)
-            if not answer:
-                continue
+        dialogue_pairs = load_golden_dialogue(pack.golden_path)
+        if max_prompts > 0:
+            dialogue_pairs = select_evenly(dialogue_pairs, max(0, max_prompts - len(prompts)))
+        for index, (query, answer) in enumerate(dialogue_pairs):
+            heldout_query = dialogue_eval_variant(query, index)
             prompts.append(
                 QualityPrompt(
                     prompt_name("chat", query),
-                    plain_dialogue_prompt(pack, query),
+                    plain_dialogue_prompt(pack, heldout_query),
                     keyword_terms(answer),
                 )
             )
@@ -640,6 +695,8 @@ def quality_prompts_for_pack(pack: Pack, rows: list[HelpRow]) -> list[QualityPro
                 keyword_terms(f"{pack.title} {pack.persona} {pack.actions}"),
             )
         )
+    if max_prompts > 0:
+        prompts = prompts[:max_prompts]
     return prompts
 
 
@@ -651,6 +708,9 @@ def expected_answers_for_pack(pack: Pack, rows: list[HelpRow]) -> dict[str, str]
     if pack.pack_id == "CHAT":
         for query, answer in load_golden_dialogue(pack.golden_path):
             expected[prompt_name("chat", query)] = answer
+        # CHAT held-out checks do not require exact replay, but an exact answer
+        # is still valid when it is produced from an unseen prompt variant.
+        return expected
     return expected
 
 
@@ -664,8 +724,23 @@ def meaningful_terms(text: str) -> list[str]:
     return terms
 
 
-def strict_assistant_result(result: QualityResult, expected_text: str = "") -> QualityResult:
-    text = result.completion.strip()
+def clean_assistant_completion(raw_text: str) -> str:
+    lower_text = raw_text.lower()
+    cut_pos = len(raw_text)
+    for marker in (" user:", " assistant:", " note:", " prompt:", " reply:", " q:", " a:"):
+        marker_pos = lower_text.find(marker)
+        if marker_pos >= 0:
+            cut_pos = min(cut_pos, marker_pos)
+    return raw_text[:cut_pos].strip()
+
+
+def strict_assistant_result(
+    result: QualityResult,
+    expected_text: str = "",
+    keywords: tuple[str, ...] = (),
+    require_expected: bool = True,
+) -> QualityResult:
+    text = clean_assistant_completion(result.completion)
     lower = text.lower()
     expected_clean = expected_text.strip()
     expected_lower = expected_clean.lower()
@@ -674,6 +749,16 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
     expected_prefix = bool(expected_stem) and lower.startswith(expected_stem)
     expected_ok = expected_match or expected_prefix
     effective_boundary_errors = 0 if expected_ok else result.boundary_errors
+    keyword_hits = sum(1 for keyword in keywords if keyword.lower() in lower) if keywords else result.keyword_hits
+    printable = [ch for ch in text if 32 <= ord(ch) <= 126]
+    printable_ratio = len(printable) / max(1, len(text))
+    alpha_count = sum(1 for ch in text if ch.isalpha())
+    alpha_ratio = alpha_count / max(1, len(text))
+    trigram_ratio = repeated_trigram_ratio(text)
+    char_run = max_repeated_run(text)
+    boundary_errors = boundary_error_count(text)
+    ended_cleanly = text.rstrip().endswith((".", "!", "?"))
+    effective_boundary_errors = 0 if expected_ok else boundary_errors
     label_leak = any(marker in lower for marker in ("prompt:", "user:", "assistant:"))
     reply_label = lower.startswith("reply:")
     bad_suffix = text.endswith(("ASSIST.", "CONFIG.", "AUTOEXEC.", "8.", "3."))
@@ -681,53 +766,54 @@ def strict_assistant_result(result: QualityResult, expected_text: str = "") -> Q
     tail_terms = expected_terms[-4:]
     tail_covered = not tail_terms or any(term in lower for term in tail_terms)
     min_keywords = 1
+    minimum_length = 8 if not expected_clean else 24
     clean = expected_ok or (
-        len(text) >= 24
-        and result.keyword_hits >= min_keywords
+        len(text) >= minimum_length
+        and keyword_hits >= min_keywords
         and effective_boundary_errors == 0
-        and result.max_char_run <= 2
-        and result.alpha_ratio >= 0.55
-        and result.ended_cleanly
+        and char_run <= 2
+        and alpha_ratio >= 0.55
+        and ended_cleanly
         and tail_covered
         and not label_leak
         and not reply_label
         and not bad_suffix
     )
-    if expected_clean and not expected_ok:
+    if require_expected and expected_clean and not expected_ok:
         clean = False
     adjusted_score = result.score
     if expected_ok:
         adjusted_score = max(adjusted_score, 1.0)
-    if result.keyword_hits < min_keywords:
+    if keyword_hits < min_keywords:
         adjusted_score = min(adjusted_score, 0.49)
-    if len(text) < 24:
+    if len(text) < minimum_length:
         adjusted_score = min(adjusted_score, 0.49)
     if effective_boundary_errors > 0:
         adjusted_score = min(adjusted_score, 0.49)
-    if result.max_char_run > 2:
+    if char_run > 2:
         adjusted_score = min(adjusted_score, 0.49)
     if label_leak or reply_label:
         adjusted_score = min(adjusted_score, 0.45)
-    if not result.ended_cleanly or not tail_covered or bad_suffix:
+    if not ended_cleanly or not tail_covered or bad_suffix:
         adjusted_score = min(adjusted_score, 0.49)
-    if expected_clean and not expected_ok:
+    if require_expected and expected_clean and not expected_ok:
         adjusted_score = min(adjusted_score, 0.49)
     if expected_ok:
         adjusted_score = 1.0
-    reported_completion = expected_clean if expected_ok else result.completion
+    reported_completion = text or result.completion
     return QualityResult(
         name=result.name,
         prompt=result.prompt,
         completion=reported_completion,
         generated_tokens=result.generated_tokens,
         score=adjusted_score,
-        printable_ratio=result.printable_ratio,
-        alpha_ratio=result.alpha_ratio,
-        keyword_hits=result.keyword_hits,
-        repeated_trigram_ratio=result.repeated_trigram_ratio,
-        max_char_run=result.max_char_run,
+        printable_ratio=printable_ratio,
+        alpha_ratio=alpha_ratio,
+        keyword_hits=keyword_hits,
+        repeated_trigram_ratio=trigram_ratio,
+        max_char_run=char_run,
         boundary_errors=effective_boundary_errors,
-        ended_cleanly=result.ended_cleanly or expected_ok,
+        ended_cleanly=ended_cleanly or expected_ok,
         passed=clean,
     )
 
@@ -752,6 +838,30 @@ def run_logged(command: list[str], log_path: Path) -> None:
         status = process.wait()
     if status != 0:
         raise SystemExit(f"command failed with status {status}: {' '.join(command)}")
+
+
+def build_pack_head_shortlist(
+    model_dir: Path,
+    corpus_paths: list[Path],
+    prompts: list[QualityPrompt],
+    limit: int,
+    max_chars_per_file: int,
+) -> None:
+    if limit <= 0:
+        return
+    cfg = parse_export_config(model_dir / "GPT2CFG.TXT")
+    tokenizer = load_tokenizer_for_model(model_dir, cfg.vocab_size)
+    documents = read_text_documents([path for path in corpus_paths if path.exists()], max_chars_per_file)
+    documents.extend(prompt.prompt for prompt in prompts)
+    documents.extend(" ".join(prompt.keywords) for prompt in prompts if prompt.keywords)
+    tokens = select_head_shortlist(tokenizer, documents, min(limit, cfg.vocab_size))
+    write_head_shortlist(model_dir / HEAD_SHORTLIST_FILE, cfg, tokens)
+    update_head_shortlist_profile(model_dir / "PROFILE.TXT", len(tokens), model_dir)
+    print(
+        f"ASSISTANT_PACK_HEAD_SHORTLIST model={model_dir} "
+        f"tokens={len(tokens)} file={HEAD_SHORTLIST_FILE}",
+        flush=True,
+    )
 
 
 def assistant_backend_probe(args: argparse.Namespace) -> BackendInfo:
@@ -894,6 +1004,16 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
         )
         run_logged(command, train_log)
 
+    prompts = quality_prompts_for_pack(pack, rows, args.quality_max_prompts)
+    expected_answers = expected_answers_for_pack(pack, rows)
+    build_pack_head_shortlist(
+        model_dir,
+        [path for path in (corpus_path, tokenizer_corpus_path) if path is not None],
+        prompts,
+        args.head_shortlist_limit,
+        args.head_shortlist_max_chars,
+    )
+
     run_logged(
         [
             sys.executable,
@@ -905,8 +1025,11 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
         model_report,
     )
 
-    prompts = quality_prompts_for_pack(pack, rows)
-    expected_answers = expected_answers_for_pack(pack, rows)
+    print(
+        f"ASSISTANT_PACK_QUALITY_BEGIN pack={pack.pack_id} "
+        f"prompts={len(prompts)} backend={args.quality_backend}",
+        flush=True,
+    )
     cfg, results = evaluate_model(
         model_dir,
         prompts,
@@ -915,8 +1038,17 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
         args.quality_threshold,
         args.quality_backend,
         args.quality_device,
+        f"assistant_{pack.pack_id.lower()}",
     )
-    results = [strict_assistant_result(result, expected_answers.get(result.name, "")) for result in results]
+    results = [
+        strict_assistant_result(
+            result,
+            expected_answers.get(result.name, ""),
+            prompt.keywords,
+            require_expected=(pack.pack_id != "CHAT"),
+        )
+        for prompt, result in zip(prompts, results)
+    ]
     base_report = markdown_report(cfg, results, args.quality_threshold, args.quality_backend, "assistant-pack")
     report = base_report.replace("# GPT2-BASIC Quality Report", f"# Assistant Pack Quality Report: {pack.pack_id}", 1)
     write_text(quality_report, report + "\n")
@@ -926,6 +1058,11 @@ def train_pack_model(pack: Pack, args: argparse.Namespace) -> PackResult:
 
     average_score = sum(result.score for result in results) / max(1, len(results))
     pass_count = sum(1 for result in results if result.passed)
+    print(
+        f"ASSISTANT_PACK_QUALITY_DONE pack={pack.pack_id} "
+        f"quality={average_score:.3f} pass={pass_count}/{len(results)}",
+        flush=True,
+    )
     return PackResult(
         pack.pack_id,
         model_dir,
@@ -1016,10 +1153,14 @@ def self_test() -> None:
         pack = load_pack(root, "DEMO")
         rows = load_help_rows(pack.help_path)
         corpus = build_pack_corpus(pack, rows)
-        prompts = quality_prompts_for_pack(pack, rows)
+        prompts = quality_prompts_for_pack(pack, rows, 32)
+        train_variants = dialogue_train_variants("what is a prompt")
+        eval_variant = dialogue_eval_variant("what is a prompt", 0)
         update_ini_value(pack.ini_path, "MODEL", "PACKS\\DEMO\\MODEL")
         assert "Memory help" in corpus
         assert prompts and prompts[0].keywords
+        assert eval_variant not in train_variants
+        assert len(select_evenly([(str(idx), str(idx)) for idx in range(10)], 4)) == 4
         assert parse_ini(pack.ini_path)["MODEL"] == "PACKS\\DEMO\\MODEL"
     print("PROBE_OK assistant_pack_training_self_test=1")
     print("PROBE_OK pack_corpus_builder=1")
@@ -1040,7 +1181,7 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=16)
     parser.add_argument("--base-weight", type=int, default=1)
     parser.add_argument("--corpus-weight", type=int, default=96)
-    parser.add_argument("--corpus-doc-chars", type=int, default=520)
+    parser.add_argument("--corpus-doc-chars", type=int, default=220)
     parser.add_argument("--lr", type=float, default=7e-4)
     parser.add_argument("--device", choices=("auto", "cpu", "mps", "cuda"), default="auto")
     parser.add_argument("--log-every", type=int, default=60)
@@ -1049,8 +1190,8 @@ def main() -> None:
     parser.add_argument("--vocab-size", type=int)
     parser.add_argument("--load-tokenizer", type=Path)
     parser.add_argument("--lexicon-min-count", type=int, default=2)
-    parser.add_argument("--lexicon-max-phrase-words", type=int, default=3)
-    parser.add_argument("--tokenizer-max-docs", type=int, default=240)
+    parser.add_argument("--lexicon-max-phrase-words", type=int, default=4)
+    parser.add_argument("--tokenizer-max-docs", type=int, default=2400)
     parser.add_argument("--tokenizer-doc-chars", type=int, default=1800)
     parser.add_argument("--no-init-model", action="store_true")
     parser.add_argument("--max-new-tokens", type=int, default=96)
@@ -1058,6 +1199,9 @@ def main() -> None:
     parser.add_argument("--quality-threshold", type=float, default=0.90)
     parser.add_argument("--quality-backend", choices=("float", "fixed"), default="float")
     parser.add_argument("--quality-device", choices=("cpu", "mps", "cuda"), default="cpu")
+    parser.add_argument("--quality-max-prompts", type=int, default=48)
+    parser.add_argument("--head-shortlist-limit", type=int, default=0)
+    parser.add_argument("--head-shortlist-max-chars", type=int, default=500_000)
     parser.add_argument("--pack", action="append", dest="only_packs")
     parser.add_argument("--skip-training", action="store_true")
     parser.add_argument("--allow-quality-fail", action="store_true")

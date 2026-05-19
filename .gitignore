@@ -70,3 +70,16 @@ memory-bank/
 
 # Backup files
 *.bak
+
+# Local media capture and rendered promotional outputs. Keep scripts, shot
+# lists, thumbnails, and small source assets in git; publish finished video
+# files via release assets or video platforms.
+media/captures/
+media/renders/
+media/raw/
+promo/captures/
+promo/renders/
+*.mov
+*.mp4
+*.m4v
+*.webm

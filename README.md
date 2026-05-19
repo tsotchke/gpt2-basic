@@ -139,6 +139,13 @@ This extensive documentation includes:
 - Comprehensive academic references
 
 The paper bridges technical implementation details with historical analysis to provide both practical insights and thought-provoking exploration of an alternate AI timeline.
+
+Public launch and media planning:
+
+- [Public launch plan](docs/public-launch.md)
+- [Video production plan](docs/marketing/video-plan.md)
+- [Public demo script](docs/marketing/public-demo-script.md)
+- [Promotional copy kit](docs/marketing/promo-kit.md)
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```

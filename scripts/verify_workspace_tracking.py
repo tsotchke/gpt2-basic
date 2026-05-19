@@ -26,6 +26,7 @@ ALLOWED_IGNORED_DIRS: dict[str, str] = {
     "fbc_build/": "freebasic_bootstrap",
     "fbc_win_binary/": "freebasic_bootstrap",
     "memory-bank/": "operator_notes",
+    "promo/renders/": "generated_promo_media",
     "qemu/__pycache__/": "python_cache",
     "qemu/staging/": "qemu_staging",
     "scripts/__pycache__/": "python_cache",
