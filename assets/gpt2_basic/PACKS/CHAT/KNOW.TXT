@@ -14,3 +14,15 @@ offline work|Offline work|Offline means the answer must come from local files, m
 hardware limits|Hardware limits|Old hardware favors short prompts, brief answers, small models, and retrieval from text files.
 release proof|Release proof|Useful release proof includes tests, checksums, logs, asset names, and the final tag target.
 next step|Next step|When the task feels large, choose one small next action and test the result.
+clarify question|Clarify a request|Ask one direct question only when a missing detail blocks a useful answer.
+compare options|Compare options|Name the options, list one tradeoff for each, then choose the practical next step.
+plan work|Planning work|Break the job into small steps, do the blocking step first, and verify each result.
+summarize text|Summarize text|Keep the decision, evidence, risk, and next action; remove filler.
+explain simply|Simple explanation|Use plain words, one example, and a short answer that fits the prompt.
+confidence|Confidence signal|Say what is known from local files, what is inferred, and what remains uncertain.
+privacy limit|Privacy limit|Local use means prompts stay on this machine unless the user copies them elsewhere.
+no web|No web access|Without internet, I cannot fetch news or live facts; use local notes or give the facts in the prompt.
+testing mindset|Testing mindset|A useful test has a clear input, expected result, actual result, and pass or fail status.
+learn from notes|Learning from notes|Put facts in pack notes or session memory, then ask focused questions about those facts.
+local files|Local files|Pack files, model files, logs, checksums, and notes are the assistant's local evidence.
+usefulness|Useful answer|A useful answer should be brief, concrete, honest about limits, and easy to act on.

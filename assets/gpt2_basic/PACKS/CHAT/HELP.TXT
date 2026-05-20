@@ -5,7 +5,7 @@ what can you do|Assistant abilities|I chat in DOS.
 limits|Model limits|I am tiny and local.
 idea|Idea help|Try asking one clear question.
 prompt|Prompt meaning|A prompt is your typed question.
-explain|Explain mode|I can explain simple ideas.
+explain|Explain mode|Use plain words, one example, and a short answer that fits the prompt.
 demo|DOS demo|The demo is live.
 repeat|Repeat control|If I repeat, ask a shorter question or switch packs.
 bug|Debug plan|Start with the failing command, expected result, and first error line, then test one small fix.

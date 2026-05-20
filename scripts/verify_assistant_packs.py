@@ -22,7 +22,7 @@ DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_gener
 DEFAULT_RETRIEVAL_REPORT = ROOT / "qemu" / "evidence" / "assistant_pack_retrieval_eval.md"
 RAW_PROMPT_MIN_CASES = 83
 GENERALIST_PROMPT_MIN_CASES = 24
-RETRIEVAL_MIN_CASES = 12
+RETRIEVAL_MIN_CASES = 30
 STRESS_REPLY_COUNT = 40
 
 

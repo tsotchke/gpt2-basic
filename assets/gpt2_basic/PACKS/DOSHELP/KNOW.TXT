@@ -7,3 +7,15 @@ copy to hardware|Hardware copy|Copy GPT2, MODEL, PACKS, CWSDPMI, and batch files
 qemu rehearsal|QEMU rehearsal|Run the QEMU capture path before physical hardware so the copy-back checklist is tested.
 dosbox use|DOSBox use|Use the DOSBox bundle for quick local runs, then use hardware transfer for real machines.
 batch safety|Batch safety|Check IF EXIST before running large files and print clear status lines for each step.
+path setup|PATH setup|Put program directories in PATH only when needed, and keep the command line short.
+config sys|CONFIG.SYS tuning|Use HIMEM.SYS, DOS=HIGH,UMB, and modest FILES and BUFFERS values for compatibility.
+autoexec bat|AUTOEXEC.BAT tuning|CONFIG.SYS loads drivers before AUTOEXEC.BAT; then AUTOEXEC sets PATH, variables, and required TSR tools.
+cwsdpmi missing|Missing CWSDPMI|If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command.
+dosbox mount|DOSBox mount|Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile.
+fat image full|FAT image full|Remove host-only training files or grow the disk image when FAT image assembly runs out of space.
+qemu logs|QEMU logs|Capture compile logs, run logs, and copied evidence files before trusting an emulator result.
+hardware validation|Hardware validation|Run the same batch path on real DOS, copy RETURN.TXT back, and compare checksums and logs.
+memory error|DOS memory error|Free conventional memory by unloading TSRs, loading drivers high, or using a smaller profile.
+batch menu|Batch menu|Offer numbered choices, validate the input, and keep each branch short and reversible.
+checksums|DOS checksums|Use SHA-256 sidecars on the host and compare file sizes on DOS when a checksum tool is unavailable.
+compile basic|FreeBASIC compile|Build the DOS executable with the pinned FreeBASIC toolchain and keep CWSDPMI with the output.

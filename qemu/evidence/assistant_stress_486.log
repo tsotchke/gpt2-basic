@@ -452,7 +452,7 @@ Answer: I will remember you prefer short answers.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how should you answer me|canonical=how should you answer me|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was i prefer short answers; previous answer was I will remember you prefer short answers.|generated=|answer=I should answer short answers.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how should you answer me|canonical=how should you answer me|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was i prefer short answers; previous answer was I will remember you prefer short answers.|generated=|answer=I should answer short answers.
 
 Answer: I should answer short answers.
 
