@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket O. Rebuild with scripts/build_assistant_kdb.py --write.
+local override notes put site facts user.txt knowledge bundled pack database|Local override notes|Put site facts in USER.TXT so local knowledge can override the bundled pack database.

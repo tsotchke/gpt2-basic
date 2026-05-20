@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket V. Rebuild with scripts/build_assistant_kdb.py --write.
+release check verify tests logs artifact names checksums notes target tag|Release check|Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+database recall high velocity compile notes compact keyword rows dos scans less text reaches answer faster|High velocity recall|Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster.

@@ -60,11 +60,13 @@ How it works:
 
   The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves compact
 
-  local notes from generated KDB.TXT when a topic matches. KDB.TXT is built
+  local notes from generated KDB.TXT and KDB?.TXT buckets when a topic
 
-  from HELP.TXT and KNOW.TXT. USER.TXT can hold local editable notes that
+  matches. KDB.TXT and KDBIDX.TXT are built from HELP.TXT and KNOW.TXT.
 
-  should override the bundled recall database. It is also trained from
+  USER.TXT can hold local editable notes that should override the bundled
+
+  recall database. It is also trained from
 
   GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
 
@@ -176,9 +178,9 @@ How it works:
 
   The pack loads PACKS\DOSHELP\MODEL and retrieves compact DOS notes from
 
-  generated KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT
+  generated KDB.TXT and KDB?.TXT buckets before generating a reply. KDB.TXT
 
-  and KNOW.TXT. USER.TXT can hold machine-local DOS notes. It is tuned for
+  and KDBIDX.TXT are built from HELP.TXT and KNOW.TXT. USER.TXT can hold machine-local DOS notes. It is tuned for
 
   concrete fixes, not open-ended chat.
 
@@ -266,9 +268,9 @@ How it works:
 
   The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from generated
 
-  KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT and
+  KDB.TXT and KDB?.TXT buckets before generating a reply. KDB.TXT and
 
-  KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
+  KDBIDX.TXT are built from HELP.TXT and KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
 
   DOS office assistant with action buttons.
 
@@ -356,7 +358,7 @@ How it works:
 
   The pack shares PACKS\CHAT\MODEL but uses its own generated KDB.TXT,
 
-  HELP.TXT, KNOW.TXT, and USER.TXT. This is the lightweight language-pack
+  KDBIDX.TXT, KDB?.TXT buckets, HELP.TXT, KNOW.TXT, and USER.TXT. This is the lightweight language-pack
 
   pattern: new domain behavior without shipping another large model.
 

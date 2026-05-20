@@ -1,0 +1,5 @@
+# terms|title|body
+# Generated KDB bucket N. Rebuild with scripts/build_assistant_kdb.py --write.
+dpmi host protected-mode dos programs need such cwsdpmi.exe beside program|DPMI host|Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
+8.3 names dos filenames maximum compatibility predictable batch files|DOS filenames|Use 8.3 filenames for maximum DOS compatibility and predictable batch files.
+batch menu offer numbered choices validate input keep branch short reversible|Batch menu|Offer numbered choices, validate the input, and keep each branch short and reversible.

@@ -1,0 +1,19 @@
+# terms|title|body
+# Generated KDB bucket C. Rebuild with scripts/build_assistant_kdb.py --write.
+memory config.sys load himem first dos high umb keep files buffers modest preserve conventional|CONFIG.SYS memory|Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+config.sys example himem dos high umb files buffers safe config sys baseline|CONFIG.SYS example|Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
+autoexec autoexec.bat hygiene config.sys loads drivers first runs commands keep path short trim resident tools|AUTOEXEC.BAT hygiene|CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
+model packs point pack-local checkpoint let assistant switch paths pack changes|Model packs|Point MODEL at C:\MODEL or a pack-local checkpoint, then let the assistant switch model paths when the pack changes.
+dos boot order config.sys loads device drivers first autoexec.bat runs commands sets paths|DOS boot order|CONFIG.SYS loads device drivers first, then AUTOEXEC.BAT runs commands and sets paths.
+conventional memory keep drivers high trim tsr programs preserve low old dos|Conventional memory|Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
+dpmi setup keep cwsdpmi.exe beside protected-mode programs need host|DPMI setup|Keep CWSDPMI.EXE beside protected-mode programs that need a DPMI host.
+copy hardware gpt2 model packs cwsdpmi batch files together before testing real dos|Hardware copy|Copy GPT2, MODEL, PACKS, CWSDPMI, and batch files together before testing on real DOS.
+qemu rehearsal run capture path before physical hardware copy-back checklist tested|QEMU rehearsal|Run the QEMU capture path before physical hardware so the copy-back checklist is tested.
+batch safety check exist before running large files print clear status lines step|Batch safety|Check IF EXIST before running large files and print clear status lines for each step.
+config sys config.sys tuning himem.sys dos high umb modest files buffers values compatibility|CONFIG.SYS tuning|Use HIMEM.SYS, DOS=HIGH,UMB, and modest FILES and BUFFERS values for compatibility.
+autoexec bat autoexec.bat tuning config.sys loads drivers before sets path variables required tsr tools|AUTOEXEC.BAT tuning|CONFIG.SYS loads drivers before AUTOEXEC.BAT; then AUTOEXEC sets PATH, variables, and required TSR tools.
+cwsdpmi missing protected-mode program fails start copy cwsdpmi.exe beside rerun command|Missing CWSDPMI|If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command.
+dosbox mount bundle directory change gpt2 run batch file desired profile|DOSBox mount|Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile.
+qemu logs capture compile run copied evidence files before trusting emulator result|QEMU logs|Capture compile logs, run logs, and copied evidence files before trusting an emulator result.
+checksums dos sha-256 sidecars host compare file sizes checksum tool unavailable|DOS checksums|Use SHA-256 sidecars on the host and compare file sizes on DOS when a checksum tool is unavailable.
+compile basic freebasic build dos executable pinned toolchain keep cwsdpmi output|FreeBASIC compile|Build the DOS executable with the pinned FreeBASIC toolchain and keep CWSDPMI with the output.

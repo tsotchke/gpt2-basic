@@ -1,0 +1,7 @@
+# terms|title|body
+# Generated KDB bucket M. Rebuild with scripts/build_assistant_kdb.py --write.
+professional tone keep message direct polite concrete free jokes filler unsupported claims|Professional tone|Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+formal memo subject line one-sentence purpose short body paragraphs explicit next action|Formal memo|Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
+meeting notes capture decisions owners dates open questions follow-up actions|Meeting notes|Capture decisions, owners, dates, open questions, and follow-up actions.
+project plan list goal milestones owners risks next checkpoint|Project plan|List the goal, milestones, owners, risks, and the next checkpoint.
+decision memo state recommendation alternatives considered evidence risks owner|Decision memo|State the recommendation, alternatives considered, evidence, risks, and owner.

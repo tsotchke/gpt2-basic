@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket I. Rebuild with scripts/build_assistant_kdb.py --write.
+fat image full remove host-only training files grow disk assembly runs out space|FAT image full|Remove host-only training files or grow the disk image when FAT image assembly runs out of space.

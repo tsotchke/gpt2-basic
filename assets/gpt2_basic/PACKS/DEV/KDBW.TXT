@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket W. Rebuild with scripts/build_assistant_kdb.py --write.
+hot load weights hot-loaded switch packs only domain changes reuse already loaded model paths match|Hot-loaded weights|Switch packs only when the domain changes, and reuse the already loaded model when paths match.
+pack authoring write help know rows rebuild kdb run validator retrieval qemu gates|Pack authoring|Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.

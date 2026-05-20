@@ -1,0 +1,13 @@
+# terms|title|body
+# Generated KDB bucket I. Rebuild with scripts/build_assistant_kdb.py --write.
+idea help try asking one clear question|Idea help|Try asking one clear question.
+local inference means dos program reads model weights produces answer machine|Local inference|Local inference means the DOS program reads model weights and produces the answer on this machine.
+internet network limit cannot browse dos answer local model weights pack files|Network limit|I cannot browse the internet from DOS; I answer from local model weights and pack files.
+name assistant identity gpt2-basic|Assistant identity|I am GPT2-BASIC.
+improve practice help one small thing day|Practice help|Practice one small thing each day.
+discuss discussion topics ideas feelings games music dos|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+slow inference small dos takes time|Slow inference|Small DOS inference takes time.
+intelligence practical assistant combines retrieval memory rules tiny local model produce useful dos answers|Practical intelligence|The assistant combines retrieval, memory, rules, and a tiny local model to produce useful DOS answers.
+creative idea help ask one joke story plan name keep prompt short|Creative help|Ask for one joke, story, plan, name, or idea and keep the prompt short.
+release proof useful includes tests checksums logs asset names final tag target|Release proof|Useful release proof includes tests, checksums, logs, asset names, and the final tag target.
+web access without internet cannot fetch news live facts local notes give prompt|No web access|Without internet, I cannot fetch news or live facts; use local notes or give the facts in the prompt.

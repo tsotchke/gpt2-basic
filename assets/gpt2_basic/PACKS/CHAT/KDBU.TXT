@@ -1,0 +1,7 @@
+# terms|title|body
+# Generated KDB bucket U. Rebuild with scripts/build_assistant_kdb.py --write.
+unusual demo but real|Unusual demo|It is unusual, but it is real.
+useful small computer small-computer usefulness tiny local model becomes more retrieval memory quick focused help without network|Small-computer usefulness|A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network.
+release proof useful includes tests checksums logs asset names final tag target|Release proof|Useful release proof includes tests, checksums, logs, asset names, and the final tag target.
+testing mindset useful test has clear input expected result actual pass fail status|Testing mindset|A useful test has a clear input, expected result, actual result, and pass or fail status.
+usefulness useful answer brief concrete honest limits easy act|Useful answer|A useful answer should be brief, concrete, honest about limits, and easy to act on.

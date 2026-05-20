@@ -20,9 +20,12 @@ DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
 DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_generalist_prompt_eval.md"
 DEFAULT_RETRIEVAL_REPORT = ROOT / "qemu" / "evidence" / "assistant_pack_retrieval_eval.md"
+DEFAULT_KDB_INDEX_REPORT = ROOT / "qemu" / "evidence" / "assistant_kdb_index_eval.md"
 RAW_PROMPT_MIN_CASES = 83
 GENERALIST_PROMPT_MIN_CASES = 24
 RETRIEVAL_MIN_CASES = 36
+KDB_INDEX_MIN_CASES = 36
+KDB_INDEX_MAX_SCAN_RATIO = 0.65
 STRESS_REPLY_COUNT = 44
 
 
@@ -94,13 +97,15 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         help_text = read(pack_dir / "HELP.TXT")
         knowledge_text = read(pack_dir / "KNOW.TXT")
         kdb_text = read(pack_dir / "KDB.TXT")
+        kdb_index_text = read(pack_dir / "KDBIDX.TXT")
         read(pack_dir / "USER.TXT")
         require(f"ID={pack_id}" in ini.upper(), f"pack_id_mismatch={pack_id}")
-        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "KDB=", "USER=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
+        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "KDB=", "KDBIDX=", "USER=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
             require(key in ini.upper(), f"missing_{key.rstrip('=')}={pack_id}")
         require("|" in help_text, f"missing_retrieval_rows={pack_id}")
         require("|" in knowledge_text, f"missing_knowledge_rows={pack_id}")
         require("|" in kdb_text, f"missing_kdb_rows={pack_id}")
+        require("|" in kdb_index_text and "KDB" in kdb_index_text, f"missing_kdb_index_rows={pack_id}")
         usage_text = read(pack_dir / values["USAGE"])
         for marker in ("Purpose:", "How it works:", "How to use it:", "Good prompts:", "Actions:"):
             require(marker in usage_text, f"missing_usage_marker_{marker.rstrip(':').lower().replace(' ', '_')}={pack_id}")
@@ -129,9 +134,12 @@ def verify_source() -> None:
         "AssistMemoryReply",
         "AssistMemoryContext",
         "AssistScanRetrievalFile",
+        "AssistScanBucketedKdb",
+        "AssistKdbBucketPath",
         "AssistRetrievalScore",
         "knowledge_path",
         "kdb_path",
+        "kdb_index_path",
         "user_path",
         "ASSIST_MEMORY_FILE",
         "AssistLoadMemoryFacts",
@@ -187,6 +195,7 @@ def verify_pack_quality(
     raw_prompt_report: Path,
     generalist_prompt_report: Path,
     retrieval_report: Path,
+    kdb_index_report: Path,
 ) -> None:
     pack_by_id = {pack.pack_id: pack for pack in packs}
     raw_report = read(raw_prompt_report)
@@ -216,6 +225,20 @@ def verify_pack_quality(
         retrieval_total >= RETRIEVAL_MIN_CASES and retrieval_passed == retrieval_total,
         f"pack_retrieval_eval_pass_rate={retrieval_passed}/{retrieval_total}",
     )
+    kdb_index_text = read(kdb_index_report)
+    require("Status: `PASS`" in kdb_index_text, "kdb_index_eval_not_pass")
+    kdb_index_match = re.search(r"Indexed recall pass rate:\s+`(\d+)/(\d+)`", kdb_index_text)
+    require(kdb_index_match is not None, "kdb_index_eval_pass_rate_missing")
+    kdb_index_passed = int(kdb_index_match.group(1))
+    kdb_index_total = int(kdb_index_match.group(2))
+    scan_ratio_match = re.search(r"Candidate scan ratio:\s+`([0-9.]+)`", kdb_index_text)
+    require(scan_ratio_match is not None, "kdb_index_eval_scan_ratio_missing")
+    scan_ratio = float(scan_ratio_match.group(1))
+    require(
+        kdb_index_total >= KDB_INDEX_MIN_CASES and kdb_index_passed == kdb_index_total,
+        f"kdb_index_eval_pass_rate={kdb_index_passed}/{kdb_index_total}",
+    )
+    require(scan_ratio <= KDB_INDEX_MAX_SCAN_RATIO, f"kdb_index_scan_ratio={scan_ratio:.3f}")
     for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
@@ -283,11 +306,19 @@ def main() -> None:
     parser.add_argument("--raw-prompt-report", type=Path, default=DEFAULT_RAW_PROMPT_REPORT)
     parser.add_argument("--generalist-prompt-report", type=Path, default=DEFAULT_GENERALIST_PROMPT_REPORT)
     parser.add_argument("--retrieval-report", type=Path, default=DEFAULT_RETRIEVAL_REPORT)
+    parser.add_argument("--kdb-index-report", type=Path, default=DEFAULT_KDB_INDEX_REPORT)
     args = parser.parse_args()
 
     packs = verify_pack_files(args.pack_root)
     verify_source()
-    verify_pack_quality(packs, args.evidence_dir, args.raw_prompt_report, args.generalist_prompt_report, args.retrieval_report)
+    verify_pack_quality(
+        packs,
+        args.evidence_dir,
+        args.raw_prompt_report,
+        args.generalist_prompt_report,
+        args.retrieval_report,
+        args.kdb_index_report,
+    )
     verify_qemu_logs(packs, args.assistant_log, args.compile_log)
     verify_stress_logs(args.stress_log, args.stress_compile_log, args.stress_report)
     print(f"PROBE_OK assistant_pack_count={len(packs)}")
@@ -296,6 +327,7 @@ def main() -> None:
     print("PROBE_OK assistant_pack_quality=1")
     print("PROBE_OK assistant_generalist_prompt_eval=1")
     print("PROBE_OK assistant_pack_retrieval_eval=1")
+    print("PROBE_OK assistant_kdb_index_eval=1")
     print("PROBE_OK assistant_model_switch=1")
     print("PROBE_OK assistant_structured_reply=1")
     print("PROBE_OK assistant_art_slots=1")

@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket V. Rebuild with scripts/build_assistant_kdb.py --write.
+vintage friendly old hardware note dos computer run local model|Friendly old hardware note|This old DOS computer can run a friendly local model.

@@ -225,6 +225,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
 
         self.assertIn("best_score", text)
         self.assertIn("AssistRetrievalScore", text)
+        self.assertIn("AssistScanBucketedKdb kdb_path", text)
+        self.assertIn("AssistKdbBucketPath", text)
         self.assertIn("AssistScanRetrievalFile kdb_path", text)
         self.assertIn("AssistScanRetrievalFile user_path", text)
         self.assertIn("score_bonus", text)
@@ -240,6 +242,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("TITLE=Conversation Pack", chat_ini)
         self.assertIn("MODEL=PACKS\\CHAT\\MODEL", chat_ini)
         self.assertIn("KDB=KDB.TXT", chat_ini)
+        self.assertIn("KDBIDX=KDBIDX.TXT", chat_ini)
         self.assertIn("USER=USER.TXT", chat_ini)
         self.assertIn("USAGE=USAGE.TXT", chat_ini)
         self.assertIn("Purpose:", chat_usage)

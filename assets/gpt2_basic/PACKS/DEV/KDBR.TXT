@@ -1,0 +1,12 @@
+# terms|title|body
+# Generated KDB bucket R. Rebuild with scripts/build_assistant_kdb.py --write.
+debug debugging loop reproduce failure read first error change one thing rerun smallest test|Debugging loop|Reproduce the failure, read the first error, change one thing, and rerun the smallest test.
+review code look first correctness regressions missing tests unclear ownership risky edge cases|Code review|Look first for correctness, regressions, missing tests, unclear ownership, and risky edge cases.
+release check verify tests logs artifact names checksums notes target tag|Release check|Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+rollback plan know previous good version command restore evidence worked|Rollback plan|Know the previous good version, the command to restore it, and the evidence that rollback worked.
+triage issue classify impact reproduction quality affected surface owner next action|Issue triage|Classify impact, reproduction quality, affected surface, owner, and next action.
+retrieval first answer kdb user notes memory golden rows before asking small model synthesize|Retrieval first|Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
+database recall high velocity compile notes compact keyword rows dos scans less text reaches answer faster|High velocity recall|Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster.
+qemu proof repeatable dos evidence confirm timing behavior physical hardware|QEMU proof|Use QEMU for repeatable DOS evidence, then confirm timing and behavior on physical hardware.
+failure record command input expected result actual log path next experiment|Failure record|Record the command, input, expected result, actual result, log path, and next experiment.
+answer synthesis retrieval facts model short wording transitions adapting prompt|Answer synthesis|Use retrieval for facts and the model for short wording, transitions, and adapting the answer to the prompt.

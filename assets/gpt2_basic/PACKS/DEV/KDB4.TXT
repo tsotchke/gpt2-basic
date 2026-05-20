@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket 4. Rebuild with scripts/build_assistant_kdb.py --write.
+modern 486 llm path small hot-loaded weights compact retrieval databases persistent memory short synthesis replies|Modern 486 LLM path|Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+hardware target 486-friendly assistant minimize disk reads memory churn context length generated tokens|Hardware target|A 486-friendly assistant should minimize disk reads, memory churn, context length, and generated tokens.
