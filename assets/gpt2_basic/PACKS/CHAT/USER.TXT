@@ -1,0 +1,3 @@
+# key|title|body
+# Add local conversation facts here. Example:
+# project goal|Project goal|We are making GPT2-BASIC useful on old DOS hardware.

@@ -62,6 +62,10 @@ EXPECTED_CASES = (
     StressCase("OFFICE", "shorten: we need to verify the release before publishing", ("short", "intent", "remove", "duplicate")),
     StressCase("OFFICE", "write a polite status update about a delayed build", ("direct", "polite", "concrete", "action")),
     StressCase("OFFICE", "make this clearer: the artifact uploaded but the tag was stale", ("happened", "matters", "action", "artifact", "tag")),
+    StressCase("DEV", "how can this feel modern on a 486", ("weights", "retrieval", "memory", "synthesis")),
+    StressCase("DEV", "what does retrieval first mean", ("kdb", "user", "memory")),
+    StressCase("DEV", "how do i author a pack", ("help", "know", "kdb", "validator")),
+    StressCase("DEV", "what should i check before release", ("tests", "logs", "checksums", "tag")),
 )
 
 ALLOWED_SOURCES = {"golden", "retrieval", "model", "fallback", "memory"}

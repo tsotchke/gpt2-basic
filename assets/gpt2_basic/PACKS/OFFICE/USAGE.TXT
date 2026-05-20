@@ -5,9 +5,10 @@ Purpose:
   shortening, summarizing, or making a note sound more professional.
 
 How it works:
-  The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from
-  HELP.TXT plus broader document patterns from KNOW.TXT before generating a
-  reply. It behaves like a small DOS office assistant with action buttons.
+  The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from generated
+  KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT and
+  KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
+  DOS office assistant with action buttons.
 
 How to use it:
   Type /pack OFFICE, then paste or describe the text task.

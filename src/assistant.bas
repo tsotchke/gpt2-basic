@@ -40,6 +40,7 @@ CONST ASSIST_DEFAULT_TOP_K = 24
 CONST ASSIST_HISTORY_MAX = 96
 CONST ASSIST_HISTORY_PAGE = 10
 CONST ASSIST_MEMORY_VALUE_MAX = 72
+CONST ASSIST_MEMORY_FILE = "ASSIST.MEM"
 
 TYPE AssistantPack
     id AS STRING * 32
@@ -48,6 +49,8 @@ TYPE AssistantPack
     persona AS STRING * 160
     help_path AS STRING * 80
     knowledge_path AS STRING * 80
+    kdb_path AS STRING * 80
+    user_path AS STRING * 80
     golden_path AS STRING * 80
     usage_path AS STRING * 80
     sprite_path AS STRING * 80
@@ -70,6 +73,7 @@ DIM SHARED g_assist_memory_style AS STRING
 DIM SHARED g_assist_memory_problem AS STRING
 DIM SHARED g_assist_memory_last_user AS STRING
 DIM SHARED g_assist_memory_last_answer AS STRING
+DIM SHARED g_assist_memory_persist AS INTEGER
 
 DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
 DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
@@ -84,6 +88,8 @@ DECLARE FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
 DECLARE FUNCTION AssistMemoryExtract(original AS STRING, lower_text AS STRING, marker AS STRING) AS STRING
 DECLARE SUB AssistRememberFact(key_name AS STRING, value AS STRING)
 DECLARE SUB AssistRememberTurn(query AS STRING, answer AS STRING)
+DECLARE SUB AssistLoadMemoryFacts()
+DECLARE SUB AssistSaveMemoryFacts()
 DECLARE FUNCTION AssistMemoryFactsText() AS STRING
 DECLARE FUNCTION AssistMemoryContext() AS STRING
 DECLARE FUNCTION AssistMemoryReply(query AS STRING) AS STRING
@@ -104,7 +110,7 @@ DECLARE FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
 DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
 DECLARE FUNCTION AssistIsRetrievalStopword(word_text AS STRING) AS INTEGER
 DECLARE FUNCTION AssistRetrievalScore(query_lower AS STRING, key_text AS STRING, title_text AS STRING, body_text AS STRING) AS INTEGER
-DECLARE SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+DECLARE SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGoldenReply(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
@@ -323,6 +329,7 @@ SUB AssistRememberFact(key_name AS STRING, value AS STRING)
     ELSEIF key_text = "problem" OR key_text = "issue" THEN
         g_assist_memory_problem = clean_value
     END IF
+    AssistSaveMemoryFacts
 END SUB
 
 SUB AssistRememberTurn(query AS STRING, answer AS STRING)
@@ -343,6 +350,64 @@ FUNCTION AssistMemoryFactsText() AS STRING
     IF RIGHT$(facts, 2) = "; " THEN facts = LEFT$(facts, LEN(facts) - 2)
     RETURN "Memory: " + facts + "."
 END FUNCTION
+
+SUB AssistLoadMemoryFacts()
+    DIM file_num AS INTEGER
+    DIM line_text AS STRING
+    DIM eq_pos AS INTEGER
+    DIM key_text AS STRING
+    DIM value_text AS STRING
+
+    IF DIR(ASSIST_MEMORY_FILE) = "" THEN RETURN
+    file_num = FREEFILE
+    ON ERROR GOTO assist_load_memory_error
+    OPEN ASSIST_MEMORY_FILE FOR INPUT AS #file_num
+    ON ERROR GOTO 0
+
+    WHILE EOF(file_num) = 0
+        LINE INPUT #file_num, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" AND LEFT$(line_text, 1) <> ";" THEN
+            eq_pos = INSTR(line_text, "=")
+            IF eq_pos > 1 THEN
+                key_text = LCASE$(TRIM$(LEFT$(line_text, eq_pos - 1)))
+                value_text = AssistCleanMemoryValue(MID$(line_text, eq_pos + 1))
+                IF key_text = "name" THEN g_assist_memory_user_name = value_text
+                IF key_text = "goal" THEN g_assist_memory_goal = value_text
+                IF key_text = "style" THEN g_assist_memory_style = value_text
+                IF key_text = "problem" THEN g_assist_memory_problem = value_text
+            END IF
+        END IF
+    WEND
+
+    CLOSE #file_num
+    RETURN
+
+assist_load_memory_error:
+    ON ERROR GOTO 0
+    RETURN
+END SUB
+
+SUB AssistSaveMemoryFacts()
+    DIM file_num AS INTEGER
+
+    IF g_assist_memory_persist = 0 THEN RETURN
+    file_num = FREEFILE
+    ON ERROR GOTO assist_save_memory_error
+    OPEN ASSIST_MEMORY_FILE FOR OUTPUT AS #file_num
+    ON ERROR GOTO 0
+
+    IF g_assist_memory_user_name <> "" THEN PRINT #file_num, "name=" + AssistSafeText(g_assist_memory_user_name)
+    IF g_assist_memory_goal <> "" THEN PRINT #file_num, "goal=" + AssistSafeText(g_assist_memory_goal)
+    IF g_assist_memory_style <> "" THEN PRINT #file_num, "style=" + AssistSafeText(g_assist_memory_style)
+    IF g_assist_memory_problem <> "" THEN PRINT #file_num, "problem=" + AssistSafeText(g_assist_memory_problem)
+    CLOSE #file_num
+    RETURN
+
+assist_save_memory_error:
+    ON ERROR GOTO 0
+    RETURN
+END SUB
 
 FUNCTION AssistMemoryContext() AS STRING
     DIM context_text AS STRING
@@ -462,10 +527,12 @@ SUB AssistClearMemoryFacts()
     g_assist_memory_problem = ""
     g_assist_memory_last_user = ""
     g_assist_memory_last_answer = ""
+    AssistSaveMemoryFacts
 END SUB
 
 SUB AssistPrintMemory()
     PRINT AssistMemoryFactsText()
+    IF g_assist_memory_persist <> 0 THEN PRINT "Memory file: "; ASSIST_MEMORY_FILE
     PRINT
 END SUB
 
@@ -530,6 +597,12 @@ FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
     value_text = AssistReadIniValue(ini_path, "KNOW", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).knowledge_path = value_text
+    value_text = AssistReadIniValue(ini_path, "KDB", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).kdb_path = value_text
+    value_text = AssistReadIniValue(ini_path, "USER", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).user_path = value_text
     value_text = AssistReadIniValue(ini_path, "GOLDEN", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).golden_path = value_text
@@ -556,6 +629,8 @@ SUB AssistUseBuiltinPack()
     g_assist_packs(0).persona = "Helpful concise DOS assistant."
     g_assist_packs(0).help_path = ""
     g_assist_packs(0).knowledge_path = ""
+    g_assist_packs(0).kdb_path = ""
+    g_assist_packs(0).user_path = ""
     g_assist_packs(0).golden_path = ""
     g_assist_packs(0).usage_path = ""
     g_assist_packs(0).sprite_path = ""
@@ -822,7 +897,7 @@ FUNCTION AssistRetrievalScore(query_lower AS STRING, key_text AS STRING, title_t
     RETURN score
 END FUNCTION
 
-SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
     DIM file_num AS INTEGER
     DIM line_text AS STRING
     DIM key_text AS STRING
@@ -852,6 +927,7 @@ SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, BYRE
                     title_text = TRIM$(MID$(line_text, first_pipe + 1, second_pipe - first_pipe - 1))
                     body_text = TRIM$(MID$(line_text, second_pipe + 1))
                     row_score = AssistRetrievalScore(query_lower, key_text, title_text, body_text)
+                    IF row_score > 0 THEN row_score = row_score + score_bonus
                     IF row_score > best_score THEN
                         best_score = row_score
                         best_text = title_text + ": " + body_text
@@ -872,6 +948,8 @@ END SUB
 FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM help_path AS STRING
     DIM knowledge_path AS STRING
+    DIM kdb_path AS STRING
+    DIM user_path AS STRING
     DIM q AS STRING
     DIM best_text AS STRING
     DIM best_score AS INTEGER
@@ -883,9 +961,16 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     best_score = 0
     help_path = AssistTrimFixed(g_assist_packs(pack_index).help_path)
     knowledge_path = AssistTrimFixed(g_assist_packs(pack_index).knowledge_path)
+    kdb_path = AssistTrimFixed(g_assist_packs(pack_index).kdb_path)
+    user_path = AssistTrimFixed(g_assist_packs(pack_index).user_path)
 
-    AssistScanRetrievalFile help_path, q, best_text, best_score
-    AssistScanRetrievalFile knowledge_path, q, best_text, best_score
+    IF kdb_path <> "" AND DIR(kdb_path) <> "" THEN
+        AssistScanRetrievalFile kdb_path, q, 0, best_text, best_score
+    ELSE
+        AssistScanRetrievalFile help_path, q, 0, best_text, best_score
+        AssistScanRetrievalFile knowledge_path, q, 0, best_text, best_score
+    END IF
+    AssistScanRetrievalFile user_path, q, 12, best_text, best_score
 
     IF best_score >= 8 THEN RETURN best_text
     RETURN ""
@@ -1557,6 +1642,11 @@ SUB AssistScriptedDemo()
     AssistPrintPackUsage g_assist_active_pack
     AssistRenderReply "Rewrite this memo in a professional tone.", 0
 
+    AssistSelectPack "DEV"
+    AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
+    AssistRenderReply "How can this feel modern on a 486?", 0
+
     PRINT "ASSIST_END|packs=" + LTRIM$(STR$(g_assist_pack_count))
     AssistShutdownModel
 END SUB
@@ -1636,6 +1726,14 @@ SUB AssistStressProbe()
     AssistRenderReply "write a polite status update about a delayed build", 1
     AssistRenderReply "make this clearer: the artifact uploaded but the tag was stale", 1
 
+    AssistSelectPack "DEV"
+    AssistRenderPackStatus
+    AssistPreloadActivePackModel
+    AssistRenderReply "how can this feel modern on a 486", 1
+    AssistRenderReply "what does retrieval first mean", 1
+    AssistRenderReply "how do i author a pack", 1
+    AssistRenderReply "what should i check before release", 1
+
     PRINT "ASSIST_END|suite=stress-probe|packs=" + LTRIM$(STR$(g_assist_pack_count))
     AssistShutdownModel
 END SUB
@@ -1649,6 +1747,7 @@ SUB AssistInteractive()
     PRINT
     AssistRenderPackStatus
     PRINT "Commands: /about, /pack NAME, /packs, /memory, /remember KEY=VALUE, /forget, /u, /d, /home, /end, /h, /clear, /quit"
+    PRINT "Memory persists in "; ASSIST_MEMORY_FILE; ". Add pack notes in USER.TXT."
     PRINT
     AssistPreloadActivePackModel
 
@@ -1713,6 +1812,7 @@ SUB AssistMain()
     AssistLoadPackList
     command_line = LCASE$(TRIM$(COMMAND$))
     g_assist_emit_records = 0
+    g_assist_memory_persist = 0
 
     IF command_line = "--scripted" OR command_line = "--probe" THEN
         g_assist_emit_records = 1
@@ -1732,6 +1832,8 @@ SUB AssistMain()
         RETURN
     END IF
 
+    g_assist_memory_persist = 1
+    AssistLoadMemoryFacts
     AssistInteractive
 END SUB
 

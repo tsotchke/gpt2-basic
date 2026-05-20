@@ -1,152 +1,415 @@
 +------------------------------------------------------------+
+
 | GPT2-BASIC Assistant Shell                                 |
+
 | Pack-driven text UI; VGA sprite/icon slots are pack assets. |
+
 +------------------------------------------------------------+
+
+
 
 ASSIST_BEGIN|suite=pack-shell|version=1
+
 Available packs:
+
   CHAT - Conversation Pack
+
   DOSHELP - DOS Help Assistant
+
   OFFICE - Office Assistant
 
+  DEV - Developer Pack
+
+
+
 Pack : CHAT - Conversation Pack
+
 Model: PACKS\CHAT\MODEL
+
 Usage: /about
+
 Sprite asset: PACKS\CHAT\CHAT.SPR
+
 Icon asset  : PACKS\CHAT\CHAT.ICN
+
 ASSIST_PACK|id=CHAT|title=Conversation Pack|model=PACKS\CHAT\MODEL|sprite=PACKS\CHAT\CHAT.SPR|icons=PACKS\CHAT\CHAT.ICN
 
+
+
 +------------------------------------------------------------+
+
 | Pack instructions                                          |
+
 +------------------------------------------------------------+
+
 CHAT pack
 
+
+
 Purpose:
+
   Use this pack for ordinary conversation. It is the default pack in the
+
   interactive QEMU demo because it is meant for talking, not a specific
+
   DOS or office task.
 
+
+
 How it works:
-  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
-  chat notes from HELP.TXT when a topic matches. It is also trained from
+
+  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves compact
+
+  local notes from generated KDB.TXT when a topic matches. KDB.TXT is built
+
+  from HELP.TXT and KNOW.TXT. USER.TXT can hold local editable notes that
+
+  should override the bundled recall database. It is also trained from
+
   GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
+
   sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
+
   grammar entries. Ordinary short prompts do not depend on a lookup hit. The
+
   answers are deliberately brief so the DOS console can show Thinking token
+
   progress, stream Answer pieces as they are generated, and return to the
+
   prompt quickly.
 
+
+
 How to use it:
+
   Just type a sentence at the > prompt. Use /about to see this help again.
+
   Use /u and /d to page through the transcript, or /h to show history.
 
+  Use /remember KEY=VALUE for persistent memory saved in ASSIST.MEM.
+
+
+
 Good prompts:
+
   Hello, what can you do?
+
   I am bored.
+
   Tell me a joke.
+
   Do you like music?
+
   I want to talk about this DOS demo.
+
   Give me one idea for improving the demo.
+
   What are your limits?
 
+  Which pack should I use for writing?
+
+  How can I ask better questions?
+
+
+
 Actions:
+
   chat, ask, idea, explain, cancel
 
+
+
 Initialized tokenizer with  258 tokens
+
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|actions=chat,ask,idea,explain,cancel|retrieval=Assistant abilities: I chat in DOS.|generated=
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=Hello, what can you do?|canonical=Hello, what can you do|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Starting a conversation: Hello from DOS.|golden=I can chat in DOS.|memory=|generated=|answer=I can chat in DOS.
+
 +------------------------------------------------------------+
+
 | Assistant                                                  |
+
 +------------------------------------------------------------+
-Assistant abilities: I chat in DOS.
+
+I can chat in DOS.
+
+
 
 [ chat,ask,idea,explain,cancel ]
 
+
+
 Pack : DOSHELP - DOS Help Assistant
+
 Model: PACKS\DOSHELP\MODEL
+
 Usage: /about
+
 Sprite asset: PACKS\DOSHELP\DOSHELP.SPR
+
 Icon asset  : PACKS\DOSHELP\DOSHELP.ICN
+
 ASSIST_PACK|id=DOSHELP|title=DOS Help Assistant|model=PACKS\DOSHELP\MODEL|sprite=PACKS\DOSHELP\DOSHELP.SPR|icons=PACKS\DOSHELP\DOSHELP.ICN
 
+
+
 +------------------------------------------------------------+
+
 | Pack instructions                                          |
+
 +------------------------------------------------------------+
+
 DOSHELP pack
 
+
+
 Purpose:
+
   Use this pack when the conversation is about FreeDOS, 486-era
+
   configuration, CONFIG.SYS, AUTOEXEC.BAT, memory, or batch files.
 
+
+
 How it works:
-  The pack loads PACKS\DOSHELP\MODEL and retrieves short DOS notes from
-  HELP.TXT before generating a reply. It is tuned for concrete fixes, not
-  open-ended chat.
+
+  The pack loads PACKS\DOSHELP\MODEL and retrieves compact DOS notes from
+
+  generated KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT
+
+  and KNOW.TXT. USER.TXT can hold machine-local DOS notes. It is tuned for
+
+  concrete fixes, not open-ended chat.
+
+
 
 How to use it:
+
   Type /pack DOSHELP, then ask for a DOS task.
 
+
+
 Good prompts:
+
   How do I tune CONFIG.SYS memory?
+
   Write a safe DOS batch file.
+
   What should AUTOEXEC.BAT contain for this demo?
 
+  Why use 8.3 filenames in batch files?
+
+
+
 Actions:
+
   show_config, explain_xms, write_batch, cancel
 
+
+
 Initialized tokenizer with  258 tokens
+
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.|generated=
+
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=How do I tune CONFIG.SYS memory for this assistant?|canonical=How do I tune CONFIG.SYS memory for this assistant|source=golden|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|memory=Context: previous question was Hello, what can you do; previous answer was I can chat in DOS.|generated=|answer=Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+
 +------------------------------------------------------------+
+
 | Assistant                                                  |
+
 +------------------------------------------------------------+
-CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.
+
+Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+
+
 
 [ show_config,explain_xms,more,cancel ]
 
+
+
 Pack : OFFICE - Office Assistant
+
 Model: PACKS\OFFICE\MODEL
+
 Usage: /about
+
 Sprite asset: PACKS\OFFICE\OFFICE.SPR
+
 Icon asset  : PACKS\OFFICE\OFFICE.ICN
+
 ASSIST_PACK|id=OFFICE|title=Office Assistant|model=PACKS\OFFICE\MODEL|sprite=PACKS\OFFICE\OFFICE.SPR|icons=PACKS\OFFICE\OFFICE.ICN
 
+
+
 +------------------------------------------------------------+
+
 | Pack instructions                                          |
+
 +------------------------------------------------------------+
+
 OFFICE pack
 
+
+
 Purpose:
+
   Use this pack when the conversation is about writing, rewriting,
+
   shortening, summarizing, or making a note sound more professional.
 
+
+
 How it works:
-  The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from
-  HELP.TXT before generating a reply. It behaves like a small DOS office
-  assistant with action buttons.
+
+  The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from generated
+
+  KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT and
+
+  KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
+
+  DOS office assistant with action buttons.
+
+
 
 How to use it:
+
   Type /pack OFFICE, then paste or describe the text task.
 
+
+
 Good prompts:
+
   Rewrite this memo in a professional tone.
+
   Summarize this paragraph.
+
   Make this note shorter and clearer.
 
+  What belongs in a bug report?
+
+
+
 Actions:
+
   rewrite, shorten, summarize, formalize, cancel
 
+
+
 Initialized tokenizer with  258 tokens
+
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
-ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|generated=
+
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=Rewrite this memo in a professional tone.|canonical=Rewrite this memo in a professional tone|source=golden|actions=rewrite,shorten,formalize,cancel|retrieval=Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.|golden=Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|memory=Context: previous question was How do I tune CONFIG.SYS memory for this assistant; previous answer was Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and p.|generated=|answer=Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+
 +------------------------------------------------------------+
+
 | Assistant                                                  |
+
 +------------------------------------------------------------+
-Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+
+Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+
+
 
 [ rewrite,shorten,formalize,cancel ]
 
-ASSIST_END|packs=3
+
+
+Pack : DEV - Developer Pack
+
+Model: PACKS\CHAT\MODEL
+
+Usage: /about
+
+Sprite asset: PACKS\CHAT\CHAT.SPR
+
+Icon asset  : PACKS\CHAT\CHAT.ICN
+
+ASSIST_PACK|id=DEV|title=Developer Pack|model=PACKS\CHAT\MODEL|sprite=PACKS\CHAT\CHAT.SPR|icons=PACKS\CHAT\CHAT.ICN
+
+
+
++------------------------------------------------------------+
+
+| Pack instructions                                          |
+
++------------------------------------------------------------+
+
+DEV pack
+
+
+
+Purpose:
+
+  Use this pack for software engineering, release work, debugging, testing,
+
+  and GPT2-BASIC architecture questions.
+
+
+
+How it works:
+
+  The pack shares PACKS\CHAT\MODEL but uses its own generated KDB.TXT,
+
+  HELP.TXT, KNOW.TXT, and USER.TXT. This is the lightweight language-pack
+
+  pattern: new domain behavior without shipping another large model.
+
+
+
+How to use it:
+
+  Type /pack DEV, then ask about debugging, tests, release checks, retrieval,
+
+  hot-loaded weights, local databases, or 486-friendly assistant design.
+
+
+
+Good prompts:
+
+  How should I debug this?
+
+  What should I check before release?
+
+  How can this feel modern on a 486?
+
+  What is retrieval first?
+
+  How do I author a pack?
+
+
+
+Actions:
+
+  debug, test, release, explain, cancel
+
+
+
+Initialized tokenizer with  258 tokens
+
+Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+
+ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096
+
+ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=How can this feel modern on a 486?|canonical=How can this feel modern on a 486|source=golden|actions=debug,test,release,explain,cancel|retrieval=Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|golden=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|memory=Context: previous question was Rewrite this memo in a professional tone; previous answer was Keep the message direct, polite, concrete, and free of jokes, filler, or.|generated=|answer=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+
+
+
+[ debug,test,release,explain,cancel ]
+
+
+
+ASSIST_END|packs=4

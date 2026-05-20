@@ -1,0 +1,9 @@
+# key|title|body
+debug|Debugging loop|Reproduce the failure, read the first error, change one thing, and rerun the smallest test.
+test|Test strategy|Name the behavior, choose the smallest proof, run it, and record pass or fail.
+review|Code review|Look first for correctness, regressions, missing tests, unclear ownership, and risky edge cases.
+release|Release check|Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+rollback|Rollback plan|Know the previous good version, the command to restore it, and the evidence that rollback worked.
+perf|Performance check|Measure before changing code, isolate the hot path, and compare the same workload after the change.
+architecture|Architecture note|State the goal, constraints, data flow, failure modes, and the next reversible step.
+triage|Issue triage|Classify impact, reproduction quality, affected surface, owner, and next action.

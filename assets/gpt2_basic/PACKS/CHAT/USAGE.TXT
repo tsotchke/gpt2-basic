@@ -6,9 +6,10 @@ Purpose:
   DOS or office task.
 
 How it works:
-  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
-  chat notes from HELP.TXT plus broader local knowledge from KNOW.TXT when a
-  topic matches. It is also trained from
+  The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves compact
+  local notes from generated KDB.TXT when a topic matches. KDB.TXT is built
+  from HELP.TXT and KNOW.TXT. USER.TXT can hold local editable notes that
+  should override the bundled recall database. It is also trained from
   GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
   sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
   grammar entries. Ordinary short prompts do not depend on a lookup hit. The
@@ -19,6 +20,7 @@ How it works:
 How to use it:
   Just type a sentence at the > prompt. Use /about to see this help again.
   Use /u and /d to page through the transcript, or /h to show history.
+  Use /remember KEY=VALUE for persistent memory saved in ASSIST.MEM.
 
 Good prompts:
   Hello, what can you do?

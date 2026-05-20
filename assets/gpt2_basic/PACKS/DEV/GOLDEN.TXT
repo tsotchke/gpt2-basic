@@ -1,0 +1,5 @@
+how should i debug this	Reproduce the failure, read the first error, change one thing, and rerun the smallest test.
+what should i check before release	Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+how can this feel modern on a 486	Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+what is retrieval first	Answer from KDB, USER notes, memory, and golden rows before using model synthesis.
+how do i author a pack	Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates.

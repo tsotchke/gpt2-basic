@@ -24,12 +24,15 @@ class AssistantPackContractTests(unittest.TestCase):
         packs = load_all_pack_contracts(ROOT / "assets" / "gpt2_basic" / "PACKS")
         by_id = {pack.pack_id: pack for pack in packs}
 
-        self.assertEqual([pack.pack_id for pack in packs], ["CHAT", "DOSHELP", "OFFICE"])
+        self.assertEqual([pack.pack_id for pack in packs], ["CHAT", "DOSHELP", "OFFICE", "DEV"])
         self.assertEqual(by_id["CHAT"].model_value, r"PACKS\CHAT\MODEL")
         self.assertIn("cancel", by_id["CHAT"].actions)
         self.assertGreaterEqual(len(by_id["CHAT"].help_rows), 3)
         self.assertGreaterEqual(len(by_id["CHAT"].knowledge_rows), 10)
+        self.assertGreaterEqual(len(by_id["CHAT"].kdb_rows), len(by_id["CHAT"].help_rows))
         self.assertTrue(by_id["CHAT"].knowledge_path.name.endswith("KNOW.TXT"))
+        self.assertTrue(by_id["CHAT"].kdb_path.name.endswith("KDB.TXT"))
+        self.assertTrue(by_id["CHAT"].user_path.name.endswith("USER.TXT"))
         self.assertTrue(by_id["CHAT"].usage_path.name.endswith("USAGE.TXT"))
         self.assertTrue(by_id["CHAT"].sprite_path.name.endswith("CHAT.SPR"))
         self.assertTrue(by_id["CHAT"].icons_path.name.endswith("CHAT.ICN"))
