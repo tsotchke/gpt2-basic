@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `306 files, 118,978,922 bytes`
+Package status: `306 files, 118,988,282 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,9 +24,9 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
-| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 160/160 avg 0.999 (float, assistant-pack) | 17 files / 83,231,317 B |
-| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 15 files / 3,995,228 B |
-| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 15 files / 4,142,685 B |
+| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 160/160 avg 0.999 (float, assistant-pack) | 17 files / 83,232,710 B |
+| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 15 files / 3,996,696 B |
+| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 15 files / 4,144,007 B |
 
 ## Included Runtime Surface
 

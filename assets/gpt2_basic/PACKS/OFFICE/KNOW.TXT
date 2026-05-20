@@ -7,3 +7,15 @@ email reply|Email reply|Answer the direct question first, then add context and n
 rewrite rules|Rewrite rules|Preserve facts, remove filler, keep the tone polite, and avoid unsupported claims.
 checklist writing|Checklist writing|Use short action verbs and make each item independently testable.
 handoff note|Handoff note|Say what is done, what remains, where evidence lives, and who owns the next action.
+meeting notes|Meeting notes|Capture decisions, owners, dates, open questions, and follow-up actions.
+project plan|Project plan|List the goal, milestones, owners, risks, and the next checkpoint.
+track risks|Risk register|For each risk, record impact, likelihood, mitigation, owner, and review date.
+csv cleanup|CSV cleanup|Keep headers stable, quote fields with commas, normalize dates, and preserve an untouched source copy.
+spreadsheet formula|Spreadsheet formula|State the input cells, the formula, the expected result, and one check for errors.
+budget table|Budget table|Show item, cost, owner, due date, and status so totals can be checked quickly.
+polite email|Polite email|Start with the answer, add one reason, state the next step, and keep the tone direct.
+decision memo|Decision memo|State the recommendation, alternatives considered, evidence, risks, and owner.
+user docs|User docs|Write the task goal, prerequisites, exact steps, expected result, and troubleshooting note.
+test plan|Test plan|Define scope, cases, expected results, evidence files, and pass or fail criteria.
+customer reply|Customer reply|Acknowledge the issue, give the current status, state the next action, and avoid overpromising.
+changelog|Changelog entry|Group changes by added, changed, fixed, and known limits; keep each bullet factual.

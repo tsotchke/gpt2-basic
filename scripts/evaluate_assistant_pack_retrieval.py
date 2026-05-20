@@ -62,12 +62,30 @@ CASES: tuple[RetrievalCase, ...] = (
     RetrievalCase("CHAT", "can this work without the internet", ("offline", "local", "files", "model"), 3),
     RetrievalCase("CHAT", "how do i recover from a bad answer", ("shorter", "switch", "error", "wrong"), 2),
     RetrievalCase("CHAT", "what proof helps me trust this", ("visible", "local", "weights", "tests", "logs"), 3),
+    RetrievalCase("CHAT", "how should i compare options", ("options", "tradeoff", "choose", "step"), 3),
+    RetrievalCase("CHAT", "help me plan work in small steps", ("small", "steps", "blocking", "verify"), 3),
+    RetrievalCase("CHAT", "what should a useful answer look like", ("brief", "concrete", "limits", "act"), 3),
+    RetrievalCase("CHAT", "can you explain something simply", ("plain", "example", "short", "prompt"), 3),
+    RetrievalCase("CHAT", "what can you know without web access", ("internet", "live", "local", "prompt"), 3),
+    RetrievalCase("CHAT", "how do i show confidence in an answer", ("known", "inferred", "uncertain"), 2),
     RetrievalCase("DOSHELP", "what happens before autoexec bat runs", ("config.sys", "autoexec", "drivers", "commands"), 3),
     RetrievalCase("DOSHELP", "why use 8.3 filenames in batches", ("8.3", "dos", "compatibility", "batch"), 3),
     RetrievalCase("DOSHELP", "how should i prepare files for real hardware", ("gpt2", "model", "packs", "cwsdpmi"), 3),
+    RetrievalCase("DOSHELP", "what should i do when cwsdpmi is missing", ("protected-mode", "cwsdpmi.exe", "beside", "rerun"), 3),
+    RetrievalCase("DOSHELP", "how do i mount the dosbox bundle", ("mount", "c:", "c:\\gpt2", "profile"), 3),
+    RetrievalCase("DOSHELP", "what if the fat image is full", ("training", "grow", "disk", "space"), 2),
+    RetrievalCase("DOSHELP", "what logs matter from qemu", ("compile", "run", "evidence", "emulator"), 3),
+    RetrievalCase("DOSHELP", "how do i handle a dos memory error", ("conventional", "tsrs", "drivers", "profile"), 3),
+    RetrievalCase("DOSHELP", "how should a batch menu work", ("numbered", "validate", "branch", "reversible"), 3),
     RetrievalCase("OFFICE", "how should i write a handoff note", ("done", "remains", "evidence", "next"), 3),
     RetrievalCase("OFFICE", "what belongs in a bug report", ("expected", "actual", "steps", "logs"), 3),
     RetrievalCase("OFFICE", "make a compact release note", ("changed", "proof", "limits"), 2),
+    RetrievalCase("OFFICE", "what should meeting notes capture", ("decisions", "owners", "dates", "actions"), 3),
+    RetrievalCase("OFFICE", "help me write a project plan", ("goal", "milestones", "owners", "risks"), 3),
+    RetrievalCase("OFFICE", "how do i track risks", ("impact", "likelihood", "mitigation", "owner"), 3),
+    RetrievalCase("OFFICE", "what is a useful test plan", ("scope", "cases", "expected", "criteria"), 3),
+    RetrievalCase("OFFICE", "how should i reply to a customer", ("issue", "status", "next", "overpromising"), 3),
+    RetrievalCase("OFFICE", "how do i write user docs", ("goal", "prerequisites", "steps", "troubleshooting"), 3),
 )
 
 
@@ -175,6 +193,7 @@ def run_eval(report: Path) -> int:
 
 
 def self_test() -> None:
+    assert len(CASES) >= 30
     assert retrieval_score("how can i ask better questions", HelpRow("ask better", "Better prompts", "Say the goal and next step.")) >= 8
     assert retrieval_score("how can i ask better questions", HelpRow("unrelated", "Other", "No match here.")) < 8
     report = markdown_report(
