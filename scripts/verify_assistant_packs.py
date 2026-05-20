@@ -19,8 +19,10 @@ DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_comp
 DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
 DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_generalist_prompt_eval.md"
+DEFAULT_RETRIEVAL_REPORT = ROOT / "qemu" / "evidence" / "assistant_pack_retrieval_eval.md"
 RAW_PROMPT_MIN_CASES = 83
 GENERALIST_PROMPT_MIN_CASES = 24
+RETRIEVAL_MIN_CASES = 12
 STRESS_REPLY_COUNT = 40
 
 
@@ -90,10 +92,12 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         ini = read(pack_dir / "PACK.INI")
         values = parse_ini(ini)
         help_text = read(pack_dir / "HELP.TXT")
+        knowledge_text = read(pack_dir / "KNOW.TXT")
         require(f"ID={pack_id}" in ini.upper(), f"pack_id_mismatch={pack_id}")
-        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
+        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
             require(key in ini.upper(), f"missing_{key.rstrip('=')}={pack_id}")
         require("|" in help_text, f"missing_retrieval_rows={pack_id}")
+        require("|" in knowledge_text, f"missing_knowledge_rows={pack_id}")
         usage_text = read(pack_dir / values["USAGE"])
         for marker in ("Purpose:", "How it works:", "How to use it:", "Good prompts:", "Actions:"):
             require(marker in usage_text, f"missing_usage_marker_{marker.rstrip(':').lower().replace(' ', '_')}={pack_id}")
@@ -121,6 +125,9 @@ def verify_source() -> None:
         "AssistGoldenReply",
         "AssistMemoryReply",
         "AssistMemoryContext",
+        "AssistScanRetrievalFile",
+        "AssistRetrievalScore",
+        "knowledge_path",
         "AssistGuardProbe",
         "AssistStressProbe",
         "AssistPrepareGenerationPrompt",
@@ -164,7 +171,13 @@ def verify_source() -> None:
         require(needle in source, f"source_missing={needle}")
 
 
-def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_report: Path, generalist_prompt_report: Path) -> None:
+def verify_pack_quality(
+    packs: list[PackInfo],
+    evidence_dir: Path,
+    raw_prompt_report: Path,
+    generalist_prompt_report: Path,
+    retrieval_report: Path,
+) -> None:
     pack_by_id = {pack.pack_id: pack for pack in packs}
     raw_report = read(raw_prompt_report)
     require("Status: `PASS`" in raw_report, "raw_prompt_eval_not_pass")
@@ -182,6 +195,16 @@ def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_re
     require(
         generalist_total >= GENERALIST_PROMPT_MIN_CASES and generalist_passed == generalist_total,
         f"generalist_prompt_eval_pass_rate={generalist_passed}/{generalist_total}",
+    )
+    retrieval_text = read(retrieval_report)
+    require("Status: `PASS`" in retrieval_text, "pack_retrieval_eval_not_pass")
+    retrieval_match = re.search(r"Retrieval pass rate:\s+`(\d+)/(\d+)`", retrieval_text)
+    require(retrieval_match is not None, "pack_retrieval_eval_pass_rate_missing")
+    retrieval_passed = int(retrieval_match.group(1))
+    retrieval_total = int(retrieval_match.group(2))
+    require(
+        retrieval_total >= RETRIEVAL_MIN_CASES and retrieval_passed == retrieval_total,
+        f"pack_retrieval_eval_pass_rate={retrieval_passed}/{retrieval_total}",
     )
     for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
@@ -247,11 +270,12 @@ def main() -> None:
     parser.add_argument("--stress-report", type=Path, default=DEFAULT_STRESS_REPORT)
     parser.add_argument("--raw-prompt-report", type=Path, default=DEFAULT_RAW_PROMPT_REPORT)
     parser.add_argument("--generalist-prompt-report", type=Path, default=DEFAULT_GENERALIST_PROMPT_REPORT)
+    parser.add_argument("--retrieval-report", type=Path, default=DEFAULT_RETRIEVAL_REPORT)
     args = parser.parse_args()
 
     packs = verify_pack_files(args.pack_root)
     verify_source()
-    verify_pack_quality(packs, args.evidence_dir, args.raw_prompt_report, args.generalist_prompt_report)
+    verify_pack_quality(packs, args.evidence_dir, args.raw_prompt_report, args.generalist_prompt_report, args.retrieval_report)
     verify_qemu_logs(packs, args.assistant_log, args.compile_log)
     verify_stress_logs(args.stress_log, args.stress_compile_log, args.stress_report)
     print(f"PROBE_OK assistant_pack_count={len(packs)}")
@@ -259,6 +283,7 @@ def main() -> None:
     print("PROBE_OK assistant_pack_models=1")
     print("PROBE_OK assistant_pack_quality=1")
     print("PROBE_OK assistant_generalist_prompt_eval=1")
+    print("PROBE_OK assistant_pack_retrieval_eval=1")
     print("PROBE_OK assistant_model_switch=1")
     print("PROBE_OK assistant_structured_reply=1")
     print("PROBE_OK assistant_art_slots=1")

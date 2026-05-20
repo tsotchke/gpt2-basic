@@ -1,8 +1,8 @@
 # key|title|body
 memory|CONFIG.SYS memory|Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 config.sys|CONFIG.SYS example|Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
-autoexec|AUTOEXEC.BAT hygiene|Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
-batch|Batch file help|In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+autoexec|AUTOEXEC.BAT hygiene|CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
+batch|Batch file help|In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.
 model|Model packs|Point MODEL at C:\MODEL or a pack-local checkpoint, then let the assistant switch model paths when the pack changes.
 dpmi|DPMI host|Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
 protected mode|DPMI host|Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.

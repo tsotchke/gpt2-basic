@@ -6,8 +6,8 @@ Purpose:
 
 How it works:
   The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from
-  HELP.TXT before generating a reply. It behaves like a small DOS office
-  assistant with action buttons.
+  HELP.TXT plus broader document patterns from KNOW.TXT before generating a
+  reply. It behaves like a small DOS office assistant with action buttons.
 
 How to use it:
   Type /pack OFFICE, then paste or describe the text task.
@@ -16,6 +16,7 @@ Good prompts:
   Rewrite this memo in a professional tone.
   Summarize this paragraph.
   Make this note shorter and clearer.
+  What belongs in a bug report?
 
 Actions:
   rewrite, shorten, summarize, formalize, cancel

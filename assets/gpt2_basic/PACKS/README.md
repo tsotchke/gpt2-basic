@@ -8,7 +8,8 @@ inside DOS.
 
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
 interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
-conversation notes from `CHAT\HELP.TXT`. The DOS shell prints `Thinking:`
+conversation notes from `CHAT\HELP.TXT` plus broader local knowledge from
+`CHAT\KNOW.TXT`. The DOS shell prints `Thinking:`
 progress with visible prompt/context token pieces and output-token sampling,
 then streams the generated `Answer:` pieces as the model produces them. Use
 `/u`, `/d`, and `/h` for transcript paging in the DOS UI. `CHAT\GOLDEN.TXT`
@@ -27,27 +28,30 @@ Good prompts:
 - `I want to talk about this DOS demo.`
 - `Give me one idea for improving the demo.`
 - `What are your limits?`
+- `How can I ask better questions?`
 
 ## DOSHELP
 
 Use `DOSHELP` for FreeDOS, 486 setup, `CONFIG.SYS`, `AUTOEXEC.BAT`, memory,
 and batch-file questions. It uses `PACKS\DOSHELP\MODEL` plus retrieval notes
-from `DOSHELP\HELP.TXT`.
+from `DOSHELP\HELP.TXT` and `DOSHELP\KNOW.TXT`.
 
 Good prompts:
 
 - `How do I tune CONFIG.SYS memory?`
 - `Write a safe DOS batch file.`
 - `What should AUTOEXEC.BAT contain for this demo?`
+- `Why use 8.3 filenames in batch files?`
 
 ## OFFICE
 
 Use `OFFICE` for writing tasks: rewrite, summarize, shorten, formalize, and
 make prose more professional. It uses `PACKS\OFFICE\MODEL` plus writing notes
-from `OFFICE\HELP.TXT`.
+from `OFFICE\HELP.TXT` and `OFFICE\KNOW.TXT`.
 
 Good prompts:
 
 - `Rewrite this memo in a professional tone.`
 - `Summarize this paragraph.`
 - `Make this note shorter and clearer.`
+- `What belongs in a bug report?`
