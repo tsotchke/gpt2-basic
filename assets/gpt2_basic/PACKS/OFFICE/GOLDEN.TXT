@@ -1,8 +1,22 @@
 # GPT2-BASIC OFFICE golden support examples
 #
 # Format: one prompt and answer pair per line, separated by a tab.
+Rewrite selected text	Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.
+Professional tone	Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+Formal memo	Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
+Summary action	Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
 rewrite this politely: the artifact failed	Use direct, polite wording, keep the artifact fact, and end with the next action.
+make this sentence sound professional: the release broke	Use direct, polite, professional wording, name the release problem, and end with the next action.
 summarize this: tests passed but the tag was stale	Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
+summarize tests passed but the tag was stale	Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
+tests passed but the tag was stale	Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
+summarize: tests passed but dosbox needed a helper file	Summary: tests passed, DOSBox needed a helper file. Include it.
+summarize tests passed but dosbox needed a helper file	Summary: tests passed, DOSBox needed a helper file. Include it.
+tests passed but dosbox needed a helper file	Summary: tests passed, DOSBox needed a helper file. Include it.
+dosbox needed a helper file	Summary: tests passed, DOSBox needed a helper file. Include it.
 make this clearer: checksums changed after rebuild	State that checksums changed after rebuild, why it matters, and the next action.
+make this clearer: the artifact uploaded but the tag was stale	State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 shorten this sentence without losing the decision	Keep the decision and next action, then remove repeated explanation.
+shorten: we need to verify the release before publishing	Short version: verify the release before publishing.
 write a status update about a delayed build	Use direct polite wording, include the current blocker, and end with the next action or timing.
+write a polite status update about a delayed build	Use direct, polite, concrete wording, include the current blocker, and end with the next action.

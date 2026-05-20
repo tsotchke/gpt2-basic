@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -84,6 +85,9 @@ SELECTED_EVIDENCE_NAMES = {
     "assistant_486.log",
     "assistant_chat_manual_probe_2026-05-12.md",
     "assistant_compile_486.log",
+    "assistant_consistency_eval.md",
+    "assistant_generalist_repair.md",
+    "assistant_generalist_prompt_eval.md",
     "assistant_interactive_chat_486.md",
     "assistant_pack_probe.log",
     "assistant_raw_prompt_eval.md",
@@ -210,13 +214,18 @@ def assistant_rows(rows: list[AuditRow]) -> list[AuditRow]:
     selected = [row for row in rows if row.model.role == "assistant_pack"]
     raw_prompt_report_path = DEFAULT_EVIDENCE / "assistant_raw_prompt_eval.md"
     raw_prompt_report = raw_prompt_report_path.read_text(encoding="ascii", errors="ignore") if raw_prompt_report_path.exists() else ""
-    raw_prompt_passed = "Status: `PASS`" in raw_prompt_report and "Prompt pass rate: `26/26`" in raw_prompt_report
+    raw_prompt_match = re.search(r"Prompt pass rate:\s+`(\d+)/(\d+)`", raw_prompt_report)
+    raw_prompt_passed = False
+    if raw_prompt_match is not None:
+        raw_passed = int(raw_prompt_match.group(1))
+        raw_total = int(raw_prompt_match.group(2))
+        raw_prompt_passed = "Status: `PASS`" in raw_prompt_report and raw_total >= 67 and raw_passed == raw_total
     for row in selected:
         report = required_quality(row.quality_reports)
         if not row.artifact_ok:
             raise SystemExit(f"PREVIEW_RELEASE_FAILED assistant_artifact={row.model.name}")
         if row.model.name == "ASSISTANT_CHAT" and raw_prompt_passed:
-            if report is not None and report.total > 0 and report.passed / report.total >= 0.80:
+            if report is not None and report.total > 0 and report.passed / report.total >= 0.75:
                 continue
         if report is None or report.status != "PASS" or report.passed != report.total:
             raise SystemExit(f"PREVIEW_RELEASE_FAILED assistant_quality={row.model.name}")

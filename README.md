@@ -349,11 +349,18 @@ That builds pack corpora from `PACK.INI`, `HELP.TXT`, and optional
 pack-local checkpoint under `PACKS\<ID>\MODEL`, runs `model_report.py`, writes
 pack-specific quality reports, and updates `MODEL=PACKS\<ID>\MODEL`. The
 host quality sweep uses a 96-token reply window. The raw assistant prompt gate
-adds 26 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
+adds 67 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
 leakage, repeated chunks, token soup, truncated endings, and off-topic replies.
+The consistency gate expands those prompts to 402 phrasing variants and requires
+every variant group to pass after wrapper and punctuation canonicalization.
 The DOS assistant itself keeps interactive generation bounded to 64 tokens with
 early sentence stopping, while the scripted 486 stress probe exercises
-retrieval, golden, and model reply paths. `SPRITE=` and `ICONS=` fields are
+retrieval, golden, memory, and guarded model reply paths across 40 prompts,
+including broader small-talk prompts for music, boredom, relaxation,
+friendship, food, goals, discussion topics, and improvement. The
+assistant keeps structured session memory for the user's name, current goal,
+answer style, known problem, and previous turn; use `/memory`, `/remember
+KEY=VALUE`, and `/forget` in the shell. `SPRITE=` and `ICONS=` fields are
 reserved for Clippy-style
 artwork; the current renderer is a text-mode bubble/action UI so it works
 without VGA.

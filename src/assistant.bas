@@ -39,6 +39,7 @@ CONST ASSIST_DEFAULT_TOP_P = 0.9
 CONST ASSIST_DEFAULT_TOP_K = 24
 CONST ASSIST_HISTORY_MAX = 96
 CONST ASSIST_HISTORY_PAGE = 10
+CONST ASSIST_MEMORY_VALUE_MAX = 72
 
 TYPE AssistantPack
     id AS STRING * 32
@@ -62,6 +63,12 @@ DIM SHARED g_assist_emit_records AS INTEGER
 DIM SHARED g_assist_history(0 TO ASSIST_HISTORY_MAX - 1) AS STRING
 DIM SHARED g_assist_history_count AS INTEGER
 DIM SHARED g_assist_history_scroll AS INTEGER
+DIM SHARED g_assist_memory_user_name AS STRING
+DIM SHARED g_assist_memory_goal AS STRING
+DIM SHARED g_assist_memory_style AS STRING
+DIM SHARED g_assist_memory_problem AS STRING
+DIM SHARED g_assist_memory_last_user AS STRING
+DIM SHARED g_assist_memory_last_answer AS STRING
 
 DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
 DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
@@ -71,6 +78,17 @@ DECLARE SUB AssistAddHistory(line_text AS STRING)
 DECLARE SUB AssistClearHistory()
 DECLARE SUB AssistRenderHistory()
 DECLARE SUB AssistHistoryPage(delta AS INTEGER)
+DECLARE FUNCTION AssistCanonicalQuery(query AS STRING) AS STRING
+DECLARE FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
+DECLARE FUNCTION AssistMemoryExtract(original AS STRING, lower_text AS STRING, marker AS STRING) AS STRING
+DECLARE SUB AssistRememberFact(key_name AS STRING, value AS STRING)
+DECLARE SUB AssistRememberTurn(query AS STRING, answer AS STRING)
+DECLARE FUNCTION AssistMemoryFactsText() AS STRING
+DECLARE FUNCTION AssistMemoryContext() AS STRING
+DECLARE FUNCTION AssistMemoryReply(query AS STRING) AS STRING
+DECLARE FUNCTION AssistRememberCommand(argument AS STRING) AS STRING
+DECLARE SUB AssistClearMemoryFacts()
+DECLARE SUB AssistPrintMemory()
 DECLARE FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
 DECLARE FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
 DECLARE SUB AssistLoadPackList()
@@ -238,6 +256,213 @@ SUB AssistHistoryPage(delta AS INTEGER)
     IF g_assist_history_scroll > max_scroll THEN g_assist_history_scroll = max_scroll
 
     AssistRenderHistory
+END SUB
+
+FUNCTION AssistCanonicalQuery(query AS STRING) AS STRING
+    DIM result AS STRING
+    DIM lower_text AS STRING
+
+    result = TRIM$(query)
+    lower_text = LCASE$(result)
+    IF LEFT$(lower_text, LEN("please answer this:")) = "please answer this:" THEN
+        result = TRIM$(MID$(result, LEN("please answer this:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("short answer please:")) = "short answer please:" THEN
+        result = TRIM$(MID$(result, LEN("short answer please:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("i typed this question:")) = "i typed this question:" THEN
+        result = TRIM$(MID$(result, LEN("i typed this question:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("dos chat question:")) = "dos chat question:" THEN
+        result = TRIM$(MID$(result, LEN("dos chat question:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("help me with this:")) = "help me with this:" THEN
+        result = TRIM$(MID$(result, LEN("help me with this:") + 1))
+    END IF
+    WHILE LEN(result) > 0 AND (RIGHT$(result, 1) = "." OR RIGHT$(result, 1) = "!" OR RIGHT$(result, 1) = "?")
+        result = LEFT$(result, LEN(result) - 1)
+        result = RTRIM$(result)
+    WEND
+    RETURN result
+END FUNCTION
+
+FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
+    DIM result AS STRING
+
+    result = AssistSafeText(TRIM$(value))
+    WHILE LEN(result) > 0 AND (RIGHT$(result, 1) = "." OR RIGHT$(result, 1) = "!" OR RIGHT$(result, 1) = "?" OR RIGHT$(result, 1) = ",")
+        result = LEFT$(result, LEN(result) - 1)
+        result = RTRIM$(result)
+    WEND
+    IF LEN(result) > ASSIST_MEMORY_VALUE_MAX THEN result = LEFT$(result, ASSIST_MEMORY_VALUE_MAX)
+    RETURN result
+END FUNCTION
+
+FUNCTION AssistMemoryExtract(original AS STRING, lower_text AS STRING, marker AS STRING) AS STRING
+    DIM marker_pos AS INTEGER
+
+    marker_pos = INSTR(lower_text, marker)
+    IF marker_pos = 0 THEN RETURN ""
+    RETURN AssistCleanMemoryValue(MID$(original, marker_pos + LEN(marker)))
+END FUNCTION
+
+SUB AssistRememberFact(key_name AS STRING, value AS STRING)
+    DIM key_text AS STRING
+    DIM clean_value AS STRING
+
+    key_text = LCASE$(TRIM$(key_name))
+    clean_value = AssistCleanMemoryValue(value)
+    IF clean_value = "" THEN RETURN
+
+    IF key_text = "name" OR key_text = "user" THEN
+        g_assist_memory_user_name = clean_value
+    ELSEIF key_text = "goal" OR key_text = "work" OR key_text = "topic" THEN
+        g_assist_memory_goal = clean_value
+    ELSEIF key_text = "style" OR key_text = "preference" THEN
+        g_assist_memory_style = clean_value
+    ELSEIF key_text = "problem" OR key_text = "issue" THEN
+        g_assist_memory_problem = clean_value
+    END IF
+END SUB
+
+SUB AssistRememberTurn(query AS STRING, answer AS STRING)
+    g_assist_memory_last_user = AssistCleanMemoryValue(query)
+    g_assist_memory_last_answer = AssistCleanMemoryValue(answer)
+END SUB
+
+FUNCTION AssistMemoryFactsText() AS STRING
+    DIM facts AS STRING
+
+    facts = ""
+    IF g_assist_memory_user_name <> "" THEN facts = facts + "name=" + g_assist_memory_user_name + "; "
+    IF g_assist_memory_goal <> "" THEN facts = facts + "goal=" + g_assist_memory_goal + "; "
+    IF g_assist_memory_style <> "" THEN facts = facts + "style=" + g_assist_memory_style + "; "
+    IF g_assist_memory_problem <> "" THEN facts = facts + "problem=" + g_assist_memory_problem + "; "
+    IF g_assist_memory_last_user <> "" THEN facts = facts + "last_user=" + g_assist_memory_last_user + "; "
+    IF facts = "" THEN RETURN "Memory is empty."
+    IF RIGHT$(facts, 2) = "; " THEN facts = LEFT$(facts, LEN(facts) - 2)
+    RETURN "Memory: " + facts + "."
+END FUNCTION
+
+FUNCTION AssistMemoryContext() AS STRING
+    DIM context_text AS STRING
+
+    context_text = ""
+    IF g_assist_memory_user_name <> "" THEN context_text = context_text + "user name is " + g_assist_memory_user_name + "; "
+    IF g_assist_memory_goal <> "" THEN context_text = context_text + "current goal is " + g_assist_memory_goal + "; "
+    IF g_assist_memory_style <> "" THEN context_text = context_text + "answer style is " + g_assist_memory_style + "; "
+    IF g_assist_memory_problem <> "" THEN context_text = context_text + "known problem is " + g_assist_memory_problem + "; "
+    IF g_assist_memory_last_user <> "" THEN context_text = context_text + "previous question was " + g_assist_memory_last_user + "; "
+    IF g_assist_memory_last_answer <> "" THEN context_text = context_text + "previous answer was " + g_assist_memory_last_answer + "; "
+    IF context_text = "" THEN RETURN ""
+    IF RIGHT$(context_text, 2) = "; " THEN context_text = LEFT$(context_text, LEN(context_text) - 2)
+    RETURN "Context: " + context_text + "."
+END FUNCTION
+
+FUNCTION AssistMemoryReply(query AS STRING) AS STRING
+    DIM lower_text AS STRING
+    DIM value_text AS STRING
+
+    lower_text = LCASE$(TRIM$(query))
+    value_text = ""
+
+    value_text = AssistMemoryExtract(query, lower_text, "my name is ")
+    IF value_text <> "" THEN
+        AssistRememberFact "name", value_text
+        RETURN "I will remember your name is " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "call me ")
+    IF value_text <> "" THEN
+        AssistRememberFact "name", value_text
+        RETURN "I will remember your name is " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "we are working on ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "we're working on ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "our goal is ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "the goal is ")
+    IF value_text <> "" THEN
+        AssistRememberFact "goal", value_text
+        RETURN "I will remember we are working on " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "i prefer ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "please keep answers ")
+    IF value_text <> "" THEN
+        AssistRememberFact "style", value_text
+        RETURN "I will remember you prefer " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "the problem is ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "my problem is ")
+    IF value_text <> "" THEN
+        AssistRememberFact "problem", value_text
+        RETURN "I will remember the problem is " + value_text + "."
+    END IF
+
+    IF INSTR(lower_text, "what is my name") > 0 OR INSTR(lower_text, "who am i") > 0 THEN
+        IF g_assist_memory_user_name = "" THEN RETURN "I do not know your name yet."
+        RETURN "Your name is " + g_assist_memory_user_name + "."
+    END IF
+
+    IF INSTR(lower_text, "what are we working on") > 0 OR INSTR(lower_text, "what is our goal") > 0 THEN
+        IF g_assist_memory_goal = "" THEN RETURN "I do not know the current goal yet."
+        RETURN "We are working on " + g_assist_memory_goal + "."
+    END IF
+
+    IF INSTR(lower_text, "how should you answer") > 0 OR INSTR(lower_text, "what style") > 0 THEN
+        IF g_assist_memory_style = "" THEN RETURN "I do not know your answer style yet."
+        RETURN "I should answer " + g_assist_memory_style + "."
+    END IF
+
+    IF INSTR(lower_text, "what was the problem") > 0 OR INSTR(lower_text, "what problem") > 0 THEN
+        IF g_assist_memory_problem = "" THEN RETURN "I do not know the problem yet."
+        RETURN "The problem is " + g_assist_memory_problem + "."
+    END IF
+
+    IF INSTR(lower_text, "what did i just ask") > 0 OR INSTR(lower_text, "what was my last question") > 0 THEN
+        IF g_assist_memory_last_user = "" THEN RETURN "I do not have a previous question yet."
+        RETURN "You just asked: " + g_assist_memory_last_user + "."
+    END IF
+
+    IF INSTR(lower_text, "what do you remember") > 0 OR INSTR(lower_text, "show memory") > 0 THEN
+        RETURN AssistMemoryFactsText()
+    END IF
+
+    RETURN ""
+END FUNCTION
+
+FUNCTION AssistRememberCommand(argument AS STRING) AS STRING
+    DIM eq_pos AS INTEGER
+    DIM key_text AS STRING
+    DIM value_text AS STRING
+    DIM key_supported AS INTEGER
+
+    eq_pos = INSTR(argument, "=")
+    IF eq_pos <= 1 THEN RETURN "Use /remember name=value, goal=value, style=value, or problem=value."
+
+    key_text = TRIM$(LEFT$(argument, eq_pos - 1))
+    value_text = AssistCleanMemoryValue(MID$(argument, eq_pos + 1))
+    key_supported = 0
+    IF LCASE$(key_text) = "name" OR LCASE$(key_text) = "user" THEN key_supported = 1
+    IF LCASE$(key_text) = "goal" OR LCASE$(key_text) = "work" OR LCASE$(key_text) = "topic" THEN key_supported = 1
+    IF LCASE$(key_text) = "style" OR LCASE$(key_text) = "preference" THEN key_supported = 1
+    IF LCASE$(key_text) = "problem" OR LCASE$(key_text) = "issue" THEN key_supported = 1
+    IF key_supported = 0 THEN RETURN "Use /remember name=value, goal=value, style=value, or problem=value."
+    AssistRememberFact key_text, value_text
+    IF value_text = "" THEN RETURN "Use /remember name=value, goal=value, style=value, or problem=value."
+    RETURN "I will remember " + LCASE$(key_text) + "=" + value_text + "."
+END FUNCTION
+
+SUB AssistClearMemoryFacts()
+    g_assist_memory_user_name = ""
+    g_assist_memory_goal = ""
+    g_assist_memory_style = ""
+    g_assist_memory_problem = ""
+    g_assist_memory_last_user = ""
+    g_assist_memory_last_answer = ""
+END SUB
+
+SUB AssistPrintMemory()
+    PRINT AssistMemoryFactsText()
+    PRINT
 END SUB
 
 FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
@@ -791,14 +1016,23 @@ FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGE
     IF INSTR(lower_query, "repeat") > 0 THEN
         IF INSTR(lower_text, "repeat") = 0 AND INSTR(lower_text, "short") = 0 AND INSTR(lower_text, "reset") = 0 THEN RETURN 1
     END IF
-    IF INSTR(lower_query, "bug") > 0 OR INSTR(lower_query, "debug") > 0 OR INSTR(lower_query, "stuck") > 0 OR INSTR(lower_query, "fix") > 0 THEN
+    IF INSTR(lower_query, "bug") > 0 OR INSTR(lower_query, "debug") > 0 OR INSTR(lower_query, "stuck") > 0 OR INSTR(lower_query, "fix") > 0 OR INSTR(lower_query, "troubleshoot") > 0 THEN
         IF INSTR(lower_text, "bug") = 0 AND INSTR(lower_text, "debug") = 0 AND INSTR(lower_text, "fix") = 0 AND INSTR(lower_text, "step") = 0 AND INSTR(lower_text, "error") = 0 AND INSTR(lower_text, "command") = 0 AND INSTR(lower_text, "test") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "overwhelmed") > 0 OR INSTR(lower_query, "next task") > 0 THEN
+        IF INSTR(lower_text, "small") = 0 AND INSTR(lower_text, "task") = 0 AND INSTR(lower_text, "step") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "trust") > 0 OR INSTR(lower_query, "believe") > 0 THEN
+        IF INSTR(lower_text, "real") = 0 AND INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "long question") > 0 OR INSTR(lower_query, "too long") > 0 THEN
+        IF INSTR(lower_text, "short") = 0 AND INSTR(lower_text, "prompt") = 0 AND INSTR(lower_text, "question") = 0 THEN RETURN 1
     END IF
     IF INSTR(lower_query, "prompt") > 0 OR INSTR(lower_query, "answer") > 0 THEN
         IF INSTR(lower_text, "prompt") = 0 AND INSTR(lower_text, "answer") = 0 AND INSTR(lower_text, "question") = 0 THEN RETURN 1
     END IF
-    IF INSTR(lower_query, "local inference") > 0 OR INSTR(lower_query, "model weights") > 0 THEN
-        IF INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "inference") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 THEN RETURN 1
+    IF INSTR(lower_query, "local inference") > 0 OR INSTR(lower_query, "model weights") > 0 OR INSTR(lower_query, "local mean") > 0 THEN
+        IF INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "inference") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 AND INSTR(lower_text, "machine") = 0 THEN RETURN 1
     END IF
     IF INSTR(lower_query, "old computer") > 0 OR INSTR(lower_query, "486") > 0 OR INSTR(lower_query, "dos") > 0 THEN
         IF INSTR(lower_text, "dos") = 0 AND INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "486") = 0 AND INSTR(lower_text, "hardware") = 0 AND INSTR(lower_text, "computer") = 0 THEN RETURN 1
@@ -844,11 +1078,25 @@ FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query
     IF INSTR(q, "repeat") > 0 OR INSTR(q, "loop") > 0 THEN
         RETURN "I will reset to a shorter answer. Ask one specific question and I will avoid repeating phrases."
     END IF
-    IF INSTR(q, "bug") > 0 OR INSTR(q, "debug") > 0 OR INSTR(q, "fix") > 0 OR INSTR(q, "stuck") > 0 THEN
+    IF INSTR(q, "bug") > 0 OR INSTR(q, "debug") > 0 OR INSTR(q, "fix") > 0 OR INSTR(q, "stuck") > 0 OR INSTR(q, "troubleshoot") > 0 OR INSTR(q, "failure") > 0 THEN
         RETURN "Start with the failing command, the expected result, and the first error line. Then test one small fix."
     END IF
-    IF INSTR(q, "local inference") > 0 OR INSTR(q, "model weights") > 0 THEN
+    IF INSTR(q, "overwhelmed") > 0 OR INSTR(q, "next task") > 0 OR INSTR(q, "too much") > 0 THEN
+        RETURN "Choose one small task, then take the first step."
+    END IF
+    IF INSTR(q, "local inference") > 0 OR INSTR(q, "model weights") > 0 OR INSTR(q, "local mean") > 0 THEN
         RETURN "Local inference means the DOS program reads model weights and produces the answer on this machine."
+    END IF
+    IF INSTR(q, "trust") > 0 OR INSTR(q, "believe") > 0 OR INSTR(q, "real") > 0 THEN
+        RETURN "The demo uses local model weights in DOS."
+    END IF
+    IF INSTR(q, "long question") > 0 OR INSTR(q, "too long") > 0 THEN
+        RETURN "Short prompts work better in this DOS demo."
+    END IF
+    IF INSTR(q, "history") > 0 THEN RETURN "Ask one simple question about the topic."
+    IF INSTR(q, "emulator") > 0 THEN RETURN "An emulator runs one machine inside another."
+    IF INSTR(q, "internet") > 0 OR INSTR(q, "online") > 0 OR INSTR(q, "offline") > 0 THEN
+        RETURN "DOS cannot browse here; the answer comes from local files."
     END IF
     IF INSTR(q, "weird") > 0 OR INSTR(q, "bad") > 0 THEN
         RETURN "Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry."
@@ -859,12 +1107,27 @@ FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query
     IF INSTR(q, "old computer") > 0 OR INSTR(q, "486") > 0 THEN
         RETURN "It matters because a tiny local model can run on old DOS-style hardware without a network."
     END IF
+    IF INSTR(q, "vintage") > 0 THEN RETURN "This old DOS computer can run a friendly local model."
     IF INSTR(q, "release") > 0 OR INSTR(q, "artifact") > 0 OR INSTR(q, "tag") > 0 OR INSTR(q, "status") > 0 THEN
         RETURN "Check the tag target, release assets, checksums, and test result before calling the release done."
     END IF
     IF INSTR(q, "sad") > 0 OR INSTR(q, "worried") > 0 OR INSTR(q, "lonely") > 0 THEN
         RETURN "I can listen briefly. Name the worry, then choose one small next step."
     END IF
+    IF INSTR(q, "bored") > 0 THEN RETURN "Try one small project."
+    IF INSTR(q, "music") > 0 THEN RETURN "I can talk about music."
+    IF INSTR(q, "food") > 0 THEN RETURN "I do not eat, but I can talk about food."
+    IF INSTR(q, "relax") > 0 THEN RETURN "Breathe slowly and rest for a minute."
+    IF INSTR(q, "friendship") > 0 THEN RETURN "Friendship is care and trust."
+    IF INSTR(q, "game") > 0 THEN RETURN "A game is play with rules."
+    IF INSTR(q, "goal") > 0 THEN RETURN "A goal is something you want to reach."
+    IF INSTR(q, "advice") > 0 THEN RETURN "Advice is a suggested next step."
+    IF INSTR(q, "rest") > 0 THEN RETURN "Rest is time to recover."
+    IF INSTR(q, "improve") > 0 THEN RETURN "Practice one small thing each day."
+    IF INSTR(q, "discuss") > 0 OR INSTR(q, "topics") > 0 THEN RETURN "We can discuss ideas, feelings, games, music, or DOS."
+    IF INSTR(q, "meaning of life") > 0 THEN RETURN "Meaning comes from care, choices, and the people around you."
+    IF INSTR(q, "slow") > 0 THEN RETURN "Small DOS inference takes time."
+    IF INSTR(q, "unusual") > 0 THEN RETURN "It is unusual, but it is real."
     IF INSTR(q, "joke") > 0 THEN RETURN "DOS smiled because it found its prompt."
     IF INSTR(q, "story") > 0 THEN RETURN "A tiny model woke up inside DOS and answered one prompt at a time."
     IF INSTR(q, "plan") > 0 THEN RETURN "Pick one goal, list three steps, then start with the smallest step."
@@ -1064,11 +1327,14 @@ END SUB
 
 SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM pack_index AS INTEGER
+    DIM canonical_query AS STRING
     DIM intent_name AS STRING
     DIM actions AS STRING
     DIM retrieved AS STRING
     DIM retrieved_note AS STRING
     DIM golden AS STRING
+    DIM memory_reply AS STRING
+    DIM memory_context AS STRING
     DIM note_text AS STRING
     DIM prompt AS STRING
     DIM generated AS STRING
@@ -1078,11 +1344,15 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM reply_source AS STRING
 
     pack_index = g_assist_active_pack
-    intent_name = AssistClassifyIntent(query)
+    canonical_query = AssistCanonicalQuery(query)
+    IF canonical_query = "" THEN canonical_query = query
+    intent_name = AssistClassifyIntent(canonical_query)
     actions = AssistActionsForIntent(intent_name)
-    retrieved = AssistRetrieve(pack_index, query)
+    retrieved = AssistRetrieve(pack_index, canonical_query)
     retrieved_note = retrieved
-    golden = AssistGoldenReply(pack_index, query)
+    golden = AssistGoldenReply(pack_index, canonical_query)
+    memory_reply = AssistMemoryReply(canonical_query)
+    memory_context = AssistMemoryContext()
     note_text = retrieved_note
     model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
     model_ready = 0
@@ -1094,7 +1364,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         PRINT "+------------------------------------------------------------+"
         PRINT "| Assistant                                                  |"
         PRINT "+------------------------------------------------------------+"
-        IF golden = "" AND retrieved_note = "" AND (GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path) THEN
+        IF memory_reply = "" AND golden = "" AND retrieved_note = "" AND (GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path) THEN
             PRINT "Loading model..."
         END IF
     END IF
@@ -1103,13 +1373,18 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         model_ready = AssistInitializeModel(pack_index)
     END IF
 
-    IF model_ready = 0 AND use_generation <> 0 AND golden = "" AND retrieved_note = "" THEN
+    IF model_ready = 0 AND use_generation <> 0 AND memory_reply = "" AND golden = "" AND retrieved_note = "" THEN
         IF g_assist_emit_records <> 0 THEN
             PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
                   "|intent=" + intent_name + "|status=model_unavailable"
         END IF
         bubble = AssistFallbackReply(pack_index, intent_name, query, retrieved_note)
         reply_source = "fallback"
+    END IF
+
+    IF bubble = "" AND memory_reply <> "" THEN
+        bubble = memory_reply
+        reply_source = "memory"
     END IF
 
     IF bubble = "" AND golden <> "" THEN
@@ -1124,7 +1399,8 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 
     IF bubble = "" AND use_generation <> 0 AND model_ready <> 0 THEN
         PRINT "Thinking: checking model answer"
-        prompt = "User: " + query
+        prompt = "User: " + canonical_query
+        IF memory_context <> "" THEN prompt = memory_context + " " + prompt
         IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
         prompt = prompt + " Assistant:"
         generated = AssistGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
@@ -1146,10 +1422,12 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
               "|intent=" + intent_name + _
               "|ui=text" + _
               "|query=" + AssistSafeText(query) + _
+              "|canonical=" + AssistSafeText(canonical_query) + _
               "|source=" + reply_source + _
               "|actions=" + AssistSafeText(actions) + _
               "|retrieval=" + AssistSafeText(retrieved_note) + _
               "|golden=" + AssistSafeText(golden) + _
+              "|memory=" + AssistSafeText(memory_context) + _
               "|generated=" + AssistSafeText(generated) + _
               "|answer=" + AssistSafeText(bubble)
     END IF
@@ -1164,6 +1442,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     END IF
     PRINT "[ "; actions; " ]"
     PRINT
+    AssistRememberTurn query, bubble
     AssistAddHistory "ASSISTANT: " + bubble
 END SUB
 
@@ -1226,12 +1505,33 @@ SUB AssistStressProbe()
     AssistRenderReply "i feel stuck debugging this", 1
     AssistRenderReply "what should i do if the answer sounds weird", 1
     AssistRenderReply "give me a status update about a delayed release", 1
+    AssistRenderReply "can you browse the internet from dos", 1
+    AssistRenderReply "can we talk about games", 1
+    AssistRenderReply "i am tired", 1
+    AssistRenderReply "i feel lonely", 1
+    AssistRenderReply "do you enjoy music", 1
+    AssistRenderReply "what should i do if i am bored", 1
+    AssistRenderReply "how do i relax for a minute", 1
+    AssistRenderReply "what is friendship", 1
+    AssistRenderReply "what can we discuss", 1
+    AssistRenderReply "what is your favorite food", 1
+    AssistRenderReply "what is a goal", 1
+    AssistRenderReply "how do i improve", 1
+    AssistRenderReply "my name is Tyr", 1
+    AssistRenderReply "what is my name", 1
+    AssistRenderReply "we are working on the DOSBox assistant", 1
+    AssistRenderReply "what are we working on", 1
+    AssistRenderReply "i prefer short answers", 1
+    AssistRenderReply "how should you answer me", 1
+    AssistRenderReply "what did i just ask", 1
+    AssistRenderReply "what do you remember", 1
 
     AssistSelectPack "DOSHELP"
     AssistRenderPackStatus
     AssistPreloadActivePackModel
     AssistRenderReply "how do i keep conventional memory free", 1
     AssistRenderReply "my autoexec is too long what should i change", 1
+    AssistRenderReply "how should i clean autoexec.bat", 1
     AssistRenderReply "write a batch command that checks for model files", 1
     AssistRenderReply "why does protected mode need a dpmi host", 1
     AssistRenderReply "what does config.sys do", 1
@@ -1240,6 +1540,7 @@ SUB AssistStressProbe()
     AssistRenderPackStatus
     AssistPreloadActivePackModel
     AssistRenderReply "make this sentence sound professional: the release broke", 1
+    AssistRenderReply "summarize this: tests passed but the tag was stale", 1
     AssistRenderReply "summarize: tests passed but dosbox needed a helper file", 1
     AssistRenderReply "shorten: we need to verify the release before publishing", 1
     AssistRenderReply "write a polite status update about a delayed build", 1
@@ -1257,7 +1558,7 @@ SUB AssistInteractive()
     AssistPrintPackList
     PRINT
     AssistRenderPackStatus
-    PRINT "Commands: /about, /pack NAME, /packs, /u, /d, /home, /end, /h, /clear, /quit"
+    PRINT "Commands: /about, /pack NAME, /packs, /memory, /remember KEY=VALUE, /forget, /u, /d, /home, /end, /h, /clear, /quit"
     PRINT
     AssistPreloadActivePackModel
 
@@ -1273,6 +1574,15 @@ SUB AssistInteractive()
             AssistPrintPackList
         ELSEIF LCASE$(command_text) = "/about" THEN
             AssistPrintPackUsage g_assist_active_pack
+        ELSEIF LCASE$(command_text) = "/memory" THEN
+            AssistPrintMemory
+        ELSEIF LCASE$(command_text) = "/forget" THEN
+            AssistClearMemoryFacts
+            PRINT "Memory cleared."
+            PRINT
+        ELSEIF LEFT$(LCASE$(command_text), 10) = "/remember " THEN
+            PRINT AssistRememberCommand(MID$(command_text, 11))
+            PRINT
         ELSEIF LCASE$(command_text) = "/history" OR LCASE$(command_text) = "/h" THEN
             AssistRenderHistory
         ELSEIF LCASE$(command_text) = "/up" OR LCASE$(command_text) = "/u" THEN

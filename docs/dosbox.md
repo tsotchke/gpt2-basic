@@ -70,7 +70,11 @@ without embedding a host-specific path.
 Inside the manual profile, run `ASSIST.EXE` for the pack-driven chat shell, or
 run `GPT2.EXE` with no arguments for raw prompt completion. The assistant shell
 uses pack retrieval, golden replies, and guarded model output so prompt text and
-repetition are not shown as chat answers.
+repetition are not shown as chat answers. Harmless wrappers such as "please
+answer this:" and trailing question punctuation are canonicalized before
+retrieval or model generation. It also keeps structured session memory for the
+user's name, current goal, answer style, known problem, and previous turn; use
+`/memory`, `/remember KEY=VALUE`, and `/forget` from the assistant prompt.
 
 ## Scope
 

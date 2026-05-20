@@ -412,209 +412,821 @@ You are a concise DOS and 486 troubleshooting assistant. User: what should i put
 
 You are a concise DOS and 486 troubleshooting assistant. User: what should i put in config.sys for this assistant Assistant: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory. Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: write a safe batch check for the model directory. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: how do i tune config.sys memory. Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: write a safe batch check for the model directory. A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: how do i tune config.sys memory. A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory? Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory? Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: write a safe batch check for the model directory? Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: how do i tune config.sys memory? Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: write a safe batch check for the model directory? A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: how do i tune config.sys memory? A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: please write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: please how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: please write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: please how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: please write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: please how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: please answer write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: please answer how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: please answer write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: please answer how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: please answer write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: please answer how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: short answer write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: short answer how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: short answer write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: short answer how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: short answer write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: short answer how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: can you answer write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: can you answer write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: can you answer how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: can you answer write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: can you answer how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: answer the question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: answer the question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: answer the question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: answer the question write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: answer the question how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: i typed the question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: i typed the question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: i typed the question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: i typed the question write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: i typed the question how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: chat question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: chat question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: chat question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: chat question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: chat question write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: chat question how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: dos chat question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: dos chat question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: dos chat question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: dos chat question write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: dos chat question how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: help me with write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: help me with how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: help me with write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: help me with how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: help me with write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: help me with how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: help me with the question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-User: help me with the question write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+User: help me with the question how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Q: help me with the question write a safe batch check for the model directory A: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Q: help me with the question how do i tune config.sys memory A: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: how do i tune config.sys memory Assistant: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: my autoexec is messy and slow. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: write a safe batch check for the model directory. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: my autoexec is messy and slow. A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: write a safe batch check for the model directory. A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow? Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory? Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: my autoexec is messy and slow? Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: write a safe batch check for the model directory? Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: my autoexec is messy and slow? A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: write a safe batch check for the model directory? A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: please my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: please write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: please my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: please write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: please my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: please write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: please answer my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: please answer write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: please answer my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: please answer write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: please answer my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: please answer write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: short answer my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: short answer write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: short answer my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: short answer write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: short answer my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: short answer write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: can you answer my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: can you answer my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: can you answer write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: can you answer my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: can you answer write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: answer the question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: answer the question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: answer the question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: answer the question my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: answer the question write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: i typed the question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: i typed the question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: i typed the question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: i typed the question my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: i typed the question write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: chat question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: chat question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: chat question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: chat question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: chat question my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: chat question write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: dos chat question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: dos chat question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: dos chat question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: dos chat question my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: dos chat question write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: help me with my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: help me with write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: help me with my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: help me with write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: help me with my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: help me with write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: help me with the question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-User: help me with the question my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+User: help me with the question write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-Q: help me with the question my autoexec is messy and slow A: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Q: help me with the question write a safe batch check for the model directory A: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
-You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: write a safe batch check for the model directory Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file. Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: what does if exist do in a batch file. Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: what does if exist do in a batch file. A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file? Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: what does if exist do in a batch file? Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: what does if exist do in a batch file? A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: please what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: please what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please answer what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: please answer what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: please answer what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: short answer what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: short answer what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: short answer what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: can you answer what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: can you answer what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: answer the question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: answer the question what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: i typed the question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: i typed the question what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: chat question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: chat question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: chat question what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: dos chat question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: dos chat question what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: help me with what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: help me with what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+User: help me with the question what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+Q: help me with the question what does if exist do in a batch file A: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: what does if exist do in a batch file Assistant: In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: my autoexec is messy and slow. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: my autoexec is messy and slow. A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: my autoexec is messy and slow? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: my autoexec is messy and slow? A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please answer my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please answer my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please answer my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: short answer my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: short answer my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: short answer my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: can you answer my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: can you answer my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: answer the question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: answer the question my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: i typed the question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: i typed the question my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: chat question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: chat question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: chat question my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: dos chat question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: dos chat question my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with the question my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with the question my autoexec is messy and slow A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: my autoexec is messy and slow Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: how should i clean autoexec.bat. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: how should i clean autoexec.bat. A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: how should i clean autoexec.bat? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: how should i clean autoexec.bat? A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please answer how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please answer how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please answer how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: short answer how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: short answer how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: short answer how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: can you answer how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: can you answer how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: answer the question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: answer the question how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: i typed the question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: i typed the question how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: chat question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: chat question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: chat question how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: dos chat question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: dos chat question how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with the question how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with the question how should i clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how should i clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: clean autoexec.bat. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: clean autoexec.bat. A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: clean autoexec.bat? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: clean autoexec.bat? A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please answer clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please answer clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please answer clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: short answer clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: short answer clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: short answer clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: can you answer clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: can you answer clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: answer the question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: answer the question clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: i typed the question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: i typed the question clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: chat question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: chat question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: chat question clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: dos chat question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: dos chat question clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with the question clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with the question clean autoexec.bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: clean autoexec.bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: how do i clean autoexec bat. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: how do i clean autoexec bat. A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: how do i clean autoexec bat? Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: how do i clean autoexec bat? A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please answer how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: please answer how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: please answer how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: short answer how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: short answer how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: short answer how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: can you answer how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: can you answer how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: answer the question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: answer the question how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: i typed the question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: i typed the question how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: chat question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: chat question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: chat question how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: dos chat question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: dos chat question how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+User: help me with the question how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+Q: help me with the question how do i clean autoexec bat A: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: how do i clean autoexec bat Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point. Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: where should model packs point. Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: where should model packs point. A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point? Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: where should model packs point? Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: where should model packs point? A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: please where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: please where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: please answer where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: please answer where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: please answer where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: short answer where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: short answer where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: short answer where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: can you answer where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: can you answer where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: can you answer where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: answer the question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: answer the question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: answer the question where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: i typed the question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: i typed the question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: i typed the question where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: chat question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: chat question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: chat question where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: dos chat question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: dos chat question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: dos chat question where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: help me with where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: help me with where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: help me with the question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+User: help me with the question where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+Q: help me with the question where should model packs point A: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
+
+You are a concise DOS and 486 troubleshooting assistant. User: where should model packs point Assistant: Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.
 
 Topic memory. CONFIG.SYS memory. Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
@@ -748,137 +1360,201 @@ You are a concise DOS and 486 troubleshooting assistant. User: CONFIG.SYS exampl
 
 You are a concise DOS and 486 troubleshooting assistant. User: Use config.sys example. Note: CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline. Assistant: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
-Topic autoexec. AUTOEXEC.BAT hygiene. Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Topic autoexec. AUTOEXEC.BAT hygiene. Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-User: Help me with autoexec. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Actions: show_config,explain_xms,write_batch,cancel.
+User: Help me with autoexec. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Actions: show_config,explain_xms,write_batch,cancel.
 
-Prompt: AUTOEXEC.BAT hygiene. Reply: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Prompt: AUTOEXEC.BAT hygiene. Reply: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Help me with autoexec. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Help me with autoexec. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: What should I do about AUTOEXEC.BAT hygiene? Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: What should I do about AUTOEXEC.BAT hygiene? Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: My AUTOEXEC is messy and slow. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: My AUTOEXEC is messy and slow. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: How should I clean AUTOEXEC.BAT? Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: How should I clean AUTOEXEC.BAT? Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Topic batch. Batch file help. Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-User: Help me with batch. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Actions: show_config,explain_xms,write_batch,cancel.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Prompt: Batch file help. Reply: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Help me with batch. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: What should I do about Batch file help? Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Write a safe DOS batch file. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Write a safe batch check for the model directory. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+You are a concise DOS and 486 troubleshooting assistant. User: Use autoexec.bat hygiene. Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Topic batch. Batch file help. In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+User: Help me with batch. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Actions: show_config,explain_xms,write_batch,cancel.
+
+Prompt: Batch file help. Reply: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Help me with batch. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: What should I do about Batch file help? Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Write a safe DOS batch file. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Write a safe batch check for the model directory. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+You are a concise DOS and 486 troubleshooting assistant. User: Use batch file help. Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
 Topic model. Model packs. Point MODEL at C:\MODEL or a pack-local checkpoint, then let the assistant switch model paths when the pack changes.
 

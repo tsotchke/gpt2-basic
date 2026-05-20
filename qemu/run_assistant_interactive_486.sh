@@ -52,6 +52,8 @@ python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     --put-tree "$MODEL_DIR" MODEL
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
+    --exclude-name TRAIN.TXT \
+    --exclude-name TOKBASE.TXT \
     --put-tree "$PACK_DIR" PACKS
 python3 "$ROOT/qemu/fat_image_put.py" "$BOOT_IMAGE" \
     --put "$ROOT/qemu/fdauto_assist_interactive.bat" FDAUTO.BAT
