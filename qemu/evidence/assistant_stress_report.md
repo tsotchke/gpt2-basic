@@ -35,10 +35,10 @@ Source counts: `golden=23 retrieval=9 model=0 fallback=0 memory=8`
 | CHAT | memory | how should you answer me | I should answer short answers. |
 | CHAT | memory | what did i just ask | You just asked: how should you answer me. |
 | CHAT | memory | what do you remember | Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask. |
-| DOSHELP | retrieval | how do i keep conventional memory free | CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory. |
-| DOSHELP | retrieval | my autoexec is too long what should i change | AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. |
+| DOSHELP | retrieval | how do i keep conventional memory free | Conventional memory: Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs. |
+| DOSHELP | retrieval | my autoexec is too long what should i change | AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools. |
 | DOSHELP | golden | how should i clean autoexec.bat | Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. |
-| DOSHELP | retrieval | write a batch command that checks for model files | Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. |
+| DOSHELP | retrieval | write a batch command that checks for model files | Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files. |
 | DOSHELP | retrieval | why does protected mode need a dpmi host | DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program. |
 | DOSHELP | retrieval | what does config.sys do | CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline. |
 | OFFICE | golden | make this sentence sound professional: the release broke | Use direct, polite, professional wording, name the release problem, and end with the next action. |

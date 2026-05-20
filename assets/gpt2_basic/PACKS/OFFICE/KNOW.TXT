@@ -1,0 +1,9 @@
+# key|title|body
+status update|Status update shape|State the current result, the blocker, the next action, and the expected timing.
+release note|Release note shape|Lead with what changed, list proof, then state any known limits plainly.
+bug report|Bug report shape|Include expected behavior, actual behavior, reproduction steps, logs, and the suspected area.
+executive summary|Executive summary|Give the decision, the evidence, the risk, and the requested action in short paragraphs.
+email reply|Email reply|Answer the direct question first, then add context and next steps.
+rewrite rules|Rewrite rules|Preserve facts, remove filler, keep the tone polite, and avoid unsupported claims.
+checklist writing|Checklist writing|Use short action verbs and make each item independently testable.
+handoff note|Handoff note|Say what is done, what remains, where evidence lives, and who owns the next action.

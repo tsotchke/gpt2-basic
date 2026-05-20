@@ -1,0 +1,9 @@
+# key|title|body
+dos boot|DOS boot order|CONFIG.SYS loads device drivers first, then AUTOEXEC.BAT runs commands and sets paths.
+conventional memory|Conventional memory|Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
+dpmi setup|DPMI setup|Keep CWSDPMI.EXE beside protected-mode programs that need a DPMI host.
+8.3 names|DOS filenames|Use 8.3 filenames for maximum DOS compatibility and predictable batch files.
+copy to hardware|Hardware copy|Copy GPT2, MODEL, PACKS, CWSDPMI, and batch files together before testing on real DOS.
+qemu rehearsal|QEMU rehearsal|Run the QEMU capture path before physical hardware so the copy-back checklist is tested.
+dosbox use|DOSBox use|Use the DOSBox bundle for quick local runs, then use hardware transfer for real machines.
+batch safety|Batch safety|Check IF EXIST before running large files and print clear status lines for each step.

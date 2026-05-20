@@ -7,7 +7,8 @@ Purpose:
 
 How it works:
   The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves short
-  chat notes from HELP.TXT when a topic matches. It is also trained from
+  chat notes from HELP.TXT plus broader local knowledge from KNOW.TXT when a
+  topic matches. It is also trained from
   GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
   sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
   grammar entries. Ordinary short prompts do not depend on a lookup hit. The
@@ -27,6 +28,8 @@ Good prompts:
   I want to talk about this DOS demo.
   Give me one idea for improving the demo.
   What are your limits?
+  Which pack should I use for writing?
+  How can I ask better questions?
 
 Actions:
   chat, ask, idea, explain, cancel

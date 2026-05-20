@@ -26,6 +26,7 @@ REQUIRED_INI_KEYS = (
     "MODEL",
     "PERSONA",
     "HELP",
+    "KNOW",
     "USAGE",
     "SPRITE",
     "ICONS",
@@ -68,11 +69,13 @@ class PackContract:
     model_value: str
     persona: str
     help_path: Path
+    knowledge_path: Path
     usage_path: Path
     sprite_path: Path
     icons_path: Path
     actions: tuple[str, ...]
     help_rows: tuple[HelpRow, ...]
+    knowledge_rows: tuple[HelpRow, ...]
     ini_values: dict[str, str]
 
 
@@ -192,12 +195,14 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
 
     model_path = resolve_pack_value(pack_root, pack_dir, values["MODEL"])
     help_path = resolve_pack_value(pack_root, pack_dir, values["HELP"], "HELP.TXT")
+    knowledge_path = resolve_pack_value(pack_root, pack_dir, values["KNOW"], "KNOW.TXT")
     usage_path = resolve_pack_value(pack_root, pack_dir, values["USAGE"], "USAGE.TXT")
     sprite_path = resolve_pack_value(pack_root, pack_dir, values["SPRITE"])
     icons_path = resolve_pack_value(pack_root, pack_dir, values["ICONS"])
 
     validate_model_dir(model_path)
     help_rows = parse_help_rows(help_path)
+    knowledge_rows = parse_help_rows(knowledge_path)
     validate_usage_file(usage_path)
     for artifact in (sprite_path, icons_path):
         if not artifact.is_file():
@@ -209,11 +214,13 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
         model_value=values["MODEL"],
         persona=values["PERSONA"],
         help_path=help_path,
+        knowledge_path=knowledge_path,
         usage_path=usage_path,
         sprite_path=sprite_path,
         icons_path=icons_path,
         actions=parse_actions(values["ACTIONS"]),
         help_rows=help_rows,
+        knowledge_rows=knowledge_rows,
         ini_values=values,
     )
 
@@ -237,6 +244,8 @@ def self_test() -> None:
         raise PackContractError("CHAT model path is not pack-local")
     if len(chat.help_rows) < 3:
         raise PackContractError("CHAT help rows are unexpectedly sparse")
+    if len(chat.knowledge_rows) < 3:
+        raise PackContractError("CHAT knowledge rows are unexpectedly sparse")
     print(f"PROBE_OK assistant_pack_contract_count={len(packs)}")
     print("PROBE_OK assistant_pack_contract_parser=1")
     print("PROBE_OK assistant_pack_contract_artifacts=1")
@@ -257,7 +266,8 @@ def main() -> None:
             f"title={pack.title}|"
             f"model={pack.model_value}|"
             f"actions={','.join(pack.actions)}|"
-            f"help_rows={len(pack.help_rows)}"
+            f"help_rows={len(pack.help_rows)}|"
+            f"knowledge_rows={len(pack.knowledge_rows)}"
         )
     if args.self_test:
         self_test()

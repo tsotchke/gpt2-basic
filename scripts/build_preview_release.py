@@ -89,6 +89,7 @@ SELECTED_EVIDENCE_NAMES = {
     "assistant_generalist_repair.md",
     "assistant_generalist_prompt_eval.md",
     "assistant_interactive_chat_486.md",
+    "assistant_pack_retrieval_eval.md",
     "assistant_pack_probe.log",
     "assistant_raw_prompt_eval.md",
     "assistant_stress_486.log",

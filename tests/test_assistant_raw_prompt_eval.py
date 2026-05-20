@@ -48,6 +48,16 @@ class AssistantRawPromptEvalTests(unittest.TestCase):
 
         self.assertIn("PROBE_OK assistant_generalist_prompt_eval_self_test=1", result.stdout)
 
+    def test_assistant_pack_retrieval_eval_self_test(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "evaluate_assistant_pack_retrieval.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_pack_retrieval_eval_self_test=1", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

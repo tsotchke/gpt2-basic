@@ -28,6 +28,8 @@ class AssistantPackContractTests(unittest.TestCase):
         self.assertEqual(by_id["CHAT"].model_value, r"PACKS\CHAT\MODEL")
         self.assertIn("cancel", by_id["CHAT"].actions)
         self.assertGreaterEqual(len(by_id["CHAT"].help_rows), 3)
+        self.assertGreaterEqual(len(by_id["CHAT"].knowledge_rows), 10)
+        self.assertTrue(by_id["CHAT"].knowledge_path.name.endswith("KNOW.TXT"))
         self.assertTrue(by_id["CHAT"].usage_path.name.endswith("USAGE.TXT"))
         self.assertTrue(by_id["CHAT"].sprite_path.name.endswith("CHAT.SPR"))
         self.assertTrue(by_id["CHAT"].icons_path.name.endswith("CHAT.ICN"))
