@@ -128,7 +128,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('reply_source = "memory"', text)
         self.assertIn('reply_source = "model"', text)
         self.assertIn('reply_source = "fallback"', text)
-        self.assertIn('prompt = "User: " + query', text)
+        self.assertIn("FUNCTION AssistCanonicalQuery", text)
+        self.assertIn('prompt = "User: " + canonical_query', text)
         self.assertIn('IF memory_context <> "" THEN prompt = memory_context + " " + prompt', text)
         self.assertNotIn('prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query', text)
 
@@ -157,6 +158,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("summarize this: tests passed but the tag was stale", text)
         self.assertIn("make this clearer: the artifact uploaded but the tag was stale", text)
         self.assertIn('"|query=" + AssistSafeText(query)', text)
+        self.assertIn('"|canonical=" + AssistSafeText(canonical_query)', text)
         self.assertIn('"|memory=" + AssistSafeText(memory_context)', text)
         self.assertIn('"|answer=" + AssistSafeText(bubble)', text)
 

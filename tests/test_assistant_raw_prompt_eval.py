@@ -28,6 +28,16 @@ class AssistantRawPromptEvalTests(unittest.TestCase):
         self.assertIn('assert "small friendly DOS chat assistant" not in chat_corpus', script)
         self.assertIn("instruction_leak", script)
 
+    def test_assistant_consistency_eval_self_test(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "evaluate_assistant_consistency.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_consistency_self_test=1", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

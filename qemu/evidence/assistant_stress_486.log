@@ -52,7 +52,7 @@ ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lex
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=why did my answer repeat itself|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Repeat control: If I repeat, ask a shorter question or switch packs.|golden=If I repeat, reset the prompt and ask one shorter question.|memory=|generated=|answer=If I repeat, reset the prompt and ask one shorter question.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=why did my answer repeat itself|canonical=why did my answer repeat itself|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Repeat control: If I repeat, ask a shorter question or switch packs.|golden=If I repeat, reset the prompt and ask one shorter question.|memory=|generated=|answer=If I repeat, reset the prompt and ask one shorter question.
 
 Answer: If I repeat, reset the prompt and ask one shorter question.
 
@@ -68,7 +68,7 @@ Answer: If I repeat, reset the prompt and ask one shorter question.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=tell me why this old computer model matters|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.|golden=|memory=Context: previous question was why did my answer repeat itself; previous answer was If I repeat, reset the prompt and ask one shorter question.|generated=|answer=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=tell me why this old computer model matters|canonical=tell me why this old computer model matters|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.|golden=|memory=Context: previous question was why did my answer repeat itself; previous answer was If I repeat, reset the prompt and ask one shorter question.|generated=|answer=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.
 
 Answer: Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.
 
@@ -84,7 +84,7 @@ Answer: Old hardware: The demo matters because a tiny local model can run on old
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was tell me why this old computer model matters; previous answer was Old hardware: The demo matters because a tiny local model can run on old.|generated=|answer=Check the first error, change one thing, then test again.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|canonical=make a tiny plan for fixing a bug|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was tell me why this old computer model matters; previous answer was Old hardware: The demo matters because a tiny local model can run on old.|generated=|answer=Check the first error, change one thing, then test again.
 
 Answer: Check the first error, change one thing, then test again.
 
@@ -100,7 +100,7 @@ Answer: Check the first error, change one thing, then test again.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is the difference between a prompt and an answer|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Prompt meaning: A prompt is your typed question.|golden=|memory=Context: previous question was make a tiny plan for fixing a bug; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Prompt meaning: A prompt is your typed question.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is the difference between a prompt and an answer|canonical=what is the difference between a prompt and an answer|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Prompt meaning: A prompt is your typed question.|golden=|memory=Context: previous question was make a tiny plan for fixing a bug; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Prompt meaning: A prompt is your typed question.
 
 Answer: Prompt meaning: A prompt is your typed question.
 
@@ -116,7 +116,7 @@ Answer: Prompt meaning: A prompt is your typed question.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=explain|ui=text|query=can you explain what local inference means|source=golden|actions=explain,example,more,cancel|retrieval=Local inference: Local inference means the DOS program reads model weights and produces the answer on this machine.|golden=Local inference means the DOS program reads model weights and produces the answer on this machine.|memory=Context: previous question was what is the difference between a prompt and an answer; previous answer was Prompt meaning: A prompt is your typed question.|generated=|answer=Local inference means the DOS program reads model weights and produces the answer on this machine.
+ASSIST_REPLY|pack=CHAT|intent=explain|ui=text|query=can you explain what local inference means|canonical=can you explain what local inference means|source=golden|actions=explain,example,more,cancel|retrieval=Local inference: Local inference means the DOS program reads model weights and produces the answer on this machine.|golden=Local inference means the DOS program reads model weights and produces the answer on this machine.|memory=Context: previous question was what is the difference between a prompt and an answer; previous answer was Prompt meaning: A prompt is your typed question.|generated=|answer=Local inference means the DOS program reads model weights and produces the answer on this machine.
 
 Answer: Local inference means the DOS program reads model weights and produces the answer on this machine.
 
@@ -132,7 +132,7 @@ Answer: Local inference means the DOS program reads model weights and produces t
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel stuck debugging this|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was can you explain what local inference means; previous answer was Local inference means the DOS program reads model weights and produces t.|generated=|answer=Check the first error, change one thing, then test again.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel stuck debugging this|canonical=i feel stuck debugging this|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was can you explain what local inference means; previous answer was Local inference means the DOS program reads model weights and produces t.|generated=|answer=Check the first error, change one thing, then test again.
 
 Answer: Check the first error, change one thing, then test again.
 
@@ -148,7 +148,7 @@ Answer: Check the first error, change one thing, then test again.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if the answer sounds weird|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Retry advice: Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.|golden=Retry with a shorter prompt or switch packs.|memory=Context: previous question was i feel stuck debugging this; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Retry with a shorter prompt or switch packs.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if the answer sounds weird|canonical=what should i do if the answer sounds weird|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Retry advice: Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.|golden=Retry with a shorter prompt or switch packs.|memory=Context: previous question was i feel stuck debugging this; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Retry with a shorter prompt or switch packs.
 
 Answer: Retry with a shorter prompt or switch packs.
 
@@ -164,7 +164,7 @@ Answer: Retry with a shorter prompt or switch packs.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=give me a status update about a delayed release|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.|golden=|memory=Context: previous question was what should i do if the answer sounds weird; previous answer was Retry with a shorter prompt or switch packs.|generated=|answer=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=give me a status update about a delayed release|canonical=give me a status update about a delayed release|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.|golden=|memory=Context: previous question was what should i do if the answer sounds weird; previous answer was Retry with a shorter prompt or switch packs.|generated=|answer=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
 
 Answer: Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
 
@@ -180,7 +180,7 @@ Answer: Release status: Check the tag target, release assets, checksums, and tes
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can you browse the internet from dos|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.|golden=I cannot browse the internet from DOS.|memory=Context: previous question was give me a status update about a delayed release; previous answer was Release status: Check the tag target, release assets, checksums, and tes.|generated=|answer=I cannot browse the internet from DOS.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can you browse the internet from dos|canonical=can you browse the internet from dos|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.|golden=I cannot browse the internet from DOS.|memory=Context: previous question was give me a status update about a delayed release; previous answer was Release status: Check the tag target, release assets, checksums, and tes.|generated=|answer=I cannot browse the internet from DOS.
 
 Answer: I cannot browse the internet from DOS.
 
@@ -196,7 +196,7 @@ Answer: I cannot browse the internet from DOS.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can we talk about games|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Open conversation: I can talk in DOS.|golden=Yes, games are a fine topic.|memory=Context: previous question was can you browse the internet from dos; previous answer was I cannot browse the internet from DOS.|generated=|answer=Yes, games are a fine topic.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can we talk about games|canonical=can we talk about games|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Open conversation: I can talk in DOS.|golden=Yes, games are a fine topic.|memory=Context: previous question was can you browse the internet from dos; previous answer was I cannot browse the internet from DOS.|generated=|answer=Yes, games are a fine topic.
 
 Answer: Yes, games are a fine topic.
 
@@ -212,7 +212,7 @@ Answer: Yes, games are a fine topic.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i am tired|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=|golden=Rest if you can.|memory=Context: previous question was can we talk about games; previous answer was Yes, games are a fine topic.|generated=|answer=Rest if you can.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i am tired|canonical=i am tired|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=|golden=Rest if you can.|memory=Context: previous question was can we talk about games; previous answer was Yes, games are a fine topic.|generated=|answer=Rest if you can.
 
 Answer: Rest if you can.
 
@@ -228,7 +228,7 @@ Answer: Rest if you can.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel lonely|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=|golden=I can keep you company briefly.|memory=Context: previous question was i am tired; previous answer was Rest if you can.|generated=|answer=I can keep you company briefly.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel lonely|canonical=i feel lonely|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=|golden=I can keep you company briefly.|memory=Context: previous question was i am tired; previous answer was Rest if you can.|generated=|answer=I can keep you company briefly.
 
 Answer: I can keep you company briefly.
 
@@ -244,7 +244,7 @@ Answer: I can keep you company briefly.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=my name is Tyr|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Assistant identity: I am GPT2-BASIC.|golden=|memory=Context: user name is Tyr; previous question was i feel lonely; previous answer was I can keep you company briefly.|generated=|answer=I will remember your name is Tyr.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=my name is Tyr|canonical=my name is Tyr|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Assistant identity: I am GPT2-BASIC.|golden=|memory=Context: user name is Tyr; previous question was i feel lonely; previous answer was I can keep you company briefly.|generated=|answer=I will remember your name is Tyr.
 
 Answer: I will remember your name is Tyr.
 
@@ -260,7 +260,7 @@ Answer: I will remember your name is Tyr.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is my name|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Assistant identity: I am GPT2-BASIC.|golden=|memory=Context: user name is Tyr; previous question was my name is Tyr; previous answer was I will remember your name is Tyr.|generated=|answer=Your name is Tyr.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is my name|canonical=what is my name|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Assistant identity: I am GPT2-BASIC.|golden=|memory=Context: user name is Tyr; previous question was my name is Tyr; previous answer was I will remember your name is Tyr.|generated=|answer=Your name is Tyr.
 
 Answer: Your name is Tyr.
 
@@ -276,7 +276,7 @@ Answer: Your name is Tyr.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=we are working on the DOSBox assistant|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was what is my name; previous answer was Your name is Tyr.|generated=|answer=I will remember we are working on the DOSBox assistant.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=we are working on the DOSBox assistant|canonical=we are working on the DOSBox assistant|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was what is my name; previous answer was Your name is Tyr.|generated=|answer=I will remember we are working on the DOSBox assistant.
 
 Answer: I will remember we are working on the DOSBox assistant.
 
@@ -292,7 +292,7 @@ Answer: I will remember we are working on the DOSBox assistant.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what are we working on|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was we are working on the DOSBox assistant; previous answer was I will remember we are working on the DOSBox assistant.|generated=|answer=We are working on the DOSBox assistant.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what are we working on|canonical=what are we working on|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was we are working on the DOSBox assistant; previous answer was I will remember we are working on the DOSBox assistant.|generated=|answer=We are working on the DOSBox assistant.
 
 Answer: We are working on the DOSBox assistant.
 
@@ -308,7 +308,7 @@ Answer: We are working on the DOSBox assistant.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i prefer short answers|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what are we working on; previous answer was We are working on the DOSBox assistant.|generated=|answer=I will remember you prefer short answers.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i prefer short answers|canonical=i prefer short answers|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what are we working on; previous answer was We are working on the DOSBox assistant.|generated=|answer=I will remember you prefer short answers.
 
 Answer: I will remember you prefer short answers.
 
@@ -324,7 +324,7 @@ Answer: I will remember you prefer short answers.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how should you answer me|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was i prefer short answers; previous answer was I will remember you prefer short answers.|generated=|answer=I should answer short answers.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how should you answer me|canonical=how should you answer me|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was i prefer short answers; previous answer was I will remember you prefer short answers.|generated=|answer=I should answer short answers.
 
 Answer: I should answer short answers.
 
@@ -340,7 +340,7 @@ Answer: I should answer short answers.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what did i just ask|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how should you answer me; previous answer was I should answer short answers.|generated=|answer=You just asked: how should you answer me.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what did i just ask|canonical=what did i just ask|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how should you answer me; previous answer was I should answer short answers.|generated=|answer=You just asked: how should you answer me.
 
 Answer: You just asked: how should you answer me.
 
@@ -356,7 +356,7 @@ Answer: You just asked: how should you answer me.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what do you remember|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what did i just ask; previous answer was You just asked: how should you answer me.|generated=|answer=Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what do you remember|canonical=what do you remember|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what did i just ask; previous answer was You just asked: how should you answer me.|generated=|answer=Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask.
 
 Answer: Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask.
 
@@ -396,7 +396,7 @@ ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how do i keep conventional memory free|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what do you remember; previous answer was Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_u.|generated=|answer=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how do i keep conventional memory free|canonical=how do i keep conventional memory free|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what do you remember; previous answer was Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_u.|generated=|answer=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
 Answer: CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
@@ -412,7 +412,7 @@ Answer: CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BU
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=my autoexec is too long what should i change|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how do i keep conventional memory free; previous answer was CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BU.|generated=|answer=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=my autoexec is too long what should i change|canonical=my autoexec is too long what should i change|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how do i keep conventional memory free; previous answer was CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BU.|generated=|answer=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
 Answer: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
@@ -428,7 +428,7 @@ Answer: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resid
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how should i clean autoexec.bat|source=golden|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|golden=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was my autoexec is too long what should i change; previous answer was AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resid.|generated=|answer=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how should i clean autoexec.bat|canonical=how should i clean autoexec.bat|source=golden|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|golden=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was my autoexec is too long what should i change; previous answer was AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resid.|generated=|answer=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
 Answer: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
@@ -444,7 +444,7 @@ Answer: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when ne
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_batch|ui=text|query=write a batch command that checks for model files|source=retrieval|actions=write_batch,explain_command,more,cancel|retrieval=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how should i clean autoexec.bat; previous answer was Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when ne.|generated=|answer=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_batch|ui=text|query=write a batch command that checks for model files|canonical=write a batch command that checks for model files|source=retrieval|actions=write_batch,explain_command,more,cancel|retrieval=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how should i clean autoexec.bat; previous answer was Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when ne.|generated=|answer=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
 Answer: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
@@ -460,7 +460,7 @@ Answer: Batch file help: In a batch file, use IF EXIST checks, clear status mess
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=general_chat|ui=text|query=why does protected mode need a dpmi host|source=retrieval|actions=show_config,explain_xms,write_batch,cancel|retrieval=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was write a batch command that checks for model files; previous answer was Batch file help: In a batch file, use IF EXIST checks, clear status mess.|generated=|answer=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
+ASSIST_REPLY|pack=DOSHELP|intent=general_chat|ui=text|query=why does protected mode need a dpmi host|canonical=why does protected mode need a dpmi host|source=retrieval|actions=show_config,explain_xms,write_batch,cancel|retrieval=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was write a batch command that checks for model files; previous answer was Batch file help: In a batch file, use IF EXIST checks, clear status mess.|generated=|answer=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
 
 Answer: DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
 
@@ -476,7 +476,7 @@ Answer: DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=what does config.sys do|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was why does protected mode need a dpmi host; previous answer was DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI..|generated=|answer=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=what does config.sys do|canonical=what does config.sys do|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was why does protected mode need a dpmi host; previous answer was DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI..|generated=|answer=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
 Answer: CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
@@ -516,7 +516,7 @@ ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=le
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=make this sentence sound professional: the release broke|source=golden|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|golden=Use direct, polite, professional wording, name the release problem, and end with the next action.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what does config.sys do; previous answer was CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as.|generated=|answer=Use direct, polite, professional wording, name the release problem, and end with the next action.
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=make this sentence sound professional: the release broke|canonical=make this sentence sound professional: the release broke|source=golden|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|golden=Use direct, polite, professional wording, name the release problem, and end with the next action.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what does config.sys do; previous answer was CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as.|generated=|answer=Use direct, polite, professional wording, name the release problem, and end with the next action.
 
 Answer: Use direct, polite, professional wording, name the release problem, and end with the next action.
 
@@ -532,7 +532,7 @@ Answer: Use direct, polite, professional wording, name the release problem, and 
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize this: tests passed but the tag was stale|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was make this sentence sound professional: the release broke; previous answer was Use direct, polite, professional wording, name the release problem, and .|generated=|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize this: tests passed but the tag was stale|canonical=summarize this: tests passed but the tag was stale|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was make this sentence sound professional: the release broke; previous answer was Use direct, polite, professional wording, name the release problem, and .|generated=|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
 Answer: Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
@@ -548,7 +548,7 @@ Answer: Summary: tests passed, the tag was stale, and the next action is to refr
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize: tests passed but dosbox needed a helper file|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=Summary: tests passed, DOSBox needed a helper file. Include it.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize this: tests passed but the tag was stale; previous answer was Summary: tests passed, the tag was stale, and the next action is to refr.|generated=|answer=Summary: tests passed, DOSBox needed a helper file. Include it.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize: tests passed but dosbox needed a helper file|canonical=summarize: tests passed but dosbox needed a helper file|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=Summary: tests passed, DOSBox needed a helper file. Include it.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize this: tests passed but the tag was stale; previous answer was Summary: tests passed, the tag was stale, and the next action is to refr.|generated=|answer=Summary: tests passed, DOSBox needed a helper file. Include it.
 
 Answer: Summary: tests passed, DOSBox needed a helper file. Include it.
 
@@ -564,7 +564,7 @@ Answer: Summary: tests passed, DOSBox needed a helper file. Include it.
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=shorten: we need to verify the release before publishing|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.|golden=Short version: verify the release before publishing.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize: tests passed but dosbox needed a helper file; previous answer was Summary: tests passed, DOSBox needed a helper file. Include it.|generated=|answer=Short version: verify the release before publishing.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=shorten: we need to verify the release before publishing|canonical=shorten: we need to verify the release before publishing|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.|golden=Short version: verify the release before publishing.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize: tests passed but dosbox needed a helper file; previous answer was Summary: tests passed, DOSBox needed a helper file. Include it.|generated=|answer=Short version: verify the release before publishing.
 
 Answer: Short version: verify the release before publishing.
 
@@ -580,7 +580,7 @@ Answer: Short version: verify the release before publishing.
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|source=golden|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=Use direct, polite, concrete wording, include the current blocker, and end with the next action.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was shorten: we need to verify the release before publishing; previous answer was Short version: verify the release before publishing.|generated=|answer=Use direct, polite, concrete wording, include the current blocker, and end with the next action.
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|canonical=write a polite status update about a delayed build|source=golden|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=Use direct, polite, concrete wording, include the current blocker, and end with the next action.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was shorten: we need to verify the release before publishing; previous answer was Short version: verify the release before publishing.|generated=|answer=Use direct, polite, concrete wording, include the current blocker, and end with the next action.
 
 Answer: Use direct, polite, concrete wording, include the current blocker, and end with the next action.
 
@@ -596,7 +596,7 @@ Answer: Use direct, polite, concrete wording, include the current blocker, and e
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|source=golden|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was write a polite status update about a delayed build; previous answer was Use direct, polite, concrete wording, include the current blocker, and e.|generated=|answer=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|canonical=make this clearer: the artifact uploaded but the tag was stale|source=golden|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was write a polite status update about a delayed build; previous answer was Use direct, polite, concrete wording, include the current blocker, and e.|generated=|answer=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 
 Answer: State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 

@@ -78,6 +78,7 @@ DECLARE SUB AssistAddHistory(line_text AS STRING)
 DECLARE SUB AssistClearHistory()
 DECLARE SUB AssistRenderHistory()
 DECLARE SUB AssistHistoryPage(delta AS INTEGER)
+DECLARE FUNCTION AssistCanonicalQuery(query AS STRING) AS STRING
 DECLARE FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
 DECLARE FUNCTION AssistMemoryExtract(original AS STRING, lower_text AS STRING, marker AS STRING) AS STRING
 DECLARE SUB AssistRememberFact(key_name AS STRING, value AS STRING)
@@ -256,6 +257,30 @@ SUB AssistHistoryPage(delta AS INTEGER)
 
     AssistRenderHistory
 END SUB
+
+FUNCTION AssistCanonicalQuery(query AS STRING) AS STRING
+    DIM result AS STRING
+    DIM lower_text AS STRING
+
+    result = TRIM$(query)
+    lower_text = LCASE$(result)
+    IF LEFT$(lower_text, LEN("please answer this:")) = "please answer this:" THEN
+        result = TRIM$(MID$(result, LEN("please answer this:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("short answer please:")) = "short answer please:" THEN
+        result = TRIM$(MID$(result, LEN("short answer please:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("i typed this question:")) = "i typed this question:" THEN
+        result = TRIM$(MID$(result, LEN("i typed this question:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("dos chat question:")) = "dos chat question:" THEN
+        result = TRIM$(MID$(result, LEN("dos chat question:") + 1))
+    ELSEIF LEFT$(lower_text, LEN("help me with this:")) = "help me with this:" THEN
+        result = TRIM$(MID$(result, LEN("help me with this:") + 1))
+    END IF
+    WHILE LEN(result) > 0 AND (RIGHT$(result, 1) = "." OR RIGHT$(result, 1) = "!" OR RIGHT$(result, 1) = "?")
+        result = LEFT$(result, LEN(result) - 1)
+        result = RTRIM$(result)
+    WEND
+    RETURN result
+END FUNCTION
 
 FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
     DIM result AS STRING
@@ -1264,6 +1289,7 @@ END SUB
 
 SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM pack_index AS INTEGER
+    DIM canonical_query AS STRING
     DIM intent_name AS STRING
     DIM actions AS STRING
     DIM retrieved AS STRING
@@ -1280,12 +1306,14 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM reply_source AS STRING
 
     pack_index = g_assist_active_pack
-    intent_name = AssistClassifyIntent(query)
+    canonical_query = AssistCanonicalQuery(query)
+    IF canonical_query = "" THEN canonical_query = query
+    intent_name = AssistClassifyIntent(canonical_query)
     actions = AssistActionsForIntent(intent_name)
-    retrieved = AssistRetrieve(pack_index, query)
+    retrieved = AssistRetrieve(pack_index, canonical_query)
     retrieved_note = retrieved
-    golden = AssistGoldenReply(pack_index, query)
-    memory_reply = AssistMemoryReply(query)
+    golden = AssistGoldenReply(pack_index, canonical_query)
+    memory_reply = AssistMemoryReply(canonical_query)
     memory_context = AssistMemoryContext()
     note_text = retrieved_note
     model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
@@ -1333,7 +1361,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 
     IF bubble = "" AND use_generation <> 0 AND model_ready <> 0 THEN
         PRINT "Thinking: checking model answer"
-        prompt = "User: " + query
+        prompt = "User: " + canonical_query
         IF memory_context <> "" THEN prompt = memory_context + " " + prompt
         IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
         prompt = prompt + " Assistant:"
@@ -1356,6 +1384,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
               "|intent=" + intent_name + _
               "|ui=text" + _
               "|query=" + AssistSafeText(query) + _
+              "|canonical=" + AssistSafeText(canonical_query) + _
               "|source=" + reply_source + _
               "|actions=" + AssistSafeText(actions) + _
               "|retrieval=" + AssistSafeText(retrieved_note) + _
