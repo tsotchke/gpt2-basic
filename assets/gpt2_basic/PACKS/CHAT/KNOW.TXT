@@ -19,7 +19,7 @@ compare options|Compare options|Name the options, list one tradeoff for each, th
 plan work|Planning work|Break the job into small steps, do the blocking step first, and verify each result.
 summarize text|Summarize text|Keep the decision, evidence, risk, and next action; remove filler.
 explain simply|Simple explanation|Use plain words, one example, and a short answer that fits the prompt.
-confidence|Confidence signal|Say what is known from local files, what is inferred, and what remains uncertain.
+answer confidence|Answer confidence|Say what is known from local files, what is inferred, and what remains uncertain.
 privacy limit|Privacy limit|Local use means prompts stay on this machine unless the user copies them elsewhere.
 no web|No web access|Without internet, I cannot fetch news or live facts; use local notes or give the facts in the prompt.
 testing mindset|Testing mindset|A useful test has a clear input, expected result, actual result, and pass or fail status.

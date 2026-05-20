@@ -22,8 +22,8 @@ DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_gener
 DEFAULT_RETRIEVAL_REPORT = ROOT / "qemu" / "evidence" / "assistant_pack_retrieval_eval.md"
 RAW_PROMPT_MIN_CASES = 83
 GENERALIST_PROMPT_MIN_CASES = 24
-RETRIEVAL_MIN_CASES = 30
-STRESS_REPLY_COUNT = 40
+RETRIEVAL_MIN_CASES = 36
+STRESS_REPLY_COUNT = 44
 
 
 @dataclass(frozen=True)
@@ -84,7 +84,7 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
     ids = pack_ids(pack_root)
     require(len(ids) >= 3, "pack_count_lt_3")
     require(ids[0] == "CHAT", "chat_pack_not_default")
-    for expected in ("CHAT", "DOSHELP", "OFFICE"):
+    for expected in ("CHAT", "DOSHELP", "OFFICE", "DEV"):
         require(expected in ids, f"missing_pack={expected}")
     packs: list[PackInfo] = []
     for pack_id in ids:
@@ -93,11 +93,14 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         values = parse_ini(ini)
         help_text = read(pack_dir / "HELP.TXT")
         knowledge_text = read(pack_dir / "KNOW.TXT")
+        kdb_text = read(pack_dir / "KDB.TXT")
+        read(pack_dir / "USER.TXT")
         require(f"ID={pack_id}" in ini.upper(), f"pack_id_mismatch={pack_id}")
-        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
+        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "KDB=", "USER=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
             require(key in ini.upper(), f"missing_{key.rstrip('=')}={pack_id}")
         require("|" in help_text, f"missing_retrieval_rows={pack_id}")
         require("|" in knowledge_text, f"missing_knowledge_rows={pack_id}")
+        require("|" in kdb_text, f"missing_kdb_rows={pack_id}")
         usage_text = read(pack_dir / values["USAGE"])
         for marker in ("Purpose:", "How it works:", "How to use it:", "Good prompts:", "Actions:"):
             require(marker in usage_text, f"missing_usage_marker_{marker.rstrip(':').lower().replace(' ', '_')}={pack_id}")
@@ -128,6 +131,11 @@ def verify_source() -> None:
         "AssistScanRetrievalFile",
         "AssistRetrievalScore",
         "knowledge_path",
+        "kdb_path",
+        "user_path",
+        "ASSIST_MEMORY_FILE",
+        "AssistLoadMemoryFacts",
+        "AssistSaveMemoryFacts",
         "AssistGuardProbe",
         "AssistStressProbe",
         "AssistPrepareGenerationPrompt",
@@ -160,6 +168,8 @@ def verify_source() -> None:
         'LCASE$(command_text) = "/memory"',
         'LCASE$(command_text) = "/forget"',
         'LEFT$(LCASE$(command_text), 10) = "/remember "',
+        "Memory persists in ",
+        "USER.TXT",
         'LCASE$(command_text) = "/about"',
         'LCASE$(command_text) = "/u"',
         'LCASE$(command_text) = "/d"',
@@ -236,10 +246,12 @@ def verify_qemu_logs(packs: list[PackInfo], assistant_log: Path, compile_log: Pa
     require("CHAT pack" in assist, "chat_usage_missing")
     require("DOSHELP pack" in assist, "doshelp_usage_missing")
     require("OFFICE pack" in assist, "office_usage_missing")
+    require("DEV pack" in assist, "dev_usage_missing")
     require("You are a small friendly DOS conversation assistant. User:" not in assist, "chat_prompt_echo_in_log")
     require("ASSIST_REPLY|pack=CHAT|intent=general_chat" in assist, "chat_reply_missing")
     require("ASSIST_REPLY|pack=DOSHELP|intent=dos_memory" in assist, "doshelp_reply_missing")
     require("ASSIST_REPLY|pack=OFFICE|intent=office_rewrite" in assist, "office_reply_missing")
+    require("ASSIST_REPLY|pack=DEV|intent=general_chat" in assist, "dev_reply_missing")
     require("status=model_unavailable" not in assist, "model_unavailable_in_assistant_log")
 
 
@@ -249,7 +261,7 @@ def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report
     report = read(stress_report)
     require("ASSIST_COMPILE_OK" in compile_text, "stress_compile_marker_missing")
     require("ASSIST_BEGIN|suite=stress-probe|version=1" in stress, "stress_begin_marker_missing")
-    require("ASSIST_END|suite=stress-probe|packs=3" in stress, "stress_end_marker_missing")
+    require("ASSIST_END|suite=stress-probe|packs=4" in stress, "stress_end_marker_missing")
     require(stress.count("ASSIST_REPLY|") == STRESS_REPLY_COUNT, "stress_reply_count_mismatch")
     require("status=model_unavailable" not in stress, "model_unavailable_in_stress_log")
     require("|query=" in stress and "|answer=" in stress, "stress_structured_answer_missing")

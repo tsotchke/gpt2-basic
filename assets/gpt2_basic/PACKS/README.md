@@ -4,11 +4,25 @@ Packs are selected inside `ASSIST.EXE` with `/pack NAME`. Type `/packs` to
 list them and `/about` to read the current pack's `USAGE.TXT` instructions
 inside DOS.
 
+Each pack has human-editable `HELP.TXT` and `KNOW.TXT` files, a generated
+`KDB.TXT` recall database, and a local `USER.TXT` override file. Edit
+`HELP.TXT` or `KNOW.TXT` on the host, then run:
+
+```sh
+python3 scripts/build_assistant_kdb.py --write
+python3 scripts/validate_assistant_pack_authoring.py
+```
+
+On DOS, users can edit `USER.TXT` directly for local notes without rebuilding
+the pack. Matching `USER.TXT` rows get a retrieval bonus so site-local facts
+can override bundled notes.
+
 ## CHAT
 
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
 interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
-conversation notes from `CHAT\HELP.TXT` plus broader local knowledge from
+conversation notes from `CHAT\KDB.TXT` plus local overrides from
+`CHAT\USER.TXT`. `KDB.TXT` is generated from `CHAT\HELP.TXT` and
 `CHAT\KNOW.TXT`. The DOS shell prints `Thinking:`
 progress with visible prompt/context token pieces and output-token sampling,
 then streams the generated `Answer:` pieces as the model produces them. Use
@@ -34,7 +48,7 @@ Good prompts:
 
 Use `DOSHELP` for FreeDOS, 486 setup, `CONFIG.SYS`, `AUTOEXEC.BAT`, memory,
 and batch-file questions. It uses `PACKS\DOSHELP\MODEL` plus retrieval notes
-from `DOSHELP\HELP.TXT` and `DOSHELP\KNOW.TXT`.
+from `DOSHELP\KDB.TXT` and local overrides from `DOSHELP\USER.TXT`.
 
 Good prompts:
 
@@ -47,7 +61,7 @@ Good prompts:
 
 Use `OFFICE` for writing tasks: rewrite, summarize, shorten, formalize, and
 make prose more professional. It uses `PACKS\OFFICE\MODEL` plus writing notes
-from `OFFICE\HELP.TXT` and `OFFICE\KNOW.TXT`.
+from `OFFICE\KDB.TXT` and local overrides from `OFFICE\USER.TXT`.
 
 Good prompts:
 
@@ -55,3 +69,17 @@ Good prompts:
 - `Summarize this paragraph.`
 - `Make this note shorter and clearer.`
 - `What belongs in a bug report?`
+
+## DEV
+
+Use `DEV` for software engineering, release work, debugging, testing, and
+GPT2-BASIC architecture questions. It shares `PACKS\CHAT\MODEL` but carries
+its own `DEV\KDB.TXT` recall database, so it behaves like a lightweight
+language cartridge without another model checkpoint.
+
+Good prompts:
+
+- `How should I debug this?`
+- `What should I check before release?`
+- `How can this feel modern on a 486?`
+- `What is retrieval first?`

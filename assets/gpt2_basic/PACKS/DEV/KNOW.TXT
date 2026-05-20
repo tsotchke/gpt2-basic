@@ -1,0 +1,16 @@
+# key|title|body
+modern 486 llm|Modern 486 LLM path|Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+language pack|Language pack design|A language pack should carry model path, persona, actions, KDB.TXT, USER.TXT, and evidence gates.
+hot load weights|Hot-loaded weights|Switch packs only when the domain changes, and reuse the already loaded model when paths match.
+retrieval first|Retrieval first|Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
+database recall|High velocity recall|Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster.
+local override|Local override notes|Put site facts in USER.TXT so local knowledge can override the bundled pack database.
+memory persistence|Persistent memory|Save stable facts to ASSIST.MEM and keep transient previous-turn context separate.
+quality gate|Quality gate|A useful gate checks novel phrasings, exact output terms, runtime logs, and artifact checksums.
+qemu proof|QEMU proof|Use QEMU for repeatable DOS evidence, then confirm timing and behavior on physical hardware.
+hardware target|Hardware target|A 486-friendly assistant should minimize disk reads, memory churn, context length, and generated tokens.
+pack authoring|Pack authoring|Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.
+failure record|Failure record|Record the command, input, expected result, actual result, log path, and next experiment.
+data sharding|Data sharding|When KDB grows large, split it into topic shards or bucket files before changing the model.
+answer synthesis|Answer synthesis|Use retrieval for facts and the model for short wording, transitions, and adapting the answer to the prompt.
+trust model|Trust model|Trust improves when every answer path can cite local files, memory, tests, or generated evidence records.

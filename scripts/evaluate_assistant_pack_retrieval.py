@@ -86,6 +86,12 @@ CASES: tuple[RetrievalCase, ...] = (
     RetrievalCase("OFFICE", "what is a useful test plan", ("scope", "cases", "expected", "criteria"), 3),
     RetrievalCase("OFFICE", "how should i reply to a customer", ("issue", "status", "next", "overpromising"), 3),
     RetrievalCase("OFFICE", "how do i write user docs", ("goal", "prerequisites", "steps", "troubleshooting"), 3),
+    RetrievalCase("DEV", "how can this feel modern on a 486", ("weights", "retrieval", "memory", "synthesis"), 3),
+    RetrievalCase("DEV", "what does retrieval first mean", ("kdb", "user", "memory", "synthesize"), 3),
+    RetrievalCase("DEV", "how do i author a pack", ("help", "know", "kdb", "validator"), 3),
+    RetrievalCase("DEV", "what should i check before release", ("tests", "logs", "checksums", "tag"), 3),
+    RetrievalCase("DEV", "how should we store fast recall data", ("compact", "keyword", "dos", "faster"), 3),
+    RetrievalCase("DEV", "what should a failure record include", ("command", "input", "expected", "actual", "log"), 4),
 )
 
 
@@ -121,7 +127,8 @@ def retrieval_score(query: str, row: HelpRow) -> int:
 
 def retrieve(pack: PackContract, query: str) -> tuple[str, HelpRow, int] | None:
     best: tuple[str, HelpRow, int] | None = None
-    for source, rows in (("HELP", pack.help_rows), ("KNOW", pack.knowledge_rows)):
+    runtime_sources = (("KDB", pack.kdb_rows),) if pack.kdb_rows else (("HELP", pack.help_rows), ("KNOW", pack.knowledge_rows))
+    for source, rows in runtime_sources:
         for row in rows:
             score = retrieval_score(query, row)
             if best is None or score > best[2]:
@@ -193,7 +200,7 @@ def run_eval(report: Path) -> int:
 
 
 def self_test() -> None:
-    assert len(CASES) >= 30
+    assert len(CASES) >= 36
     assert retrieval_score("how can i ask better questions", HelpRow("ask better", "Better prompts", "Say the goal and next step.")) >= 8
     assert retrieval_score("how can i ask better questions", HelpRow("unrelated", "Other", "No match here.")) < 8
     report = markdown_report(

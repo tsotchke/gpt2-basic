@@ -63,6 +63,9 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('LCASE$(command_text) = "/memory"', text)
         self.assertIn('LCASE$(command_text) = "/forget"', text)
         self.assertIn('LEFT$(LCASE$(command_text), 10) = "/remember "', text)
+        self.assertIn("ASSIST_MEMORY_FILE", text)
+        self.assertIn("AssistLoadMemoryFacts", text)
+        self.assertIn("AssistSaveMemoryFacts", text)
 
     def test_interactive_assistant_preloads_active_pack_before_prompt(self) -> None:
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
@@ -157,6 +160,10 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("how should i clean autoexec.bat", text)
         self.assertIn("summarize this: tests passed but the tag was stale", text)
         self.assertIn("make this clearer: the artifact uploaded but the tag was stale", text)
+        self.assertIn('AssistSelectPack "DEV"', text)
+        self.assertIn("how can this feel modern on a 486", text)
+        self.assertIn("what does retrieval first mean", text)
+        self.assertIn("how do i author a pack", text)
         self.assertIn('"|query=" + AssistSafeText(query)', text)
         self.assertIn('"|canonical=" + AssistSafeText(canonical_query)', text)
         self.assertIn('"|memory=" + AssistSafeText(memory_context)', text)
@@ -167,6 +174,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
 
         self.assertIn("FUNCTION AssistMemoryReply", text)
         self.assertIn("FUNCTION AssistMemoryContext", text)
+        self.assertIn("SUB AssistLoadMemoryFacts", text)
+        self.assertIn("SUB AssistSaveMemoryFacts", text)
         self.assertIn("SUB AssistRememberFact", text)
         self.assertIn("SUB AssistRememberTurn", text)
         self.assertIn("SUB AssistClearMemoryFacts", text)
@@ -175,6 +184,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("what did i just ask", text)
         self.assertIn('reply_source = "memory"', text)
         self.assertIn("/remember KEY=VALUE", text)
+        self.assertIn("Memory persists in ", text)
 
     def test_assistant_stress_script_rejects_bad_visible_text(self) -> None:
         result = subprocess.run(
@@ -215,8 +225,9 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
 
         self.assertIn("best_score", text)
         self.assertIn("AssistRetrievalScore", text)
-        self.assertIn("AssistScanRetrievalFile help_path", text)
-        self.assertIn("AssistScanRetrievalFile knowledge_path", text)
+        self.assertIn("AssistScanRetrievalFile kdb_path", text)
+        self.assertIn("AssistScanRetrievalFile user_path", text)
+        self.assertIn("score_bonus", text)
         self.assertIn("IF best_score >= 8 THEN RETURN best_text", text)
 
     def test_chat_pack_is_first_and_has_usage_instructions(self) -> None:
@@ -228,6 +239,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         chat_usage = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "CHAT" / "USAGE.TXT").read_text(encoding="ascii")
         self.assertIn("TITLE=Conversation Pack", chat_ini)
         self.assertIn("MODEL=PACKS\\CHAT\\MODEL", chat_ini)
+        self.assertIn("KDB=KDB.TXT", chat_ini)
+        self.assertIn("USER=USER.TXT", chat_ini)
         self.assertIn("USAGE=USAGE.TXT", chat_ini)
         self.assertIn("Purpose:", chat_usage)
         self.assertIn("How it works:", chat_usage)
