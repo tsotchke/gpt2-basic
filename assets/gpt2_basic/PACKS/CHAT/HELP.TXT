@@ -19,8 +19,36 @@ plan|Tiny plan|Pick one goal, list three steps, and start with the smallest usef
 story|Short story|A tiny model woke up inside DOS and answered one prompt at a time.
 token|Token meaning|A token is a small piece of text that the model reads or writes.
 internet|Network limit|I cannot browse the internet from DOS; I answer from local model weights and pack files.
+troubleshooting|Troubleshooting help|Check the first error, change one thing, then test again.
+overwhelmed|Overwhelmed help|Choose one small task, then take the first step.
+trust|Trust check|The demo uses local model weights in DOS.
+long question|Long prompt limit|Short prompts work better in this DOS demo.
+history|General topic|Ask one simple question about the topic.
+vintage|Friendly old hardware note|This old DOS computer can run a friendly local model.
+local meaning|Local meaning|Local means the model runs on this machine.
+session memory|Session memory|I remember only small facts during this session.
+looped output|Loop control|Use a shorter prompt and reset if the answer loops.
+checklist|Release checklist|Check the tag, assets, checksums, and tests.
+emulator|Emulator meaning|An emulator runs one machine inside another.
+offline|Offline limit|DOS cannot browse here; the answer comes from local files.
 thanks|Thanks|You are welcome.
 confused|Clarify request|Ask one short question.
 talk|Open conversation|I can talk in DOS.
 name|Assistant identity|I am GPT2-BASIC.
 status|Demo status|The demo is live.
+music|Music topic|I can talk about music.
+food|Food topic|I do not eat, but I can talk about food.
+bored|Boredom help|Try one small project.
+worry|Worry help|Name the worry, then choose one step.
+relax|Relax help|Breathe slowly and rest for a minute.
+friendship|Friendship meaning|Friendship is care and trust.
+game|Game meaning|A game is play with rules.
+goal|Goal meaning|A goal is something you want to reach.
+advice|Advice meaning|Advice is a suggested next step.
+rest|Rest meaning|Rest is time to recover.
+improve|Practice help|Practice one small thing each day.
+discuss|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+topics|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+life|Meaning topic|Meaning comes from care, choices, and the people around you.
+slow|Slow inference|Small DOS inference takes time.
+unusual|Unusual demo|It is unusual, but it is real.

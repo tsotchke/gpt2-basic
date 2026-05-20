@@ -5,5 +5,11 @@ why does my protected mode program need cwsdpmi	Protected-mode DOS programs need
 why does dos need a dpmi host	Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program.
 how do i leave more conventional memory free	Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 what should i put in config.sys for this assistant	Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
-write a safe batch check for the model directory	Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
-my autoexec is messy and slow	Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+how do i tune config.sys memory	Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+write a safe batch check for the model directory	In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+what does if exist do in a batch file	In a batch file, IF EXIST checks whether a file or directory is present before running a command.
+my autoexec is messy and slow	Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+how should i clean autoexec.bat	Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+clean autoexec.bat	Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+how do i clean autoexec bat	Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+where should model packs point	Point MODEL at C:\MODEL or a pack-local checkpoint so the assistant can switch model paths.

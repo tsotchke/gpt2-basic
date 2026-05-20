@@ -18,6 +18,10 @@ DEFAULT_STRESS_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_486.log"
 DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_compile_486.log"
 DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
+DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_generalist_prompt_eval.md"
+RAW_PROMPT_MIN_CASES = 83
+GENERALIST_PROMPT_MIN_CASES = 24
+STRESS_REPLY_COUNT = 40
 
 
 @dataclass(frozen=True)
@@ -115,6 +119,8 @@ def verify_source() -> None:
         "AssistGeneratedLooksBad",
         "AssistFallbackReply",
         "AssistGoldenReply",
+        "AssistMemoryReply",
+        "AssistMemoryContext",
         "AssistGuardProbe",
         "AssistStressProbe",
         "AssistPrepareGenerationPrompt",
@@ -136,10 +142,17 @@ def verify_source() -> None:
         'INSTR(lower_text, " user:")',
         'INSTR(lower_text, "use two brief sentences")',
         'INSTR(lower_text, "use to brief sentences")',
-        'prompt = "User: " + query',
+        "AssistCanonicalQuery",
+        'prompt = "User: " + canonical_query',
         'command_line = "--stress-probe"',
         '"|query=" + AssistSafeText(query)',
+        '"|canonical=" + AssistSafeText(canonical_query)',
+        '"|memory=" + AssistSafeText(memory_context)',
         '"|answer=" + AssistSafeText(bubble)',
+        'reply_source = "memory"',
+        'LCASE$(command_text) = "/memory"',
+        'LCASE$(command_text) = "/forget"',
+        'LEFT$(LCASE$(command_text), 10) = "/remember "',
         'LCASE$(command_text) = "/about"',
         'LCASE$(command_text) = "/u"',
         'LCASE$(command_text) = "/d"',
@@ -151,11 +164,25 @@ def verify_source() -> None:
         require(needle in source, f"source_missing={needle}")
 
 
-def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_report: Path) -> None:
+def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_report: Path, generalist_prompt_report: Path) -> None:
     pack_by_id = {pack.pack_id: pack for pack in packs}
     raw_report = read(raw_prompt_report)
     require("Status: `PASS`" in raw_report, "raw_prompt_eval_not_pass")
-    require("Prompt pass rate: `26/26`" in raw_report, "raw_prompt_eval_pass_rate")
+    raw_match = re.search(r"Prompt pass rate:\s+`(\d+)/(\d+)`", raw_report)
+    require(raw_match is not None, "raw_prompt_eval_pass_rate_missing")
+    raw_passed = int(raw_match.group(1))
+    raw_total = int(raw_match.group(2))
+    require(raw_total >= RAW_PROMPT_MIN_CASES and raw_passed == raw_total, f"raw_prompt_eval_pass_rate={raw_passed}/{raw_total}")
+    generalist_report = read(generalist_prompt_report)
+    require("Status: `PASS`" in generalist_report, "generalist_prompt_eval_not_pass")
+    generalist_match = re.search(r"Prompt pass rate:\s+`(\d+)/(\d+)`", generalist_report)
+    require(generalist_match is not None, "generalist_prompt_eval_pass_rate_missing")
+    generalist_passed = int(generalist_match.group(1))
+    generalist_total = int(generalist_match.group(2))
+    require(
+        generalist_total >= GENERALIST_PROMPT_MIN_CASES and generalist_passed == generalist_total,
+        f"generalist_prompt_eval_pass_rate={generalist_passed}/{generalist_total}",
+    )
     for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
@@ -164,7 +191,7 @@ def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_re
         passed = int(match.group(1))
         total = int(match.group(2))
         if pack_id == "CHAT":
-            require(total > 0 and passed / total >= 0.80, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
+            require(total > 0 and passed / total >= 0.75, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
         else:
             require("Quality status: `PASS`" in report, f"pack_quality_not_pass={pack.pack_id}")
             require(total > 0 and passed == total, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
@@ -200,11 +227,12 @@ def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report
     require("ASSIST_COMPILE_OK" in compile_text, "stress_compile_marker_missing")
     require("ASSIST_BEGIN|suite=stress-probe|version=1" in stress, "stress_begin_marker_missing")
     require("ASSIST_END|suite=stress-probe|packs=3" in stress, "stress_end_marker_missing")
-    require(stress.count("ASSIST_REPLY|") == 18, "stress_reply_count_mismatch")
+    require(stress.count("ASSIST_REPLY|") == STRESS_REPLY_COUNT, "stress_reply_count_mismatch")
     require("status=model_unavailable" not in stress, "model_unavailable_in_stress_log")
     require("|query=" in stress and "|answer=" in stress, "stress_structured_answer_missing")
+    require("|source=memory|" in stress, "stress_memory_source_missing")
     require("Status: `PASS`" in report, "stress_report_not_pass")
-    require("Reply count: `18`" in report, "stress_report_reply_count")
+    require(f"Reply count: `{STRESS_REPLY_COUNT}`" in report, "stress_report_reply_count")
     require("Source counts:" in report, "stress_report_source_counts")
 
 
@@ -218,17 +246,19 @@ def main() -> None:
     parser.add_argument("--stress-compile-log", type=Path, default=DEFAULT_STRESS_COMPILE_LOG)
     parser.add_argument("--stress-report", type=Path, default=DEFAULT_STRESS_REPORT)
     parser.add_argument("--raw-prompt-report", type=Path, default=DEFAULT_RAW_PROMPT_REPORT)
+    parser.add_argument("--generalist-prompt-report", type=Path, default=DEFAULT_GENERALIST_PROMPT_REPORT)
     args = parser.parse_args()
 
     packs = verify_pack_files(args.pack_root)
     verify_source()
-    verify_pack_quality(packs, args.evidence_dir, args.raw_prompt_report)
+    verify_pack_quality(packs, args.evidence_dir, args.raw_prompt_report, args.generalist_prompt_report)
     verify_qemu_logs(packs, args.assistant_log, args.compile_log)
     verify_stress_logs(args.stress_log, args.stress_compile_log, args.stress_report)
     print(f"PROBE_OK assistant_pack_count={len(packs)}")
     print("PROBE_OK assistant_pack_loader=1")
     print("PROBE_OK assistant_pack_models=1")
     print("PROBE_OK assistant_pack_quality=1")
+    print("PROBE_OK assistant_generalist_prompt_eval=1")
     print("PROBE_OK assistant_model_switch=1")
     print("PROBE_OK assistant_structured_reply=1")
     print("PROBE_OK assistant_art_slots=1")

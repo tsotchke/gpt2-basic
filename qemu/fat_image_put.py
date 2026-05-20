@@ -312,15 +312,19 @@ class FATImage:
         return b"".join(chunks)[: entry.size]
 
 
-def put_tree(image: FATImage, source: Path, dest: str) -> None:
+def put_tree(image: FATImage, source: Path, dest: str, exclude_names: set[str] | None = None) -> None:
+    excluded = {name.upper() for name in (exclude_names or set())}
     image.remove(dest)
     image.mkdir(dest)
     for root, dirs, files in os.walk(source):
+        dirs[:] = [dirname for dirname in dirs if dirname.upper() not in excluded]
         rel = Path(root).relative_to(source)
         dest_root = dest if str(rel) == "." else dest.rstrip("/\\") + "/" + str(rel).replace(os.sep, "/")
         for dirname in sorted(dirs):
             image.mkdir(dest_root + "/" + dirname)
         for filename in sorted(files):
+            if filename.upper() in excluded:
+                continue
             path = Path(root) / filename
             image.write_file(dest_root + "/" + filename, path.read_bytes())
 
@@ -351,6 +355,14 @@ def self_test() -> None:
             (tree_source / "old.tmp").write_bytes(b"tree probe")
             put_tree(image, tree_source, "TREE")
             assert image.read_file("TREE/old.tmp") == b"tree probe"
+            (tree_source / "skip.tmp").write_bytes(b"skip probe")
+            put_tree(image, tree_source, "TREE", {"skip.tmp"})
+            try:
+                image.read_file("TREE/skip.tmp")
+            except FileNotFoundError:
+                pass
+            else:
+                raise AssertionError("put_tree copied excluded file")
             (tree_source / "old.tmp").unlink()
             (tree_source / "new.tmp").write_bytes(b"replacement probe")
             put_tree(image, tree_source, "TREE")
@@ -390,6 +402,7 @@ def main() -> None:
     parser.add_argument("image", type=Path, nargs="?")
     parser.add_argument("--put", nargs=2, action="append", metavar=("SOURCE", "DEST"), default=[])
     parser.add_argument("--put-tree", nargs=2, action="append", metavar=("SOURCE_DIR", "DEST_DIR"), default=[])
+    parser.add_argument("--exclude-name", action="append", default=[])
     parser.add_argument("--get", nargs=2, action="append", metavar=("SOURCE", "DEST"), default=[])
     parser.add_argument("--get-text", nargs=2, action="append", metavar=("SOURCE", "DEST"), default=[])
     parser.add_argument("--remove", action="append", default=[])
@@ -407,7 +420,7 @@ def main() -> None:
         for path in args.remove:
             image.remove(path)
         for source, dest in args.put_tree:
-            put_tree(image, Path(source), dest)
+            put_tree(image, Path(source), dest, set(args.exclude_name))
         for source, dest in args.put:
             image.write_file(dest, Path(source).read_bytes())
         for source, dest in args.get:

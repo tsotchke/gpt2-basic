@@ -62,6 +62,8 @@ python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     --put "$ROOT/hardware/HWNOTES.TXT" GPT2/HWNOTES.TXT
 
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
+    --exclude-name TRAIN.TXT \
+    --exclude-name TOKBASE.TXT \
     --put-tree "$MODEL_DIR" GPT2/MODEL \
     --put-tree "$PACK_DIR" GPT2/PACKS \
     --put-tree "$ROOT/qemu/staging/GPT2SRC" GPT2/GPT2SRC

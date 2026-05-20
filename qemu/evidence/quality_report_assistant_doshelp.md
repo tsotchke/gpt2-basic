@@ -14,8 +14,8 @@ Prompt pass rate: `4/4` at threshold `0.90`
 |---|---:|---:|---:|---:|---:|---|---|
 | doshelp_memory | 1.000 | 5 | 0.0% | 2 | 0 | yes | PASS |
 | doshelp_config_sys | 1.000 | 4 | 0.0% | 2 | 0 | yes | PASS |
-| doshelp_autoexec | 1.000 | 3 | 0.0% | 2 | 0 | yes | PASS |
-| doshelp_batch | 1.000 | 4 | 0.0% | 2 | 0 | yes | PASS |
+| doshelp_autoexec | 1.000 | 4 | 0.0% | 2 | 0 | yes | PASS |
+| doshelp_batch | 1.000 | 6 | 0.0% | 2 | 0 | yes | PASS |
 
 ## Generated Continuations
 
@@ -37,16 +37,16 @@ Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baselin
 
 ### doshelp_autoexec
 
-Prompt: `You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL. Assistant:`
+Prompt: `You are a concise DOS and 486 troubleshooting assistant. User: AUTOEXEC.BAT hygiene Note: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. Assistant:`
 
 ```text
-Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 ```
 
 ### doshelp_batch
 
-Prompt: `You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions. Assistant:`
+Prompt: `You are a concise DOS and 486 troubleshooting assistant. User: Batch file help Note: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files. Assistant:`
 
 ```text
-Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 ```

@@ -4,46 +4,26 @@ training_backend_selected: mps
 training_backend_torch_version: 2.4.1
 training_backend_available_cuda: False
 training_backend_available_mps: True
-loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/TRAIN.TXT docs=486
-initialized_from: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL
+loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/TRAIN.TXT docs=800
+initialized_from: assets/gpt2_basic/PACKS/DOSHELP/MODEL
 device: mps
 training_documents_core: 42
 training_documents_core_weight: 1
-training_documents_external: 486
-training tokens: 225168786
+training_documents_external: 800
+training tokens: 91778056
 tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
 model: layers=2 emb=48 heads=4 ctx=192 hidden=192
-step     1 loss 13.0268
-step    60 loss 2.6115
-step   120 loss 1.1972
-step   180 loss 0.7675
-step   240 loss 0.4322
-step   300 loss 0.3519
-step   360 loss 0.2532
-step   420 loss 0.2803
-step   480 loss 0.2552
-step   540 loss 0.1522
-step   600 loss 0.1430
-step   660 loss 0.1273
-step   720 loss 0.1373
-step   780 loss 0.1814
-step   840 loss 0.1222
-step   900 loss 0.1216
-step   960 loss 0.1600
-step  1020 loss 0.1088
-step  1080 loss 0.1176
-step  1140 loss 0.1000
-step  1200 loss 0.1215
-step  1260 loss 0.1319
-step  1320 loss 0.0883
-step  1380 loss 0.0876
-step  1440 loss 0.1099
-step  1500 loss 0.0904
-step  1560 loss 0.0971
-step  1620 loss 0.0889
-step  1680 loss 0.0831
-step  1740 loss 0.0713
-step  1800 loss 0.0829
+step     1 loss 0.2049
+step    60 loss 0.0748
+step   120 loss 0.0698
+step   180 loss 0.0812
+step   240 loss 0.0773
+step   300 loss 0.0879
+step   360 loss 0.0754
+step   420 loss 0.0753
+step   480 loss 0.0802
+step   540 loss 0.0767
+step   600 loss 0.0821
 
 prompt: Hello there.
 Hello there.

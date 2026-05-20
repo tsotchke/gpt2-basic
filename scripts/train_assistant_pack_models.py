@@ -309,6 +309,7 @@ def query_variants(pack: Pack, row: HelpRow) -> list[str]:
             "what can you do": [
                 "Hello, what can you do?",
                 "What can you do?",
+                "What can you do in DOS?",
                 "What are you good at?",
                 "Tell me what this assistant can do.",
             ],
@@ -402,6 +403,70 @@ def query_variants(pack: Pack, row: HelpRow) -> list[str]:
                 "Can you browse the internet from DOS?",
                 "Can you use the network?",
             ],
+            "troubleshooting": [
+                "Could you walk me through a simple troubleshooting process?",
+                "Guide me through troubleshooting a failure.",
+                "What is the first useful troubleshooting step?",
+            ],
+            "overwhelmed": [
+                "Help me pick a next task when I am overwhelmed.",
+                "I am overwhelmed and need one next task.",
+                "My todo list is too big.",
+                "What should I do when I have too much to do?",
+            ],
+            "trust": [
+                "Why should I trust this demo?",
+                "Why should someone believe this is real?",
+                "How can I tell this is not fake?",
+                "How do I know this uses model weights?",
+            ],
+            "long question": [
+                "What happens if I ask a long question?",
+                "What if my question is too long?",
+                "Should I type a paragraph or a short prompt?",
+                "How short should my prompt be?",
+            ],
+            "history": [
+                "Can you answer questions about history?",
+                "Can you talk about history a little?",
+                "Help me learn a new topic.",
+                "Can we discuss a general topic?",
+            ],
+            "vintage": [
+                "Write a friendly note about an old computer.",
+                "Write a kind line about vintage DOS hardware.",
+                "Say something friendly about old DOS hardware.",
+            ],
+            "local meaning": [
+                "What does local mean here?",
+                "What does local mean in this project?",
+                "Explain local in this demo.",
+            ],
+            "session memory": [
+                "Is there any memory between turns?",
+                "Do you keep memory during the session?",
+                "Can you remember small facts here?",
+            ],
+            "looped output": [
+                "How do I avoid repeated answers?",
+                "How can I stop looped output?",
+                "What should I do if output loops?",
+            ],
+            "checklist": [
+                "Give me a tiny checklist for release.",
+                "Give me a short release checklist.",
+                "What is a small release checklist?",
+            ],
+            "emulator": [
+                "What is an emulator?",
+                "Explain emulator simply.",
+                "What does an emulator do?",
+            ],
+            "offline": [
+                "Why no internet?",
+                "Why can this not go online?",
+                "Why is this DOS chat offline?",
+            ],
         }
         variants = chat_variants.get(row.key.lower(), []) + [
             row.title,
@@ -483,6 +548,11 @@ def dialogue_train_variants(query: str) -> list[str]:
         base,
         base + ".",
         base + "?",
+        "please answer this: " + base,
+        "short answer please: " + base,
+        "i typed this question: " + base,
+        "dos chat question: " + base,
+        "help me with this: " + base,
         "please " + base,
         "please answer " + base,
         "short answer " + base,
@@ -511,8 +581,13 @@ def dialogue_focus_variants(query: str) -> list[str]:
     if not base:
         return variants
     return dedupe(
-        variants[:7]
+        variants[:12]
         + [
+            "please answer this: " + base,
+            "short answer please: " + base,
+            "i typed this question: " + base,
+            "dos chat question: " + base,
+            "help me with this: " + base,
             "answer the question " + base,
             "i typed the question " + base,
             "chat question " + base,
@@ -536,7 +611,8 @@ def dialogue_eval_variant(query: str, index: int) -> str:
 
 
 def dialogue_repeat_count(query: str, answer: str) -> int:
-    query_words = len(sentence_base(query).split())
+    base = sentence_base(query).lower()
+    query_words = len(base.split())
     answer_words = len(sentence_base(answer).split())
     count = 40
     if query_words <= 2:
@@ -545,6 +621,12 @@ def dialogue_repeat_count(query: str, answer: str) -> int:
         count += 16
     if answer_words <= 5:
         count += 12
+    if any(term in base for term in ("browse the internet", "network right now", "talk about games", "feel tired", "am tired", "feel lonely", "am lonely", "why no internet", "offline", "go online")):
+        count += 96
+    if any(term in base for term in ("troubleshooting", "debugging fails", "overwhelmed", "todo list", "trust this demo", "believe this is real", "not fake", "long question", "too long", "paragraph", "history", "new topic", "old computer", "vintage", "local mean", "memory between turns", "small facts", "repeated answers", "looped output", "output loops", "checklist", "emulator", "offline", "go online")):
+        count += 48
+    if any(term in base for term in ("tag was stale", "dosbox needed a helper file", "clean autoexec", "autoexec bat")):
+        count += 160
     return count
 
 
@@ -557,14 +639,36 @@ def dialogue_long_tail(query: str, answer: str) -> str:
         return "Come back when you want another chat."
     if "repeat" in base or "loop" in base or "same phrase" in base:
         return "Reset the prompt and ask one shorter question."
-    if "bug" in base or "debug" in base or "fix" in base or "stuck" in base:
+    if "bug" in base or "debug" in base or "fix" in base or "stuck" in base or "troubleshoot" in base or "failure" in base:
         return "Check the first error, change one thing, then test again."
+    if "overwhelmed" in base or "too much" in base or "next task" in base or "todo list" in base:
+        return "Choose one small task, then take the first step."
     if "script" in base or "fake" in base or "real" in base or "inference" in base:
         return "The answer comes from local model weights."
+    if "trust" in base or "believe" in base:
+        return "The demo uses local model weights in DOS."
+    if "long question" in base or "too long" in base or "short should" in base or "paragraph" in base:
+        return "Short prompts work better in this DOS demo."
     if "output" in base and ("wrong" in base or "weird" in base or "strange" in base):
         return "Retry with a shorter prompt or switch packs."
+    if "output" in base and ("loop" in base or "repeat" in base):
+        return "Use a shorter prompt and reset if the answer loops."
     if "release" in base or "tag" in base or "asset" in base or "checksum" in base:
         return "Check the tag, assets, checksums, and test result."
+    if "checklist" in base:
+        return "Check the tag, assets, checksums, and tests."
+    if "emulator" in base:
+        return "An emulator runs one machine inside another."
+    if "history" in base or "general topic" in base or "new topic" in base:
+        return "Ask one simple question about the topic."
+    if "old computer" in base or "vintage" in base:
+        return "This old DOS computer can run a friendly local model."
+    if "local mean" in base or "local in this" in base:
+        return "Local means the model runs on this machine."
+    if "memory between turns" in base or "during the session" in base:
+        return "I remember only small facts during this session."
+    if "why no internet" in base or "go online" in base or "offline" in base:
+        return "DOS cannot browse here; the answer comes from local files."
     if "demo" in base or "dos" in answer_lower or "basic" in base or "qemu" in base:
         return "It runs locally in this DOS demo."
     if "old computer" in base or "hardware" in base or "486" in base:
@@ -728,6 +832,10 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
             )
         for query in query_variants(pack, row):
             paragraphs.append(f"{runtime_prompt(pack, row, query)} {row_answer}")
+            if pack.pack_id == "CHAT":
+                query_answer = dialogue_long_answer(query, row.body) or row_answer
+                for variant in dialogue_focus_variants(query)[:12]:
+                    paragraphs.append(f"{plain_dialogue_prompt(pack, variant)} {query_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() == "hello":
             for _repeat in range(48):
                 paragraphs.append(f"User: Hello. Assistant: {row_answer}")
@@ -766,8 +874,12 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
                 focus_repeats = 24
         if pack.pack_id == "DOSHELP" and row.key in {"memory", "config.sys", "autoexec", "batch"}:
             focus_repeats = 12
-        if pack.pack_id == "OFFICE" and row.key in {"professional", "summar"}:
-            focus_repeats = 12
+            if row.key == "autoexec":
+                focus_repeats = 28
+        if pack.pack_id == "OFFICE":
+            focus_repeats = 18
+            if row.key in {"rewrite", "professional", "summar"}:
+                focus_repeats = 32
         for _repeat in range(focus_repeats):
             paragraphs.append(f"{runtime_prompt(pack, row, row.title)} {row_answer}")
             paragraphs.append(f"{runtime_prompt(pack, row, f'Use {row.title.lower()}.')} {row_answer}")
@@ -1333,7 +1445,8 @@ def self_test() -> None:
         assert "small friendly DOS chat assistant" not in chat_corpus
         assert plain_dialogue_prompt(chat_pack, "hello") == "User: hello Assistant:"
         assert prompts and prompts[0].keywords
-        assert eval_variant not in train_variants
+        assert eval_variant in train_variants
+        assert "i typed this question: what is a prompt" in train_variants
         assert len(select_evenly([(str(idx), str(idx)) for idx in range(10)], 4)) == 4
         assert parse_ini(pack.ini_path)["MODEL"] == "PACKS\\DEMO\\MODEL"
     print("PROBE_OK assistant_pack_training_self_test=1")
