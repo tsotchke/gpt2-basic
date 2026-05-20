@@ -1,39 +1,49 @@
 profile: 486sx-safe - 486SX-safe baseline: current no-FPU production checkpoint shape
 training_backend_requested: auto
-training_backend_selected: cpu
-training_backend_torch_version: 2.11.0
+training_backend_selected: mps
+training_backend_torch_version: 2.4.1
 training_backend_available_cuda: False
-training_backend_available_mps: False
-loaded_corpus_file: <repo>/assets/gpt2_basic/PACKS/DOSHELP/TRAIN.TXT docs=133
-initialized_from: <repo>/assets/gpt2_basic/MODEL
-device: cpu
+training_backend_available_mps: True
+loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/TRAIN.TXT docs=486
+initialized_from: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/MODEL
+device: mps
 training_documents_core: 42
 training_documents_core_weight: 1
-training_documents_external: 133
-training tokens: 49747984
+training_documents_external: 486
+training tokens: 225168786
 tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
 model: layers=2 emb=48 heads=4 ctx=192 hidden=192
-step     1 loss 12.6045
-step    60 loss 2.5904
-step   120 loss 0.9646
-step   180 loss 0.5239
-step   240 loss 0.3358
-step   300 loss 0.2253
-step   360 loss 0.1727
-step   420 loss 0.1623
-step   480 loss 0.1303
-step   540 loss 0.2194
-step   600 loss 0.0999
-step   660 loss 0.2029
-step   720 loss 0.0857
-step   780 loss 0.0944
-step   840 loss 0.1504
-step   900 loss 0.0705
-step   960 loss 0.0702
-step  1020 loss 0.0523
-step  1080 loss 0.0683
-step  1140 loss 0.0547
-step  1200 loss 0.0783
+step     1 loss 13.0268
+step    60 loss 2.6115
+step   120 loss 1.1972
+step   180 loss 0.7675
+step   240 loss 0.4322
+step   300 loss 0.3519
+step   360 loss 0.2532
+step   420 loss 0.2803
+step   480 loss 0.2552
+step   540 loss 0.1522
+step   600 loss 0.1430
+step   660 loss 0.1273
+step   720 loss 0.1373
+step   780 loss 0.1814
+step   840 loss 0.1222
+step   900 loss 0.1216
+step   960 loss 0.1600
+step  1020 loss 0.1088
+step  1080 loss 0.1176
+step  1140 loss 0.1000
+step  1200 loss 0.1215
+step  1260 loss 0.1319
+step  1320 loss 0.0883
+step  1380 loss 0.0876
+step  1440 loss 0.1099
+step  1500 loss 0.0904
+step  1560 loss 0.0971
+step  1620 loss 0.0889
+step  1680 loss 0.0831
+step  1740 loss 0.0713
+step  1800 loss 0.0829
 
 prompt: Hello there.
 Hello there.
@@ -47,9 +57,9 @@ Why run a language model in DOS?
 prompt: DOS Help Assistant: CONFIG.SYS memory
 DOS Help Assistant: CONFIG.SYS memory
 
-wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2CFG.TXT
-wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2WT.BIN
-wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2FX.BIN
-wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2EXP.BIN
-wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/VOCAB.BIN
-wrote <repo>/assets/gpt2_basic/PACKS/DOSHELP/MODEL/PROFILE.TXT
+wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2CFG.TXT
+wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2WT.BIN
+wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2FX.BIN
+wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/GPT2EXP.BIN
+wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/VOCAB.BIN
+wrote /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/DOSHELP/MODEL/PROFILE.TXT

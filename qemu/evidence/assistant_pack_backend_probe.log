@@ -1,9 +1,9 @@
 PROBE_OK assistant_pack_backend_probe=1
 runtime_backend: assistant_pack_train_mps
-backend_gate: requested=mps selected=mps mps_available=1 cuda_available=0
-ASSISTANT_PACK_BACKEND|train_requested=mps|train_selected=mps|quality_backend=fixed|quality_device=cpu|mps=1|cuda=0
+backend_gate: requested=auto selected=mps mps_available=1 cuda_available=0
+ASSISTANT_PACK_BACKEND|train_requested=auto|train_selected=mps|quality_backend=float|quality_device=cpu|mps=1|cuda=0
 PROBE_OK assistant_pack_backend_gate=1
 runtime_backend: assistant_pack_chat_mps
-backend_gate: pack=CHAT selected=mps quality_backend=fixed quality_device=cpu
-ASSISTANT_PACK_BACKEND_PACK|pack=CHAT|train_selected=mps|quality_backend=fixed|quality_device=cpu
+backend_gate: pack=CHAT selected=mps quality_backend=float quality_device=cpu
+ASSISTANT_PACK_BACKEND_PACK|pack=CHAT|train_selected=mps|quality_backend=float|quality_device=cpu
 PROBE_OK assistant_pack_backend_gate_chat=1
