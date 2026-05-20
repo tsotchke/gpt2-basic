@@ -1,0 +1,10 @@
+# terms|title|body
+# Generated KDB bucket B. Rebuild with scripts/build_assistant_kdb.py --write.
+batch file help exist checks clear status messages 8.3 dos-compatible names model files|Batch file help|In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.
+dos boot order config.sys loads device drivers first autoexec.bat runs commands sets paths|DOS boot order|CONFIG.SYS loads device drivers first, then AUTOEXEC.BAT runs commands and sets paths.
+dosbox bundle quick local runs hardware transfer real machines|DOSBox use|Use the DOSBox bundle for quick local runs, then use hardware transfer for real machines.
+batch safety check exist before running large files print clear status lines step|Batch safety|Check IF EXIST before running large files and print clear status lines for each step.
+autoexec bat autoexec.bat tuning config.sys loads drivers before sets path variables required tsr tools|AUTOEXEC.BAT tuning|CONFIG.SYS loads drivers before AUTOEXEC.BAT; then AUTOEXEC sets PATH, variables, and required TSR tools.
+dosbox mount bundle directory change gpt2 run batch file desired profile|DOSBox mount|Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile.
+batch menu offer numbered choices validate input keep branch short reversible|Batch menu|Offer numbered choices, validate the input, and keep each branch short and reversible.
+compile basic freebasic build dos executable pinned toolchain keep cwsdpmi output|FreeBASIC compile|Build the DOS executable with the pinned FreeBASIC toolchain and keep CWSDPMI with the output.

@@ -1,0 +1,6 @@
+# terms|title|body
+# Generated KDB bucket M. Rebuild with scripts/build_assistant_kdb.py --write.
+perf performance check measure before changing code isolate hot path compare same workload after change|Performance check|Measure before changing code, isolate the hot path, and compare the same workload after the change.
+modern 486 llm path small hot-loaded weights compact retrieval databases persistent memory short synthesis replies|Modern 486 LLM path|Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+memory persistence persistent save stable facts assist.mem keep transient previous-turn context separate|Persistent memory|Save stable facts to ASSIST.MEM and keep transient previous-turn context separate.
+trust model improves every answer path cite local files memory tests generated evidence records|Trust model|Trust improves when every answer path can cite local files, memory, tests, or generated evidence records.

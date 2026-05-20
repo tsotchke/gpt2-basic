@@ -7,7 +7,7 @@ import argparse
 from pathlib import Path
 
 from assistant_pack_contract import PackContractError, parse_help_rows, load_all_pack_contracts
-from build_assistant_kdb import DEFAULT_PACK_ROOT, render_kdb
+from build_assistant_kdb import DEFAULT_PACK_ROOT, render_bucket_files, render_index, render_kdb
 
 
 def validate_user_file(path: Path) -> int:
@@ -37,6 +37,15 @@ def validate_pack_authoring(pack_root: Path) -> None:
         current_kdb = pack.kdb_path.read_text(encoding="ascii")
         if current_kdb != expected_kdb:
             raise PackContractError(f"KDB.TXT is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
+        expected_index = render_index(pack)
+        current_index = pack.kdb_index_path.read_text(encoding="ascii")
+        if current_index != expected_index:
+            raise PackContractError(f"KDBIDX.TXT is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
+        expected_buckets = render_bucket_files(pack)
+        for name, expected_text in expected_buckets.items():
+            bucket_path = pack.kdb_path.parent / name
+            if not bucket_path.exists() or bucket_path.read_text(encoding="ascii") != expected_text:
+                raise PackContractError(f"{name} is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
         parse_help_rows(pack.help_path)
         parse_help_rows(pack.knowledge_path)
         parse_help_rows(pack.kdb_path)
@@ -47,6 +56,8 @@ def validate_pack_authoring(pack_root: Path) -> None:
             f"help={len(pack.help_rows)}|"
             f"know={len(pack.knowledge_rows)}|"
             f"kdb={len(pack.kdb_rows)}|"
+            f"idx={len(pack.kdb_index_rows)}|"
+            f"bucket_entries={sum(len(text.splitlines()) - 2 for text in expected_buckets.values())}|"
             f"user={user_rows}"
         )
     print("PROBE_OK assistant_pack_authoring=1")

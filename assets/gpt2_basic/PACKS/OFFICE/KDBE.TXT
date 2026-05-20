@@ -1,0 +1,6 @@
+# terms|title|body
+# Generated KDB bucket E. Rebuild with scripts/build_assistant_kdb.py --write.
+executive summary give decision evidence risk requested action short paragraphs|Executive summary|Give the decision, the evidence, the risk, and the requested action in short paragraphs.
+email reply answer direct question first add context next steps|Email reply|Answer the direct question first, then add context and next steps.
+polite email start answer add one reason state next step keep tone direct|Polite email|Start with the answer, add one reason, state the next step, and keep the tone direct.
+changelog entry group changes added changed fixed known limits keep bullet factual|Changelog entry|Group changes by added, changed, fixed, and known limits; keep each bullet factual.

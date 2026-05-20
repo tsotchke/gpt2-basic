@@ -1,0 +1,9 @@
+# terms|title|body
+# Generated KDB bucket P. Rebuild with scripts/build_assistant_kdb.py --write.
+professional tone keep message direct polite concrete free jokes filler unsupported claims|Professional tone|Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+summar summary action summaries preserve dates names decisions requested actions while dropping repeated explanation|Summary action|Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
+status update direct polite wording include current blocker end next action timing|Status update|Use direct polite wording, include the current blocker, and end with the next action or timing.
+rewrite rules preserve facts remove filler keep tone polite avoid unsupported claims|Rewrite rules|Preserve facts, remove filler, keep the tone polite, and avoid unsupported claims.
+project plan list goal milestones owners risks next checkpoint|Project plan|List the goal, milestones, owners, risks, and the next checkpoint.
+polite email start answer add one reason state next step keep tone direct|Polite email|Start with the answer, add one reason, state the next step, and keep the tone direct.
+test plan define scope cases expected results evidence files pass fail criteria|Test plan|Define scope, cases, expected results, evidence files, and pass or fail criteria.

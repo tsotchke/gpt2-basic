@@ -28,6 +28,7 @@ REQUIRED_INI_KEYS = (
     "HELP",
     "KNOW",
     "KDB",
+    "KDBIDX",
     "USER",
     "USAGE",
     "SPRITE",
@@ -65,6 +66,13 @@ class HelpRow:
 
 
 @dataclass(frozen=True)
+class KdbIndexRow:
+    bucket: str
+    entries: int
+    filename: str
+
+
+@dataclass(frozen=True)
 class PackContract:
     pack_id: str
     title: str
@@ -73,6 +81,7 @@ class PackContract:
     help_path: Path
     knowledge_path: Path
     kdb_path: Path
+    kdb_index_path: Path
     user_path: Path
     usage_path: Path
     sprite_path: Path
@@ -81,6 +90,7 @@ class PackContract:
     help_rows: tuple[HelpRow, ...]
     knowledge_rows: tuple[HelpRow, ...]
     kdb_rows: tuple[HelpRow, ...]
+    kdb_index_rows: tuple[KdbIndexRow, ...]
     ini_values: dict[str, str]
 
 
@@ -172,6 +182,28 @@ def parse_help_rows(path: Path) -> tuple[HelpRow, ...]:
     return tuple(rows)
 
 
+def parse_kdb_index_rows(path: Path) -> tuple[KdbIndexRow, ...]:
+    rows: list[KdbIndexRow] = []
+    for raw in read_ascii(path).splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or line.startswith(";"):
+            continue
+        parts = [part.strip() for part in line.split("|", 2)]
+        if len(parts) != 3 or not all(parts):
+            raise PackContractError(f"invalid KDBIDX.TXT row in {path}: {raw!r}")
+        bucket, entries_text, filename = parts
+        if len(bucket) != 1 or not re.fullmatch(r"[0-9A-Z]", bucket):
+            raise PackContractError(f"invalid KDBIDX bucket in {path}: {raw!r}")
+        if not entries_text.isdigit() or int(entries_text) <= 0:
+            raise PackContractError(f"invalid KDBIDX entry count in {path}: {raw!r}")
+        if not re.fullmatch(r"KDB[0-9A-Z]\.TXT", filename.upper()):
+            raise PackContractError(f"invalid KDBIDX filename in {path}: {raw!r}")
+        rows.append(KdbIndexRow(bucket, int(entries_text), filename.upper()))
+    if not rows:
+        raise PackContractError(f"KDBIDX.TXT has no bucket rows: {path}")
+    return tuple(rows)
+
+
 def validate_usage_file(path: Path) -> None:
     text = read_ascii(path)
     for marker in REQUIRED_USAGE_MARKERS:
@@ -202,6 +234,7 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
     help_path = resolve_pack_value(pack_root, pack_dir, values["HELP"], "HELP.TXT")
     knowledge_path = resolve_pack_value(pack_root, pack_dir, values["KNOW"], "KNOW.TXT")
     kdb_path = resolve_pack_value(pack_root, pack_dir, values["KDB"], "KDB.TXT")
+    kdb_index_path = resolve_pack_value(pack_root, pack_dir, values["KDBIDX"], "KDBIDX.TXT")
     user_path = resolve_pack_value(pack_root, pack_dir, values["USER"], "USER.TXT")
     usage_path = resolve_pack_value(pack_root, pack_dir, values["USAGE"], "USAGE.TXT")
     sprite_path = resolve_pack_value(pack_root, pack_dir, values["SPRITE"])
@@ -211,6 +244,7 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
     help_rows = parse_help_rows(help_path)
     knowledge_rows = parse_help_rows(knowledge_path)
     kdb_rows = parse_help_rows(kdb_path)
+    kdb_index_rows = parse_kdb_index_rows(kdb_index_path) if kdb_index_path.exists() else tuple()
     validate_usage_file(usage_path)
     if not user_path.is_file():
         raise PackContractError(f"user note template missing: {user_path}")
@@ -226,6 +260,7 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
         help_path=help_path,
         knowledge_path=knowledge_path,
         kdb_path=kdb_path,
+        kdb_index_path=kdb_index_path,
         user_path=user_path,
         usage_path=usage_path,
         sprite_path=sprite_path,
@@ -234,6 +269,7 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
         help_rows=help_rows,
         knowledge_rows=knowledge_rows,
         kdb_rows=kdb_rows,
+        kdb_index_rows=kdb_index_rows,
         ini_values=values,
     )
 
@@ -261,6 +297,8 @@ def self_test() -> None:
         raise PackContractError("CHAT knowledge rows are unexpectedly sparse")
     if len(chat.kdb_rows) < len(chat.help_rows):
         raise PackContractError("CHAT KDB rows are unexpectedly sparse")
+    if len(chat.kdb_index_rows) < 3:
+        raise PackContractError("CHAT KDB index rows are unexpectedly sparse")
     print(f"PROBE_OK assistant_pack_contract_count={len(packs)}")
     print("PROBE_OK assistant_pack_contract_parser=1")
     print("PROBE_OK assistant_pack_contract_artifacts=1")

@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket W. Rebuild with scripts/build_assistant_kdb.py --write.
+checklist writing short action verbs make item independently testable|Checklist writing|Use short action verbs and make each item independently testable.
+user docs write task goal prerequisites exact steps expected result troubleshooting note|User docs|Write the task goal, prerequisites, exact steps, expected result, and troubleshooting note.

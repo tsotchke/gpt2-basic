@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket 8. Rebuild with scripts/build_assistant_kdb.py --write.
+8.3 names dos filenames maximum compatibility predictable batch files|DOS filenames|Use 8.3 filenames for maximum DOS compatibility and predictable batch files.

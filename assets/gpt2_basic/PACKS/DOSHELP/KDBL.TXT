@@ -1,0 +1,7 @@
+# terms|title|body
+# Generated KDB bucket L. Rebuild with scripts/build_assistant_kdb.py --write.
+memory config.sys load himem first dos high umb keep files buffers modest preserve conventional|CONFIG.SYS memory|Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+autoexec autoexec.bat hygiene config.sys loads drivers first runs commands keep path short trim resident tools|AUTOEXEC.BAT hygiene|CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
+model packs point pack-local checkpoint let assistant switch paths pack changes|Model packs|Point MODEL at C:\MODEL or a pack-local checkpoint, then let the assistant switch model paths when the pack changes.
+dosbox bundle quick local runs hardware transfer real machines|DOSBox use|Use the DOSBox bundle for quick local runs, then use hardware transfer for real machines.
+qemu logs capture compile run copied evidence files before trusting emulator result|QEMU logs|Capture compile logs, run logs, and copied evidence files before trusting an emulator result.

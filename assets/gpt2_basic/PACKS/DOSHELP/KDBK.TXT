@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket K. Rebuild with scripts/build_assistant_kdb.py --write.
+conventional memory keep drivers high trim tsr programs preserve low old dos|Conventional memory|Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
+dpmi setup keep cwsdpmi.exe beside protected-mode programs need host|DPMI setup|Keep CWSDPMI.EXE beside protected-mode programs that need a DPMI host.

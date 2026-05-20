@@ -1,0 +1,6 @@
+# terms|title|body
+# Generated KDB bucket L. Rebuild with scripts/build_assistant_kdb.py --write.
+formal memo subject line one-sentence purpose short body paragraphs explicit next action|Formal memo|Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
+release note shape lead changed list proof state any known limits plainly|Release note shape|Lead with what changed, list proof, then state any known limits plainly.
+project plan list goal milestones owners risks next checkpoint|Project plan|List the goal, milestones, owners, risks, and the next checkpoint.
+track risks risk register record impact likelihood mitigation owner review date|Risk register|For each risk, record impact, likelihood, mitigation, owner, and review date.

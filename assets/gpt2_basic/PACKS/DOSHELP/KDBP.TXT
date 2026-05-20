@@ -1,0 +1,7 @@
+# terms|title|body
+# Generated KDB bucket P. Rebuild with scripts/build_assistant_kdb.py --write.
+model packs point pack-local checkpoint let assistant switch paths pack changes|Model packs|Point MODEL at C:\MODEL or a pack-local checkpoint, then let the assistant switch model paths when the pack changes.
+dpmi host protected-mode dos programs need such cwsdpmi.exe beside program|DPMI host|Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
+qemu rehearsal run capture path before physical hardware copy-back checklist tested|QEMU rehearsal|Run the QEMU capture path before physical hardware so the copy-back checklist is tested.
+path setup put program directories only needed keep command line short|PATH setup|Put program directories in PATH only when needed, and keep the command line short.
+cwsdpmi missing protected-mode program fails start copy cwsdpmi.exe beside rerun command|Missing CWSDPMI|If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command.

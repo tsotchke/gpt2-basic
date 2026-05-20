@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket E. Rebuild with scripts/build_assistant_kdb.py --write.
+trust model improves every answer path cite local files memory tests generated evidence records|Trust model|Trust improves when every answer path can cite local files, memory, tests, or generated evidence records.

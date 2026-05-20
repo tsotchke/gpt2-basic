@@ -1,0 +1,6 @@
+# terms|title|body
+# Generated KDB bucket R. Rebuild with scripts/build_assistant_kdb.py --write.
+qemu rehearsal run capture path before physical hardware copy-back checklist tested|QEMU rehearsal|Run the QEMU capture path before physical hardware so the copy-back checklist is tested.
+fat image full remove host-only training files grow disk assembly runs out space|FAT image full|Remove host-only training files or grow the disk image when FAT image assembly runs out of space.
+qemu logs capture compile run copied evidence files before trusting emulator result|QEMU logs|Capture compile logs, run logs, and copied evidence files before trusting an emulator result.
+hardware validation run same batch path real dos copy return.txt back compare checksums logs|Hardware validation|Run the same batch path on real DOS, copy RETURN.TXT back, and compare checksums and logs.

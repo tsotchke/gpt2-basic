@@ -1,0 +1,10 @@
+# terms|title|body
+# Generated KDB bucket P. Rebuild with scripts/build_assistant_kdb.py --write.
+rollback plan know previous good version command restore evidence worked|Rollback plan|Know the previous good version, the command to restore it, and the evidence that rollback worked.
+perf performance check measure before changing code isolate hot path compare same workload after change|Performance check|Measure before changing code, isolate the hot path, and compare the same workload after the change.
+modern 486 llm path small hot-loaded weights compact retrieval databases persistent memory short synthesis replies|Modern 486 LLM path|Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+language pack design carry model path persona actions kdb.txt user.txt evidence gates|Language pack design|A language pack should carry model path, persona, actions, KDB.TXT, USER.TXT, and evidence gates.
+local override notes put site facts user.txt knowledge bundled pack database|Local override notes|Put site facts in USER.TXT so local knowledge can override the bundled pack database.
+memory persistence persistent save stable facts assist.mem keep transient previous-turn context separate|Persistent memory|Save stable facts to ASSIST.MEM and keep transient previous-turn context separate.
+qemu proof repeatable dos evidence confirm timing behavior physical hardware|QEMU proof|Use QEMU for repeatable DOS evidence, then confirm timing and behavior on physical hardware.
+pack authoring write help know rows rebuild kdb run validator retrieval qemu gates|Pack authoring|Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.

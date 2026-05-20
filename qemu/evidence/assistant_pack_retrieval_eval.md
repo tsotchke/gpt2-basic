@@ -3,7 +3,7 @@
 Status: `PASS`
 Retrieval pass rate: `36/36`
 
-This gate checks local HELP.TXT and KNOW.TXT retrieval for useful paraphrases before model generation.
+This gate checks local KDB retrieval for useful paraphrases before model generation.
 
 | Pack | Query | Source | Score | Status | Reason | Answer |
 |---|---|---|---:|---|---|---|
@@ -12,7 +12,7 @@ This gate checks local HELP.TXT and KNOW.TXT retrieval for useful paraphrases be
 | CHAT | which pack should i use for writing | KDB | 36 | PASS |  | Pack switching: Use CHAT for conversation, DOSHELP for DOS setup, and OFFICE for writing tasks. |
 | CHAT | can this work without the internet | KDB | 33 | PASS |  | Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files. |
 | CHAT | how do i recover from a bad answer | KDB | 33 | PASS |  | Mistake recovery: If an answer is wrong, ask a shorter question, switch packs, or give the exact error. |
-| CHAT | what proof helps me trust this | KDB | 21 | PASS |  | Trust evidence: Trust comes from visible files, local weights, reproducible tests, and QEMU or hardware logs. |
+| CHAT | what proof helps me trust this | KDB | 36 | PASS |  | Trust evidence: Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs. |
 | CHAT | how should i compare options | KDB | 39 | PASS |  | Compare options: Name the options, list one tradeoff for each, then choose the practical next step. |
 | CHAT | help me plan work in small steps | KDB | 66 | PASS |  | Planning work: Break the job into small steps, do the blocking step first, and verify each result. |
 | CHAT | what should a useful answer look like | KDB | 42 | PASS |  | Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on. |

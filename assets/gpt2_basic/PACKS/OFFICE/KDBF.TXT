@@ -1,0 +1,5 @@
+# terms|title|body
+# Generated KDB bucket F. Rebuild with scripts/build_assistant_kdb.py --write.
+formal memo subject line one-sentence purpose short body paragraphs explicit next action|Formal memo|Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
+rewrite rules preserve facts remove filler keep tone polite avoid unsupported claims|Rewrite rules|Preserve facts, remove filler, keep the tone polite, and avoid unsupported claims.
+spreadsheet formula state input cells expected result one check errors|Spreadsheet formula|State the input cells, the formula, the expected result, and one check for errors.

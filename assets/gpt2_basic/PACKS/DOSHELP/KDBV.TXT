@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket V. Rebuild with scripts/build_assistant_kdb.py --write.
+hardware validation run same batch path real dos copy return.txt back compare checksums logs|Hardware validation|Run the same batch path on real DOS, copy RETURN.TXT back, and compare checksums and logs.

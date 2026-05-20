@@ -1,0 +1,9 @@
+# terms|title|body
+# Generated KDB bucket C. Rebuild with scripts/build_assistant_kdb.py --write.
+review code look first correctness regressions missing tests unclear ownership risky edge cases|Code review|Look first for correctness, regressions, missing tests, unclear ownership, and risky edge cases.
+release check verify tests logs artifact names checksums notes target tag|Release check|Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+perf performance check measure before changing code isolate hot path compare same workload after change|Performance check|Measure before changing code, isolate the hot path, and compare the same workload after the change.
+triage issue classify impact reproduction quality affected surface owner next action|Issue triage|Classify impact, reproduction quality, affected surface, owner, and next action.
+language pack design carry model path persona actions kdb.txt user.txt evidence gates|Language pack design|A language pack should carry model path, persona, actions, KDB.TXT, USER.TXT, and evidence gates.
+quality gate useful checks novel phrasings exact output terms runtime logs artifact checksums|Quality gate|A useful gate checks novel phrasings, exact output terms, runtime logs, and artifact checksums.
+failure record command input expected result actual log path next experiment|Failure record|Record the command, input, expected result, actual result, log path, and next experiment.

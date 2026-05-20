@@ -50,6 +50,7 @@ TYPE AssistantPack
     help_path AS STRING * 80
     knowledge_path AS STRING * 80
     kdb_path AS STRING * 80
+    kdb_index_path AS STRING * 80
     user_path AS STRING * 80
     golden_path AS STRING * 80
     usage_path AS STRING * 80
@@ -111,6 +112,8 @@ DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
 DECLARE FUNCTION AssistIsRetrievalStopword(word_text AS STRING) AS INTEGER
 DECLARE FUNCTION AssistRetrievalScore(query_lower AS STRING, key_text AS STRING, title_text AS STRING, body_text AS STRING) AS INTEGER
 DECLARE SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+DECLARE FUNCTION AssistKdbBucketPath(kdb_path AS STRING, bucket_char AS STRING) AS STRING
+DECLARE SUB AssistScanBucketedKdb(kdb_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGoldenReply(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
@@ -600,6 +603,9 @@ FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
     value_text = AssistReadIniValue(ini_path, "KDB", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).kdb_path = value_text
+    value_text = AssistReadIniValue(ini_path, "KDBIDX", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).kdb_index_path = value_text
     value_text = AssistReadIniValue(ini_path, "USER", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).user_path = value_text
@@ -945,6 +951,77 @@ assist_scan_retrieval_error:
     RETURN
 END SUB
 
+FUNCTION AssistKdbBucketPath(kdb_path AS STRING, bucket_char AS STRING) AS STRING
+    DIM i AS INTEGER
+    DIM last_sep AS INTEGER
+    DIM ch AS STRING
+    DIM bucket AS STRING
+    DIM prefix AS STRING
+
+    kdb_path = AssistTrimFixed(kdb_path)
+    bucket = UCASE$(LEFT$(TRIM$(bucket_char), 1))
+    IF bucket = "" THEN RETURN ""
+    IF NOT ((bucket >= "A" AND bucket <= "Z") OR (bucket >= "0" AND bucket <= "9")) THEN RETURN ""
+
+    last_sep = 0
+    FOR i = 1 TO LEN(kdb_path)
+        ch = MID$(kdb_path, i, 1)
+        IF ch = "\" OR ch = "/" THEN last_sep = i
+    NEXT i
+
+    IF last_sep > 0 THEN
+        prefix = LEFT$(kdb_path, last_sep)
+    ELSE
+        prefix = ""
+    END IF
+    RETURN prefix + "KDB" + bucket + ".TXT"
+END FUNCTION
+
+SUB AssistScanBucketedKdb(kdb_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+    DIM i AS INTEGER
+    DIM word_text AS STRING
+    DIM ch AS STRING
+    DIM bucket AS STRING
+    DIM scanned AS STRING
+    DIM bucket_path AS STRING
+    DIM any_scanned AS INTEGER
+
+    kdb_path = AssistTrimFixed(kdb_path)
+    IF kdb_path = "" THEN RETURN
+
+    scanned = ","
+    any_scanned = 0
+    word_text = ""
+    query_lower = LCASE$(TRIM$(query_lower))
+
+    FOR i = 1 TO LEN(query_lower) + 1
+        IF i <= LEN(query_lower) THEN
+            ch = MID$(query_lower, i, 1)
+        ELSE
+            ch = " "
+        END IF
+
+        IF (ch >= "a" AND ch <= "z") OR (ch >= "0" AND ch <= "9") THEN
+            word_text = word_text + ch
+        ELSE
+            IF LEN(word_text) >= 3 AND AssistIsRetrievalStopword(word_text) = 0 THEN
+                bucket = UCASE$(LEFT$(word_text, 1))
+                IF INSTR(scanned, "," + bucket + ",") = 0 THEN
+                    scanned = scanned + bucket + ","
+                    bucket_path = AssistKdbBucketPath(kdb_path, bucket)
+                    IF bucket_path <> "" AND DIR(bucket_path) <> "" THEN
+                        AssistScanRetrievalFile bucket_path, query_lower, score_bonus, best_text, best_score
+                        any_scanned = 1
+                    END IF
+                END IF
+            END IF
+            word_text = ""
+        END IF
+    NEXT i
+
+    IF any_scanned = 0 THEN AssistScanRetrievalFile kdb_path, query_lower, score_bonus, best_text, best_score
+END SUB
+
 FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM help_path AS STRING
     DIM knowledge_path AS STRING
@@ -965,7 +1042,8 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     user_path = AssistTrimFixed(g_assist_packs(pack_index).user_path)
 
     IF kdb_path <> "" AND DIR(kdb_path) <> "" THEN
-        AssistScanRetrievalFile kdb_path, q, 0, best_text, best_score
+        AssistScanBucketedKdb kdb_path, q, 0, best_text, best_score
+        IF best_score < 8 THEN AssistScanRetrievalFile kdb_path, q, 0, best_text, best_score
     ELSE
         AssistScanRetrievalFile help_path, q, 0, best_text, best_score
         AssistScanRetrievalFile knowledge_path, q, 0, best_text, best_score

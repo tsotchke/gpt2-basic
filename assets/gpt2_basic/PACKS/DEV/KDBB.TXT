@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket B. Rebuild with scripts/build_assistant_kdb.py --write.
+test strategy name behavior choose smallest proof run record pass fail|Test strategy|Name the behavior, choose the smallest proof, run it, and record pass or fail.
+perf performance check measure before changing code isolate hot path compare same workload after change|Performance check|Measure before changing code, isolate the hot path, and compare the same workload after the change.

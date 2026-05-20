@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket J. Rebuild with scripts/build_assistant_kdb.py --write.
+plan work planning break job small steps blocking step first verify result|Planning work|Break the job into small steps, do the blocking step first, and verify each result.

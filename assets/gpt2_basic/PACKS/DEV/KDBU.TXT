@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket U. Rebuild with scripts/build_assistant_kdb.py --write.
+quality gate useful checks novel phrasings exact output terms runtime logs artifact checksums|Quality gate|A useful gate checks novel phrasings, exact output terms, runtime logs, and artifact checksums.

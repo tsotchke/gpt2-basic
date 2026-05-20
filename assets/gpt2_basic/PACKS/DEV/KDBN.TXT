@@ -1,0 +1,5 @@
+# terms|title|body
+# Generated KDB bucket N. Rebuild with scripts/build_assistant_kdb.py --write.
+test strategy name behavior choose smallest proof run record pass fail|Test strategy|Name the behavior, choose the smallest proof, run it, and record pass or fail.
+architecture note state goal constraints data flow failure modes next reversible step|Architecture note|State the goal, constraints, data flow, failure modes, and the next reversible step.
+local override notes put site facts user.txt knowledge bundled pack database|Local override notes|Put site facts in USER.TXT so local knowledge can override the bundled pack database.

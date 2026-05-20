@@ -1,0 +1,20 @@
+# terms|title|body
+# Generated KDB bucket S. Rebuild with scripts/build_assistant_kdb.py --write.
+rewrite selected text user has prose wants clearer shorter more professional version|Rewrite selected text|Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.
+formal memo subject line one-sentence purpose short body paragraphs explicit next action|Formal memo|Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
+summar summary action summaries preserve dates names decisions requested actions while dropping repeated explanation|Summary action|Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
+shorten action shortening keep original intent remove qualifiers duplicate phrases low-value background|Shorten action|Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.
+clarify clarity action state happened matters next keep artifact tag checksum test details concrete|Clarity action|State what happened, why it matters, and the next action; keep artifact, tag, checksum, and test details concrete.
+status update direct polite wording include current blocker end next action timing|Status update|Use direct polite wording, include the current blocker, and end with the next action or timing.
+status update shape state current result blocker next action expected timing|Status update shape|State the current result, the blocker, the next action, and the expected timing.
+release note shape lead changed list proof state any known limits plainly|Release note shape|Lead with what changed, list proof, then state any known limits plainly.
+bug report shape include expected behavior actual reproduction steps logs suspected area|Bug report shape|Include expected behavior, actual behavior, reproduction steps, logs, and the suspected area.
+executive summary give decision evidence risk requested action short paragraphs|Executive summary|Give the decision, the evidence, the risk, and the requested action in short paragraphs.
+checklist writing short action verbs make item independently testable|Checklist writing|Use short action verbs and make each item independently testable.
+handoff note say done remains evidence lives who owns next action|Handoff note|Say what is done, what remains, where evidence lives, and who owns the next action.
+csv cleanup keep headers stable quote fields commas normalize dates preserve untouched source copy|CSV cleanup|Keep headers stable, quote fields with commas, normalize dates, and preserve an untouched source copy.
+spreadsheet formula state input cells expected result one check errors|Spreadsheet formula|State the input cells, the formula, the expected result, and one check for errors.
+budget table show item cost owner due date status totals checked quickly|Budget table|Show item, cost, owner, due date, and status so totals can be checked quickly.
+polite email start answer add one reason state next step keep tone direct|Polite email|Start with the answer, add one reason, state the next step, and keep the tone direct.
+decision memo state recommendation alternatives considered evidence risks owner|Decision memo|State the recommendation, alternatives considered, evidence, risks, and owner.
+test plan define scope cases expected results evidence files pass fail criteria|Test plan|Define scope, cases, expected results, evidence files, and pass or fail criteria.

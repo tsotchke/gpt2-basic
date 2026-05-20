@@ -1,0 +1,18 @@
+# terms|title|body
+# Generated KDB bucket H. Rebuild with scripts/build_assistant_kdb.py --write.
+hello starting conversation dos|Starting a conversation|Hello from DOS.
+idea help try asking one clear question|Idea help|Try asking one clear question.
+old computer hardware demo matters because tiny local model run dos-style without network|Old hardware|The demo matters because a tiny local model can run on old DOS-style hardware without a network.
+focus help remove one distraction choose small task work few minutes before changing course|Focus help|Remove one distraction, choose one small task, and work for a few minutes before changing course.
+troubleshooting help check first error change one thing test again|Troubleshooting help|Check the first error, change one thing, then test again.
+overwhelmed help choose one small task take first step|Overwhelmed help|Choose one small task, then take the first step.
+history general topic ask one simple question|General topic|Ask one simple question about the topic.
+vintage friendly old hardware note dos computer run local model|Friendly old hardware note|This old DOS computer can run a friendly local model.
+bored boredom help try one small project|Boredom help|Try one small project.
+worry help name choose one step|Worry help|Name the worry, then choose one step.
+relax help breathe slowly rest minute|Relax help|Breathe slowly and rest for a minute.
+improve practice help one small thing day|Practice help|Practice one small thing each day.
+follow follow-up help ask one short question continue last answer|Follow-up help|Ask one short follow-up question so I can continue from the last answer.
+creative idea help ask one joke story plan name keep prompt short|Creative help|Ask for one joke, story, plan, name, or idea and keep the prompt short.
+hardware limits old favors short prompts brief answers small models retrieval text files|Hardware limits|Old hardware favors short prompts, brief answers, small models, and retrieval from text files.
+testing mindset useful test has clear input expected result actual pass fail status|Testing mindset|A useful test has a clear input, expected result, actual result, and pass or fail status.
