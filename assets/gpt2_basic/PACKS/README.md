@@ -6,7 +6,8 @@ inside DOS.
 
 Each pack has human-editable `HELP.TXT` and `KNOW.TXT` files, a generated
 `KDB.TXT` recall database, generated `KDBIDX.TXT`/`KDB?.TXT` bucket sidecars,
-and a local `USER.TXT` override file. Edit
+compiled `KB2ALL.BIN`/`KB2IDX.TXT`/`KB2?.BIN` binary recall pages, and a local
+`USER.TXT` override file. Edit
 `HELP.TXT` or `KNOW.TXT` on the host, then run:
 
 ```sh
@@ -17,14 +18,23 @@ python3 scripts/validate_assistant_pack_authoring.py
 On DOS, users can edit `USER.TXT` directly for local notes without rebuilding
 the pack. Matching `USER.TXT` rows get a retrieval bonus so site-local facts
 can override bundled notes. The DOS shell uses the bucket sidecars as a fast
-path and falls back to full `KDB.TXT` scan when needed.
+path and falls back to full `KDB.TXT` scan when needed. The binary `KB2*.BIN`
+files are generated artifacts; edit `HELP.TXT`, `KNOW.TXT`, or `USER.TXT`, not
+the binary pages.
+
+To import a plain ASCII note file into a pack without hand-writing rows:
+
+```sh
+python3 scripts/import_assistant_notes.py --pack DEV --target user notes.txt --write
+python3 scripts/import_assistant_notes.py --pack DEV --target know notes.txt --write --rebuild-kdb
+```
 
 ## CHAT
 
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
 interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
-conversation notes from `CHAT\KDB.TXT`/`CHAT\KDB?.TXT` plus local overrides
-from `CHAT\USER.TXT`. `KDB.TXT` and bucket sidecars are generated from
+conversation notes from `CHAT\KB2*.BIN` plus local overrides from
+`CHAT\USER.TXT`. `KDB.TXT`, text bucket sidecars, and binary pages are generated from
 `CHAT\HELP.TXT` and `CHAT\KNOW.TXT`. The DOS shell prints `Thinking:`
 progress with visible prompt/context token pieces and output-token sampling,
 then streams the generated `Answer:` pieces as the model produces them. Use
@@ -50,7 +60,7 @@ Good prompts:
 
 Use `DOSHELP` for FreeDOS, 486 setup, `CONFIG.SYS`, `AUTOEXEC.BAT`, memory,
 and batch-file questions. It uses `PACKS\DOSHELP\MODEL` plus retrieval notes
-from `DOSHELP\KDB.TXT` and local overrides from `DOSHELP\USER.TXT`.
+from `DOSHELP\KB2*.BIN` and local overrides from `DOSHELP\USER.TXT`.
 
 Good prompts:
 
@@ -63,7 +73,7 @@ Good prompts:
 
 Use `OFFICE` for writing tasks: rewrite, summarize, shorten, formalize, and
 make prose more professional. It uses `PACKS\OFFICE\MODEL` plus writing notes
-from `OFFICE\KDB.TXT` and local overrides from `OFFICE\USER.TXT`.
+from `OFFICE\KB2*.BIN` and local overrides from `OFFICE\USER.TXT`.
 
 Good prompts:
 
@@ -76,7 +86,7 @@ Good prompts:
 
 Use `DEV` for software engineering, release work, debugging, testing, and
 GPT2-BASIC architecture questions. It shares `PACKS\CHAT\MODEL` but carries
-its own `DEV\KDB.TXT` recall database, so it behaves like a lightweight
+its own `DEV\KB2*.BIN` recall pages, so it behaves like a lightweight
 language cartridge without another model checkpoint.
 
 Good prompts:

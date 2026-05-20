@@ -21,11 +21,14 @@ DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_e
 DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_generalist_prompt_eval.md"
 DEFAULT_RETRIEVAL_REPORT = ROOT / "qemu" / "evidence" / "assistant_pack_retrieval_eval.md"
 DEFAULT_KDB_INDEX_REPORT = ROOT / "qemu" / "evidence" / "assistant_kdb_index_eval.md"
+DEFAULT_KDB_BINARY_REPORT = ROOT / "qemu" / "evidence" / "assistant_kdb_binary_eval.md"
 RAW_PROMPT_MIN_CASES = 83
 GENERALIST_PROMPT_MIN_CASES = 24
 RETRIEVAL_MIN_CASES = 36
 KDB_INDEX_MIN_CASES = 36
 KDB_INDEX_MAX_SCAN_RATIO = 0.65
+KDB_BINARY_MIN_CASES = 36
+KDB_BINARY_MAX_SCAN_RATIO = 0.65
 STRESS_REPLY_COUNT = 44
 
 
@@ -98,14 +101,19 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         knowledge_text = read(pack_dir / "KNOW.TXT")
         kdb_text = read(pack_dir / "KDB.TXT")
         kdb_index_text = read(pack_dir / "KDBIDX.TXT")
+        kdb_bin = pack_dir / "KB2ALL.BIN"
+        kdb_bin_index_text = read(pack_dir / "KB2IDX.TXT")
         read(pack_dir / "USER.TXT")
         require(f"ID={pack_id}" in ini.upper(), f"pack_id_mismatch={pack_id}")
-        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "KDB=", "KDBIDX=", "USER=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
+        for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "KDB=", "KDBIDX=", "KDBBIN=", "KDBBIDX=", "USER=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
             require(key in ini.upper(), f"missing_{key.rstrip('=')}={pack_id}")
         require("|" in help_text, f"missing_retrieval_rows={pack_id}")
         require("|" in knowledge_text, f"missing_knowledge_rows={pack_id}")
         require("|" in kdb_text, f"missing_kdb_rows={pack_id}")
         require("|" in kdb_index_text and "KDB" in kdb_index_text, f"missing_kdb_index_rows={pack_id}")
+        require(kdb_bin.exists() and kdb_bin.stat().st_size > 64, f"missing_kdb_binary={pack_id}")
+        require(kdb_bin.read_bytes().startswith(b"KDB2|V=1|"), f"bad_kdb_binary_header={pack_id}")
+        require("|" in kdb_bin_index_text and "KB2" in kdb_bin_index_text, f"missing_kdb_binary_index_rows={pack_id}")
         usage_text = read(pack_dir / values["USAGE"])
         for marker in ("Purpose:", "How it works:", "How to use it:", "Good prompts:", "Actions:"):
             require(marker in usage_text, f"missing_usage_marker_{marker.rstrip(':').lower().replace(' ', '_')}={pack_id}")
@@ -126,6 +134,9 @@ def verify_source() -> None:
         "ASSIST_REPLY",
         "USAGE",
         "AssistPrintPackUsage",
+        "AssistPrintCapabilities",
+        "AssistPrintLimits",
+        "AssistPrintSources",
         "AssistStreamGenerate",
         "AssistCleanGeneratedText",
         "AssistGeneratedLooksBad",
@@ -136,10 +147,15 @@ def verify_source() -> None:
         "AssistScanRetrievalFile",
         "AssistScanBucketedKdb",
         "AssistKdbBucketPath",
+        "AssistScanBucketedKdbV2",
+        "AssistScanBinaryKdbFile",
+        "AssistKdbV2BucketPath",
         "AssistRetrievalScore",
         "knowledge_path",
         "kdb_path",
         "kdb_index_path",
+        "kdb_bin_path",
+        "kdb_bin_index_path",
         "user_path",
         "ASSIST_MEMORY_FILE",
         "AssistLoadMemoryFacts",
@@ -171,6 +187,8 @@ def verify_source() -> None:
         '"|query=" + AssistSafeText(query)',
         '"|canonical=" + AssistSafeText(canonical_query)',
         '"|memory=" + AssistSafeText(memory_context)',
+        '"|recall=" + AssistSafeText(g_assist_last_recall_mode)',
+        '"|t_total_ms="',
         '"|answer=" + AssistSafeText(bubble)',
         'reply_source = "memory"',
         'LCASE$(command_text) = "/memory"',
@@ -179,6 +197,9 @@ def verify_source() -> None:
         "Memory persists in ",
         "USER.TXT",
         'LCASE$(command_text) = "/about"',
+        'LCASE$(command_text) = "/capabilities"',
+        'LCASE$(command_text) = "/limits"',
+        'LCASE$(command_text) = "/sources"',
         'LCASE$(command_text) = "/u"',
         'LCASE$(command_text) = "/d"',
         'LCASE$(command_text) = "/h"',
@@ -196,6 +217,7 @@ def verify_pack_quality(
     generalist_prompt_report: Path,
     retrieval_report: Path,
     kdb_index_report: Path,
+    kdb_binary_report: Path,
 ) -> None:
     pack_by_id = {pack.pack_id: pack for pack in packs}
     raw_report = read(raw_prompt_report)
@@ -239,6 +261,20 @@ def verify_pack_quality(
         f"kdb_index_eval_pass_rate={kdb_index_passed}/{kdb_index_total}",
     )
     require(scan_ratio <= KDB_INDEX_MAX_SCAN_RATIO, f"kdb_index_scan_ratio={scan_ratio:.3f}")
+    kdb_binary_text = read(kdb_binary_report)
+    require("Status: `PASS`" in kdb_binary_text, "kdb_binary_eval_not_pass")
+    kdb_binary_match = re.search(r"Binary recall pass rate:\s+`(\d+)/(\d+)`", kdb_binary_text)
+    require(kdb_binary_match is not None, "kdb_binary_eval_pass_rate_missing")
+    kdb_binary_passed = int(kdb_binary_match.group(1))
+    kdb_binary_total = int(kdb_binary_match.group(2))
+    binary_scan_ratio_match = re.search(r"Candidate row scan ratio:\s+`([0-9.]+)`", kdb_binary_text)
+    require(binary_scan_ratio_match is not None, "kdb_binary_eval_scan_ratio_missing")
+    binary_scan_ratio = float(binary_scan_ratio_match.group(1))
+    require(
+        kdb_binary_total >= KDB_BINARY_MIN_CASES and kdb_binary_passed == kdb_binary_total,
+        f"kdb_binary_eval_pass_rate={kdb_binary_passed}/{kdb_binary_total}",
+    )
+    require(binary_scan_ratio <= KDB_BINARY_MAX_SCAN_RATIO, f"kdb_binary_scan_ratio={binary_scan_ratio:.3f}")
     for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
@@ -307,6 +343,7 @@ def main() -> None:
     parser.add_argument("--generalist-prompt-report", type=Path, default=DEFAULT_GENERALIST_PROMPT_REPORT)
     parser.add_argument("--retrieval-report", type=Path, default=DEFAULT_RETRIEVAL_REPORT)
     parser.add_argument("--kdb-index-report", type=Path, default=DEFAULT_KDB_INDEX_REPORT)
+    parser.add_argument("--kdb-binary-report", type=Path, default=DEFAULT_KDB_BINARY_REPORT)
     args = parser.parse_args()
 
     packs = verify_pack_files(args.pack_root)
@@ -318,6 +355,7 @@ def main() -> None:
         args.generalist_prompt_report,
         args.retrieval_report,
         args.kdb_index_report,
+        args.kdb_binary_report,
     )
     verify_qemu_logs(packs, args.assistant_log, args.compile_log)
     verify_stress_logs(args.stress_log, args.stress_compile_log, args.stress_report)
@@ -328,6 +366,7 @@ def main() -> None:
     print("PROBE_OK assistant_generalist_prompt_eval=1")
     print("PROBE_OK assistant_pack_retrieval_eval=1")
     print("PROBE_OK assistant_kdb_index_eval=1")
+    print("PROBE_OK assistant_kdb_binary_eval=1")
     print("PROBE_OK assistant_model_switch=1")
     print("PROBE_OK assistant_structured_reply=1")
     print("PROBE_OK assistant_art_slots=1")

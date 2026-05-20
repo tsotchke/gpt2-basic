@@ -68,6 +68,16 @@ class AssistantRawPromptEvalTests(unittest.TestCase):
 
         self.assertIn("PROBE_OK assistant_kdb_index_eval_self_test=1", result.stdout)
 
+    def test_assistant_kdb_binary_eval_self_test(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "evaluate_assistant_kdb_binary.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_kdb_binary_eval_self_test=1", result.stdout)
+
     def test_assistant_kdb_builder_self_test(self) -> None:
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "build_assistant_kdb.py"), "--self-test"],
@@ -87,6 +97,16 @@ class AssistantRawPromptEvalTests(unittest.TestCase):
         )
 
         self.assertIn("PROBE_OK assistant_pack_authoring_self_test=1", result.stdout)
+
+    def test_assistant_note_import_self_test(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "import_assistant_notes.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_note_import_self_test=1", result.stdout)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `414 files, 119,193,353 bytes`
+Package status: `513 files, 119,593,160 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,15 +24,15 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
-| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 160/160 avg 0.999 (float, assistant-pack) | 43 files / 83,286,911 B |
-| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 39 files / 4,024,290 B |
-| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 38 files / 4,171,674 B |
+| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 160/160 avg 0.999 (float, assistant-pack) | 68 files / 83,447,154 B |
+| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 62 files / 4,080,346 B |
+| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 60 files / 4,229,730 B |
 
 ## Included Runtime Surface
 
 - `bin/GPT2.EXE` when current QEMU evidence includes the compiled DOS binary.
 - `assets/gpt2_basic/MODEL*` for the release models listed above.
-- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, and DEV packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.
+- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, and DEV packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.
 - `src`, `scripts`, `tests`, selected `qemu` helpers, and `data/domain_curriculum` for rebuild and repair iteration.
 - `docs/dosbox.md` and `scripts/build_dosbox_bundle.py` for the DOSBox convenience package.
 - Selected QEMU and quality evidence under `qemu/evidence`.
@@ -68,12 +68,14 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 - `qemu/evidence/GPT2.EXE`
 - `qemu/evidence/assistant_486.log`
+- `qemu/evidence/assistant_capability_functionality_report.md`
 - `qemu/evidence/assistant_chat_manual_probe_2026-05-12.md`
 - `qemu/evidence/assistant_compile_486.log`
 - `qemu/evidence/assistant_consistency_eval.md`
 - `qemu/evidence/assistant_generalist_prompt_eval.md`
 - `qemu/evidence/assistant_generalist_repair.md`
 - `qemu/evidence/assistant_interactive_chat_486.md`
+- `qemu/evidence/assistant_kdb_binary_eval.md`
 - `qemu/evidence/assistant_kdb_index_eval.md`
 - `qemu/evidence/assistant_pack_probe.log`
 - `qemu/evidence/assistant_pack_retrieval_eval.md`
@@ -142,6 +144,7 @@ python3 scripts/stage_hardware_capture_evidence.py --self-test
 python3 scripts/hardware_performance_matrix.py --self-test
 python3 scripts/build_dosbox_bundle.py --self-test
 python3 scripts/build_hardware_transfer.py --self-test
+python3 scripts/evaluate_assistant_kdb_binary.py
 python3 scripts/build_preview_release.py --self-test
 python3 scripts/verify_preview_artifacts.py --self-test
 python3 scripts/verify_workspace_tracking.py

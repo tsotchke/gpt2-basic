@@ -1,3 +1,4 @@
 qemu/evidence/ASSIST.EXE binary
+assets/gpt2_basic/PACKS/*/KB2*.BIN binary
 third_party/cwsdpmi/COPYING.CWS binary
 third_party/cwsdpmi/CWSDPMI.LSM binary
