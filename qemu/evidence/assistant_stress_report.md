@@ -2,15 +2,15 @@
 
 Status: `PASS`
 
-Reply count: `40`
-Source counts: `golden=23 retrieval=9 model=0 fallback=0 memory=8`
+Reply count: `44`
+Source counts: `golden=26 retrieval=10 model=0 fallback=0 memory=8`
 
 | Pack | Source | Query | Answer |
 |---|---|---|---|
 | CHAT | golden | why did my answer repeat itself | If I repeat, reset the prompt and ask one shorter question. |
 | CHAT | retrieval | tell me why this old computer model matters | Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network. |
 | CHAT | golden | make a tiny plan for fixing a bug | Check the first error, change one thing, then test again. |
-| CHAT | retrieval | what is the difference between a prompt and an answer | Prompt meaning: A prompt is your typed question. |
+| CHAT | retrieval | what is the difference between a prompt and an answer | Explain mode: Use plain words, one example, and a short answer that fits the prompt. |
 | CHAT | golden | can you explain what local inference means | Local inference means the DOS program reads model weights and produces the answer on this machine. |
 | CHAT | golden | i feel stuck debugging this | Check the first error, change one thing, then test again. |
 | CHAT | golden | what should i do if the answer sounds weird | Retry with a shorter prompt or switch packs. |
@@ -47,3 +47,7 @@ Source counts: `golden=23 retrieval=9 model=0 fallback=0 memory=8`
 | OFFICE | golden | shorten: we need to verify the release before publishing | Short version: verify the release before publishing. |
 | OFFICE | golden | write a polite status update about a delayed build | Use direct, polite, concrete wording, include the current blocker, and end with the next action. |
 | OFFICE | golden | make this clearer: the artifact uploaded but the tag was stale | State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag. |
+| DEV | golden | how can this feel modern on a 486 | Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies. |
+| DEV | retrieval | what does retrieval first mean | Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize. |
+| DEV | golden | how do i author a pack | Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates. |
+| DEV | golden | what should i check before release | Verify tests, logs, artifact names, checksums, release notes, and the target tag. |

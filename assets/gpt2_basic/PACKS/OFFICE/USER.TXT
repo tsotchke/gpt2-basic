@@ -1,0 +1,3 @@
+# key|title|body
+# Add local writing notes here. Example:
+# house style|House style|Keep release notes direct, factual, and short.

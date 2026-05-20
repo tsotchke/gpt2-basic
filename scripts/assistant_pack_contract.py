@@ -27,6 +27,8 @@ REQUIRED_INI_KEYS = (
     "PERSONA",
     "HELP",
     "KNOW",
+    "KDB",
+    "USER",
     "USAGE",
     "SPRITE",
     "ICONS",
@@ -70,12 +72,15 @@ class PackContract:
     persona: str
     help_path: Path
     knowledge_path: Path
+    kdb_path: Path
+    user_path: Path
     usage_path: Path
     sprite_path: Path
     icons_path: Path
     actions: tuple[str, ...]
     help_rows: tuple[HelpRow, ...]
     knowledge_rows: tuple[HelpRow, ...]
+    kdb_rows: tuple[HelpRow, ...]
     ini_values: dict[str, str]
 
 
@@ -196,6 +201,8 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
     model_path = resolve_pack_value(pack_root, pack_dir, values["MODEL"])
     help_path = resolve_pack_value(pack_root, pack_dir, values["HELP"], "HELP.TXT")
     knowledge_path = resolve_pack_value(pack_root, pack_dir, values["KNOW"], "KNOW.TXT")
+    kdb_path = resolve_pack_value(pack_root, pack_dir, values["KDB"], "KDB.TXT")
+    user_path = resolve_pack_value(pack_root, pack_dir, values["USER"], "USER.TXT")
     usage_path = resolve_pack_value(pack_root, pack_dir, values["USAGE"], "USAGE.TXT")
     sprite_path = resolve_pack_value(pack_root, pack_dir, values["SPRITE"])
     icons_path = resolve_pack_value(pack_root, pack_dir, values["ICONS"])
@@ -203,7 +210,10 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
     validate_model_dir(model_path)
     help_rows = parse_help_rows(help_path)
     knowledge_rows = parse_help_rows(knowledge_path)
+    kdb_rows = parse_help_rows(kdb_path)
     validate_usage_file(usage_path)
+    if not user_path.is_file():
+        raise PackContractError(f"user note template missing: {user_path}")
     for artifact in (sprite_path, icons_path):
         if not artifact.is_file():
             raise PackContractError(f"pack art asset missing: {artifact}")
@@ -215,12 +225,15 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
         persona=values["PERSONA"],
         help_path=help_path,
         knowledge_path=knowledge_path,
+        kdb_path=kdb_path,
+        user_path=user_path,
         usage_path=usage_path,
         sprite_path=sprite_path,
         icons_path=icons_path,
         actions=parse_actions(values["ACTIONS"]),
         help_rows=help_rows,
         knowledge_rows=knowledge_rows,
+        kdb_rows=kdb_rows,
         ini_values=values,
     )
 
@@ -236,7 +249,7 @@ def load_all_pack_contracts(pack_root: Path = DEFAULT_PACK_ROOT) -> tuple[PackCo
 def self_test() -> None:
     packs = load_all_pack_contracts(DEFAULT_PACK_ROOT)
     by_id = {pack.pack_id: pack for pack in packs}
-    for expected in ("CHAT", "DOSHELP", "OFFICE"):
+    for expected in ("CHAT", "DOSHELP", "OFFICE", "DEV"):
         if expected not in by_id:
             raise PackContractError(f"missing expected pack: {expected}")
     chat = by_id["CHAT"]
@@ -246,6 +259,8 @@ def self_test() -> None:
         raise PackContractError("CHAT help rows are unexpectedly sparse")
     if len(chat.knowledge_rows) < 3:
         raise PackContractError("CHAT knowledge rows are unexpectedly sparse")
+    if len(chat.kdb_rows) < len(chat.help_rows):
+        raise PackContractError("CHAT KDB rows are unexpectedly sparse")
     print(f"PROBE_OK assistant_pack_contract_count={len(packs)}")
     print("PROBE_OK assistant_pack_contract_parser=1")
     print("PROBE_OK assistant_pack_contract_artifacts=1")
@@ -267,7 +282,8 @@ def main() -> None:
             f"model={pack.model_value}|"
             f"actions={','.join(pack.actions)}|"
             f"help_rows={len(pack.help_rows)}|"
-            f"knowledge_rows={len(pack.knowledge_rows)}"
+            f"knowledge_rows={len(pack.knowledge_rows)}|"
+            f"kdb_rows={len(pack.kdb_rows)}"
         )
     if args.self_test:
         self_test()

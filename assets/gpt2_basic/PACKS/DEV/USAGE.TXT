@@ -1,0 +1,24 @@
+DEV pack
+
+Purpose:
+  Use this pack for software engineering, release work, debugging, testing,
+  and GPT2-BASIC architecture questions.
+
+How it works:
+  The pack shares PACKS\CHAT\MODEL but uses its own generated KDB.TXT,
+  HELP.TXT, KNOW.TXT, and USER.TXT. This is the lightweight language-pack
+  pattern: new domain behavior without shipping another large model.
+
+How to use it:
+  Type /pack DEV, then ask about debugging, tests, release checks, retrieval,
+  hot-loaded weights, local databases, or 486-friendly assistant design.
+
+Good prompts:
+  How should I debug this?
+  What should I check before release?
+  How can this feel modern on a 486?
+  What is retrieval first?
+  How do I author a pack?
+
+Actions:
+  debug, test, release, explain, cancel

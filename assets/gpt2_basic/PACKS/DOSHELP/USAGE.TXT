@@ -5,9 +5,10 @@ Purpose:
   configuration, CONFIG.SYS, AUTOEXEC.BAT, memory, or batch files.
 
 How it works:
-  The pack loads PACKS\DOSHELP\MODEL and retrieves short DOS notes from
-  HELP.TXT plus broader setup notes from KNOW.TXT before generating a reply.
-  It is tuned for concrete fixes, not open-ended chat.
+  The pack loads PACKS\DOSHELP\MODEL and retrieves compact DOS notes from
+  generated KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT
+  and KNOW.TXT. USER.TXT can hold machine-local DOS notes. It is tuned for
+  concrete fixes, not open-ended chat.
 
 How to use it:
   Type /pack DOSHELP, then ask for a DOS task.
