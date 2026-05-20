@@ -302,13 +302,13 @@ qemu/evidence/model_report_assistant_<pack>.log
 qemu/evidence/quality_report_assistant_<pack>.md
 ```
 
-The host quality gate uses a 96-token assistant reply window and requires all
-pack prompts to pass at `0.90`. It rejects prompt-label leakage, truncated
-endings, triple-character spelling glitches, and replies that do not reach the
-tail of the expected pack answer. `ASSIST.EXE` keeps interactive generation
-bounded to 64 tokens with early sentence stopping, and the scripted 486 probe
-uses retrieval-only bubbles so the DOS evidence run still exercises pack-local
-model loading without turning every release check into a long generation run.
+The host quality gate uses a 96-token assistant reply window. The raw assistant
+prompt gate in `scripts/evaluate_assistant_raw_prompts.py` adds 26 original
+CHAT, DOSHELP, and OFFICE prompts and rejects prompt-label leakage, truncated
+endings, repeated chunks, token soup, and off-topic replies. `ASSIST.EXE` keeps
+interactive generation bounded to 64 tokens with early sentence stopping, and
+the scripted 486 stress probe exercises retrieval, golden, and model reply
+paths.
 
 ## Sampling Matrix
 

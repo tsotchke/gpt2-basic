@@ -12,3 +12,7 @@ exp_table=GPT2EXP.BIN
 tokenizer=lexicon
 tokenizer_merges=0
 tokenizer_output_allowed=3934
+head_shortlist=frequency-corpus
+head_shortlist_file=GPT2HSL.BIN
+head_shortlist_tokens=3072
+head_shortlist_source=MODEL

@@ -1,4 +1,4 @@
-model_dir: <repo>/assets/gpt2_basic/PACKS/OFFICE/MODEL
+model_dir: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/OFFICE/MODEL
 profile: 486sx-safe
 shape: layers=2 emb=48 heads=4 ctx=192 hidden=192 vocab=4096
 parameters: 463168
@@ -17,7 +17,7 @@ artifact VOCAB.BIN: OK mode=lexicon vocab=4096 merges=0 output_allowed=3934 (102
 artifact GPT2TQ4.BIN: absent optional compressed token embedding
 artifact GPT2HQ4.BIN: absent optional compressed output head
 artifact GPT2HQS.ON: absent optional q4 output-head streaming marker
-artifact GPT2HSL.BIN: absent optional output-head shortlist
+artifact GPT2HSL.BIN: OK output-head shortlist tokens=3072 (12304 bytes)
 artifact TINYCFG.TXT: absent optional legacy alias
 artifact TINYWT.BIN: absent optional legacy alias
 artifact TINYFX.BIN: absent optional legacy alias

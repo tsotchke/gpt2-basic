@@ -84,9 +84,9 @@ Answer: Old hardware: The demo matters because a tiny local model can run on old
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=|generated=|answer=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.|golden=|generated=|answer=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.
 
-Answer: Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.
+Answer: Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -148,9 +148,9 @@ Answer: Debug plan: Start with the failing command, expected result, and first e
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if the answer sounds weird|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Retry advice: Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.|golden=|generated=|answer=Retry advice: Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if the answer sounds weird|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Retry advice: Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.|golden=Retry with a shorter prompt or switch packs.|generated=|answer=Retry with a shorter prompt or switch packs.
 
-Answer: Retry advice: Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.
+Answer: Retry with a shorter prompt or switch packs.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -204,9 +204,9 @@ ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how do i keep conventional memory free|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=|generated=|answer=CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how do i keep conventional memory free|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=|generated=|answer=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
-Answer: CONFIG.SYS memory: Load HIMEM.SYS first, use DOS=HIGH,UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+Answer: CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -268,9 +268,9 @@ Answer: DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=what does config.sys do|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.|golden=|generated=|answer=CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=what does config.sys do|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.|golden=|generated=|answer=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
-Answer: CONFIG.SYS example: Use DEVICE=HIMEM.SYS, DOS=HIGH,UMB, FILES=30, and BUFFERS=20 as the safe baseline.
+Answer: CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -356,11 +356,9 @@ Answer: Shorten action: Shortening should keep the original intent and remove qu
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-Thinking: checking model answer
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|source=retrieval|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=|generated=|answer=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|source=fallback|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=|generated=Shortening should keep the original intent and remove qualifiers, duplicate phrases, and l|answer=Use direct, polite wording, keep the concrete fact, and end with the next action.
-
-Answer: Use direct, polite wording, keep the concrete fact, and end with the next action.
+Answer: Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.
 
 [ rewrite,shorten,summarize,formalize,cancel ]
 
@@ -376,9 +374,9 @@ ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=le
 
 Thinking: checking model answer
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|source=fallback|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=|generated=Keep the message direct, polite, concrete, and free of jokes, filler, or unsuppor|answer=State what happened, why it matters, and the next action in one short paragraph.
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|source=model|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=|generated=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
-Answer: State what happened, why it matters, and the next action in one short paragraph.
+Answer: Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
 [ rewrite,shorten,summarize,formalize,cancel ]
 

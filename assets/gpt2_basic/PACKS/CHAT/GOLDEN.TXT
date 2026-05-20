@@ -142,3 +142,35 @@ i am feeling bored	Try one small project.
 what can i do if bored	Try one small project.
 give me something to do	Try one small project.
 suggest something to do	Try one small project.
+why is my answer repeating	If I repeat, reset the prompt and ask one shorter question.
+why are you saying the same phrase again	If I repeat, reset the prompt and ask one shorter question.
+why is this answer looping	If I repeat, reset the prompt and ask one shorter question.
+explain local inference	Local inference means the model runs on this machine.
+explain local inference without jargon	Local inference means the model runs on this machine.
+does this use real model weights	Yes, the answer comes from local model weights.
+is this answer coming from real model weights	Yes, the answer comes from local model weights.
+what should i do if output looks wrong	Retry with a shorter prompt or switch packs.
+what should i do if the output looks wrong	Retry with a shorter prompt or switch packs.
+the answer sounds weird	Retry with a shorter prompt or switch packs.
+give me a bug fixing plan	Check the first error, change one thing, then test again.
+give me a three step bug fixing plan	Check the first error, change one thing, then test again.
+make a small plan for fixing a bug	Check the first error, change one thing, then test again.
+why does old hardware matter	Old hardware proves the local model is small and practical.
+why does an old computer demo matter	Old hardware proves the local model is small and practical.
+why run a model on a dos computer	It shows a tiny local model can run without a network.
+is the release ready	Check the tag, assets, checksums, and test result.
+tell me whether the release is ready	Check the tag, assets, checksums, and test result.
+give me a release status update	Check the tag, assets, checksums, and test result.
+how do i focus	Remove one distraction and choose one small task.
+i am stuck and need a small next step	Choose one small step, test it, and then adjust.
+give me a small plan	Pick one goal, list three steps, then start small.
+can you make a tiny plan for today	Pick one goal, list three steps, then start small.
+write a tiny dos model story	A tiny model woke up inside DOS and answered one prompt.
+tell me a short story about a dos model	A tiny model woke up inside DOS and answered one prompt.
+explain token	A token is a small piece of text.
+what does a token mean	A token is a small piece of text.
+what is the difference between my prompt and your answer	A prompt is what you type. An answer is the model output.
+how do i focus for a few minutes	Remove one distraction and choose one small task.
+write one friendly sentence about this demo	The demo is live and runs locally in DOS.
+can you browse from dos	I cannot browse from DOS.
+can you use the network	I cannot use the network from DOS.

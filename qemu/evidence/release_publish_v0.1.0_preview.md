@@ -1,7 +1,7 @@
 # GPT2-BASIC v0.1.0-preview Publish Evidence
 
 Published: `2026-05-19T05:54:13Z`
-Refreshed: `2026-05-19T22:23:09Z`
+Refreshed: `2026-05-20T01:35:49Z`
 
 Repository: `tsotchke/gpt2-basic`
 
@@ -18,15 +18,15 @@ Prerelease: `true`
 
 | Asset | Size | GitHub digest |
 |---|---:|---|
-| `gpt2-basic-preview.zip` | 27,854,876 B | `sha256:08930e9bbc0b9f0d46ac04059c37c5696b41dcc295e7a06fd9ab75e34d4dbaf3` |
-| `gpt2-basic-preview.zip.sha256` | 89 B | `sha256:752a50f2676c632c9e1e3690716f8e0f7f1c5b647bb3c21c53fdc47981df4df4` |
-| `gpt2-basic-dosbox.zip` | 13,335,578 B | `sha256:4b3ccbbb9c4904d1c02e9a55752d75bdfb5333b1a50d0d5a6b9bfb1b45ddf7b5` |
-| `gpt2-basic-dosbox.zip.sha256` | 88 B | `sha256:e7f5b2e1f4ab214c7455dd524879743d4bec747d320a587209d4cbbd6671f4f1` |
-| `gpt2-basic-hardware-transfer.zip` | 13,328,823 B | `sha256:822cee2ba80d3643b6b96065303600c77d7774960badcf7ee4ba8541e3a7273a` |
-| `gpt2-basic-hardware-transfer.zip.sha256` | 99 B | `sha256:e677bce0277bbc5046828fabac28a35da690bb3d2a1c82f437b3a67b91d005fb` |
-| `gpt2-basic-launch-kit.zip` | 56,684,708 B | `sha256:a78eb7b813f422e077c2f86a0f9cb1fb7a0d3f5eb2495d5efabf16b757b1ffdc` |
-| `gpt2-basic-launch-kit.zip.sha256` | 92 B | `sha256:9c1d1586faaf4e0d3a313da88b9e19da8a78a2063d1adc9a030c352fb8b76945` |
-| `preview_release_manifest.md` | 8,088 B | `sha256:e39a96b72857b148d729b17532cf172a17fe3fa0f2810bc68e5da9435b681506` |
+| `gpt2-basic-preview.zip` | 27,797,846 B | `sha256:5292414039a7d41697c14fbfb7077eccb1faa7f33f79ec780618608512449d8b` |
+| `gpt2-basic-preview.zip.sha256` | 89 B | `sha256:7f465097c05cdd9958df13840067c94e9fb87d813fd663f6e5499c7da5dd6493` |
+| `gpt2-basic-dosbox.zip` | 13,260,577 B | `sha256:effb5c5149c7bf5443e8358880ca56541b6169321df00c0a86a582f33824bac9` |
+| `gpt2-basic-dosbox.zip.sha256` | 88 B | `sha256:b024e66270bb05bd8daa9582367a3a52394da459850f40d839e33c5a8b3534e5` |
+| `gpt2-basic-hardware-transfer.zip` | 13,253,902 B | `sha256:51fbc3c8602c8b7d04878a9d08747927d79543ef117e1f879fcb95b8c8f25dd1` |
+| `gpt2-basic-hardware-transfer.zip.sha256` | 99 B | `sha256:bc2687df9191e3e6051bdc52fc9f6cec1428b08367e2457aeb4ac67d066f0afb` |
+| `gpt2-basic-launch-kit.zip` | 56,728,951 B | `sha256:dd1dd0d1e85a9e8183af1bb2d4ae1c5fc154a12a8c6b4e66af4626f2d7eae067` |
+| `gpt2-basic-launch-kit.zip.sha256` | 92 B | `sha256:097fd920e260cde21fa9a5764bddca8eeca160366909188a250b7baff9fcf143` |
+| `preview_release_manifest.md` | 8,284 B | `sha256:877e49a1d420509ce44836ba00a3a3a9e785517253ef71c27f3d61465c5f9d87` |
 | `gpt2_basic_real_dos_session_1080p.mp4` | 1,429,036 B | `sha256:6c353001fcf09ffed47a47f49cd8ae47597e6b1bfcf9942d2b1e0fd983465c6b` |
 | `gpt2_basic_real_dos_session_vertical.mp4` | 506,314 B | `sha256:b602ed12ee41dc17d7d3c683448612ddbba6b568787522b7d2a6a528cb3440da` |
 | `gpt2_basic_terminal_demo_1080p.mp4` | 304,149 B | `sha256:f657d37d4865e7887aabbcdc7c22cbfa93f656e06b513ca2d4fa1c3495d7ae20` |

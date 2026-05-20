@@ -14,6 +14,11 @@ local inference|Local inference|Local inference means the DOS program reads mode
 old computer|Old hardware|The demo matters because a tiny local model can run on old DOS-style hardware without a network.
 weird|Retry advice|Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry.
 release|Release status|Check the tag target, release assets, checksums, and test result before calling the release done.
+focus|Focus help|Remove one distraction, choose one small task, and work for a few minutes before changing course.
+plan|Tiny plan|Pick one goal, list three steps, and start with the smallest useful step.
+story|Short story|A tiny model woke up inside DOS and answered one prompt at a time.
+token|Token meaning|A token is a small piece of text that the model reads or writes.
+internet|Network limit|I cannot browse the internet from DOS; I answer from local model weights and pack files.
 thanks|Thanks|You are welcome.
 confused|Clarify request|Ask one short question.
 talk|Open conversation|I can talk in DOS.

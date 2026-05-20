@@ -344,16 +344,17 @@ pack-local 486DX2 model instead of initializing from the smaller default model:
 python3 scripts/train_assistant_pack_models.py --pack CHAT --profile 486dx2-usable --steps 3000 --tokenizer lexicon --vocab-size 4096 --quality-backend fixed --max-new-tokens 24 --no-init-model
 ```
 
-That builds pack corpora from `PACK.INI` and `HELP.TXT`, fine-tunes one
+That builds pack corpora from `PACK.INI`, `HELP.TXT`, and optional
+`GOLDEN.TXT`, fine-tunes one
 pack-local checkpoint under `PACKS\<ID>\MODEL`, runs `model_report.py`, writes
 pack-specific quality reports, and updates `MODEL=PACKS\<ID>\MODEL`. The
-host quality sweep uses a 96-token reply window and requires every pack prompt
-to pass at `0.90`; it rejects label leakage, truncated endings,
-triple-character typos, and replies that miss the tail of the expected pack
-answer. The DOS assistant itself keeps interactive generation bounded to 24
-tokens with early sentence stopping, while the scripted 486 evidence run uses
-retrieval-only bubbles so pack loading and model switching stay fast enough for
-release checks. `SPRITE=` and `ICONS=` fields are reserved for Clippy-style
+host quality sweep uses a 96-token reply window. The raw assistant prompt gate
+adds 26 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
+leakage, repeated chunks, token soup, truncated endings, and off-topic replies.
+The DOS assistant itself keeps interactive generation bounded to 64 tokens with
+early sentence stopping, while the scripted 486 stress probe exercises
+retrieval, golden, and model reply paths. `SPRITE=` and `ICONS=` fields are
+reserved for Clippy-style
 artwork; the current renderer is a text-mode bubble/action UI so it works
 without VGA.
 
