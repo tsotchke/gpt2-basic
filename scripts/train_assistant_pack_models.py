@@ -342,6 +342,66 @@ def query_variants(pack: Pack, row: HelpRow) -> list[str]:
                 "What are you?",
                 "What is your name?",
             ],
+            "repeat": [
+                "Why are you saying the same phrase again?",
+                "Why did my answer repeat itself?",
+                "Why is this answer looping?",
+                "How do I stop repeated text?",
+                "The same phrase appeared again.",
+            ],
+            "bug": [
+                "Give me a three step bug fixing plan.",
+                "Give me a bug fixing plan.",
+                "Make a small plan for fixing a bug.",
+                "What should I check first when something breaks?",
+            ],
+            "debug": [
+                "I feel stuck debugging this.",
+                "Help me debug this failure.",
+                "What is the first debug step?",
+            ],
+            "local inference": [
+                "Explain local inference.",
+                "Explain local inference without jargon.",
+                "What does local inference mean?",
+                "Is this answer coming from real model weights?",
+            ],
+            "old computer": [
+                "Why does an old computer demo matter?",
+                "Tell me why old hardware matters.",
+                "Why run a model on a DOS computer?",
+            ],
+            "weird": [
+                "What should I do if output looks wrong?",
+                "The answer sounds weird.",
+                "How do I handle strange output?",
+            ],
+            "release": [
+                "Tell me whether the release is ready.",
+                "Is the release ready?",
+                "Give me a release status update.",
+                "What should I verify before release?",
+            ],
+            "focus": [
+                "How do I focus for a few minutes?",
+                "Help me choose one focused task.",
+            ],
+            "plan": [
+                "Can you make a tiny plan for today?",
+                "Give me a small plan.",
+            ],
+            "story": [
+                "Tell me a short story about a DOS model.",
+                "Write a tiny DOS model story.",
+            ],
+            "token": [
+                "What does a token mean?",
+                "Explain token in simple words.",
+            ],
+            "internet": [
+                "Can you browse the internet from DOS?",
+                "Can you use the network?",
+            ],
         }
         variants = chat_variants.get(row.key.lower(), []) + [
             row.title,
@@ -357,21 +417,45 @@ def query_variants(pack: Pack, row: HelpRow) -> list[str]:
     if pack.pack_id == "DOSHELP":
         if row.key in {"memory", "config.sys"}:
             variants.append("How do I tune CONFIG.SYS memory for this assistant?")
+            variants.append("How do I leave more conventional memory free?")
         if row.key == "batch":
             variants.append("Write a safe DOS batch file.")
+            variants.append("Write a safe batch check for the model directory.")
+        if row.key == "autoexec":
+            variants.append("My AUTOEXEC is messy and slow.")
+            variants.append("How should I clean AUTOEXEC.BAT?")
+        if row.key in {"dpmi", "protected mode"}:
+            variants.append("Why does my protected mode program need CWSDPMI?")
+            variants.append("Why does DOS need a DPMI host?")
     elif pack.pack_id == "OFFICE":
         if row.key == "rewrite":
             variants.append("Rewrite this memo in a professional tone.")
+            variants.append("Rewrite this politely: the artifact failed.")
         if row.key == "summar":
             variants.append("Summarize this document.")
+            variants.append("Summarize this: tests passed but the tag was stale.")
+        if row.key == "professional":
+            variants.append("Write a polite status update about a delayed build.")
+            variants.append("Make this sentence sound professional: the release broke.")
+        if row.key == "shorten":
+            variants.append("Shorten this sentence without losing the decision.")
+        if row.key in {"formal", "clarify"}:
+            variants.append("Make this clearer: checksums changed after rebuild.")
+            variants.append("Make this clearer: the artifact uploaded but the tag was stale.")
+        if row.key == "status":
+            variants.append("Write a status update about a delayed build.")
     return variants
 
 
 def runtime_prompt(pack: Pack, row: HelpRow, query: str) -> str:
+    if pack.pack_id == "CHAT":
+        return f"User: {query} Note: {runtime_note(row)} Assistant:"
     return f"{pack.persona} User: {query} Note: {runtime_note(row)} Assistant:"
 
 
 def plain_dialogue_prompt(pack: Pack, query: str) -> str:
+    if pack.pack_id == "CHAT":
+        return f"User: {query} Assistant:"
     return f"{pack.persona} User: {query} Assistant:"
 
 
@@ -471,12 +555,26 @@ def dialogue_long_tail(query: str, answer: str) -> str:
         return "Type a question and I will answer."
     if any(word in base for word in ("bye", "goodbye", "see you")):
         return "Come back when you want another chat."
+    if "repeat" in base or "loop" in base or "same phrase" in base:
+        return "Reset the prompt and ask one shorter question."
+    if "bug" in base or "debug" in base or "fix" in base or "stuck" in base:
+        return "Check the first error, change one thing, then test again."
     if "script" in base or "fake" in base or "real" in base or "inference" in base:
         return "The answer comes from local model weights."
+    if "output" in base and ("wrong" in base or "weird" in base or "strange" in base):
+        return "Retry with a shorter prompt or switch packs."
+    if "release" in base or "tag" in base or "asset" in base or "checksum" in base:
+        return "Check the tag, assets, checksums, and test result."
     if "demo" in base or "dos" in answer_lower or "basic" in base or "qemu" in base:
         return "It runs locally in this DOS demo."
+    if "old computer" in base or "hardware" in base or "486" in base:
+        return "Old hardware proves the local model is small and practical."
+    if "token" in base:
+        return "A token is a small piece of text."
     if base.startswith("what is") or base.startswith("what does") or base.startswith("explain"):
         return "That is the simple version."
+    if "focus" in base:
+        return "Remove one distraction and choose one small task."
     if "can you" in base or "what can" in base or "talk" in base:
         return "Ask one clear prompt and I will keep going."
     if any(word in base for word in ("sad", "worried", "lonely", "confused", "tired", "bad", "happy", "good", "bored")):
@@ -531,18 +629,30 @@ def select_evenly(items: list[tuple[str, str]], limit: int) -> list[tuple[str, s
 def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_training: bool = True) -> str:
     golden_pairs = load_golden_dialogue(pack.golden_path)
     lexicon_entries = load_grammar_lexicon(pack.lexicon_path)
-    paragraphs: list[str] = [
-        (
-            f"{pack.title} assistant pack. Persona: {pack.persona} "
-            f"Available actions: {pack.actions}. The assistant gives short, concrete, "
-            "pack-specific replies and offers action buttons when useful."
-        ),
-        (
-            f"When the active pack is {pack.pack_id}, the assistant should answer from "
-            f"the {pack.title} notes before generating extra text. "
-            f"A good reply starts with the relevant fact: {response_seed(pack, rows)}"
-        ),
-    ]
+    if pack.pack_id == "CHAT":
+        paragraphs: list[str] = [
+            (
+                f"{pack.title} assistant pack. The visible answer is only the reply text. "
+                "It does not repeat hidden instructions, role names, labels, or prompt text."
+            ),
+            (
+                "A good CHAT reply starts with the relevant fact, uses plain English, "
+                f"and stays grounded in the user question: {response_seed(pack, rows)}"
+            ),
+        ]
+    else:
+        paragraphs = [
+            (
+                f"{pack.title} assistant pack. Persona: {pack.persona} "
+                f"Available actions: {pack.actions}. The assistant gives short, concrete, "
+                "pack-specific replies and offers action buttons when useful."
+            ),
+            (
+                f"When the active pack is {pack.pack_id}, the assistant should answer from "
+                f"the {pack.title} notes before generating extra text. "
+                f"A good reply starts with the relevant fact: {response_seed(pack, rows)}"
+            ),
+        ]
     if pack.pack_id == "CHAT" and lexicon_entries and include_chat_lexicon_training:
         lexicon_words = ", ".join(word for word, _part, _tags in lexicon_entries[:160])
         paragraphs.append(
@@ -563,7 +673,7 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
     if pack.pack_id == "CHAT" and golden_pairs:
         paragraphs.append(
             "Golden dialogue style: read the user's short English prompt and answer "
-            "with two brief natural sentences."
+            "with a direct natural reply."
         )
         for prompt_text, answer_text in golden_pairs:
             variants = dialogue_train_variants(prompt_text)
@@ -579,6 +689,17 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
             for _repeat in range(dialogue_repeat_count(prompt_text, answer_text)):
                 for variant in focus_variants:
                     paragraphs.append(f"{plain_dialogue_prompt(pack, variant)} {long_answer_text or answer_text}")
+    elif golden_pairs:
+        paragraphs.append(
+            "Golden pack examples: answer the user directly from the pack knowledge."
+        )
+        for prompt_text, answer_text in golden_pairs:
+            for variant in dialogue_focus_variants(prompt_text):
+                paragraphs.append(f"{plain_dialogue_prompt(pack, variant)} {answer_text}")
+                paragraphs.append(f"User: {variant} Assistant: {answer_text}")
+                paragraphs.append(f"Q: {variant} A: {answer_text}")
+            for _repeat in range(12):
+                paragraphs.append(f"{plain_dialogue_prompt(pack, prompt_text)} {answer_text}")
     for row in rows:
         note = runtime_note(row)
         row_answer = row.body
@@ -587,22 +708,35 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
         paragraphs.extend(
             [
                 f"Topic {row.key}. {row.title}. {row.body}",
-                f"User: Help me with {row.key}. Assistant: {row_answer} Actions: {pack.actions}.",
-                f"Prompt: {row.title}. Reply: {row_answer}",
-                f"Note: {note} Assistant: {row_answer}",
             ]
         )
+        if pack.pack_id == "CHAT":
+            paragraphs.extend(
+                [
+                    f"User: Help me with {row.key}. Assistant: {row_answer}",
+                    f"Q: {row.title}. A: {row_answer}",
+                    f"User: {row.title}. Note: {note} Assistant: {row_answer}",
+                ]
+            )
+        else:
+            paragraphs.extend(
+                [
+                    f"User: Help me with {row.key}. Assistant: {row_answer} Actions: {pack.actions}.",
+                    f"Prompt: {row.title}. Reply: {row_answer}",
+                    f"Note: {note} Assistant: {row_answer}",
+                ]
+            )
         for query in query_variants(pack, row):
             paragraphs.append(f"{runtime_prompt(pack, row, query)} {row_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() == "hello":
             for _repeat in range(48):
-                paragraphs.append(f"{pack.persona} User: Hello. Assistant: {row_answer}")
-                paragraphs.append(f"{pack.persona} User: Hi. Assistant: {row_answer}")
-                paragraphs.append(f"{pack.persona} User: Hello Note: {runtime_note(row)} Assistant: {row_answer}")
+                paragraphs.append(f"User: Hello. Assistant: {row_answer}")
+                paragraphs.append(f"User: Hi. Assistant: {row_answer}")
+                paragraphs.append(f"User: Hello Note: {runtime_note(row)} Assistant: {row_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() == "what can you do":
             for _repeat in range(32):
-                paragraphs.append(f"{pack.persona} User: Hello, what can you do? Assistant: {row_answer}")
-                paragraphs.append(f"{pack.persona} User: What can you do? Assistant: {row_answer}")
+                paragraphs.append(f"User: Hello, what can you do? Assistant: {row_answer}")
+                paragraphs.append(f"User: What can you do? Assistant: {row_answer}")
         if pack.pack_id == "CHAT" and row.key.lower() in {
             "hello",
             "how are you",
@@ -618,7 +752,7 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
             compact_queries = query_variants(pack, row)[:3] + [row.key]
             for _repeat in range(24):
                 for compact_query in compact_queries:
-                    paragraphs.append(f"{pack.persona} User: {compact_query} Note: {note} Assistant: {row_answer}")
+                    paragraphs.append(f"User: {compact_query} Note: {note} Assistant: {row_answer}")
                     paragraphs.append(f"User: {compact_query} Assistant: {row_answer}")
                     paragraphs.append(f"Q: {compact_query} A: {row_answer}")
         focus_repeats = 4
@@ -761,7 +895,21 @@ def strict_assistant_result(
     effective_boundary_errors = 0 if expected_ok else boundary_errors
     label_leak = any(marker in lower for marker in ("prompt:", "user:", "assistant:"))
     reply_label = lower.startswith("reply:")
+    instruction_leak = any(
+        marker in lower
+        for marker in (
+            "use two brief sentences",
+            "use to brief sentences",
+            "brief sentences",
+            "small friendly dos chat assistant",
+            "concise dos and 486 troubleshooting assistant",
+            "concise office writing assistant",
+            "you are a small",
+            "the visible answer is only",
+        )
+    )
     bad_suffix = text.endswith(("ASSIST.", "CONFIG.", "AUTOEXEC.", "8.", "3."))
+    comma_token_soup = lower.count(",") >= 4 and lower.count(" ") < 3
     expected_terms = meaningful_terms(expected_text)
     tail_terms = expected_terms[-4:]
     tail_covered = not tail_terms or any(term in lower for term in tail_terms)
@@ -777,7 +925,9 @@ def strict_assistant_result(
         and tail_covered
         and not label_leak
         and not reply_label
+        and not instruction_leak
         and not bad_suffix
+        and not comma_token_soup
     )
     if require_expected and expected_clean and not expected_ok:
         clean = False
@@ -792,9 +942,9 @@ def strict_assistant_result(
         adjusted_score = min(adjusted_score, 0.49)
     if char_run > 2:
         adjusted_score = min(adjusted_score, 0.49)
-    if label_leak or reply_label:
+    if label_leak or reply_label or instruction_leak:
         adjusted_score = min(adjusted_score, 0.45)
-    if not ended_cleanly or not tail_covered or bad_suffix:
+    if not ended_cleanly or not tail_covered or bad_suffix or comma_token_soup:
         adjusted_score = min(adjusted_score, 0.49)
     if require_expected and expected_clean and not expected_ok:
         adjusted_score = min(adjusted_score, 0.49)
@@ -1158,6 +1308,30 @@ def self_test() -> None:
         eval_variant = dialogue_eval_variant("what is a prompt", 0)
         update_ini_value(pack.ini_path, "MODEL", "PACKS\\DEMO\\MODEL")
         assert "Memory help" in corpus
+        chat_pack_dir = root / "CHAT"
+        chat_pack_dir.mkdir()
+        (root / "PACKS.TXT").write_text("CHAT\n", encoding="ascii")
+        (chat_pack_dir / "PACK.INI").write_text(
+            "\n".join(
+                [
+                    "ID=CHAT",
+                    "TITLE=Chat Pack",
+                    "MODEL=MODEL",
+                    "PERSONA=You are a small friendly DOS chat assistant. Use two brief sentences.",
+                    "HELP=HELP.TXT",
+                    "GOLDEN=GOLDEN.TXT",
+                    "",
+                ]
+            ),
+            encoding="ascii",
+        )
+        (chat_pack_dir / "HELP.TXT").write_text("hello|Hello|Hello from DOS.\n", encoding="ascii")
+        (chat_pack_dir / "GOLDEN.TXT").write_text("hello\tHello from DOS.\n", encoding="ascii")
+        chat_pack = load_pack(root, "CHAT")
+        chat_corpus = build_pack_corpus(chat_pack, load_help_rows(chat_pack.help_path))
+        assert "Use two brief sentences" not in chat_corpus
+        assert "small friendly DOS chat assistant" not in chat_corpus
+        assert plain_dialogue_prompt(chat_pack, "hello") == "User: hello Assistant:"
         assert prompts and prompts[0].keywords
         assert eval_variant not in train_variants
         assert len(select_evenly([(str(idx), str(idx)) for idx in range(10)], 4)) == 4

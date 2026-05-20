@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `289 files, 81,543,800 bytes`
+Package status: `296 files, 75,041,703 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,9 +24,9 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
-| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 48/48 avg 1.000 (fixed, assistant-pack) | 16 files / 46,479,321 B |
-| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.954 (float, assistant-pack) | 12 files / 3,856,214 B |
-| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 0.966 (float, assistant-pack) | 12 files / 3,846,533 B |
+| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | NEEDS_TRAINING 53/64 avg 0.904 (float, assistant-pack) | 16 files / 39,795,012 B |
+| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 14 files / 3,937,459 B |
+| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 14 files / 3,922,078 B |
 
 ## Included Runtime Surface
 
@@ -72,6 +72,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 - `qemu/evidence/assistant_compile_486.log`
 - `qemu/evidence/assistant_interactive_chat_486.md`
 - `qemu/evidence/assistant_pack_probe.log`
+- `qemu/evidence/assistant_raw_prompt_eval.md`
 - `qemu/evidence/assistant_stress_486.log`
 - `qemu/evidence/assistant_stress_compile_486.log`
 - `qemu/evidence/assistant_stress_report.md`

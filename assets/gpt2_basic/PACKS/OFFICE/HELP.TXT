@@ -4,3 +4,5 @@ professional|Professional tone|Keep the message direct, polite, concrete, and fr
 formal|Formal memo|Use a subject line, one-sentence purpose, short body paragraphs, and an explicit next action.
 summar|Summary action|Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
 shorten|Shorten action|Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.
+clarify|Clarity action|State what happened, why it matters, and the next action; keep artifact, tag, checksum, and test details concrete.
+status|Status update|Use direct polite wording, include the current blocker, and end with the next action or timing.

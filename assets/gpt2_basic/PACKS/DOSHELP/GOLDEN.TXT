@@ -1,0 +1,9 @@
+# GPT2-BASIC DOSHELP golden support examples
+#
+# Format: one prompt and answer pair per line, separated by a tab.
+why does my protected mode program need cwsdpmi	Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program.
+why does dos need a dpmi host	Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program.
+how do i leave more conventional memory free	Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+what should i put in config.sys for this assistant	Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
+write a safe batch check for the model directory	Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+my autoexec is messy and slow	Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.

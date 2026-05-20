@@ -163,7 +163,7 @@ def validate_records(records: list[dict[str, str]]) -> Counter[str]:
     repeated_answers = [answer for answer, count in answers.items() if count > 3]
     require(not repeated_answers, f"overused_answer={repeated_answers[:1]}")
     require(sources["golden"] + sources["retrieval"] >= 6, "too_little_pack_grounding")
-    require(sources["fallback"] + sources["model"] >= 2, "too_few_original_prompt_paths")
+    require(sources["model"] >= 1, "model_path_not_exercised")
     return sources
 
 
@@ -197,8 +197,11 @@ def run_self_test() -> None:
     for index, case in enumerate(EXPECTED_CASES):
         term = case.terms[0]
         source = "retrieval" if index < 6 else "fallback"
+        if index == len(EXPECTED_CASES) - 1:
+            source = "model"
+        generated = f"|generated={term} model check passed." if source == "model" else ""
         good_lines.append(
-            f"ASSIST_REPLY|pack={case.pack}|intent=general_chat|ui=text|query={case.query}|source={source}|answer={term} check passed."
+            f"ASSIST_REPLY|pack={case.pack}|intent=general_chat|ui=text|query={case.query}|source={source}{generated}|answer={term} check passed."
         )
     sources = validate_records(parse_records("\n".join(good_lines)))
     require(sources["retrieval"] == 6, "self_test_good_retrieval_sources")
