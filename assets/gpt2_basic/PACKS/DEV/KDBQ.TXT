@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket Q. Rebuild with scripts/build_assistant_kdb.py --write.
+quality gate useful checks novel phrasings exact output terms runtime logs artifact checksums|Quality gate|A useful gate checks novel phrasings, exact output terms, runtime logs, and artifact checksums.
+qemu proof repeatable dos evidence confirm timing behavior physical hardware|QEMU proof|Use QEMU for repeatable DOS evidence, then confirm timing and behavior on physical hardware.

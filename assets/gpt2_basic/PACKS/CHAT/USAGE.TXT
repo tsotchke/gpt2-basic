@@ -7,9 +7,10 @@ Purpose:
 
 How it works:
   The pack uses its local PACKS\CHAT\MODEL checkpoint and retrieves compact
-  local notes from generated KDB.TXT when a topic matches. KDB.TXT is built
-  from HELP.TXT and KNOW.TXT. USER.TXT can hold local editable notes that
-  should override the bundled recall database. It is also trained from
+  local notes from generated KDB.TXT and KDB?.TXT buckets when a topic
+  matches. KDB.TXT and KDBIDX.TXT are built from HELP.TXT and KNOW.TXT.
+  USER.TXT can hold local editable notes that should override the bundled
+  recall database. It is also trained from
   GOLDEN.TXT common English dialogue, while TOKBASE.TXT builds a 4096-token
   sentence-piece lexicon from dialogue, response endings, and LEXICON.TSV
   grammar entries. Ordinary short prompts do not depend on a lookup hit. The

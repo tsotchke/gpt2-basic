@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket B. Rebuild with scripts/build_assistant_kdb.py --write.
+bug report shape include expected behavior actual reproduction steps logs suspected area|Bug report shape|Include expected behavior, actual behavior, reproduction steps, logs, and the suspected area.
+budget table show item cost owner due date status totals checked quickly|Budget table|Show item, cost, owner, due date, and status so totals can be checked quickly.

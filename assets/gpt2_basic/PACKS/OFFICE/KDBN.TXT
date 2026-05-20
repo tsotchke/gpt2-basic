@@ -1,0 +1,5 @@
+# terms|title|body
+# Generated KDB bucket N. Rebuild with scripts/build_assistant_kdb.py --write.
+release note shape lead changed list proof state any known limits plainly|Release note shape|Lead with what changed, list proof, then state any known limits plainly.
+handoff note say done remains evidence lives who owns next action|Handoff note|Say what is done, what remains, where evidence lives, and who owns the next action.
+meeting notes capture decisions owners dates open questions follow-up actions|Meeting notes|Capture decisions, owners, dates, open questions, and follow-up actions.

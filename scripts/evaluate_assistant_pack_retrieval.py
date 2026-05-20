@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate assistant pack HELP/KNOW retrieval on useful paraphrases."""
+"""Evaluate assistant pack KDB retrieval on useful paraphrases."""
 
 from __future__ import annotations
 
@@ -155,7 +155,7 @@ def markdown_report(results: list[RetrievalResult]) -> str:
         f"Status: `{status}`",
         f"Retrieval pass rate: `{passed}/{len(results)}`",
         "",
-        "This gate checks local HELP.TXT and KNOW.TXT retrieval for useful paraphrases before model generation.",
+        "This gate checks local KDB retrieval for useful paraphrases before model generation.",
         "",
         "| Pack | Query | Source | Score | Status | Reason | Answer |",
         "|---|---|---|---:|---|---|---|",

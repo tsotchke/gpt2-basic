@@ -1,0 +1,5 @@
+# terms|title|body
+# Generated KDB bucket O. Rebuild with scripts/build_assistant_kdb.py --write.
+dos boot order config.sys loads device drivers first autoexec.bat runs commands sets paths|DOS boot order|CONFIG.SYS loads device drivers first, then AUTOEXEC.BAT runs commands and sets paths.
+path setup put program directories only needed keep command line short|PATH setup|Put program directories in PATH only when needed, and keep the command line short.
+batch menu offer numbered choices validate input keep branch short reversible|Batch menu|Offer numbered choices, validate the input, and keep each branch short and reversible.

@@ -6,7 +6,7 @@ Purpose:
 
 How it works:
   The pack shares PACKS\CHAT\MODEL but uses its own generated KDB.TXT,
-  HELP.TXT, KNOW.TXT, and USER.TXT. This is the lightweight language-pack
+  KDBIDX.TXT, KDB?.TXT buckets, HELP.TXT, KNOW.TXT, and USER.TXT. This is the lightweight language-pack
   pattern: new domain behavior without shipping another large model.
 
 How to use it:

@@ -1,0 +1,5 @@
+# terms|title|body
+# Generated KDB bucket G. Rebuild with scripts/build_assistant_kdb.py --write.
+executive summary give decision evidence risk requested action short paragraphs|Executive summary|Give the decision, the evidence, the risk, and the requested action in short paragraphs.
+project plan list goal milestones owners risks next checkpoint|Project plan|List the goal, milestones, owners, risks, and the next checkpoint.
+changelog entry group changes added changed fixed known limits keep bullet factual|Changelog entry|Group changes by added, changed, fixed, and known limits; keep each bullet factual.

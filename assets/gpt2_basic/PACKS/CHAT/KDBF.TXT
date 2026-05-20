@@ -1,0 +1,14 @@
+# terms|title|body
+# Generated KDB bucket F. Rebuild with scripts/build_assistant_kdb.py --write.
+focus help remove one distraction choose small task work few minutes before changing course|Focus help|Remove one distraction, choose one small task, and work for a few minutes before changing course.
+troubleshooting help check first error change one thing test again|Troubleshooting help|Check the first error, change one thing, then test again.
+vintage friendly old hardware note dos computer run local model|Friendly old hardware note|This old DOS computer can run a friendly local model.
+food topic not eat but talk|Food topic|I do not eat, but I can talk about food.
+friendship meaning care trust|Friendship meaning|Friendship is care and trust.
+discuss discussion topics ideas feelings games music dos|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+follow follow-up help ask one short question continue last answer|Follow-up help|Ask one short follow-up question so I can continue from the last answer.
+memory tell facts phrases like name are working prefer|Memory use|Tell me facts with phrases like my name is, we are working on, or I prefer.
+hardware limits old favors short prompts brief answers small models retrieval text files|Hardware limits|Old hardware favors short prompts, brief answers, small models, and retrieval from text files.
+next step task feels large choose one small action test result|Next step|When the task feels large, choose one small next action and test the result.
+learn notes learning put facts pack session memory ask focused questions those|Learning from notes|Put facts in pack notes or session memory, then ask focused questions about those facts.
+local files pack model logs checksums notes are assistant evidence|Local files|Pack files, model files, logs, checksums, and notes are the assistant's local evidence.

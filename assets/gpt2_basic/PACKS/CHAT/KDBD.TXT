@@ -1,0 +1,18 @@
+# terms|title|body
+# Generated KDB bucket D. Rebuild with scripts/build_assistant_kdb.py --write.
+hello starting conversation dos|Starting a conversation|Hello from DOS.
+are status check answer dos|Status check|I answer in DOS.
+assistant abilities chat dos|Assistant abilities|I chat in DOS.
+demo dos live|DOS demo|The demo is live.
+bug debug plan start failing command expected result first error line test one small fix|Debug plan|Start with the failing command, expected result, and first error line, then test one small fix.
+local inference means dos program reads model weights produces answer machine|Local inference|Local inference means the DOS program reads model weights and produces the answer on this machine.
+old computer hardware demo matters because tiny local model run dos-style without network|Old hardware|The demo matters because a tiny local model can run on old DOS-style hardware without a network.
+trust check demo local model weights dos plus visible files tests logs|Trust check|The demo uses local model weights in DOS, plus visible files, tests, and logs.
+offline limit dos cannot browse answer comes local files|Offline limit|DOS cannot browse here; the answer comes from local files.
+talk open conversation dos|Open conversation|I can talk in DOS.
+status demo live|Demo status|The demo is live.
+discuss discussion topics ideas feelings games music dos|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+slow inference small dos takes time|Slow inference|Small DOS inference takes time.
+unusual demo but real|Unusual demo|It is unusual, but it is real.
+pack switch switching chat conversation doshelp dos setup office writing tasks|Pack switching|Use CHAT for conversation, DOSHELP for DOS setup, and OFFICE for writing tasks.
+summarize text keep decision evidence risk next action remove filler|Summarize text|Keep the decision, evidence, risk, and next action; remove filler.

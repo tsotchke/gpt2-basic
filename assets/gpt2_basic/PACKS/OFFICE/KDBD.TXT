@@ -1,0 +1,11 @@
+# terms|title|body
+# Generated KDB bucket D. Rebuild with scripts/build_assistant_kdb.py --write.
+summar summary action summaries preserve dates names decisions requested actions while dropping repeated explanation|Summary action|Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
+status update direct polite wording include current blocker end next action timing|Status update|Use direct polite wording, include the current blocker, and end with the next action or timing.
+executive summary give decision evidence risk requested action short paragraphs|Executive summary|Give the decision, the evidence, the risk, and the requested action in short paragraphs.
+email reply answer direct question first add context next steps|Email reply|Answer the direct question first, then add context and next steps.
+handoff note say done remains evidence lives who owns next action|Handoff note|Say what is done, what remains, where evidence lives, and who owns the next action.
+meeting notes capture decisions owners dates open questions follow-up actions|Meeting notes|Capture decisions, owners, dates, open questions, and follow-up actions.
+decision memo state recommendation alternatives considered evidence risks owner|Decision memo|State the recommendation, alternatives considered, evidence, risks, and owner.
+user docs write task goal prerequisites exact steps expected result troubleshooting note|User docs|Write the task goal, prerequisites, exact steps, expected result, and troubleshooting note.
+test plan define scope cases expected results evidence files pass fail criteria|Test plan|Define scope, cases, expected results, evidence files, and pass or fail criteria.

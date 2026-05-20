@@ -1,0 +1,8 @@
+# terms|title|body
+# Generated KDB bucket F. Rebuild with scripts/build_assistant_kdb.py --write.
+debug debugging loop reproduce failure read first error change one thing rerun smallest test|Debugging loop|Reproduce the failure, read the first error, change one thing, and rerun the smallest test.
+review code look first correctness regressions missing tests unclear ownership risky edge cases|Code review|Look first for correctness, regressions, missing tests, unclear ownership, and risky edge cases.
+retrieval first answer kdb user notes memory golden rows before asking small model synthesize|Retrieval first|Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
+memory persistence persistent save stable facts assist.mem keep transient previous-turn context separate|Persistent memory|Save stable facts to ASSIST.MEM and keep transient previous-turn context separate.
+failure record command input expected result actual log path next experiment|Failure record|Record the command, input, expected result, actual result, log path, and next experiment.
+answer synthesis retrieval facts model short wording transitions adapting prompt|Answer synthesis|Use retrieval for facts and the model for short wording, transitions, and adapting the answer to the prompt.

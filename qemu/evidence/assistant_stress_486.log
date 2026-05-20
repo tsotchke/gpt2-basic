@@ -86,7 +86,7 @@ Answer: Old hardware: The demo matters because a tiny local model can run on old
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|canonical=make a tiny plan for fixing a bug|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was tell me why this old computer model matters; previous answer was Old hardware: The demo matters because a tiny local model can run on old.|generated=|answer=Check the first error, change one thing, then test again.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|canonical=make a tiny plan for fixing a bug|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was tell me why this old computer model matters; previous answer was Old hardware: The demo matters because a tiny local model can run on old.|generated=|answer=Check the first error, change one thing, then test again.
 
 Answer: Check the first error, change one thing, then test again.
 
@@ -406,7 +406,7 @@ Answer: Your name is Tyr.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=we are working on the DOSBox assistant|canonical=we are working on the DOSBox assistant|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Memory use: Tell me facts with phrases like my name is, we are working on, or I prefer.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was what is my name; previous answer was Your name is Tyr.|generated=|answer=I will remember we are working on the DOSBox assistant.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=we are working on the DOSBox assistant|canonical=we are working on the DOSBox assistant|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was what is my name; previous answer was Your name is Tyr.|generated=|answer=I will remember we are working on the DOSBox assistant.
 
 Answer: I will remember we are working on the DOSBox assistant.
 
@@ -422,7 +422,7 @@ Answer: I will remember we are working on the DOSBox assistant.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what are we working on|canonical=what are we working on|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Memory use: Tell me facts with phrases like my name is, we are working on, or I prefer.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was we are working on the DOSBox assistant; previous answer was I will remember we are working on the DOSBox assistant.|generated=|answer=We are working on the DOSBox assistant.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what are we working on|canonical=what are we working on|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Thanks: You are welcome.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; previous question was we are working on the DOSBox assistant; previous answer was I will remember we are working on the DOSBox assistant.|generated=|answer=We are working on the DOSBox assistant.
 
 Answer: We are working on the DOSBox assistant.
 
@@ -438,7 +438,7 @@ Answer: We are working on the DOSBox assistant.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i prefer short answers|canonical=i prefer short answers|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Hardware limits: Old hardware favors short prompts, brief answers, small models, and retrieval from text files.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what are we working on; previous answer was We are working on the DOSBox assistant.|generated=|answer=I will remember you prefer short answers.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i prefer short answers|canonical=i prefer short answers|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Short story: A tiny model woke up inside DOS and answered one prompt at a time.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was what are we working on; previous answer was We are working on the DOSBox assistant.|generated=|answer=I will remember you prefer short answers.
 
 Answer: I will remember you prefer short answers.
 
@@ -470,7 +470,7 @@ Answer: I should answer short answers.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what did i just ask|canonical=what did i just ask|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Idea help: Try asking one clear question.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how should you answer me; previous answer was I should answer short answers.|generated=|answer=You just asked: how should you answer me.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what did i just ask|canonical=what did i just ask|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Pack switching: Use CHAT for conversation, DOSHELP for DOS setup, and OFFICE for writing tasks.|golden=|memory=Context: user name is Tyr; current goal is the DOSBox assistant; answer style is short answers; previous question was how should you answer me; previous answer was I should answer short answers.|generated=|answer=You just asked: how should you answer me.
 
 Answer: You just asked: how should you answer me.
 

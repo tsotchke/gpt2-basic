@@ -6,8 +6,8 @@ Purpose:
 
 How it works:
   The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from generated
-  KDB.TXT before generating a reply. KDB.TXT is built from HELP.TXT and
-  KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
+  KDB.TXT and KDB?.TXT buckets before generating a reply. KDB.TXT and
+  KDBIDX.TXT are built from HELP.TXT and KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
   DOS office assistant with action buttons.
 
 How to use it:

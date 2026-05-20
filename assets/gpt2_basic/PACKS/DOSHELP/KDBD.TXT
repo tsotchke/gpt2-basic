@@ -1,0 +1,14 @@
+# terms|title|body
+# Generated KDB bucket D. Rebuild with scripts/build_assistant_kdb.py --write.
+config.sys example himem dos high umb files buffers safe config sys baseline|CONFIG.SYS example|Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
+dpmi host protected-mode dos programs need such cwsdpmi.exe beside program|DPMI host|Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
+dos boot order config.sys loads device drivers first autoexec.bat runs commands sets paths|DOS boot order|CONFIG.SYS loads device drivers first, then AUTOEXEC.BAT runs commands and sets paths.
+conventional memory keep drivers high trim tsr programs preserve low old dos|Conventional memory|Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
+dpmi setup keep cwsdpmi.exe beside protected-mode programs need host|DPMI setup|Keep CWSDPMI.EXE beside protected-mode programs that need a DPMI host.
+8.3 names dos filenames maximum compatibility predictable batch files|DOS filenames|Use 8.3 filenames for maximum DOS compatibility and predictable batch files.
+dosbox bundle quick local runs hardware transfer real machines|DOSBox use|Use the DOSBox bundle for quick local runs, then use hardware transfer for real machines.
+path setup put program directories only needed keep command line short|PATH setup|Put program directories in PATH only when needed, and keep the command line short.
+dosbox mount bundle directory change gpt2 run batch file desired profile|DOSBox mount|Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile.
+memory error dos free conventional unloading tsrs loading drivers high using smaller profile|DOS memory error|Free conventional memory by unloading TSRs, loading drivers high, or using a smaller profile.
+checksums dos sha-256 sidecars host compare file sizes checksum tool unavailable|DOS checksums|Use SHA-256 sidecars on the host and compare file sizes on DOS when a checksum tool is unavailable.
+compile basic freebasic build dos executable pinned toolchain keep cwsdpmi output|FreeBASIC compile|Build the DOS executable with the pinned FreeBASIC toolchain and keep CWSDPMI with the output.

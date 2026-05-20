@@ -1,0 +1,6 @@
+# terms|title|body
+# Generated KDB bucket G. Rebuild with scripts/build_assistant_kdb.py --write.
+rollback plan know previous good version command restore evidence worked|Rollback plan|Know the previous good version, the command to restore it, and the evidence that rollback worked.
+architecture note state goal constraints data flow failure modes next reversible step|Architecture note|State the goal, constraints, data flow, failure modes, and the next reversible step.
+quality gate useful checks novel phrasings exact output terms runtime logs artifact checksums|Quality gate|A useful gate checks novel phrasings, exact output terms, runtime logs, and artifact checksums.
+data sharding kdb grows large split topic shards bucket files before changing model|Data sharding|When KDB grows large, split it into topic shards or bucket files before changing the model.

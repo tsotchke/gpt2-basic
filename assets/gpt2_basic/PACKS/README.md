@@ -5,7 +5,8 @@ list them and `/about` to read the current pack's `USAGE.TXT` instructions
 inside DOS.
 
 Each pack has human-editable `HELP.TXT` and `KNOW.TXT` files, a generated
-`KDB.TXT` recall database, and a local `USER.TXT` override file. Edit
+`KDB.TXT` recall database, generated `KDBIDX.TXT`/`KDB?.TXT` bucket sidecars,
+and a local `USER.TXT` override file. Edit
 `HELP.TXT` or `KNOW.TXT` on the host, then run:
 
 ```sh
@@ -15,15 +16,16 @@ python3 scripts/validate_assistant_pack_authoring.py
 
 On DOS, users can edit `USER.TXT` directly for local notes without rebuilding
 the pack. Matching `USER.TXT` rows get a retrieval bonus so site-local facts
-can override bundled notes.
+can override bundled notes. The DOS shell uses the bucket sidecars as a fast
+path and falls back to full `KDB.TXT` scan when needed.
 
 ## CHAT
 
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
 interactive QEMU demo starts here. It uses `PACKS\CHAT\MODEL` and short
-conversation notes from `CHAT\KDB.TXT` plus local overrides from
-`CHAT\USER.TXT`. `KDB.TXT` is generated from `CHAT\HELP.TXT` and
-`CHAT\KNOW.TXT`. The DOS shell prints `Thinking:`
+conversation notes from `CHAT\KDB.TXT`/`CHAT\KDB?.TXT` plus local overrides
+from `CHAT\USER.TXT`. `KDB.TXT` and bucket sidecars are generated from
+`CHAT\HELP.TXT` and `CHAT\KNOW.TXT`. The DOS shell prints `Thinking:`
 progress with visible prompt/context token pieces and output-token sampling,
 then streams the generated `Answer:` pieces as the model produces them. Use
 `/u`, `/d`, and `/h` for transcript paging in the DOS UI. `CHAT\GOLDEN.TXT`

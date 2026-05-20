@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket T. Rebuild with scripts/build_assistant_kdb.py --write.
+config sys config.sys tuning himem.sys dos high umb modest files buffers values compatibility|CONFIG.SYS tuning|Use HIMEM.SYS, DOS=HIGH,UMB, and modest FILES and BUFFERS values for compatibility.
+autoexec bat autoexec.bat tuning config.sys loads drivers before sets path variables required tsr tools|AUTOEXEC.BAT tuning|CONFIG.SYS loads drivers before AUTOEXEC.BAT; then AUTOEXEC sets PATH, variables, and required TSR tools.

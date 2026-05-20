@@ -1,0 +1,8 @@
+# terms|title|body
+# Generated KDB bucket F. Rebuild with scripts/build_assistant_kdb.py --write.
+batch file help exist checks clear status messages 8.3 dos-compatible names model files|Batch file help|In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.
+8.3 names dos filenames maximum compatibility predictable batch files|DOS filenames|Use 8.3 filenames for maximum DOS compatibility and predictable batch files.
+cwsdpmi missing protected-mode program fails start copy cwsdpmi.exe beside rerun command|Missing CWSDPMI|If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command.
+fat image full remove host-only training files grow disk assembly runs out space|FAT image full|Remove host-only training files or grow the disk image when FAT image assembly runs out of space.
+memory error dos free conventional unloading tsrs loading drivers high using smaller profile|DOS memory error|Free conventional memory by unloading TSRs, loading drivers high, or using a smaller profile.
+compile basic freebasic build dos executable pinned toolchain keep cwsdpmi output|FreeBASIC compile|Build the DOS executable with the pinned FreeBASIC toolchain and keep CWSDPMI with the output.

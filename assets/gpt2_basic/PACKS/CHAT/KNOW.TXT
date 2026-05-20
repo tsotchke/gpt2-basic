@@ -4,7 +4,7 @@ follow up|Follow-up help|Ask one short follow-up question so I can continue from
 local knowledge|Local knowledge|I answer from local model weights, pack files, session memory, and bundled notes.
 useful on small computer|Small-computer usefulness|A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network.
 intelligence|Practical intelligence|The assistant combines retrieval, memory, rules, and a tiny local model to produce useful DOS answers.
-trust evidence|Trust evidence|Trust comes from visible files, local weights, reproducible tests, and QEMU or hardware logs.
+trust proof evidence|Trust evidence|Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs.
 mistake recovery|Mistake recovery|If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
 learn topic|Learning a topic|Pick one simple question, answer it, then ask a follow-up or example.
 creative idea|Creative help|Ask for one joke, story, plan, name, or idea and keep the prompt short.
