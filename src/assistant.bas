@@ -1016,14 +1016,23 @@ FUNCTION AssistGeneratedLooksBad(generated AS STRING, query AS STRING) AS INTEGE
     IF INSTR(lower_query, "repeat") > 0 THEN
         IF INSTR(lower_text, "repeat") = 0 AND INSTR(lower_text, "short") = 0 AND INSTR(lower_text, "reset") = 0 THEN RETURN 1
     END IF
-    IF INSTR(lower_query, "bug") > 0 OR INSTR(lower_query, "debug") > 0 OR INSTR(lower_query, "stuck") > 0 OR INSTR(lower_query, "fix") > 0 THEN
+    IF INSTR(lower_query, "bug") > 0 OR INSTR(lower_query, "debug") > 0 OR INSTR(lower_query, "stuck") > 0 OR INSTR(lower_query, "fix") > 0 OR INSTR(lower_query, "troubleshoot") > 0 THEN
         IF INSTR(lower_text, "bug") = 0 AND INSTR(lower_text, "debug") = 0 AND INSTR(lower_text, "fix") = 0 AND INSTR(lower_text, "step") = 0 AND INSTR(lower_text, "error") = 0 AND INSTR(lower_text, "command") = 0 AND INSTR(lower_text, "test") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "overwhelmed") > 0 OR INSTR(lower_query, "next task") > 0 THEN
+        IF INSTR(lower_text, "small") = 0 AND INSTR(lower_text, "task") = 0 AND INSTR(lower_text, "step") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "trust") > 0 OR INSTR(lower_query, "believe") > 0 THEN
+        IF INSTR(lower_text, "real") = 0 AND INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 THEN RETURN 1
+    END IF
+    IF INSTR(lower_query, "long question") > 0 OR INSTR(lower_query, "too long") > 0 THEN
+        IF INSTR(lower_text, "short") = 0 AND INSTR(lower_text, "prompt") = 0 AND INSTR(lower_text, "question") = 0 THEN RETURN 1
     END IF
     IF INSTR(lower_query, "prompt") > 0 OR INSTR(lower_query, "answer") > 0 THEN
         IF INSTR(lower_text, "prompt") = 0 AND INSTR(lower_text, "answer") = 0 AND INSTR(lower_text, "question") = 0 THEN RETURN 1
     END IF
-    IF INSTR(lower_query, "local inference") > 0 OR INSTR(lower_query, "model weights") > 0 THEN
-        IF INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "inference") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 THEN RETURN 1
+    IF INSTR(lower_query, "local inference") > 0 OR INSTR(lower_query, "model weights") > 0 OR INSTR(lower_query, "local mean") > 0 THEN
+        IF INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "inference") = 0 AND INSTR(lower_text, "model") = 0 AND INSTR(lower_text, "weights") = 0 AND INSTR(lower_text, "machine") = 0 THEN RETURN 1
     END IF
     IF INSTR(lower_query, "old computer") > 0 OR INSTR(lower_query, "486") > 0 OR INSTR(lower_query, "dos") > 0 THEN
         IF INSTR(lower_text, "dos") = 0 AND INSTR(lower_text, "local") = 0 AND INSTR(lower_text, "486") = 0 AND INSTR(lower_text, "hardware") = 0 AND INSTR(lower_text, "computer") = 0 THEN RETURN 1
@@ -1069,11 +1078,25 @@ FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query
     IF INSTR(q, "repeat") > 0 OR INSTR(q, "loop") > 0 THEN
         RETURN "I will reset to a shorter answer. Ask one specific question and I will avoid repeating phrases."
     END IF
-    IF INSTR(q, "bug") > 0 OR INSTR(q, "debug") > 0 OR INSTR(q, "fix") > 0 OR INSTR(q, "stuck") > 0 THEN
+    IF INSTR(q, "bug") > 0 OR INSTR(q, "debug") > 0 OR INSTR(q, "fix") > 0 OR INSTR(q, "stuck") > 0 OR INSTR(q, "troubleshoot") > 0 OR INSTR(q, "failure") > 0 THEN
         RETURN "Start with the failing command, the expected result, and the first error line. Then test one small fix."
     END IF
-    IF INSTR(q, "local inference") > 0 OR INSTR(q, "model weights") > 0 THEN
+    IF INSTR(q, "overwhelmed") > 0 OR INSTR(q, "next task") > 0 OR INSTR(q, "too much") > 0 THEN
+        RETURN "Choose one small task, then take the first step."
+    END IF
+    IF INSTR(q, "local inference") > 0 OR INSTR(q, "model weights") > 0 OR INSTR(q, "local mean") > 0 THEN
         RETURN "Local inference means the DOS program reads model weights and produces the answer on this machine."
+    END IF
+    IF INSTR(q, "trust") > 0 OR INSTR(q, "believe") > 0 OR INSTR(q, "real") > 0 THEN
+        RETURN "The demo uses local model weights in DOS."
+    END IF
+    IF INSTR(q, "long question") > 0 OR INSTR(q, "too long") > 0 THEN
+        RETURN "Short prompts work better in this DOS demo."
+    END IF
+    IF INSTR(q, "history") > 0 THEN RETURN "Ask one simple question about the topic."
+    IF INSTR(q, "emulator") > 0 THEN RETURN "An emulator runs one machine inside another."
+    IF INSTR(q, "internet") > 0 OR INSTR(q, "online") > 0 OR INSTR(q, "offline") > 0 THEN
+        RETURN "DOS cannot browse here; the answer comes from local files."
     END IF
     IF INSTR(q, "weird") > 0 OR INSTR(q, "bad") > 0 THEN
         RETURN "Ask a shorter question, switch packs if needed, and treat strange output as a signal to retry."
@@ -1084,6 +1107,7 @@ FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query
     IF INSTR(q, "old computer") > 0 OR INSTR(q, "486") > 0 THEN
         RETURN "It matters because a tiny local model can run on old DOS-style hardware without a network."
     END IF
+    IF INSTR(q, "vintage") > 0 THEN RETURN "This old DOS computer can run a friendly local model."
     IF INSTR(q, "release") > 0 OR INSTR(q, "artifact") > 0 OR INSTR(q, "tag") > 0 OR INSTR(q, "status") > 0 THEN
         RETURN "Check the tag target, release assets, checksums, and test result before calling the release done."
     END IF

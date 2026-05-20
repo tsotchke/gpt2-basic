@@ -3,14 +3,14 @@
 Status: `PASS`
 Backend: `float`
 Prompt canonicalization: `on`
-Prompt variants: `402/402`
-Consistent prompt groups: `67/67`
+Prompt variants: `498/498`
+Consistent prompt groups: `83/83`
 
 ## Pack Summary
 
 | Pack | Prompt Variants | Pass Rate |
 |---|---:|---:|
-| CHAT | 282 | 282/282 |
+| CHAT | 378 | 378/378 |
 | DOSHELP | 60 | 60/60 |
 | OFFICE | 60 | 60/60 |
 
@@ -28,6 +28,18 @@ Consistent prompt groups: `67/67`
 | CHAT | hello there | short | hello there | PASS |  | Hello from DOS. Type a question and I will answer. |
 | CHAT | hello there | typed | hello there | PASS |  | Hello from DOS. Type a question and I will answer. |
 | CHAT | hello there | dos_chat | hello there | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | base | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | question_mark | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | please | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | short | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | typed | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | dos_chat | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | base | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | question_mark | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | please | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | short | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | typed | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | dos_chat | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
 | CHAT | can we talk for a minute | base | can we talk for a minute | PASS |  | Yes, type a short prompt. Ask one clear prompt and I will keep going. |
 | CHAT | can we talk for a minute | question_mark | can we talk for a minute | PASS |  | Yes, type a short prompt. Ask one clear prompt and I will keep going. |
 | CHAT | can we talk for a minute | please | can we talk for a minute | PASS |  | Yes, type a short prompt. Ask one clear prompt and I will keep going. |
@@ -124,6 +136,12 @@ Consistent prompt groups: `67/67`
 | CHAT | what is a model | short | what is a model | PASS |  | A model is trained weights that predict text. That is the simple version. |
 | CHAT | what is a model | typed | what is a model | PASS |  | A model is trained weights that predict text. That is the simple version. |
 | CHAT | what is a model | dos_chat | what is a model | PASS |  | A model is trained weights that predict text. That is the simple version. |
+| CHAT | what is inference | base | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
+| CHAT | what is inference | question_mark | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
+| CHAT | what is inference | please | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
+| CHAT | what is inference | short | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
+| CHAT | what is inference | typed | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
+| CHAT | what is inference | dos_chat | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
 | CHAT | what does a token mean | base | what does a token mean | PASS |  | A token is a small piece of text. |
 | CHAT | what does a token mean | question_mark | what does a token mean | PASS |  | A token is a small piece of text. |
 | CHAT | what does a token mean | please | what does a token mean | PASS |  | A token is a small piece of text. |
@@ -142,30 +160,30 @@ Consistent prompt groups: `67/67`
 | CHAT | what is dos | short | what is dos | PASS |  | DOS is a small command-line operating system. It runs locally in this DOS demo. |
 | CHAT | what is dos | typed | what is dos | PASS |  | DOS is a small command-line operating system. It runs locally in this DOS demo. |
 | CHAT | what is dos | dos_chat | what is dos | PASS |  | DOS is a small command-line operating system. It runs locally in this DOS demo. |
-| CHAT | what is qemu | base | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | what is qemu | question_mark | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | what is qemu | please | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | what is qemu | short | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | what is qemu | typed | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | what is qemu | dos_chat | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | why does an old computer demo matter | base | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
-| CHAT | why does an old computer demo matter | question_mark | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
-| CHAT | why does an old computer demo matter | please | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
-| CHAT | why does an old computer demo matter | short | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
-| CHAT | why does an old computer demo matter | typed | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
-| CHAT | why does an old computer demo matter | dos_chat | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
+| CHAT | what is qemu | base | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | what is qemu | question_mark | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | what is qemu | please | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | what is qemu | short | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | what is qemu | typed | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | what is qemu | dos_chat | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | why does an old computer demo matter | base | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
+| CHAT | why does an old computer demo matter | question_mark | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
+| CHAT | why does an old computer demo matter | please | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
+| CHAT | why does an old computer demo matter | short | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
+| CHAT | why does an old computer demo matter | typed | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
+| CHAT | why does an old computer demo matter | dos_chat | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
 | CHAT | why run a model on a dos computer | base | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
 | CHAT | why run a model on a dos computer | question_mark | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
 | CHAT | why run a model on a dos computer | please | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
 | CHAT | why run a model on a dos computer | short | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
 | CHAT | why run a model on a dos computer | typed | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
 | CHAT | why run a model on a dos computer | dos_chat | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
-| CHAT | why are answers short in this demo | base | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
-| CHAT | why are answers short in this demo | question_mark | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
-| CHAT | why are answers short in this demo | please | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
-| CHAT | why are answers short in this demo | short | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
-| CHAT | why are answers short in this demo | typed | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
-| CHAT | why are answers short in this demo | dos_chat | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
+| CHAT | why are answers short in this demo | base | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
+| CHAT | why are answers short in this demo | question_mark | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
+| CHAT | why are answers short in this demo | please | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
+| CHAT | why are answers short in this demo | short | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
+| CHAT | why are answers short in this demo | typed | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
+| CHAT | why are answers short in this demo | dos_chat | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
 | CHAT | why are you saying the same phrase again | base | why are you saying the same phrase again | PASS |  | If I repeat, reset the prompt and ask one shorter question. |
 | CHAT | why are you saying the same phrase again | question_mark | why are you saying the same phrase again | PASS |  | If I repeat, reset the prompt and ask one shorter question. |
 | CHAT | why are you saying the same phrase again | please | why are you saying the same phrase again | PASS |  | If I repeat, reset the prompt and ask one shorter question. |
@@ -250,6 +268,12 @@ Consistent prompt groups: `67/67`
 | CHAT | tell me whether the release is ready | short | tell me whether the release is ready | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | tell me whether the release is ready | typed | tell me whether the release is ready | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | tell me whether the release is ready | dos_chat | tell me whether the release is ready | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | base | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | question_mark | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | please | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | short | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | typed | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | dos_chat | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | what should i verify before release | base | what should i verify before release | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | what should i verify before release | question_mark | what should i verify before release | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | what should i verify before release | please | what should i verify before release | PASS |  | Check the tag, assets, checksums, and test result. |
@@ -304,6 +328,78 @@ Consistent prompt groups: `67/67`
 | CHAT | i feel lonely | short | i feel lonely | PASS |  | I can keep you company briefly. Notice the feeling, then choose one small step. |
 | CHAT | i feel lonely | typed | i feel lonely | PASS |  | I can keep you company briefly. Notice the feeling, then choose one small step. |
 | CHAT | i feel lonely | dos_chat | i feel lonely | PASS |  | I can keep you company briefly. Notice the feeling, then choose one small step. |
+| CHAT | could you walk me through a simple troubleshooting process | base | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | could you walk me through a simple troubleshooting process | question_mark | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | could you walk me through a simple troubleshooting process | please | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | could you walk me through a simple troubleshooting process | short | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | could you walk me through a simple troubleshooting process | typed | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | could you walk me through a simple troubleshooting process | dos_chat | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | help me pick a next task when i am overwhelmed | base | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | help me pick a next task when i am overwhelmed | question_mark | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | help me pick a next task when i am overwhelmed | please | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | help me pick a next task when i am overwhelmed | short | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | help me pick a next task when i am overwhelmed | typed | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | help me pick a next task when i am overwhelmed | dos_chat | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | why should i trust this demo | base | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | why should i trust this demo | question_mark | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | why should i trust this demo | please | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | why should i trust this demo | short | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | why should i trust this demo | typed | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | why should i trust this demo | dos_chat | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | what happens if i ask a long question | base | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | what happens if i ask a long question | question_mark | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | what happens if i ask a long question | please | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | what happens if i ask a long question | short | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | what happens if i ask a long question | typed | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | what happens if i ask a long question | dos_chat | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | can you answer questions about history | base | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | can you answer questions about history | question_mark | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | can you answer questions about history | please | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | can you answer questions about history | short | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | can you answer questions about history | typed | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | can you answer questions about history | dos_chat | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | write a friendly note about an old computer | base | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | write a friendly note about an old computer | question_mark | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | write a friendly note about an old computer | please | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | write a friendly note about an old computer | short | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | write a friendly note about an old computer | typed | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | write a friendly note about an old computer | dos_chat | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | what does local mean here | base | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | what does local mean here | question_mark | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | what does local mean here | please | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | what does local mean here | short | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | what does local mean here | typed | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | what does local mean here | dos_chat | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | is there any memory between turns | base | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | is there any memory between turns | question_mark | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | is there any memory between turns | please | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | is there any memory between turns | short | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | is there any memory between turns | typed | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | is there any memory between turns | dos_chat | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | how do i avoid repeated answers | base | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | how do i avoid repeated answers | question_mark | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | how do i avoid repeated answers | please | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | how do i avoid repeated answers | short | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | how do i avoid repeated answers | typed | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | how do i avoid repeated answers | dos_chat | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | give me a tiny checklist for release | base | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | give me a tiny checklist for release | question_mark | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | give me a tiny checklist for release | please | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | give me a tiny checklist for release | short | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | give me a tiny checklist for release | typed | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | give me a tiny checklist for release | dos_chat | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | what is an emulator | base | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | what is an emulator | question_mark | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | what is an emulator | please | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | what is an emulator | short | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | what is an emulator | typed | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | what is an emulator | dos_chat | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | why no internet | base | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
+| CHAT | why no internet | question_mark | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
+| CHAT | why no internet | please | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
+| CHAT | why no internet | short | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
+| CHAT | why no internet | typed | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
+| CHAT | why no internet | dos_chat | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
 | DOSHELP | why does my protected mode program need cwsdpmi | base | why does my protected mode program need cwsdpmi | PASS |  | Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program. |
 | DOSHELP | why does my protected mode program need cwsdpmi | question_mark | why does my protected mode program need cwsdpmi | PASS |  | Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program. |
 | DOSHELP | why does my protected mode program need cwsdpmi | please | why does my protected mode program need cwsdpmi | PASS |  | Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program. |

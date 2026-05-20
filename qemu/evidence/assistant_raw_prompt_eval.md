@@ -1,11 +1,13 @@
 # Assistant Raw Prompt Evaluation
 
 Status: `PASS`
-Prompt pass rate: `67/67`
+Prompt pass rate: `83/83`
 
 | Pack | Query | Status | Reason | Completion |
 |---|---|---|---|---|
 | CHAT | hello there | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | good morning | PASS |  | Hello from DOS. Type a question and I will answer. |
+| CHAT | say hello | PASS |  | Hello from DOS. Type a question and I will answer. |
 | CHAT | can we talk for a minute | PASS |  | Yes, type a short prompt. Ask one clear prompt and I will keep going. |
 | CHAT | what can you do in dos | PASS |  | I can chat in DOS. It runs locally in this DOS demo. |
 | CHAT | what are you called | PASS |  | I am GPT2-BASIC. Ask a follow-up and I can add more detail. |
@@ -22,13 +24,14 @@ Prompt pass rate: `67/67`
 | CHAT | is this fake output | PASS |  | No, this is real local inference. Type a question and I will answer. |
 | CHAT | explain local inference without jargon | PASS |  | Local inference means the model runs on this machine. The answer comes from local model weights. |
 | CHAT | what is a model | PASS |  | A model is trained weights that predict text. That is the simple version. |
+| CHAT | what is inference | PASS |  | Inference is the model producing an answer. The answer comes from local model weights. |
 | CHAT | what does a token mean | PASS |  | A token is a small piece of text. |
 | CHAT | what is basic | PASS |  | BASIC is a simple programming language. It runs locally in this DOS demo. |
 | CHAT | what is dos | PASS |  | DOS is a small command-line operating system. It runs locally in this DOS demo. |
-| CHAT | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. |
-| CHAT | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. It runs locally in this DOS demo. |
+| CHAT | what is qemu | PASS |  | QEMU is the emulator running this DOS machine. It runs locally in this DOS demo. |
+| CHAT | why does an old computer demo matter | PASS |  | Old hardware proves the local model is small and practical. This old DOS computer can run a friendly local model. |
 | CHAT | why run a model on a dos computer | PASS |  | It shows a tiny local model can run without a network. Ask a follow-up and I can add more detail. |
-| CHAT | why are answers short in this demo | PASS |  | Short answers run faster in DOS. It runs locally in this DOS demo. |
+| CHAT | why are answers short in this demo | PASS |  | Short answers run faster in DOS. Type a question and I will answer. |
 | CHAT | why are you saying the same phrase again | PASS |  | If I repeat, reset the prompt and ask one shorter question. |
 | CHAT | why did my answer repeat itself | PASS |  | If I repeat, reset the prompt and ask one shorter question. |
 | CHAT | what should i do if the output looks wrong | PASS |  | Retry with a shorter prompt or switch packs. |
@@ -43,6 +46,7 @@ Prompt pass rate: `67/67`
 | CHAT | what should i do today | PASS |  | Pick one useful small task. Start small, then adjust after the first step. |
 | CHAT | help me decide between two choices | PASS |  | Name the choices and the goal, then choose one step. Start small, then adjust after the first step. |
 | CHAT | tell me whether the release is ready | PASS |  | Check the tag, assets, checksums, and test result. |
+| CHAT | give me a release status update | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | what should i verify before release | PASS |  | Check the tag, assets, checksums, and test result. |
 | CHAT | write one friendly sentence about this demo | PASS |  | The demo is live and runs locally in DOS. Type a question and I will answer. |
 | CHAT | tell me a short story about a dos model | PASS |  | A tiny model woke up inside DOS and answered one prompt. It runs locally in this DOS demo. |
@@ -52,6 +56,18 @@ Prompt pass rate: `67/67`
 | CHAT | i feel worried | PASS |  | Name the worry, then choose one step. Notice the feeling, then choose one small step. |
 | CHAT | i am tired | PASS |  | Rest if you can. Notice the feeling, then choose one small step. |
 | CHAT | i feel lonely | PASS |  | I can keep you company briefly. Notice the feeling, then choose one small step. |
+| CHAT | could you walk me through a simple troubleshooting process | PASS |  | Check the first error, change one thing, then test again. |
+| CHAT | help me pick a next task when i am overwhelmed | PASS |  | Choose one small task, then take the first step. |
+| CHAT | why should i trust this demo | PASS |  | The demo uses local model weights in DOS. Type a question and I will answer. |
+| CHAT | what happens if i ask a long question | PASS |  | Short prompts work better in this DOS demo. |
+| CHAT | can you answer questions about history | PASS |  | Ask one simple question about the topic. Type a question and I will answer. |
+| CHAT | write a friendly note about an old computer | PASS |  | This old DOS computer can run a friendly local model. |
+| CHAT | what does local mean here | PASS |  | Local means the model runs on this machine. Type a question and I will answer. |
+| CHAT | is there any memory between turns | PASS |  | I remember only small facts during this session. |
+| CHAT | how do i avoid repeated answers | PASS |  | Use a shorter prompt and reset if the answer loops. |
+| CHAT | give me a tiny checklist for release | PASS |  | Check the tag, assets, checksums, and tests. |
+| CHAT | what is an emulator | PASS |  | An emulator runs one machine inside another. |
+| CHAT | why no internet | PASS |  | DOS cannot browse here; the answer comes from local files. |
 | DOSHELP | why does my protected mode program need cwsdpmi | PASS |  | Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program. |
 | DOSHELP | why does dos need a dpmi host | PASS |  | Protected-mode DOS programs need a DPMI host such as CWSDPMI beside the program. |
 | DOSHELP | how do i leave more conventional memory free | PASS |  | Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory. |

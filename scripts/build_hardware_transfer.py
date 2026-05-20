@@ -26,7 +26,7 @@ DEFAULT_DPMI_HOST = ROOT / "third_party" / "cwsdpmi" / "CWSDPMI.EXE"
 DEFAULT_DPMI_LICENSE = ROOT / "third_party" / "cwsdpmi" / "COPYING.CWS"
 DEFAULT_DPMI_LSM = ROOT / "third_party" / "cwsdpmi" / "CWSDPMI.LSM"
 DETERMINISTIC_ZIP_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
-TREE_COPY_IGNORED_NAMES = {".DS_Store", "__pycache__"}
+TREE_COPY_IGNORED_NAMES = {".DS_Store", "__pycache__", "TRAIN.TXT", "TOKBASE.TXT"}
 TREE_COPY_IGNORED_SUFFIXES = {".pyc", ".pyo"}
 
 
@@ -127,7 +127,17 @@ def require_release_sources_tracked(source_files: list[Path]) -> None:
 
 def copy_tree(src: Path, dst: Path) -> None:
     require(src.is_dir(), f"missing_dir={src}")
-    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo", ".DS_Store"))
+    def ignore_runtime_extras(_directory: str, names: list[str]) -> set[str]:
+        ignored: set[str] = set()
+        for name in names:
+            suffix = Path(name).suffix
+            if name in TREE_COPY_IGNORED_NAMES or name.upper() in TREE_COPY_IGNORED_NAMES:
+                ignored.add(name)
+            elif suffix in TREE_COPY_IGNORED_SUFFIXES:
+                ignored.add(name)
+        return ignored
+
+    shutil.copytree(src, dst, ignore=ignore_runtime_extras)
 
 
 def copy_file(src: Path, dst: Path) -> None:
@@ -304,6 +314,8 @@ def self_test() -> None:
         for name in ("GPT2CFG.TXT", "GPT2FX.BIN", "GPT2EXP.BIN"):
             (model / name).write_bytes(b"model")
         (packs / "PACKS.TXT").write_text("DOSHELP\n", encoding="ascii")
+        (packs / "TRAIN.TXT").write_text("host training data\n", encoding="ascii")
+        (packs / "TOKBASE.TXT").write_text("host tokenizer data\n", encoding="ascii")
         (staged / "ASSIST.BAS").write_text("PRINT \"ASSIST\"\n", encoding="ascii")
         out = root / "OUT"
         zip_path = root / "OUT.ZIP"
@@ -327,6 +339,8 @@ def self_test() -> None:
         require((out / "GPT2" / "ASSIST.EXE").exists(), "self_test_missing_assist")
         require((out / "GPT2" / "CWSDPMI.EXE").exists(), "self_test_missing_dpmi")
         require((out / "GPT2" / "CWSRC.TXT").exists(), "self_test_missing_dpmi_source")
+        require(not (out / "GPT2" / "PACKS" / "TRAIN.TXT").exists(), "self_test_copied_train_txt")
+        require(not (out / "GPT2" / "PACKS" / "TOKBASE.TXT").exists(), "self_test_copied_tokbase_txt")
         require((out / "GPT2" / "RETURN.TXT").exists(), "self_test_missing_return")
         require((out / "README.TXT").exists(), "self_test_missing_readme")
         require((out / "MANIFEST.TXT").exists(), "self_test_missing_manifest")
