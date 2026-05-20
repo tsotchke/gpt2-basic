@@ -101,6 +101,27 @@ demo videos with typed prompts and streaming answers:
 It uses Pillow for text/card frame rendering and ffmpeg for MP4 assembly; this
 handles ffmpeg builds that do not include the optional `drawtext` filter.
 
+## Assistant Showcase Video
+
+The current long-form capability video is built from real terminal output
+recorded with `asciinema`, rendered with `agg`, and converted to MP4 with
+ffmpeg:
+
+```sh
+python3 scripts/build_assistant_showcase_video.py --force
+```
+
+Output:
+
+- `promo/renders/gpt2_basic_assistant_showcase_1080p.mp4`
+- `promo/renders/gpt2_basic_assistant_showcase.cast`
+- `qemu/evidence/assistant_showcase_video.md`
+
+This video is the broad GPT2-BASIC assistant walkthrough. It covers CHAT,
+DOSHELP, OFFICE, and DEV packs; `/capabilities`, `/limits`, and `/sources`;
+session memory; KB2 binary recall; USER.TXT note import; source/timing
+provenance; QEMU stress evidence; unit tests; and release hashes.
+
 Optional captures:
 
 - Physical 486 or Pentium machine booting to DOS.

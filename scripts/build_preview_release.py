@@ -95,6 +95,7 @@ SELECTED_EVIDENCE_NAMES = {
     "assistant_pack_retrieval_eval.md",
     "assistant_pack_probe.log",
     "assistant_raw_prompt_eval.md",
+    "assistant_showcase_video.md",
     "assistant_stress_486.log",
     "assistant_stress_compile_486.log",
     "assistant_stress_report.md",

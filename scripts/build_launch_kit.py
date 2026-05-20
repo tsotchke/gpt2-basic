@@ -44,6 +44,10 @@ RELEASE_ASSETS = (
 )
 
 MEDIA_ASSETS = (
+    KitAsset(
+        ROOT / "promo/renders/gpt2_basic_assistant_showcase_1080p.mp4",
+        "media/gpt2_basic_assistant_showcase_1080p.mp4",
+    ),
     KitAsset(ROOT / "promo/renders/gpt2_basic_real_dos_session_1080p.mp4", "media/gpt2_basic_real_dos_session_1080p.mp4"),
     KitAsset(
         ROOT / "promo/renders/gpt2_basic_real_dos_session_vertical.mp4",

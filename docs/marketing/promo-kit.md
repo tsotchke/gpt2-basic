@@ -100,6 +100,17 @@ Project goals:
 Repository: https://github.com/tsotchke/gpt2-basic
 Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 
+## Assistant Showcase Description
+
+This long-form terminal demo shows the current GPT2-BASIC assistant stack:
+hot-loadable CHAT, DOSHELP, OFFICE, and DEV packs; session memory; KB2 binary
+recall; USER.TXT note import; source/timing provenance; QEMU stress evidence;
+and release verification.
+
+The video is recorded from a real terminal with `asciinema` and rendered from
+checked QEMU assistant evidence. It is still honest about the constraint: this
+is a tiny local DOS model with retrieval-first intelligence, not a frontier LLM.
+
 ## Thumbnail Text Options
 
 - GPT IN DOS

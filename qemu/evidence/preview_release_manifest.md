@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `513 files, 119,593,160 bytes`
+Package status: `517 files, 119,618,058 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -80,6 +80,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 - `qemu/evidence/assistant_pack_probe.log`
 - `qemu/evidence/assistant_pack_retrieval_eval.md`
 - `qemu/evidence/assistant_raw_prompt_eval.md`
+- `qemu/evidence/assistant_showcase_video.md`
 - `qemu/evidence/assistant_stress_486.log`
 - `qemu/evidence/assistant_stress_compile_486.log`
 - `qemu/evidence/assistant_stress_report.md`
