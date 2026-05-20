@@ -2,8 +2,8 @@
 
 Status: `PASS`
 
-Reply count: `24`
-Source counts: `golden=16 retrieval=8 model=0 fallback=0`
+Reply count: `32`
+Source counts: `golden=16 retrieval=8 model=0 fallback=0 memory=8`
 
 | Pack | Source | Query | Answer |
 |---|---|---|---|
@@ -19,6 +19,14 @@ Source counts: `golden=16 retrieval=8 model=0 fallback=0`
 | CHAT | golden | can we talk about games | Yes, games are a fine topic. |
 | CHAT | golden | i am tired | Rest if you can. |
 | CHAT | golden | i feel lonely | I can keep you company briefly. |
+| CHAT | memory | my name is Tyr | I will remember your name is Tyr. |
+| CHAT | memory | what is my name | Your name is Tyr. |
+| CHAT | memory | we are working on the DOSBox assistant | I will remember we are working on the DOSBox assistant. |
+| CHAT | memory | what are we working on | We are working on the DOSBox assistant. |
+| CHAT | memory | i prefer short answers | I will remember you prefer short answers. |
+| CHAT | memory | how should you answer me | I should answer short answers. |
+| CHAT | memory | what did i just ask | You just asked: how should you answer me. |
+| CHAT | memory | what do you remember | Memory: name=Tyr; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask. |
 | DOSHELP | retrieval | how do i keep conventional memory free | CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory. |
 | DOSHELP | retrieval | my autoexec is too long what should i change | AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. |
 | DOSHELP | golden | how should i clean autoexec.bat | Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed. |

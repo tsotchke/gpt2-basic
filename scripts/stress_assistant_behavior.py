@@ -34,6 +34,14 @@ EXPECTED_CASES = (
     StressCase("CHAT", "can we talk about games", ("games", "topic")),
     StressCase("CHAT", "i am tired", ("rest", "can")),
     StressCase("CHAT", "i feel lonely", ("company", "briefly")),
+    StressCase("CHAT", "my name is Tyr", ("remember", "name", "tyr")),
+    StressCase("CHAT", "what is my name", ("tyr", "name")),
+    StressCase("CHAT", "we are working on the DOSBox assistant", ("remember", "working", "dosbox", "assistant")),
+    StressCase("CHAT", "what are we working on", ("dosbox", "assistant")),
+    StressCase("CHAT", "i prefer short answers", ("remember", "short")),
+    StressCase("CHAT", "how should you answer me", ("short",)),
+    StressCase("CHAT", "what did i just ask", ("how should you answer me",)),
+    StressCase("CHAT", "what do you remember", ("tyr", "dosbox", "short")),
     StressCase("DOSHELP", "how do i keep conventional memory free", ("memory", "himem", "dos=high", "umb", "conventional")),
     StressCase("DOSHELP", "my autoexec is too long what should i change", ("autoexec", "path", "resident", "short")),
     StressCase("DOSHELP", "how should i clean autoexec.bat", ("autoexec", "path", "resident", "short")),
@@ -48,7 +56,7 @@ EXPECTED_CASES = (
     StressCase("OFFICE", "make this clearer: the artifact uploaded but the tag was stale", ("happened", "matters", "action", "artifact", "tag")),
 )
 
-ALLOWED_SOURCES = {"golden", "retrieval", "model", "fallback"}
+ALLOWED_SOURCES = {"golden", "retrieval", "model", "fallback", "memory"}
 LEAK_MARKERS = (
     "use two brief sentences",
     "use to brief sentences",
@@ -150,7 +158,7 @@ def bad_visible_text(text: str) -> str | None:
 
 def relevant(case: StressCase, answer: str) -> bool:
     answer_lower = answer.lower()
-    return any(term in answer_lower for term in case.terms)
+    return any(term.lower() in answer_lower for term in case.terms)
 
 
 def validate_records(records: list[dict[str, str]]) -> Counter[str]:
@@ -198,7 +206,7 @@ def report_markdown(records: list[dict[str, str]], sources: Counter[str]) -> str
         "Status: `PASS`",
         "",
         f"Reply count: `{len(records)}`",
-        f"Source counts: `golden={sources['golden']} retrieval={sources['retrieval']} model={sources['model']} fallback={sources['fallback']}`",
+        f"Source counts: `golden={sources['golden']} retrieval={sources['retrieval']} model={sources['model']} fallback={sources['fallback']} memory={sources['memory']}`",
         "",
         "| Pack | Source | Query | Answer |",
         "|---|---|---|---|",
@@ -288,7 +296,7 @@ def main() -> None:
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(report_markdown(records, sources), encoding="ascii")
     print(f"PROBE_OK assistant_stress_replies={len(records)}")
-    print(f"PROBE_OK assistant_stress_sources=golden:{sources['golden']},retrieval:{sources['retrieval']},model:{sources['model']},fallback:{sources['fallback']}")
+    print(f"PROBE_OK assistant_stress_sources=golden:{sources['golden']},retrieval:{sources['retrieval']},model:{sources['model']},fallback:{sources['fallback']},memory:{sources['memory']}")
     print("PROBE_OK assistant_stress_visible_answers=1")
     print(f"ASSISTANT_STRESS_REPORT|path={args.report}")
 

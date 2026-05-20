@@ -60,6 +60,9 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn('LCASE$(command_text) = "/d"', text)
         self.assertIn('LCASE$(command_text) = "/h"', text)
         self.assertIn('LCASE$(command_text) = "/about"', text)
+        self.assertIn('LCASE$(command_text) = "/memory"', text)
+        self.assertIn('LCASE$(command_text) = "/forget"', text)
+        self.assertIn('LEFT$(LCASE$(command_text), 10) = "/remember "', text)
 
     def test_interactive_assistant_preloads_active_pack_before_prompt(self) -> None:
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
@@ -122,9 +125,11 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("AssistGeneratedLooksBad(generated, query) = 0", text)
         self.assertIn('reply_source = "golden"', text)
         self.assertIn('reply_source = "retrieval"', text)
+        self.assertIn('reply_source = "memory"', text)
         self.assertIn('reply_source = "model"', text)
         self.assertIn('reply_source = "fallback"', text)
         self.assertIn('prompt = "User: " + query', text)
+        self.assertIn('IF memory_context <> "" THEN prompt = memory_context + " " + prompt', text)
         self.assertNotIn('prompt = AssistTrimFixed(g_assist_packs(pack_index).persona) + " User: " + query', text)
 
         guard_pos = text.index("AssistGeneratedLooksBad(generated, query) = 0")
@@ -141,12 +146,33 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("make a tiny plan for fixing a bug", text)
         self.assertIn("can you browse the internet from dos", text)
         self.assertIn("i feel lonely", text)
+        self.assertIn("my name is Tyr", text)
+        self.assertIn("what is my name", text)
+        self.assertIn("what are we working on", text)
+        self.assertIn("how should you answer me", text)
+        self.assertIn("what did i just ask", text)
+        self.assertIn("what do you remember", text)
         self.assertIn("why does protected mode need a dpmi host", text)
         self.assertIn("how should i clean autoexec.bat", text)
         self.assertIn("summarize this: tests passed but the tag was stale", text)
         self.assertIn("make this clearer: the artifact uploaded but the tag was stale", text)
         self.assertIn('"|query=" + AssistSafeText(query)', text)
+        self.assertIn('"|memory=" + AssistSafeText(memory_context)', text)
         self.assertIn('"|answer=" + AssistSafeText(bubble)', text)
+
+    def test_assistant_has_session_memory_commands_and_reply_source(self) -> None:
+        text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
+
+        self.assertIn("FUNCTION AssistMemoryReply", text)
+        self.assertIn("FUNCTION AssistMemoryContext", text)
+        self.assertIn("SUB AssistRememberFact", text)
+        self.assertIn("SUB AssistRememberTurn", text)
+        self.assertIn("SUB AssistClearMemoryFacts", text)
+        self.assertIn("my name is ", text)
+        self.assertIn("what are we working on", text)
+        self.assertIn("what did i just ask", text)
+        self.assertIn('reply_source = "memory"', text)
+        self.assertIn("/remember KEY=VALUE", text)
 
     def test_assistant_stress_script_rejects_bad_visible_text(self) -> None:
         result = subprocess.run(

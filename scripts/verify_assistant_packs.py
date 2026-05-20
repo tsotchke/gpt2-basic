@@ -19,7 +19,7 @@ DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_comp
 DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
 RAW_PROMPT_MIN_CASES = 67
-STRESS_REPLY_COUNT = 24
+STRESS_REPLY_COUNT = 32
 
 
 @dataclass(frozen=True)
@@ -117,6 +117,8 @@ def verify_source() -> None:
         "AssistGeneratedLooksBad",
         "AssistFallbackReply",
         "AssistGoldenReply",
+        "AssistMemoryReply",
+        "AssistMemoryContext",
         "AssistGuardProbe",
         "AssistStressProbe",
         "AssistPrepareGenerationPrompt",
@@ -141,7 +143,12 @@ def verify_source() -> None:
         'prompt = "User: " + query',
         'command_line = "--stress-probe"',
         '"|query=" + AssistSafeText(query)',
+        '"|memory=" + AssistSafeText(memory_context)',
         '"|answer=" + AssistSafeText(bubble)',
+        'reply_source = "memory"',
+        'LCASE$(command_text) = "/memory"',
+        'LCASE$(command_text) = "/forget"',
+        'LEFT$(LCASE$(command_text), 10) = "/remember "',
         'LCASE$(command_text) = "/about"',
         'LCASE$(command_text) = "/u"',
         'LCASE$(command_text) = "/d"',
@@ -209,6 +216,7 @@ def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report
     require(stress.count("ASSIST_REPLY|") == STRESS_REPLY_COUNT, "stress_reply_count_mismatch")
     require("status=model_unavailable" not in stress, "model_unavailable_in_stress_log")
     require("|query=" in stress and "|answer=" in stress, "stress_structured_answer_missing")
+    require("|source=memory|" in stress, "stress_memory_source_missing")
     require("Status: `PASS`" in report, "stress_report_not_pass")
     require(f"Reply count: `{STRESS_REPLY_COUNT}`" in report, "stress_report_reply_count")
     require("Source counts:" in report, "stress_report_source_counts")

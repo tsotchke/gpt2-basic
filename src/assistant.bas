@@ -39,6 +39,7 @@ CONST ASSIST_DEFAULT_TOP_P = 0.9
 CONST ASSIST_DEFAULT_TOP_K = 24
 CONST ASSIST_HISTORY_MAX = 96
 CONST ASSIST_HISTORY_PAGE = 10
+CONST ASSIST_MEMORY_VALUE_MAX = 72
 
 TYPE AssistantPack
     id AS STRING * 32
@@ -62,6 +63,12 @@ DIM SHARED g_assist_emit_records AS INTEGER
 DIM SHARED g_assist_history(0 TO ASSIST_HISTORY_MAX - 1) AS STRING
 DIM SHARED g_assist_history_count AS INTEGER
 DIM SHARED g_assist_history_scroll AS INTEGER
+DIM SHARED g_assist_memory_user_name AS STRING
+DIM SHARED g_assist_memory_goal AS STRING
+DIM SHARED g_assist_memory_style AS STRING
+DIM SHARED g_assist_memory_problem AS STRING
+DIM SHARED g_assist_memory_last_user AS STRING
+DIM SHARED g_assist_memory_last_answer AS STRING
 
 DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
 DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
@@ -71,6 +78,16 @@ DECLARE SUB AssistAddHistory(line_text AS STRING)
 DECLARE SUB AssistClearHistory()
 DECLARE SUB AssistRenderHistory()
 DECLARE SUB AssistHistoryPage(delta AS INTEGER)
+DECLARE FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
+DECLARE FUNCTION AssistMemoryExtract(original AS STRING, lower_text AS STRING, marker AS STRING) AS STRING
+DECLARE SUB AssistRememberFact(key_name AS STRING, value AS STRING)
+DECLARE SUB AssistRememberTurn(query AS STRING, answer AS STRING)
+DECLARE FUNCTION AssistMemoryFactsText() AS STRING
+DECLARE FUNCTION AssistMemoryContext() AS STRING
+DECLARE FUNCTION AssistMemoryReply(query AS STRING) AS STRING
+DECLARE FUNCTION AssistRememberCommand(argument AS STRING) AS STRING
+DECLARE SUB AssistClearMemoryFacts()
+DECLARE SUB AssistPrintMemory()
 DECLARE FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
 DECLARE FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
 DECLARE SUB AssistLoadPackList()
@@ -238,6 +255,189 @@ SUB AssistHistoryPage(delta AS INTEGER)
     IF g_assist_history_scroll > max_scroll THEN g_assist_history_scroll = max_scroll
 
     AssistRenderHistory
+END SUB
+
+FUNCTION AssistCleanMemoryValue(value AS STRING) AS STRING
+    DIM result AS STRING
+
+    result = AssistSafeText(TRIM$(value))
+    WHILE LEN(result) > 0 AND (RIGHT$(result, 1) = "." OR RIGHT$(result, 1) = "!" OR RIGHT$(result, 1) = "?" OR RIGHT$(result, 1) = ",")
+        result = LEFT$(result, LEN(result) - 1)
+        result = RTRIM$(result)
+    WEND
+    IF LEN(result) > ASSIST_MEMORY_VALUE_MAX THEN result = LEFT$(result, ASSIST_MEMORY_VALUE_MAX)
+    RETURN result
+END FUNCTION
+
+FUNCTION AssistMemoryExtract(original AS STRING, lower_text AS STRING, marker AS STRING) AS STRING
+    DIM marker_pos AS INTEGER
+
+    marker_pos = INSTR(lower_text, marker)
+    IF marker_pos = 0 THEN RETURN ""
+    RETURN AssistCleanMemoryValue(MID$(original, marker_pos + LEN(marker)))
+END FUNCTION
+
+SUB AssistRememberFact(key_name AS STRING, value AS STRING)
+    DIM key_text AS STRING
+    DIM clean_value AS STRING
+
+    key_text = LCASE$(TRIM$(key_name))
+    clean_value = AssistCleanMemoryValue(value)
+    IF clean_value = "" THEN RETURN
+
+    IF key_text = "name" OR key_text = "user" THEN
+        g_assist_memory_user_name = clean_value
+    ELSEIF key_text = "goal" OR key_text = "work" OR key_text = "topic" THEN
+        g_assist_memory_goal = clean_value
+    ELSEIF key_text = "style" OR key_text = "preference" THEN
+        g_assist_memory_style = clean_value
+    ELSEIF key_text = "problem" OR key_text = "issue" THEN
+        g_assist_memory_problem = clean_value
+    END IF
+END SUB
+
+SUB AssistRememberTurn(query AS STRING, answer AS STRING)
+    g_assist_memory_last_user = AssistCleanMemoryValue(query)
+    g_assist_memory_last_answer = AssistCleanMemoryValue(answer)
+END SUB
+
+FUNCTION AssistMemoryFactsText() AS STRING
+    DIM facts AS STRING
+
+    facts = ""
+    IF g_assist_memory_user_name <> "" THEN facts = facts + "name=" + g_assist_memory_user_name + "; "
+    IF g_assist_memory_goal <> "" THEN facts = facts + "goal=" + g_assist_memory_goal + "; "
+    IF g_assist_memory_style <> "" THEN facts = facts + "style=" + g_assist_memory_style + "; "
+    IF g_assist_memory_problem <> "" THEN facts = facts + "problem=" + g_assist_memory_problem + "; "
+    IF g_assist_memory_last_user <> "" THEN facts = facts + "last_user=" + g_assist_memory_last_user + "; "
+    IF facts = "" THEN RETURN "Memory is empty."
+    IF RIGHT$(facts, 2) = "; " THEN facts = LEFT$(facts, LEN(facts) - 2)
+    RETURN "Memory: " + facts + "."
+END FUNCTION
+
+FUNCTION AssistMemoryContext() AS STRING
+    DIM context_text AS STRING
+
+    context_text = ""
+    IF g_assist_memory_user_name <> "" THEN context_text = context_text + "user name is " + g_assist_memory_user_name + "; "
+    IF g_assist_memory_goal <> "" THEN context_text = context_text + "current goal is " + g_assist_memory_goal + "; "
+    IF g_assist_memory_style <> "" THEN context_text = context_text + "answer style is " + g_assist_memory_style + "; "
+    IF g_assist_memory_problem <> "" THEN context_text = context_text + "known problem is " + g_assist_memory_problem + "; "
+    IF g_assist_memory_last_user <> "" THEN context_text = context_text + "previous question was " + g_assist_memory_last_user + "; "
+    IF g_assist_memory_last_answer <> "" THEN context_text = context_text + "previous answer was " + g_assist_memory_last_answer + "; "
+    IF context_text = "" THEN RETURN ""
+    IF RIGHT$(context_text, 2) = "; " THEN context_text = LEFT$(context_text, LEN(context_text) - 2)
+    RETURN "Context: " + context_text + "."
+END FUNCTION
+
+FUNCTION AssistMemoryReply(query AS STRING) AS STRING
+    DIM lower_text AS STRING
+    DIM value_text AS STRING
+
+    lower_text = LCASE$(TRIM$(query))
+    value_text = ""
+
+    value_text = AssistMemoryExtract(query, lower_text, "my name is ")
+    IF value_text <> "" THEN
+        AssistRememberFact "name", value_text
+        RETURN "I will remember your name is " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "call me ")
+    IF value_text <> "" THEN
+        AssistRememberFact "name", value_text
+        RETURN "I will remember your name is " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "we are working on ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "we're working on ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "our goal is ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "the goal is ")
+    IF value_text <> "" THEN
+        AssistRememberFact "goal", value_text
+        RETURN "I will remember we are working on " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "i prefer ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "please keep answers ")
+    IF value_text <> "" THEN
+        AssistRememberFact "style", value_text
+        RETURN "I will remember you prefer " + value_text + "."
+    END IF
+
+    value_text = AssistMemoryExtract(query, lower_text, "the problem is ")
+    IF value_text = "" THEN value_text = AssistMemoryExtract(query, lower_text, "my problem is ")
+    IF value_text <> "" THEN
+        AssistRememberFact "problem", value_text
+        RETURN "I will remember the problem is " + value_text + "."
+    END IF
+
+    IF INSTR(lower_text, "what is my name") > 0 OR INSTR(lower_text, "who am i") > 0 THEN
+        IF g_assist_memory_user_name = "" THEN RETURN "I do not know your name yet."
+        RETURN "Your name is " + g_assist_memory_user_name + "."
+    END IF
+
+    IF INSTR(lower_text, "what are we working on") > 0 OR INSTR(lower_text, "what is our goal") > 0 THEN
+        IF g_assist_memory_goal = "" THEN RETURN "I do not know the current goal yet."
+        RETURN "We are working on " + g_assist_memory_goal + "."
+    END IF
+
+    IF INSTR(lower_text, "how should you answer") > 0 OR INSTR(lower_text, "what style") > 0 THEN
+        IF g_assist_memory_style = "" THEN RETURN "I do not know your answer style yet."
+        RETURN "I should answer " + g_assist_memory_style + "."
+    END IF
+
+    IF INSTR(lower_text, "what was the problem") > 0 OR INSTR(lower_text, "what problem") > 0 THEN
+        IF g_assist_memory_problem = "" THEN RETURN "I do not know the problem yet."
+        RETURN "The problem is " + g_assist_memory_problem + "."
+    END IF
+
+    IF INSTR(lower_text, "what did i just ask") > 0 OR INSTR(lower_text, "what was my last question") > 0 THEN
+        IF g_assist_memory_last_user = "" THEN RETURN "I do not have a previous question yet."
+        RETURN "You just asked: " + g_assist_memory_last_user + "."
+    END IF
+
+    IF INSTR(lower_text, "what do you remember") > 0 OR INSTR(lower_text, "show memory") > 0 THEN
+        RETURN AssistMemoryFactsText()
+    END IF
+
+    RETURN ""
+END FUNCTION
+
+FUNCTION AssistRememberCommand(argument AS STRING) AS STRING
+    DIM eq_pos AS INTEGER
+    DIM key_text AS STRING
+    DIM value_text AS STRING
+    DIM key_supported AS INTEGER
+
+    eq_pos = INSTR(argument, "=")
+    IF eq_pos <= 1 THEN RETURN "Use /remember name=value, goal=value, style=value, or problem=value."
+
+    key_text = TRIM$(LEFT$(argument, eq_pos - 1))
+    value_text = AssistCleanMemoryValue(MID$(argument, eq_pos + 1))
+    key_supported = 0
+    IF LCASE$(key_text) = "name" OR LCASE$(key_text) = "user" THEN key_supported = 1
+    IF LCASE$(key_text) = "goal" OR LCASE$(key_text) = "work" OR LCASE$(key_text) = "topic" THEN key_supported = 1
+    IF LCASE$(key_text) = "style" OR LCASE$(key_text) = "preference" THEN key_supported = 1
+    IF LCASE$(key_text) = "problem" OR LCASE$(key_text) = "issue" THEN key_supported = 1
+    IF key_supported = 0 THEN RETURN "Use /remember name=value, goal=value, style=value, or problem=value."
+    AssistRememberFact key_text, value_text
+    IF value_text = "" THEN RETURN "Use /remember name=value, goal=value, style=value, or problem=value."
+    RETURN "I will remember " + LCASE$(key_text) + "=" + value_text + "."
+END FUNCTION
+
+SUB AssistClearMemoryFacts()
+    g_assist_memory_user_name = ""
+    g_assist_memory_goal = ""
+    g_assist_memory_style = ""
+    g_assist_memory_problem = ""
+    g_assist_memory_last_user = ""
+    g_assist_memory_last_answer = ""
+END SUB
+
+SUB AssistPrintMemory()
+    PRINT AssistMemoryFactsText()
+    PRINT
 END SUB
 
 FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
@@ -1069,6 +1269,8 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM retrieved AS STRING
     DIM retrieved_note AS STRING
     DIM golden AS STRING
+    DIM memory_reply AS STRING
+    DIM memory_context AS STRING
     DIM note_text AS STRING
     DIM prompt AS STRING
     DIM generated AS STRING
@@ -1083,6 +1285,8 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     retrieved = AssistRetrieve(pack_index, query)
     retrieved_note = retrieved
     golden = AssistGoldenReply(pack_index, query)
+    memory_reply = AssistMemoryReply(query)
+    memory_context = AssistMemoryContext()
     note_text = retrieved_note
     model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
     model_ready = 0
@@ -1094,7 +1298,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         PRINT "+------------------------------------------------------------+"
         PRINT "| Assistant                                                  |"
         PRINT "+------------------------------------------------------------+"
-        IF golden = "" AND retrieved_note = "" AND (GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path) THEN
+        IF memory_reply = "" AND golden = "" AND retrieved_note = "" AND (GPT2BasicIsLoaded() = 0 OR g_assist_model_path <> model_path) THEN
             PRINT "Loading model..."
         END IF
     END IF
@@ -1103,13 +1307,18 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         model_ready = AssistInitializeModel(pack_index)
     END IF
 
-    IF model_ready = 0 AND use_generation <> 0 AND golden = "" AND retrieved_note = "" THEN
+    IF model_ready = 0 AND use_generation <> 0 AND memory_reply = "" AND golden = "" AND retrieved_note = "" THEN
         IF g_assist_emit_records <> 0 THEN
             PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
                   "|intent=" + intent_name + "|status=model_unavailable"
         END IF
         bubble = AssistFallbackReply(pack_index, intent_name, query, retrieved_note)
         reply_source = "fallback"
+    END IF
+
+    IF bubble = "" AND memory_reply <> "" THEN
+        bubble = memory_reply
+        reply_source = "memory"
     END IF
 
     IF bubble = "" AND golden <> "" THEN
@@ -1125,6 +1334,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     IF bubble = "" AND use_generation <> 0 AND model_ready <> 0 THEN
         PRINT "Thinking: checking model answer"
         prompt = "User: " + query
+        IF memory_context <> "" THEN prompt = memory_context + " " + prompt
         IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
         prompt = prompt + " Assistant:"
         generated = AssistGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
@@ -1150,6 +1360,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
               "|actions=" + AssistSafeText(actions) + _
               "|retrieval=" + AssistSafeText(retrieved_note) + _
               "|golden=" + AssistSafeText(golden) + _
+              "|memory=" + AssistSafeText(memory_context) + _
               "|generated=" + AssistSafeText(generated) + _
               "|answer=" + AssistSafeText(bubble)
     END IF
@@ -1164,6 +1375,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     END IF
     PRINT "[ "; actions; " ]"
     PRINT
+    AssistRememberTurn query, bubble
     AssistAddHistory "ASSISTANT: " + bubble
 END SUB
 
@@ -1230,6 +1442,14 @@ SUB AssistStressProbe()
     AssistRenderReply "can we talk about games", 1
     AssistRenderReply "i am tired", 1
     AssistRenderReply "i feel lonely", 1
+    AssistRenderReply "my name is Tyr", 1
+    AssistRenderReply "what is my name", 1
+    AssistRenderReply "we are working on the DOSBox assistant", 1
+    AssistRenderReply "what are we working on", 1
+    AssistRenderReply "i prefer short answers", 1
+    AssistRenderReply "how should you answer me", 1
+    AssistRenderReply "what did i just ask", 1
+    AssistRenderReply "what do you remember", 1
 
     AssistSelectPack "DOSHELP"
     AssistRenderPackStatus
@@ -1263,7 +1483,7 @@ SUB AssistInteractive()
     AssistPrintPackList
     PRINT
     AssistRenderPackStatus
-    PRINT "Commands: /about, /pack NAME, /packs, /u, /d, /home, /end, /h, /clear, /quit"
+    PRINT "Commands: /about, /pack NAME, /packs, /memory, /remember KEY=VALUE, /forget, /u, /d, /home, /end, /h, /clear, /quit"
     PRINT
     AssistPreloadActivePackModel
 
@@ -1279,6 +1499,15 @@ SUB AssistInteractive()
             AssistPrintPackList
         ELSEIF LCASE$(command_text) = "/about" THEN
             AssistPrintPackUsage g_assist_active_pack
+        ELSEIF LCASE$(command_text) = "/memory" THEN
+            AssistPrintMemory
+        ELSEIF LCASE$(command_text) = "/forget" THEN
+            AssistClearMemoryFacts
+            PRINT "Memory cleared."
+            PRINT
+        ELSEIF LEFT$(LCASE$(command_text), 10) = "/remember " THEN
+            PRINT AssistRememberCommand(MID$(command_text, 11))
+            PRINT
         ELSEIF LCASE$(command_text) = "/history" OR LCASE$(command_text) = "/h" THEN
             AssistRenderHistory
         ELSEIF LCASE$(command_text) = "/up" OR LCASE$(command_text) = "/u" THEN

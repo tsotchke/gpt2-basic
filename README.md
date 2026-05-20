@@ -353,7 +353,10 @@ adds 67 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
 leakage, repeated chunks, token soup, truncated endings, and off-topic replies.
 The DOS assistant itself keeps interactive generation bounded to 64 tokens with
 early sentence stopping, while the scripted 486 stress probe exercises
-retrieval, golden, and model reply paths. `SPRITE=` and `ICONS=` fields are
+retrieval, golden, memory, and model reply paths across 32 prompts. The
+assistant keeps structured session memory for the user's name, current goal,
+answer style, known problem, and previous turn; use `/memory`, `/remember
+KEY=VALUE`, and `/forget` in the shell. `SPRITE=` and `ICONS=` fields are
 reserved for Clippy-style
 artwork; the current renderer is a text-mode bubble/action UI so it works
 without VGA.
