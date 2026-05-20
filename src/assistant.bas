@@ -47,6 +47,7 @@ TYPE AssistantPack
     model_path AS STRING * 80
     persona AS STRING * 160
     help_path AS STRING * 80
+    knowledge_path AS STRING * 80
     golden_path AS STRING * 80
     usage_path AS STRING * 80
     sprite_path AS STRING * 80
@@ -101,6 +102,9 @@ DECLARE SUB AssistPreloadActivePackModel()
 DECLARE SUB AssistShutdownModel()
 DECLARE FUNCTION AssistClassifyIntent(query AS STRING) AS STRING
 DECLARE FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
+DECLARE FUNCTION AssistIsRetrievalStopword(word_text AS STRING) AS INTEGER
+DECLARE FUNCTION AssistRetrievalScore(query_lower AS STRING, key_text AS STRING, title_text AS STRING, body_text AS STRING) AS INTEGER
+DECLARE SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGoldenReply(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
@@ -523,6 +527,9 @@ FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
     value_text = AssistReadIniValue(ini_path, "HELP", "HELP.TXT")
     IF INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).help_path = value_text
+    value_text = AssistReadIniValue(ini_path, "KNOW", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).knowledge_path = value_text
     value_text = AssistReadIniValue(ini_path, "GOLDEN", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).golden_path = value_text
@@ -548,6 +555,7 @@ SUB AssistUseBuiltinPack()
     g_assist_packs(0).model_path = "MODEL"
     g_assist_packs(0).persona = "Helpful concise DOS assistant."
     g_assist_packs(0).help_path = ""
+    g_assist_packs(0).knowledge_path = ""
     g_assist_packs(0).golden_path = ""
     g_assist_packs(0).usage_path = ""
     g_assist_packs(0).sprite_path = ""
@@ -743,8 +751,78 @@ FUNCTION AssistActionsForIntent(intent_name AS STRING) AS STRING
     RETURN AssistTrimFixed(g_assist_packs(g_assist_active_pack).actions)
 END FUNCTION
 
-FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
-    DIM help_path AS STRING
+FUNCTION AssistIsRetrievalStopword(word_text AS STRING) AS INTEGER
+    IF word_text = "the" THEN RETURN 1
+    IF word_text = "and" THEN RETURN 1
+    IF word_text = "for" THEN RETURN 1
+    IF word_text = "with" THEN RETURN 1
+    IF word_text = "what" THEN RETURN 1
+    IF word_text = "when" THEN RETURN 1
+    IF word_text = "where" THEN RETURN 1
+    IF word_text = "why" THEN RETURN 1
+    IF word_text = "how" THEN RETURN 1
+    IF word_text = "can" THEN RETURN 1
+    IF word_text = "you" THEN RETURN 1
+    IF word_text = "your" THEN RETURN 1
+    IF word_text = "this" THEN RETURN 1
+    IF word_text = "that" THEN RETURN 1
+    IF word_text = "from" THEN RETURN 1
+    IF word_text = "about" THEN RETURN 1
+    IF word_text = "into" THEN RETURN 1
+    IF word_text = "should" THEN RETURN 1
+    IF word_text = "would" THEN RETURN 1
+    IF word_text = "could" THEN RETURN 1
+    RETURN 0
+END FUNCTION
+
+FUNCTION AssistRetrievalScore(query_lower AS STRING, key_text AS STRING, title_text AS STRING, body_text AS STRING) AS INTEGER
+    DIM key_lower AS STRING
+    DIM title_lower AS STRING
+    DIM body_lower AS STRING
+    DIM haystack AS STRING
+    DIM word_text AS STRING
+    DIM ch AS STRING
+    DIM i AS INTEGER
+    DIM score AS INTEGER
+
+    query_lower = LCASE$(TRIM$(query_lower))
+    IF LEN(query_lower) < 3 THEN RETURN 0
+
+    key_lower = LCASE$(TRIM$(key_text))
+    title_lower = LCASE$(TRIM$(title_text))
+    body_lower = LCASE$(TRIM$(body_text))
+    haystack = key_lower + " " + title_lower + " " + body_lower
+    score = 0
+
+    IF key_lower <> "" AND INSTR(query_lower, key_lower) > 0 THEN score = score + 80 + LEN(key_lower)
+    IF LEN(query_lower) > 3 AND INSTR(key_lower, query_lower) > 0 THEN score = score + 40
+    IF INSTR(title_lower, query_lower) > 0 THEN score = score + 20
+    IF INSTR(body_lower, query_lower) > 0 THEN score = score + 20
+
+    word_text = ""
+    FOR i = 1 TO LEN(query_lower) + 1
+        IF i <= LEN(query_lower) THEN
+            ch = MID$(query_lower, i, 1)
+        ELSE
+            ch = " "
+        END IF
+
+        IF (ch >= "a" AND ch <= "z") OR (ch >= "0" AND ch <= "9") THEN
+            word_text = word_text + ch
+        ELSE
+            IF LEN(word_text) >= 3 AND AssistIsRetrievalStopword(word_text) = 0 THEN
+                IF INSTR(key_lower, word_text) > 0 THEN score = score + 12
+                IF INSTR(title_lower, word_text) > 0 THEN score = score + 6
+                IF INSTR(body_lower, word_text) > 0 THEN score = score + 3
+            END IF
+            word_text = ""
+        END IF
+    NEXT i
+
+    RETURN score
+END FUNCTION
+
+SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
     DIM file_num AS INTEGER
     DIM line_text AS STRING
     DIM key_text AS STRING
@@ -752,21 +830,14 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM body_text AS STRING
     DIM first_pipe AS INTEGER
     DIM second_pipe AS INTEGER
-    DIM q AS STRING
-    DIM best_text AS STRING
-    DIM best_score AS INTEGER
     DIM row_score AS INTEGER
 
-    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN ""
-    help_path = AssistTrimFixed(g_assist_packs(pack_index).help_path)
-    IF help_path = "" OR DIR(help_path) = "" THEN RETURN ""
+    retrieve_path = AssistTrimFixed(retrieve_path)
+    IF retrieve_path = "" OR DIR(retrieve_path) = "" THEN RETURN
 
-    q = LCASE$(query)
-    best_text = ""
-    best_score = 0
     file_num = FREEFILE
-    ON ERROR GOTO assist_retrieve_error
-    OPEN help_path FOR INPUT AS #file_num
+    ON ERROR GOTO assist_scan_retrieval_error
+    OPEN retrieve_path FOR INPUT AS #file_num
     ON ERROR GOTO 0
 
     WHILE EOF(file_num) = 0
@@ -780,9 +851,7 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
                     key_text = LCASE$(TRIM$(LEFT$(line_text, first_pipe - 1)))
                     title_text = TRIM$(MID$(line_text, first_pipe + 1, second_pipe - first_pipe - 1))
                     body_text = TRIM$(MID$(line_text, second_pipe + 1))
-                    row_score = 0
-                    IF INSTR(q, key_text) > 0 THEN row_score = LEN(key_text)
-                    IF INSTR(LCASE$(body_text), q) > 0 AND row_score < 1 THEN row_score = 1
+                    row_score = AssistRetrievalScore(query_lower, key_text, title_text, body_text)
                     IF row_score > best_score THEN
                         best_score = row_score
                         best_text = title_text + ": " + body_text
@@ -793,11 +862,32 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     WEND
 
     CLOSE #file_num
-    IF best_text <> "" THEN RETURN best_text
-    RETURN ""
+    RETURN
 
-assist_retrieve_error:
+assist_scan_retrieval_error:
     ON ERROR GOTO 0
+    RETURN
+END SUB
+
+FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
+    DIM help_path AS STRING
+    DIM knowledge_path AS STRING
+    DIM q AS STRING
+    DIM best_text AS STRING
+    DIM best_score AS INTEGER
+
+    IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN ""
+
+    q = LCASE$(query)
+    best_text = ""
+    best_score = 0
+    help_path = AssistTrimFixed(g_assist_packs(pack_index).help_path)
+    knowledge_path = AssistTrimFixed(g_assist_packs(pack_index).knowledge_path)
+
+    AssistScanRetrievalFile help_path, q, best_text, best_score
+    AssistScanRetrievalFile knowledge_path, q, best_text, best_score
+
+    IF best_score >= 8 THEN RETURN best_text
     RETURN ""
 END FUNCTION
 

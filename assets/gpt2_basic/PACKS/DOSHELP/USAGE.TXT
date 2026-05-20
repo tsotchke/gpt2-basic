@@ -6,8 +6,8 @@ Purpose:
 
 How it works:
   The pack loads PACKS\DOSHELP\MODEL and retrieves short DOS notes from
-  HELP.TXT before generating a reply. It is tuned for concrete fixes, not
-  open-ended chat.
+  HELP.TXT plus broader setup notes from KNOW.TXT before generating a reply.
+  It is tuned for concrete fixes, not open-ended chat.
 
 How to use it:
   Type /pack DOSHELP, then ask for a DOS task.
@@ -16,6 +16,7 @@ Good prompts:
   How do I tune CONFIG.SYS memory?
   Write a safe DOS batch file.
   What should AUTOEXEC.BAT contain for this demo?
+  Why use 8.3 filenames in batch files?
 
 Actions:
   show_config, explain_xms, write_batch, cancel

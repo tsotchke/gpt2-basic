@@ -21,7 +21,7 @@ token|Token meaning|A token is a small piece of text that the model reads or wri
 internet|Network limit|I cannot browse the internet from DOS; I answer from local model weights and pack files.
 troubleshooting|Troubleshooting help|Check the first error, change one thing, then test again.
 overwhelmed|Overwhelmed help|Choose one small task, then take the first step.
-trust|Trust check|The demo uses local model weights in DOS.
+trust|Trust check|The demo uses local model weights in DOS, plus visible files, tests, and logs.
 long question|Long prompt limit|Short prompts work better in this DOS demo.
 history|General topic|Ask one simple question about the topic.
 vintage|Friendly old hardware note|This old DOS computer can run a friendly local model.

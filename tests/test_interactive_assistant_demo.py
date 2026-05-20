@@ -214,8 +214,10 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         text = (ROOT / "src" / "assistant.bas").read_text(encoding="ascii")
 
         self.assertIn("best_score", text)
-        self.assertIn("row_score = LEN(key_text)", text)
-        self.assertIn("IF best_text <> \"\" THEN RETURN best_text", text)
+        self.assertIn("AssistRetrievalScore", text)
+        self.assertIn("AssistScanRetrievalFile help_path", text)
+        self.assertIn("AssistScanRetrievalFile knowledge_path", text)
+        self.assertIn("IF best_score >= 8 THEN RETURN best_text", text)
 
     def test_chat_pack_is_first_and_has_usage_instructions(self) -> None:
         pack_list = (ROOT / "assets" / "gpt2_basic" / "PACKS" / "PACKS.TXT").read_text(encoding="ascii")
