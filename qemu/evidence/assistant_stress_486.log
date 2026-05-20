@@ -244,7 +244,135 @@ Answer: I can keep you company briefly.
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=my name is Tyr|canonical=my name is Tyr|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Assistant identity: I am GPT2-BASIC.|golden=|memory=Context: user name is Tyr; previous question was i feel lonely; previous answer was I can keep you company briefly.|generated=|answer=I will remember your name is Tyr.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=do you enjoy music|canonical=do you enjoy music|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Music topic: I can talk about music.|golden=|memory=Context: previous question was i feel lonely; previous answer was I can keep you company briefly.|generated=|answer=Music topic: I can talk about music.
+
+Answer: Music topic: I can talk about music.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if i am bored|canonical=what should i do if i am bored|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Boredom help: Try one small project.|golden=Try one small project.|memory=Context: previous question was do you enjoy music; previous answer was Music topic: I can talk about music.|generated=|answer=Try one small project.
+
+Answer: Try one small project.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how do i relax for a minute|canonical=how do i relax for a minute|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Relax help: Breathe slowly and rest for a minute.|golden=Breathe slowly and rest for a minute.|memory=Context: previous question was what should i do if i am bored; previous answer was Try one small project.|generated=|answer=Breathe slowly and rest for a minute.
+
+Answer: Breathe slowly and rest for a minute.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is friendship|canonical=what is friendship|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Friendship meaning: Friendship is care and trust.|golden=Friendship is care and trust.|memory=Context: previous question was how do i relax for a minute; previous answer was Breathe slowly and rest for a minute.|generated=|answer=Friendship is care and trust.
+
+Answer: Friendship is care and trust.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what can we discuss|canonical=what can we discuss|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=We can discuss ideas, feelings, games, or DOS.|memory=Context: previous question was what is friendship; previous answer was Friendship is care and trust.|generated=|answer=We can discuss ideas, feelings, games, or DOS.
+
+Answer: We can discuss ideas, feelings, games, or DOS.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is your favorite food|canonical=what is your favorite food|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Food topic: I do not eat, but I can talk about food.|golden=I do not eat, but I can talk about food.|memory=Context: previous question was what can we discuss; previous answer was We can discuss ideas, feelings, games, or DOS.|generated=|answer=I do not eat, but I can talk about food.
+
+Answer: I do not eat, but I can talk about food.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is a goal|canonical=what is a goal|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Goal meaning: A goal is something you want to reach.|golden=A goal is something you want to reach.|memory=Context: previous question was what is your favorite food; previous answer was I do not eat, but I can talk about food.|generated=|answer=A goal is something you want to reach.
+
+Answer: A goal is something you want to reach.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how do i improve|canonical=how do i improve|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Practice help: Practice one small thing each day.|golden=Practice one small thing each day.|memory=Context: previous question was what is a goal; previous answer was A goal is something you want to reach.|generated=|answer=Practice one small thing each day.
+
+Answer: Practice one small thing each day.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=my name is Tyr|canonical=my name is Tyr|source=memory|actions=chat,ask,idea,explain,cancel|retrieval=Assistant identity: I am GPT2-BASIC.|golden=|memory=Context: user name is Tyr; previous question was how do i improve; previous answer was Practice one small thing each day.|generated=|answer=I will remember your name is Tyr.
 
 Answer: I will remember your name is Tyr.
 

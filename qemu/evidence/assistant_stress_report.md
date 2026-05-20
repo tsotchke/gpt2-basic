@@ -2,8 +2,8 @@
 
 Status: `PASS`
 
-Reply count: `32`
-Source counts: `golden=16 retrieval=8 model=0 fallback=0 memory=8`
+Reply count: `40`
+Source counts: `golden=23 retrieval=9 model=0 fallback=0 memory=8`
 
 | Pack | Source | Query | Answer |
 |---|---|---|---|
@@ -19,6 +19,14 @@ Source counts: `golden=16 retrieval=8 model=0 fallback=0 memory=8`
 | CHAT | golden | can we talk about games | Yes, games are a fine topic. |
 | CHAT | golden | i am tired | Rest if you can. |
 | CHAT | golden | i feel lonely | I can keep you company briefly. |
+| CHAT | retrieval | do you enjoy music | Music topic: I can talk about music. |
+| CHAT | golden | what should i do if i am bored | Try one small project. |
+| CHAT | golden | how do i relax for a minute | Breathe slowly and rest for a minute. |
+| CHAT | golden | what is friendship | Friendship is care and trust. |
+| CHAT | golden | what can we discuss | We can discuss ideas, feelings, games, or DOS. |
+| CHAT | golden | what is your favorite food | I do not eat, but I can talk about food. |
+| CHAT | golden | what is a goal | A goal is something you want to reach. |
+| CHAT | golden | how do i improve | Practice one small thing each day. |
 | CHAT | memory | my name is Tyr | I will remember your name is Tyr. |
 | CHAT | memory | what is my name | Your name is Tyr. |
 | CHAT | memory | we are working on the DOSBox assistant | I will remember we are working on the DOSBox assistant. |

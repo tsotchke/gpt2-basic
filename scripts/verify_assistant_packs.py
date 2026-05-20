@@ -19,7 +19,7 @@ DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_comp
 DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
 RAW_PROMPT_MIN_CASES = 67
-STRESS_REPLY_COUNT = 32
+STRESS_REPLY_COUNT = 40
 
 
 @dataclass(frozen=True)

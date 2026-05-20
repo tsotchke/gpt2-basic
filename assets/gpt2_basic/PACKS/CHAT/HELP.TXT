@@ -24,3 +24,18 @@ confused|Clarify request|Ask one short question.
 talk|Open conversation|I can talk in DOS.
 name|Assistant identity|I am GPT2-BASIC.
 status|Demo status|The demo is live.
+music|Music topic|I can talk about music.
+food|Food topic|I do not eat, but I can talk about food.
+bored|Boredom help|Try one small project.
+relax|Relax help|Breathe slowly and rest for a minute.
+friendship|Friendship meaning|Friendship is care and trust.
+game|Game meaning|A game is play with rules.
+goal|Goal meaning|A goal is something you want to reach.
+advice|Advice meaning|Advice is a suggested next step.
+rest|Rest meaning|Rest is time to recover.
+improve|Practice help|Practice one small thing each day.
+discuss|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+topics|Discussion topics|We can discuss ideas, feelings, games, music, or DOS.
+life|Meaning topic|Meaning comes from care, choices, and the people around you.
+slow|Slow inference|Small DOS inference takes time.
+unusual|Unusual demo|It is unusual, but it is real.

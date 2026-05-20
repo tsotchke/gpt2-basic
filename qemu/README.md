@@ -224,7 +224,7 @@ Run the headless assistant stress gate with:
 bash qemu/run_assistant_stress_486.sh
 ```
 
-That path compiles `C:\ASSIST.EXE`, runs `ASSIST.EXE --stress-probe`, asks 18
+That path compiles `C:\ASSIST.EXE`, runs `ASSIST.EXE --stress-probe`, asks 40
 original prompts across `CHAT`, `DOSHELP`, and `OFFICE`, then validates the
 structured `ASSIST_REPLY` records with `scripts/stress_assistant_behavior.py`.
 The validator rejects visible prompt leakage, repeated chunks, token-soup
@@ -307,8 +307,8 @@ prompt gate in `scripts/evaluate_assistant_raw_prompts.py` adds 67 original
 CHAT, DOSHELP, and OFFICE prompts and rejects prompt-label leakage, truncated
 endings, repeated chunks, token soup, and off-topic replies. `ASSIST.EXE` keeps
 interactive generation bounded to 64 tokens with early sentence stopping, and
-the scripted 486 stress probe exercises 24 retrieval, golden, and model reply
-paths.
+the scripted 486 stress probe exercises 40 retrieval, golden, memory, and
+guarded model reply paths.
 
 ## Sampling Matrix
 

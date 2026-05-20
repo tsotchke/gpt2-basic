@@ -355,7 +355,9 @@ The consistency gate expands those prompts to 402 phrasing variants and requires
 every variant group to pass after wrapper and punctuation canonicalization.
 The DOS assistant itself keeps interactive generation bounded to 64 tokens with
 early sentence stopping, while the scripted 486 stress probe exercises
-retrieval, golden, memory, and model reply paths across 32 prompts. The
+retrieval, golden, memory, and guarded model reply paths across 40 prompts,
+including broader small-talk prompts for music, boredom, relaxation,
+friendship, food, goals, discussion topics, and improvement. The
 assistant keeps structured session memory for the user's name, current goal,
 answer style, known problem, and previous turn; use `/memory`, `/remember
 KEY=VALUE`, and `/forget` in the shell. `SPRITE=` and `ICONS=` fields are

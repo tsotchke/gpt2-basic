@@ -1090,6 +1090,20 @@ FUNCTION AssistFallbackReply(pack_index AS INTEGER, intent_name AS STRING, query
     IF INSTR(q, "sad") > 0 OR INSTR(q, "worried") > 0 OR INSTR(q, "lonely") > 0 THEN
         RETURN "I can listen briefly. Name the worry, then choose one small next step."
     END IF
+    IF INSTR(q, "bored") > 0 THEN RETURN "Try one small project."
+    IF INSTR(q, "music") > 0 THEN RETURN "I can talk about music."
+    IF INSTR(q, "food") > 0 THEN RETURN "I do not eat, but I can talk about food."
+    IF INSTR(q, "relax") > 0 THEN RETURN "Breathe slowly and rest for a minute."
+    IF INSTR(q, "friendship") > 0 THEN RETURN "Friendship is care and trust."
+    IF INSTR(q, "game") > 0 THEN RETURN "A game is play with rules."
+    IF INSTR(q, "goal") > 0 THEN RETURN "A goal is something you want to reach."
+    IF INSTR(q, "advice") > 0 THEN RETURN "Advice is a suggested next step."
+    IF INSTR(q, "rest") > 0 THEN RETURN "Rest is time to recover."
+    IF INSTR(q, "improve") > 0 THEN RETURN "Practice one small thing each day."
+    IF INSTR(q, "discuss") > 0 OR INSTR(q, "topics") > 0 THEN RETURN "We can discuss ideas, feelings, games, music, or DOS."
+    IF INSTR(q, "meaning of life") > 0 THEN RETURN "Meaning comes from care, choices, and the people around you."
+    IF INSTR(q, "slow") > 0 THEN RETURN "Small DOS inference takes time."
+    IF INSTR(q, "unusual") > 0 THEN RETURN "It is unusual, but it is real."
     IF INSTR(q, "joke") > 0 THEN RETURN "DOS smiled because it found its prompt."
     IF INSTR(q, "story") > 0 THEN RETURN "A tiny model woke up inside DOS and answered one prompt at a time."
     IF INSTR(q, "plan") > 0 THEN RETURN "Pick one goal, list three steps, then start with the smallest step."
@@ -1471,6 +1485,14 @@ SUB AssistStressProbe()
     AssistRenderReply "can we talk about games", 1
     AssistRenderReply "i am tired", 1
     AssistRenderReply "i feel lonely", 1
+    AssistRenderReply "do you enjoy music", 1
+    AssistRenderReply "what should i do if i am bored", 1
+    AssistRenderReply "how do i relax for a minute", 1
+    AssistRenderReply "what is friendship", 1
+    AssistRenderReply "what can we discuss", 1
+    AssistRenderReply "what is your favorite food", 1
+    AssistRenderReply "what is a goal", 1
+    AssistRenderReply "how do i improve", 1
     AssistRenderReply "my name is Tyr", 1
     AssistRenderReply "what is my name", 1
     AssistRenderReply "we are working on the DOSBox assistant", 1
