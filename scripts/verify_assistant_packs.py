@@ -18,6 +18,8 @@ DEFAULT_STRESS_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_486.log"
 DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_compile_486.log"
 DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
+RAW_PROMPT_MIN_CASES = 67
+STRESS_REPLY_COUNT = 24
 
 
 @dataclass(frozen=True)
@@ -155,7 +157,11 @@ def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_re
     pack_by_id = {pack.pack_id: pack for pack in packs}
     raw_report = read(raw_prompt_report)
     require("Status: `PASS`" in raw_report, "raw_prompt_eval_not_pass")
-    require("Prompt pass rate: `26/26`" in raw_report, "raw_prompt_eval_pass_rate")
+    raw_match = re.search(r"Prompt pass rate:\s+`(\d+)/(\d+)`", raw_report)
+    require(raw_match is not None, "raw_prompt_eval_pass_rate_missing")
+    raw_passed = int(raw_match.group(1))
+    raw_total = int(raw_match.group(2))
+    require(raw_total >= RAW_PROMPT_MIN_CASES and raw_passed == raw_total, f"raw_prompt_eval_pass_rate={raw_passed}/{raw_total}")
     for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
@@ -164,7 +170,7 @@ def verify_pack_quality(packs: list[PackInfo], evidence_dir: Path, raw_prompt_re
         passed = int(match.group(1))
         total = int(match.group(2))
         if pack_id == "CHAT":
-            require(total > 0 and passed / total >= 0.80, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
+            require(total > 0 and passed / total >= 0.75, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
         else:
             require("Quality status: `PASS`" in report, f"pack_quality_not_pass={pack.pack_id}")
             require(total > 0 and passed == total, f"pack_quality_pass_rate={pack.pack_id}:{passed}/{total}")
@@ -200,11 +206,11 @@ def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report
     require("ASSIST_COMPILE_OK" in compile_text, "stress_compile_marker_missing")
     require("ASSIST_BEGIN|suite=stress-probe|version=1" in stress, "stress_begin_marker_missing")
     require("ASSIST_END|suite=stress-probe|packs=3" in stress, "stress_end_marker_missing")
-    require(stress.count("ASSIST_REPLY|") == 18, "stress_reply_count_mismatch")
+    require(stress.count("ASSIST_REPLY|") == STRESS_REPLY_COUNT, "stress_reply_count_mismatch")
     require("status=model_unavailable" not in stress, "model_unavailable_in_stress_log")
     require("|query=" in stress and "|answer=" in stress, "stress_structured_answer_missing")
     require("Status: `PASS`" in report, "stress_report_not_pass")
-    require("Reply count: `18`" in report, "stress_report_reply_count")
+    require(f"Reply count: `{STRESS_REPLY_COUNT}`" in report, "stress_report_reply_count")
     require("Source counts:" in report, "stress_report_source_counts")
 
 

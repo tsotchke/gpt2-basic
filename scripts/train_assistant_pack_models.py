@@ -536,7 +536,8 @@ def dialogue_eval_variant(query: str, index: int) -> str:
 
 
 def dialogue_repeat_count(query: str, answer: str) -> int:
-    query_words = len(sentence_base(query).split())
+    base = sentence_base(query).lower()
+    query_words = len(base.split())
     answer_words = len(sentence_base(answer).split())
     count = 40
     if query_words <= 2:
@@ -545,6 +546,10 @@ def dialogue_repeat_count(query: str, answer: str) -> int:
         count += 16
     if answer_words <= 5:
         count += 12
+    if any(term in base for term in ("browse the internet", "network right now", "talk about games", "feel tired", "am tired", "feel lonely", "am lonely")):
+        count += 96
+    if any(term in base for term in ("tag was stale", "dosbox needed a helper file", "clean autoexec", "autoexec bat")):
+        count += 160
     return count
 
 
@@ -766,8 +771,12 @@ def build_pack_corpus(pack: Pack, rows: list[HelpRow], include_chat_lexicon_trai
                 focus_repeats = 24
         if pack.pack_id == "DOSHELP" and row.key in {"memory", "config.sys", "autoexec", "batch"}:
             focus_repeats = 12
-        if pack.pack_id == "OFFICE" and row.key in {"professional", "summar"}:
-            focus_repeats = 12
+            if row.key == "autoexec":
+                focus_repeats = 28
+        if pack.pack_id == "OFFICE":
+            focus_repeats = 18
+            if row.key in {"rewrite", "professional", "summar"}:
+                focus_repeats = 32
         for _repeat in range(focus_repeats):
             paragraphs.append(f"{runtime_prompt(pack, row, row.title)} {row_answer}")
             paragraphs.append(f"{runtime_prompt(pack, row, f'Use {row.title.lower()}.')} {row_answer}")

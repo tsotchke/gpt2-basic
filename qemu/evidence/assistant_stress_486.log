@@ -52,9 +52,9 @@ ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lex
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=why did my answer repeat itself|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Repeat control: If I repeat, ask a shorter question or switch packs.|golden=|generated=|answer=Repeat control: If I repeat, ask a shorter question or switch packs.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=why did my answer repeat itself|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Repeat control: If I repeat, ask a shorter question or switch packs.|golden=If I repeat, reset the prompt and ask one shorter question.|generated=|answer=If I repeat, reset the prompt and ask one shorter question.
 
-Answer: Repeat control: If I repeat, ask a shorter question or switch packs.
+Answer: If I repeat, reset the prompt and ask one shorter question.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -84,9 +84,9 @@ Answer: Old hardware: The demo matters because a tiny local model can run on old
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.|golden=|generated=|answer=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.|golden=Check the first error, change one thing, then test again.|generated=|answer=Check the first error, change one thing, then test again.
 
-Answer: Tiny plan: Pick one goal, list three steps, and start with the smallest useful step.
+Answer: Check the first error, change one thing, then test again.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -132,9 +132,9 @@ Answer: Local inference means the DOS program reads model weights and produces t
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel stuck debugging this|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=|generated=|answer=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel stuck debugging this|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=Check the first error, change one thing, then test again.|generated=|answer=Check the first error, change one thing, then test again.
 
-Answer: Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.
+Answer: Check the first error, change one thing, then test again.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -167,6 +167,70 @@ ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lex
 ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=give me a status update about a delayed release|source=retrieval|actions=chat,ask,idea,explain,cancel|retrieval=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.|golden=|generated=|answer=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
 
 Answer: Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can you browse the internet from dos|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.|golden=I cannot browse the internet from DOS.|generated=|answer=I cannot browse the internet from DOS.
+
+Answer: I cannot browse the internet from DOS.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can we talk about games|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=Open conversation: I can talk in DOS.|golden=Yes, games are a fine topic.|generated=|answer=Yes, games are a fine topic.
+
+Answer: Yes, games are a fine topic.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i am tired|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=|golden=Rest if you can.|generated=|answer=Rest if you can.
+
+Answer: Rest if you can.
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel lonely|source=golden|actions=chat,ask,idea,explain,cancel|retrieval=|golden=I can keep you company briefly.|generated=|answer=I can keep you company briefly.
+
+Answer: I can keep you company briefly.
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -220,9 +284,9 @@ Answer: CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BU
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=my autoexec is too long what should i change|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.|golden=|generated=|answer=AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=my autoexec is too long what should i change|source=retrieval|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|golden=|generated=|answer=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Answer: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when needed, and make sure the assistant can find PACKS and MODEL.
+Answer: AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -236,9 +300,25 @@ Answer: AUTOEXEC.BAT hygiene: Keep PATH short, load resident tools only when nee
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_batch|ui=text|query=write a batch command that checks for model files|source=retrieval|actions=write_batch,explain_command,more,cancel|retrieval=Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.|golden=|generated=|answer=Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how should i clean autoexec.bat|source=golden|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|golden=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|generated=|answer=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Answer: Batch file help: Use IF EXIST checks, clear status messages, and 8-dot-3 names for DOS, Windows DOS boxes, and OS/2 sessions.
+Answer: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+
+[ show_config,explain_xms,more,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=DOSHELP|intent=dos_batch|ui=text|query=write a batch command that checks for model files|source=retrieval|actions=write_batch,explain_command,more,cancel|retrieval=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.|golden=|generated=|answer=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
+
+Answer: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8-dot-3 names for model files.
 
 [ write_batch,explain_command,more,cancel ]
 
@@ -308,9 +388,9 @@ ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=le
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=make this sentence sound professional: the release broke|source=retrieval|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|golden=|generated=|answer=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=make this sentence sound professional: the release broke|source=golden|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|golden=Use direct, polite, professional wording, name the release problem, and end with the next action.|generated=|answer=Use direct, polite, professional wording, name the release problem, and end with the next action.
 
-Answer: Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+Answer: Use direct, polite, professional wording, name the release problem, and end with the next action.
 
 [ rewrite,shorten,formalize,cancel ]
 
@@ -324,25 +404,9 @@ Answer: Professional tone: Keep the message direct, polite, concrete, and free o
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize: tests passed but dosbox needed a helper file|source=retrieval|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=|generated=|answer=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize this: tests passed but the tag was stale|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|generated=|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
-Answer: Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.
-
-[ summarize,bullets,shorten,cancel ]
-
-
-
-+------------------------------------------------------------+
-
-| Assistant                                                  |
-
-+------------------------------------------------------------+
-
-ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
-
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=shorten: we need to verify the release before publishing|source=retrieval|actions=summarize,bullets,shorten,cancel|retrieval=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.|golden=|generated=|answer=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.
-
-Answer: Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.
+Answer: Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
 [ summarize,bullets,shorten,cancel ]
 
@@ -356,9 +420,41 @@ Answer: Shorten action: Shortening should keep the original intent and remove qu
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|source=retrieval|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=|generated=|answer=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize: tests passed but dosbox needed a helper file|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Summary action: Summaries should preserve dates, names, decisions, and requested actions while dropping repeated explanation.|golden=Summary: tests passed, DOSBox needed a helper file. Include it.|generated=|answer=Summary: tests passed, DOSBox needed a helper file. Include it.
 
-Answer: Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.
+Answer: Summary: tests passed, DOSBox needed a helper file. Include it.
+
+[ summarize,bullets,shorten,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=shorten: we need to verify the release before publishing|source=golden|actions=summarize,bullets,shorten,cancel|retrieval=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.|golden=Short version: verify the release before publishing.|generated=|answer=Short version: verify the release before publishing.
+
+Answer: Short version: verify the release before publishing.
+
+[ summarize,bullets,shorten,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|source=golden|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=Use direct, polite, concrete wording, include the current blocker, and end with the next action.|generated=|answer=Use direct, polite, concrete wording, include the current blocker, and end with the next action.
+
+Answer: Use direct, polite, concrete wording, include the current blocker, and end with the next action.
 
 [ rewrite,shorten,summarize,formalize,cancel ]
 
@@ -372,11 +468,9 @@ Answer: Status update: Use direct polite wording, include the current blocker, a
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-Thinking: checking model answer
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|source=golden|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.|generated=|answer=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|source=model|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=|golden=|generated=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
-
-Answer: Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
+Answer: State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 
 [ rewrite,shorten,summarize,formalize,cancel ]
 

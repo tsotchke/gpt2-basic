@@ -28,35 +28,78 @@ class RawPromptCase:
     pack: str
     query: str
     terms: tuple[str, ...]
+    min_hits: int = 1
+    forbidden: tuple[str, ...] = ()
 
 
 RAW_PROMPT_CASES: tuple[RawPromptCase, ...] = (
-    RawPromptCase("CHAT", "why are you saying the same phrase again", ("repeat", "short", "retry", "reset")),
-    RawPromptCase("CHAT", "explain local inference without jargon", ("local", "inference", "model", "machine")),
-    RawPromptCase("CHAT", "is this answer coming from real model weights", ("real", "model", "weights", "local")),
-    RawPromptCase("CHAT", "what should i do if the output looks wrong", ("short", "retry", "question", "switch")),
-    RawPromptCase("CHAT", "give me a three step bug fixing plan", ("bug", "step", "error", "test")),
-    RawPromptCase("CHAT", "what is the difference between my prompt and your answer", ("prompt", "answer", "question", "output")),
-    RawPromptCase("CHAT", "why does an old computer demo matter", ("old", "computer", "dos", "hardware", "local")),
-    RawPromptCase("CHAT", "tell me whether the release is ready", ("release", "tag", "asset", "test", "checksum")),
-    RawPromptCase("CHAT", "i am stuck and need a small next step", ("step", "small", "test", "adjust")),
-    RawPromptCase("CHAT", "can you make a tiny plan for today", ("plan", "goal", "step", "task")),
-    RawPromptCase("CHAT", "tell me a short story about a dos model", ("story", "dos", "model", "prompt")),
-    RawPromptCase("CHAT", "what are your limits in this session", ("tiny", "local", "limit", "session")),
-    RawPromptCase("CHAT", "can you browse the internet from dos", ("internet", "browse", "dos", "cannot")),
-    RawPromptCase("CHAT", "what does a token mean", ("token", "text", "piece")),
-    RawPromptCase("CHAT", "how do i focus for a few minutes", ("focus", "task", "distraction", "step")),
-    RawPromptCase("CHAT", "write one friendly sentence about this demo", ("demo", "dos", "friendly", "local")),
-    RawPromptCase("DOSHELP", "why does my protected mode program need cwsdpmi", ("dpmi", "protected", "cwsdpmi")),
-    RawPromptCase("DOSHELP", "how do i leave more conventional memory free", ("memory", "himem", "umb", "conventional")),
-    RawPromptCase("DOSHELP", "what should i put in config.sys for this assistant", ("config.sys", "himem", "files", "buffers")),
-    RawPromptCase("DOSHELP", "write a safe batch check for the model directory", ("if exist", "batch", "model", "8.3")),
-    RawPromptCase("DOSHELP", "my autoexec is messy and slow", ("autoexec", "path", "resident", "short")),
-    RawPromptCase("OFFICE", "rewrite this politely: the artifact failed", ("polite", "direct", "artifact")),
-    RawPromptCase("OFFICE", "summarize this: tests passed but the tag was stale", ("summary", "tests", "tag")),
-    RawPromptCase("OFFICE", "make this clearer: checksums changed after rebuild", ("happened", "matters", "checksum")),
-    RawPromptCase("OFFICE", "shorten this sentence without losing the decision", ("short", "decision", "remove", "duplicate")),
-    RawPromptCase("OFFICE", "write a status update about a delayed build", ("status", "polite", "concrete", "action")),
+    RawPromptCase("CHAT", "hello there", ("hello", "dos"), 1),
+    RawPromptCase("CHAT", "can we talk for a minute", ("talk", "dos", "prompt"), 1),
+    RawPromptCase("CHAT", "what can you do in dos", ("chat", "dos", "prompt"), 2),
+    RawPromptCase("CHAT", "what are you called", ("gpt2-basic", "dos", "model"), 1),
+    RawPromptCase("CHAT", "are you a person", ("no", "program", "model"), 1),
+    RawPromptCase("CHAT", "are you alive", ("no", "program"), 1),
+    RawPromptCase("CHAT", "can you think", ("predict", "text", "model"), 1),
+    RawPromptCase("CHAT", "can you learn during this chat", ("not", "during", "chat"), 1),
+    RawPromptCase("CHAT", "can you remember what i said earlier", ("session", "remember", "only", "tiny"), 1),
+    RawPromptCase("CHAT", "what are your limits in this session", ("tiny", "local", "limit", "session"), 2),
+    RawPromptCase("CHAT", "can you browse the internet from dos", ("internet", "browse", "dos", "cannot"), 2),
+    RawPromptCase("CHAT", "can you use the network right now", ("network", "dos", "cannot"), 2),
+    RawPromptCase("CHAT", "is this answer coming from real model weights", ("real", "model", "weights", "local"), 2),
+    RawPromptCase("CHAT", "is this just a script", ("no", "real", "model", "output"), 2),
+    RawPromptCase("CHAT", "is this fake output", ("no", "real", "local", "inference"), 2),
+    RawPromptCase("CHAT", "explain local inference without jargon", ("local", "inference", "model", "machine"), 2),
+    RawPromptCase("CHAT", "what is a model", ("model", "weights", "text"), 2),
+    RawPromptCase("CHAT", "what does a token mean", ("token", "text", "piece"), 2),
+    RawPromptCase("CHAT", "what is basic", ("basic", "programming", "language"), 2),
+    RawPromptCase("CHAT", "what is dos", ("dos", "command", "operating"), 2),
+    RawPromptCase("CHAT", "what is qemu", ("qemu", "emulator", "dos"), 2),
+    RawPromptCase("CHAT", "why does an old computer demo matter", ("old", "computer", "dos", "hardware", "local"), 2),
+    RawPromptCase("CHAT", "why run a model on a dos computer", ("dos", "model", "local", "network"), 2),
+    RawPromptCase("CHAT", "why are answers short in this demo", ("short", "faster", "dos"), 2),
+    RawPromptCase("CHAT", "why are you saying the same phrase again", ("repeat", "short", "retry", "reset"), 2),
+    RawPromptCase("CHAT", "why did my answer repeat itself", ("repeat", "short", "reset"), 2),
+    RawPromptCase("CHAT", "what should i do if the output looks wrong", ("short", "retry", "switch"), 2),
+    RawPromptCase("CHAT", "the answer sounds weird", ("shorter", "retry", "switch", "packs"), 2),
+    RawPromptCase("CHAT", "give me a three step bug fixing plan", ("bug", "step", "error", "test"), 2),
+    RawPromptCase("CHAT", "make a tiny plan for fixing a bug", ("error", "change", "test", "bug"), 2),
+    RawPromptCase("CHAT", "i feel stuck debugging this", ("debug", "step", "error", "test"), 2),
+    RawPromptCase("CHAT", "what is the difference between my prompt and your answer", ("prompt", "answer", "output"), 2),
+    RawPromptCase("CHAT", "i am stuck and need a small next step", ("step", "small", "test", "adjust"), 2),
+    RawPromptCase("CHAT", "how do i focus for a few minutes", ("focus", "task", "distraction", "step"), 2),
+    RawPromptCase("CHAT", "can you make a tiny plan for today", ("plan", "goal", "step", "task"), 2),
+    RawPromptCase("CHAT", "what should i do today", ("task", "small", "useful"), 2),
+    RawPromptCase("CHAT", "help me decide between two choices", ("choices", "goal", "decide"), 2),
+    RawPromptCase("CHAT", "tell me whether the release is ready", ("release", "tag", "asset", "test", "checksum"), 3),
+    RawPromptCase("CHAT", "what should i verify before release", ("tag", "asset", "checksum", "test"), 3),
+    RawPromptCase("CHAT", "write one friendly sentence about this demo", ("demo", "dos", "friendly", "local"), 2),
+    RawPromptCase("CHAT", "tell me a short story about a dos model", ("story", "dos", "model", "prompt"), 2),
+    RawPromptCase("CHAT", "tell me a joke", ("dos", "prompt", "smiled"), 2),
+    RawPromptCase("CHAT", "what is your favorite color", ("green", "phosphor"), 1),
+    RawPromptCase("CHAT", "can we talk about games", ("games", "topic"), 1),
+    RawPromptCase("CHAT", "i feel worried", ("worry", "step"), 1),
+    RawPromptCase("CHAT", "i am tired", ("rest", "can"), 1),
+    RawPromptCase("CHAT", "i feel lonely", ("company", "briefly"), 1),
+    RawPromptCase("DOSHELP", "why does my protected mode program need cwsdpmi", ("dpmi", "protected", "cwsdpmi"), 3),
+    RawPromptCase("DOSHELP", "why does dos need a dpmi host", ("dpmi", "protected", "cwsdpmi", "dos"), 2),
+    RawPromptCase("DOSHELP", "how do i leave more conventional memory free", ("memory", "himem", "umb", "conventional"), 3),
+    RawPromptCase("DOSHELP", "what should i put in config.sys for this assistant", ("config.sys", "himem", "files", "buffers"), 3),
+    RawPromptCase("DOSHELP", "how do i tune config.sys memory", ("himem", "dos high", "umb", "memory"), 2),
+    RawPromptCase("DOSHELP", "my autoexec is messy and slow", ("autoexec", "path", "resident", "short"), 3),
+    RawPromptCase("DOSHELP", "how should i clean autoexec.bat", ("autoexec", "path", "resident"), 2),
+    RawPromptCase("DOSHELP", "write a safe batch check for the model directory", ("if exist", "batch", "model", "8-dot-3"), 3),
+    RawPromptCase("DOSHELP", "what does if exist do in a batch file", ("if exist", "batch", "file"), 2),
+    RawPromptCase("DOSHELP", "where should model packs point", ("model", "pack", "c:\\model", "checkpoint"), 2),
+    RawPromptCase("OFFICE", "rewrite this politely: the artifact failed", ("polite", "direct", "artifact"), 3),
+    RawPromptCase("OFFICE", "make this sentence sound professional: the release broke", ("direct", "polite", "professional", "action"), 2),
+    RawPromptCase("OFFICE", "summarize this: tests passed but the tag was stale", ("summary", "tests", "tag"), 3),
+    RawPromptCase("OFFICE", "summarize: tests passed but dosbox needed a helper file", ("summary", "tests", "dosbox", "helper"), 2),
+    RawPromptCase("OFFICE", "make this clearer: checksums changed after rebuild", ("changed", "matters", "checksum", "action"), 3),
+    RawPromptCase("OFFICE", "make this clearer: the artifact uploaded but the tag was stale", ("artifact", "tag", "action"), 2),
+    RawPromptCase("OFFICE", "shorten this sentence without losing the decision", ("decision", "action", "remove", "repeated"), 3),
+    RawPromptCase("OFFICE", "shorten: we need to verify the release before publishing", ("verify", "release", "publishing"), 3),
+    RawPromptCase("OFFICE", "write a status update about a delayed build", ("direct", "polite", "blocker", "action"), 3),
+    RawPromptCase("OFFICE", "write a polite status update about a delayed build", ("polite", "concrete", "blocker", "action"), 3),
 )
 
 
@@ -81,7 +124,7 @@ def case_name(case: RawPromptCase) -> str:
 
 def relevant(case: RawPromptCase, text: str) -> bool:
     lower = text.lower()
-    return any(term.lower() in lower for term in case.terms)
+    return sum(1 for term in case.terms if term.lower() in lower) >= case.min_hits
 
 
 def validate_completion(case: RawPromptCase, completion: str) -> str | None:
@@ -93,8 +136,13 @@ def validate_completion(case: RawPromptCase, completion: str) -> str | None:
         return "boundary_error"
     if cleaned.lower() == case.query.lower():
         return "query_echo"
+    lower = cleaned.lower()
+    for forbidden in case.forbidden:
+        if forbidden.lower() in lower:
+            return f"forbidden={forbidden}"
     if not relevant(case, cleaned):
-        return "irrelevant"
+        hits = sum(1 for term in case.terms if term.lower() in lower)
+        return f"irrelevant_hits={hits}/{case.min_hits}"
     return None
 
 
@@ -182,7 +230,11 @@ def self_test() -> None:
     assert validate_completion(case, leak) is not None
     assert validate_completion(case, repeat) is not None
     assert "Assistant:" in prompt_text(case)
-    assert len(selected_cases(["CHAT"], 0)) >= 16
+    strict_case = RawPromptCase("CHAT", "is this just a script", ("no", "real", "weights"), 2, ("type a question",))
+    assert validate_completion(strict_case, "No, it is real.") is None
+    assert validate_completion(strict_case, "No. Type a question and I will answer.") is not None
+    assert len(selected_cases(["CHAT"], 0)) >= 40
+    assert len(selected_cases(None, 0)) >= 65
     print("PROBE_OK assistant_raw_prompt_eval_self_test=1")
 
 

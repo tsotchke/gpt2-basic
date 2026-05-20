@@ -1226,12 +1226,17 @@ SUB AssistStressProbe()
     AssistRenderReply "i feel stuck debugging this", 1
     AssistRenderReply "what should i do if the answer sounds weird", 1
     AssistRenderReply "give me a status update about a delayed release", 1
+    AssistRenderReply "can you browse the internet from dos", 1
+    AssistRenderReply "can we talk about games", 1
+    AssistRenderReply "i am tired", 1
+    AssistRenderReply "i feel lonely", 1
 
     AssistSelectPack "DOSHELP"
     AssistRenderPackStatus
     AssistPreloadActivePackModel
     AssistRenderReply "how do i keep conventional memory free", 1
     AssistRenderReply "my autoexec is too long what should i change", 1
+    AssistRenderReply "how should i clean autoexec.bat", 1
     AssistRenderReply "write a batch command that checks for model files", 1
     AssistRenderReply "why does protected mode need a dpmi host", 1
     AssistRenderReply "what does config.sys do", 1
@@ -1240,6 +1245,7 @@ SUB AssistStressProbe()
     AssistRenderPackStatus
     AssistPreloadActivePackModel
     AssistRenderReply "make this sentence sound professional: the release broke", 1
+    AssistRenderReply "summarize this: tests passed but the tag was stale", 1
     AssistRenderReply "summarize: tests passed but dosbox needed a helper file", 1
     AssistRenderReply "shorten: we need to verify the release before publishing", 1
     AssistRenderReply "write a polite status update about a delayed build", 1

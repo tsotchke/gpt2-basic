@@ -303,11 +303,11 @@ qemu/evidence/quality_report_assistant_<pack>.md
 ```
 
 The host quality gate uses a 96-token assistant reply window. The raw assistant
-prompt gate in `scripts/evaluate_assistant_raw_prompts.py` adds 26 original
+prompt gate in `scripts/evaluate_assistant_raw_prompts.py` adds 67 original
 CHAT, DOSHELP, and OFFICE prompts and rejects prompt-label leakage, truncated
 endings, repeated chunks, token soup, and off-topic replies. `ASSIST.EXE` keeps
 interactive generation bounded to 64 tokens with early sentence stopping, and
-the scripted 486 stress probe exercises retrieval, golden, and model reply
+the scripted 486 stress probe exercises 24 retrieval, golden, and model reply
 paths.
 
 ## Sampling Matrix

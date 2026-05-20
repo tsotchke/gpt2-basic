@@ -4,30 +4,23 @@ training_backend_selected: mps
 training_backend_torch_version: 2.4.1
 training_backend_available_cuda: False
 training_backend_available_mps: True
-loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TRAIN.TXT docs=83014
-loaded_tokenizer_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TOKBASE.TXT docs=2400
+loaded_corpus_file: /Users/tyr/Desktop/gpt2-basic/assets/gpt2_basic/PACKS/CHAT/TRAIN.TXT docs=131445
 initialized_from: assets/gpt2_basic/PACKS/CHAT/MODEL
 device: mps
 training_documents_core: 42
 training_documents_core_weight: 1
-training_documents_external: 83014
-tokenizer_basis_documents: 2400
-tokenizer_basis_chars: 4181570
-training tokens: 5543360784
+training_documents_external: 131445
+training tokens: 287061585
 tokenizer: lexicon vocab=4096 merges=0 output_allowed=3934
 model: layers=3 emb=64 heads=4 ctx=192 hidden=256
-step     1 loss 10.6520
-step    60 loss 3.3513
-step   120 loss 2.0480
-step   180 loss 1.4778
-step   240 loss 1.2088
-step   300 loss 1.0893
-step   360 loss 0.9209
-step   420 loss 0.8322
-step   480 loss 0.7779
-step   540 loss 0.7438
-step   600 loss 0.7289
-step   660 loss 0.6653
+step     1 loss 0.6688
+step    60 loss 0.6151
+step   120 loss 0.5775
+step   180 loss 0.5822
+step   240 loss 0.5703
+step   300 loss 0.5736
+step   360 loss 0.5439
+step   420 loss 0.5633
 
 prompt: Hello there.
 Hello there.

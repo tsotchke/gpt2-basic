@@ -349,7 +349,7 @@ That builds pack corpora from `PACK.INI`, `HELP.TXT`, and optional
 pack-local checkpoint under `PACKS\<ID>\MODEL`, runs `model_report.py`, writes
 pack-specific quality reports, and updates `MODEL=PACKS\<ID>\MODEL`. The
 host quality sweep uses a 96-token reply window. The raw assistant prompt gate
-adds 26 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
+adds 67 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
 leakage, repeated chunks, token soup, truncated endings, and off-topic replies.
 The DOS assistant itself keeps interactive generation bounded to 64 tokens with
 early sentence stopping, while the scripted 486 stress probe exercises
