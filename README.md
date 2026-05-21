@@ -143,7 +143,7 @@ The paper bridges technical implementation details with historical analysis to p
 Public release and media:
 
 - [v0.1.0-preview release](https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview)
-- [Passing public release gate](https://github.com/tsotchke/gpt2-basic/actions/runs/26080991744)
+- [Passing public release gate](https://github.com/tsotchke/gpt2-basic/actions/runs/26205303456)
 - [Public launch plan](docs/public-launch.md)
 - [Video production plan](docs/marketing/video-plan.md)
 - [Public demo script](docs/marketing/public-demo-script.md)
