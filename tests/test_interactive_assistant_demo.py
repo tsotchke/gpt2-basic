@@ -156,7 +156,7 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("make a tiny plan for fixing a bug", text)
         self.assertIn("can you browse the internet from dos", text)
         self.assertIn("i feel lonely", text)
-        self.assertIn("my name is Tyr", text)
+        self.assertIn("my name is Operator", text)
         self.assertIn("what is my name", text)
         self.assertIn("what are we working on", text)
         self.assertIn("how should you answer me", text)

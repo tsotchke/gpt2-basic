@@ -165,7 +165,7 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
     capability_text = capability_report.read_text(encoding="ascii", errors="ignore")
     term = Terminal(speed)
 
-    term.title("GPT2-BASIC Assistant Showcase", "Real terminal recording from checked QEMU evidence")
+    term.title("GPT2-BASIC Capability Demonstration", "Real terminal recording from checked QEMU evidence")
     term.line("FreeDOS kernel 2043", DIM)
     term.command("ASSIST", [
         "ASSIST_COMPILE_OK",
@@ -173,6 +173,13 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
         "Available packs: CHAT DOSHELP OFFICE DEV",
         "Loaded model: PACKS\\CHAT\\MODEL (486dx2-usable)",
     ])
+
+    term.title("Who This Is For", "Product demonstration, not personal branding")
+    term.line("For engineers evaluating useful local language models on constrained systems.", WHITE, 0.09)
+    term.line("For retrocomputing, embedded, industrial, archival, and air-gapped environments.", WHITE, 0.09)
+    term.line("For pack authors who need fast local recall, small weights, and auditable behavior.", WHITE, 0.09)
+    term.line("This is not a cloud demo or a personal release: it shows what the product can do.", YELLOW, 0.09)
+    term.sleep(1.2)
 
     term.title("/capabilities", "What the DOS assistant can do now")
     term.command("/capabilities", capability_lines(capability_text))
@@ -205,7 +212,7 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
         "CHAT: session memory",
         "CHAT",
         [
-            "my name is Tyr",
+            "my name is Operator",
             "what is my name",
             "we are working on the DOSBox assistant",
             "what do you remember",
@@ -296,13 +303,14 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
         "gpt2-basic-launch-kit.zip: OK",
     ])
 
-    term.title("GPT2-BASIC", "A modern-feeling local assistant path for 486-era systems")
+    term.title("GPT2-BASIC", "A practical local assistant path for 486-era and constrained systems")
     term.line("What makes it useful: hot-loadable language packs, local memory, compact recall, and visible proof.", YELLOW)
     term.line("What keeps it honest: every reply shows source, recall mode, and timing.", BLUE)
     term.line("What comes next: bigger packs, persistent on-disk memory, better routing, and tighter latency budgets.", WHITE)
+    term.line("Audience: builders and operators who need useful language tooling where modern cloud systems cannot run.", WHITE)
     term.line()
     term.line("ASSIST_END|suite=showcase|packs=4", GREEN)
-    term.sleep(3.0)
+    term.sleep(8.0)
 
 
 def self_test() -> None:
@@ -324,7 +332,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stress-report", type=Path, default=DEFAULT_STRESS_REPORT)
     parser.add_argument("--capability-report", type=Path, default=DEFAULT_CAPABILITY_REPORT)
-    parser.add_argument("--speed", type=float, default=1.35)
+    parser.add_argument("--speed", type=float, default=0.35)
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if args.self_test:

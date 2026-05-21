@@ -18,6 +18,7 @@ PLAYER = ROOT / "scripts" / "play_assistant_showcase_terminal.py"
 DEFAULT_COLS = 104
 DEFAULT_ROWS = 32
 DEFAULT_FONT_SIZE = 22
+DEFAULT_LAST_FRAME_DURATION = 12
 
 
 def require(condition: bool, message: str) -> None:
@@ -37,6 +38,13 @@ def file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 def output_paths(output_dir: Path) -> dict[str, Path]:
@@ -62,7 +70,7 @@ def record_cast(
     if cast_path.exists() and not force:
         raise SystemExit(f"ASSISTANT_SHOWCASE_VIDEO_FAILED output_exists={cast_path} use --force")
     cast_path.parent.mkdir(parents=True, exist_ok=True)
-    command = f"{sys.executable} {PLAYER} --speed {speed:.3f}"
+    command = f"python3 scripts/play_assistant_showcase_terminal.py --speed {speed:.3f}"
     run_checked(
         [
             asciinema,
@@ -105,9 +113,9 @@ def render_gif(
             "--fps-cap",
             "20",
             "--idle-time-limit",
-            "1.5",
-            "--last-frame-duration",
             "3",
+            "--last-frame-duration",
+            str(DEFAULT_LAST_FRAME_DURATION),
             cast_path.as_posix(),
             gif_path.as_posix(),
         ],
@@ -177,19 +185,26 @@ def write_report(report: Path, paths: dict[str, Path], resolution: str, duration
         "",
         "Status: `PASS`",
         "",
-        "This video is a real terminal recording rendered from checked GPT2-BASIC QEMU assistant evidence.",
+        "This video is a real terminal capability demonstration rendered from checked GPT2-BASIC QEMU assistant evidence.",
         "",
-        f"- MP4: `{paths['mp4']}`",
-        f"- Cast: `{paths['cast']}`",
-        f"- GIF intermediate: `{paths['gif']}`",
+        f"- MP4: `{display_path(paths['mp4'])}`",
+        f"- Cast: `{display_path(paths['cast'])}`",
+        f"- GIF intermediate: `{display_path(paths['gif'])}`",
         f"- Resolution: `{resolution}`",
         f"- Duration seconds: `{duration}`",
+        f"- Final frame hold seconds: `{DEFAULT_LAST_FRAME_DURATION}`",
         f"- MP4 SHA-256: `{file_sha256(paths['mp4'])}`",
+        "",
+        "Audience:",
+        "",
+        "- Engineers evaluating local language models on constrained systems.",
+        "- Retrocomputing, embedded, industrial, archival, and air-gapped operators.",
+        "- Pack authors who need fast local recall, small weights, and auditable behavior.",
         "",
         "Covered functionality:",
         "",
         "- CHAT general conversation, local inference, no-web limits, troubleshooting, and repeated-answer recovery.",
-        "- CHAT session memory for name, goal, answer style, last prompt, and recall summary.",
+        "- CHAT session memory for small session facts, goal, answer style, last prompt, and recall summary.",
         "- DOSHELP pack for CONFIG.SYS, AUTOEXEC.BAT, DPMI, conventional memory, and batch-file help.",
         "- OFFICE pack for rewriting, summarizing, status updates, release wording, and clearer notes.",
         "- DEV pack for retrieval-first architecture, pack authoring, release checks, and modern 486 assistant design.",
@@ -225,6 +240,8 @@ def self_test() -> None:
     require(paths["mp4"].name == "gpt2_basic_assistant_showcase_1080p.mp4", "self_test_mp4_name")
     require(paths["cast"].suffix == ".cast", "self_test_cast_suffix")
     require(PLAYER.name == "play_assistant_showcase_terminal.py", "self_test_player")
+    require(display_path(ROOT / "promo" / "renders" / "demo.mp4") == "promo/renders/demo.mp4", "self_test_display_path")
+    require(DEFAULT_LAST_FRAME_DURATION >= 10, "self_test_final_hold")
     print("PROBE_OK assistant_showcase_video_self_test=1")
 
 
@@ -235,7 +252,7 @@ def main() -> None:
     parser.add_argument("--cols", type=int, default=DEFAULT_COLS)
     parser.add_argument("--rows", type=int, default=DEFAULT_ROWS)
     parser.add_argument("--font-size", type=int, default=DEFAULT_FONT_SIZE)
-    parser.add_argument("--speed", type=float, default=0.65)
+    parser.add_argument("--speed", type=float, default=0.35)
     parser.add_argument("--asciinema", default="asciinema")
     parser.add_argument("--agg", default="agg")
     parser.add_argument("--ffmpeg", default="ffmpeg")

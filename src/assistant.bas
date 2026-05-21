@@ -2046,7 +2046,7 @@ SUB AssistStressProbe()
     AssistRenderReply "what is your favorite food", 1
     AssistRenderReply "what is a goal", 1
     AssistRenderReply "how do i improve", 1
-    AssistRenderReply "my name is Tyr", 1
+    AssistRenderReply "my name is Operator", 1
     AssistRenderReply "what is my name", 1
     AssistRenderReply "we are working on the DOSBox assistant", 1
     AssistRenderReply "what are we working on", 1
