@@ -22,6 +22,7 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
             "PERF.LOG",
             "ASSIST.LOG",
             "ASTRESS.LOG",
+            "ARECALL.LOG",
             "ASSISTC.LOG",
             "HWNOTES.TXT",
         ]
@@ -93,6 +94,7 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
         self.assertIn("PERF.LOG", text)
         self.assertIn("ASSIST.LOG", text)
         self.assertIn("ASTRESS.LOG", text)
+        self.assertIn("ARECALL.LOG", text)
         self.assertIn("ASSISTC.LOG", text)
         self.assertIn("HWNOTES.TXT", text)
         self.assertIn("--require-filled-notes", text)

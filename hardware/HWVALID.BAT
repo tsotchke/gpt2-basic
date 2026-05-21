@@ -6,6 +6,7 @@ if exist QUAL.LOG del QUAL.LOG
 if exist PERF.LOG del PERF.LOG
 if exist ASSIST.LOG del ASSIST.LOG
 if exist ASTRESS.LOG del ASTRESS.LOG
+if exist ARECALL.LOG del ARECALL.LOG
 if exist ASSISTC.LOG del ASSISTC.LOG
 
 echo HW_CAPTURE_BEGIN>HWVALID.LOG
@@ -50,6 +51,9 @@ ASSIST.EXE --scripted > ASSIST.LOG
 echo Running ASSIST.EXE --stress-probe...
 echo HW_STEP^|assistant_stress>>HWVALID.LOG
 ASSIST.EXE --stress-probe > ASTRESS.LOG
+echo Running ASSIST.EXE --recall-probe...
+echo HW_STEP^|assistant_recall>>HWVALID.LOG
+ASSIST.EXE --recall-probe > ARECALL.LOG
 goto done
 
 :missing_exe
@@ -66,5 +70,5 @@ goto done
 echo HW_CAPTURE_END>>HWVALID.LOG
 echo.
 echo Hardware validation capture complete.
-echo Copy HWVALID.LOG, QUAL.LOG, PERF.LOG, ASSIST.LOG, ASTRESS.LOG, ASSISTC.LOG,
-echo and HWNOTES.TXT back to the host for verification.
+echo Copy HWVALID.LOG, QUAL.LOG, PERF.LOG, ASSIST.LOG, ASTRESS.LOG, ARECALL.LOG,
+echo ASSISTC.LOG, and HWNOTES.TXT back to the host for verification.

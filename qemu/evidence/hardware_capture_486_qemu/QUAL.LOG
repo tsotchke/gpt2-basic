@@ -38,7 +38,7 @@ Production model initialization complete.
 
   Arithmetic  : Q20.12 fixed-point
 
-Generated  35 tokens in 0.8199999332427979 seconds (42.68293030413781 tokens/sec)
+Generated  35 tokens in 0.7599999904632568 seconds (46.05263215683174 tokens/sec)
 
 
 
@@ -60,7 +60,7 @@ QUALITY_PROMPT_END|real_inference
 
 QUALITY_PROMPT_BEGIN|486_target|GPT2 BASIC on a 486
 
-Generated  44 tokens in 0.8199999332427979 seconds (53.65854095377325 tokens/sec)
+Generated  44 tokens in 0.880000114440918 seconds (49.99999349767596 tokens/sec)
 
 
 
@@ -104,7 +104,7 @@ QUALITY_PROMPT_END|dos_model
 
 QUALITY_PROMPT_BEGIN|basic_runtime|A BASIC transformer runtime
 
-Generated  48 tokens in 0.9899997711181641 seconds (48.48485969424616 tokens/sec)
+Generated  48 tokens in 0.9900000095367432 seconds (48.48484801779036 tokens/sec)
 
 
 
@@ -126,7 +126,7 @@ QUALITY_PROMPT_END|basic_runtime
 
 QUALITY_PROMPT_BEGIN|optimization|To improve performance on real hardware
 
-Generated  45 tokens in 0.9900000095367432 seconds (45.45454501667847 tokens/sec)
+Generated  45 tokens in 0.929999828338623 seconds (48.38710570558838 tokens/sec)
 
 
 
@@ -148,7 +148,7 @@ QUALITY_PROMPT_END|optimization
 
 QUALITY_PROMPT_BEGIN|heldout_cache|Explain why a cache matters for text generation
 
-Generated  42 tokens in 0.8799998760223389 seconds (47.72727945126873 tokens/sec)
+Generated  42 tokens in 0.8199999332427979 seconds (51.21951636496537 tokens/sec)
 
 
 
@@ -170,7 +170,7 @@ QUALITY_PROMPT_END|heldout_cache
 
 QUALITY_PROMPT_BEGIN|heldout_timing|How should a DOS model report timing?
 
-Generated  43 tokens in 0.8300001621246338 seconds (51.8072187961128 tokens/sec)
+Generated  43 tokens in 0.940000057220459 seconds (45.74467806645588 tokens/sec)
 
 
 
@@ -192,7 +192,7 @@ QUALITY_PROMPT_END|heldout_timing
 
 QUALITY_PROMPT_BEGIN|heldout_limits|What limits a tiny transformer on old PCs?
 
-Generated  35 tokens in 0.6600000858306885 seconds (53.03029613389874 tokens/sec)
+Generated  35 tokens in 0.7200000286102295 seconds (48.61110917947918 tokens/sec)
 
 
 

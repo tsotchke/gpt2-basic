@@ -204,6 +204,7 @@ def return_instructions() -> str:
         "  PERF.LOG\n"
         "  ASSIST.LOG\n"
         "  ASTRESS.LOG\n"
+        "  ARECALL.LOG\n"
         "  ASSISTC.LOG\n"
         "  HWNOTES.TXT\n"
         "\n"

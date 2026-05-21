@@ -26,6 +26,7 @@ STAGED_FILES = (
     ("perf", "PERF.LOG", "perf.log"),
     ("assistant", "ASSIST.LOG", "assistant.log"),
     ("assistant_stress", "ASTRESS.LOG", "assistant_stress.log"),
+    ("assistant_recall", "ARECALL.LOG", "assistant_recall.log"),
     ("assistant_compile", "ASSISTC.LOG", "assistant_compile.log"),
 )
 
@@ -295,6 +296,26 @@ def write_sample_capture(root: Path) -> None:
         "\n".join(stress_lines) + "\n",
         encoding="ascii",
     )
+    recall_lines = [
+        "ASSIST_BEGIN|suite=recall-probe|version=1",
+        *[f"ASSIST_PACK|id={pack_id}" for pack_id in verify_hardware_capture.EXPECTED_ASSISTANT_PACKS],
+    ]
+    for case in verify_hardware_capture.benchmark_assistant_recall.CASES:
+        recall_lines.append(
+            "ASSIST_RECALL|pack={pack}|query={query}|recall=kb2_term|"
+            "recall_score=99|t_retrieve_ms=3|answer={answer}".format(
+                pack=case.pack,
+                query=case.query,
+                answer=" ".join(case.terms) + ".",
+            )
+        )
+    recall_lines.append(
+        f"ASSIST_END|suite=recall-probe|packs={verify_hardware_capture.EXPECTED_ASSISTANT_PACK_COUNT}"
+    )
+    (root / "ARECALL.LOG").write_text(
+        "\n".join(recall_lines) + "\n",
+        encoding="ascii",
+    )
     (root / "ASSISTC.LOG").write_text("ASSIST_COMPILE_OK\n", encoding="ascii")
     (root / "HWNOTES.TXT").write_text(
         "Machine key: 486dx2_66_dos622\n"
@@ -341,7 +362,7 @@ def self_test() -> None:
             (evidence / "hardware_486dx2_66_dos622_manifest.md").exists(),
             "self_test_missing_manifest",
         )
-        require(len(written) == 8, "self_test_staged_count")
+        require(len(written) == 9, "self_test_staged_count")
     print("PROBE_OK hardware_stage_self_test=1")
 
 

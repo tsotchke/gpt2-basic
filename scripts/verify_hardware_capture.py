@@ -10,8 +10,10 @@ from pathlib import Path
 
 try:
     from scripts import stress_assistant_behavior
+    from scripts import benchmark_assistant_recall
 except ImportError:  # pragma: no cover - used when run as scripts/foo.py
     import stress_assistant_behavior  # type: ignore
+    import benchmark_assistant_recall  # type: ignore
 
 
 DEFAULT_FILES = {
@@ -20,12 +22,14 @@ DEFAULT_FILES = {
     "perf": "PERF.LOG",
     "assistant": "ASSIST.LOG",
     "assistant_stress": "ASTRESS.LOG",
+    "assistant_recall": "ARECALL.LOG",
     "assistant_compile": "ASSISTC.LOG",
     "notes": "HWNOTES.TXT",
 }
 EXPECTED_ASSISTANT_PACKS = ("CHAT", "DOSHELP", "OFFICE", "DEV", "PORTABLE")
 EXPECTED_ASSISTANT_PACK_COUNT = len(EXPECTED_ASSISTANT_PACKS)
 EXPECTED_STRESS_REPLIES = len(stress_assistant_behavior.EXPECTED_CASES)
+EXPECTED_RECALL_CASES = len(benchmark_assistant_recall.CASES)
 NOTE_FIELDS = (
     "Machine key:",
     "CPU:",
@@ -121,6 +125,29 @@ def verify_assistant_stress_log(path: Path, required: bool) -> int:
     return reply_count
 
 
+def verify_assistant_recall_log(path: Path, required: bool) -> int:
+    text = read(path, required=required)
+    if not text:
+        return 0
+    require("ASSIST_BEGIN|suite=recall-probe|version=1" in text, "assistant_recall_begin_missing")
+    require(
+        f"ASSIST_END|suite=recall-probe|packs={EXPECTED_ASSISTANT_PACK_COUNT}" in text,
+        "assistant_recall_end_missing",
+    )
+    for pack_id in EXPECTED_ASSISTANT_PACKS:
+        require(f"ASSIST_PACK|id={pack_id}" in text, f"assistant_recall_pack_missing={pack_id}")
+        require(f"ASSIST_RECALL|pack={pack_id}" in text, f"assistant_recall_record_missing={pack_id}")
+    recall_count = count_matches(r"^ASSIST_RECALL\|", text)
+    require(recall_count == EXPECTED_RECALL_CASES, f"assistant_recall_count={recall_count}")
+    records = benchmark_assistant_recall.parse_records(text)
+    benchmark_assistant_recall.validate_records(
+        records,
+        benchmark_assistant_recall.DEFAULT_MAX_AVERAGE_MS,
+        benchmark_assistant_recall.DEFAULT_MAX_SINGLE_MS,
+    )
+    return recall_count
+
+
 def verify_assistant_compile_log(path: Path, required: bool) -> bool:
     text = read(path, required=required)
     if not text:
@@ -197,6 +224,24 @@ def self_test() -> None:
             "\n".join(stress_lines) + "\n",
             encoding="ascii",
         )
+        recall_lines = [
+            "ASSIST_BEGIN|suite=recall-probe|version=1",
+            *[f"ASSIST_PACK|id={pack_id}" for pack_id in EXPECTED_ASSISTANT_PACKS],
+        ]
+        for case in benchmark_assistant_recall.CASES:
+            recall_lines.append(
+                "ASSIST_RECALL|pack={pack}|query={query}|recall=kb2_term|"
+                "recall_score=99|t_retrieve_ms=3|answer={answer}".format(
+                    pack=case.pack,
+                    query=case.query,
+                    answer=" ".join(case.terms) + ".",
+                )
+            )
+        recall_lines.append(f"ASSIST_END|suite=recall-probe|packs={EXPECTED_ASSISTANT_PACK_COUNT}")
+        (root / "ARECALL.LOG").write_text(
+            "\n".join(recall_lines) + "\n",
+            encoding="ascii",
+        )
         (root / "ASSISTC.LOG").write_text("ASSIST_COMPILE_OK\n", encoding="ascii")
         (root / "HWNOTES.TXT").write_text(
             "Machine key: 486dx2_66_dos622\n"
@@ -230,6 +275,10 @@ def verify_capture(
         capture_dir / DEFAULT_FILES["assistant_stress"],
         require_assistant,
     )
+    assistant_recall_count = verify_assistant_recall_log(
+        capture_dir / DEFAULT_FILES["assistant_recall"],
+        require_assistant,
+    )
     assistant_compiled = verify_assistant_compile_log(capture_dir / DEFAULT_FILES["assistant_compile"], require_assistant)
     notes_present = verify_notes(
         capture_dir / DEFAULT_FILES["notes"],
@@ -244,6 +293,8 @@ def verify_capture(
         print(f"PROBE_OK hardware_assistant_log={DEFAULT_FILES['assistant']}")
     if require_assistant or assistant_stress_count:
         print(f"PROBE_OK hardware_assistant_stress_log={DEFAULT_FILES['assistant_stress']}")
+    if require_assistant or assistant_recall_count:
+        print(f"PROBE_OK hardware_assistant_recall_log={DEFAULT_FILES['assistant_recall']}")
     if require_assistant or assistant_compiled:
         print(f"PROBE_OK hardware_assistant_compile_log={DEFAULT_FILES['assistant_compile']}")
     if require_notes or notes_present:
@@ -254,6 +305,8 @@ def verify_capture(
         print(f"PROBE_OK hardware_assistant_replies={assistant_count}")
     if require_assistant or assistant_stress_count:
         print(f"PROBE_OK hardware_assistant_stress_replies={assistant_stress_count}")
+    if require_assistant or assistant_recall_count:
+        print(f"PROBE_OK hardware_assistant_recall_cases={assistant_recall_count}")
     if require_assistant or assistant_compiled:
         print("PROBE_OK hardware_assistant_compile=1")
     if require_notes or notes_present:

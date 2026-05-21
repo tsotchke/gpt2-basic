@@ -384,6 +384,13 @@ Regenerate the evidence-backed capability/functionality report with:
 python3 scripts/build_assistant_capability_report.py
 ```
 
+Regenerate the retrieval-only recall benchmark after `ASSIST.EXE --recall-probe`
+has produced `qemu/evidence/assistant_recall_486.log`:
+
+```sh
+python3 scripts/benchmark_assistant_recall.py
+```
+
 Run the non-greedy sampling matrix with:
 
 ```sh
@@ -466,7 +473,7 @@ physical 486-class DOS machine. Pentium timing is useful scaling evidence, but
 it is not a blocker for the solid 486-focused release. The hardware ladder is
 tracked in [`docs/hardware-validation.md`](docs/hardware-validation.md), with a
 DOS capture batch under `hardware/HWVALID.BAT` that writes `QUAL.LOG`,
-`PERF.LOG`, `ASSIST.LOG`, `ASTRESS.LOG`, and `ASSISTC.LOG`, strict host
+`PERF.LOG`, `ASSIST.LOG`, `ASTRESS.LOG`, `ARECALL.LOG`, and `ASSISTC.LOG`, strict host
 verification through `scripts/verify_hardware_capture.py --require-filled-notes`,
 and release evidence staging through
 `scripts/stage_hardware_capture_evidence.py`. The physical assistant gate now

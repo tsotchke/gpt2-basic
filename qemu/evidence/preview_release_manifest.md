@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `583 files, 119,897,176 bytes`
+Package status: `592 files, 119,965,348 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -82,6 +82,9 @@ This is an iterative preview payload. It ships only strict-quality release model
 - `qemu/evidence/assistant_pack_probe.log`
 - `qemu/evidence/assistant_pack_retrieval_eval.md`
 - `qemu/evidence/assistant_raw_prompt_eval.md`
+- `qemu/evidence/assistant_recall_486.log`
+- `qemu/evidence/assistant_recall_benchmark.md`
+- `qemu/evidence/assistant_recall_compile_486.log`
 - `qemu/evidence/assistant_showcase_video.md`
 - `qemu/evidence/assistant_stress_486.log`
 - `qemu/evidence/assistant_stress_compile_486.log`
@@ -90,6 +93,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 - `qemu/evidence/compile_main_486.log`
 - `qemu/evidence/exported_model_quality_inventory.md`
 - `qemu/evidence/gold_curriculum_v5_clean_repair_report.md`
+- `qemu/evidence/hardware_capture_486_qemu/ARECALL.LOG`
 - `qemu/evidence/hardware_capture_486_qemu/ASSIST.LOG`
 - `qemu/evidence/hardware_capture_486_qemu/ASSISTC.LOG`
 - `qemu/evidence/hardware_capture_486_qemu/ASTRESS.LOG`
@@ -98,6 +102,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 - `qemu/evidence/hardware_capture_486_qemu/PERF.LOG`
 - `qemu/evidence/hardware_capture_486_qemu/QUAL.LOG`
 - `qemu/evidence/hardware_capture_486_qemu_probe.log`
+- `qemu/evidence/hardware_capture_486_qemu_recall_report.md`
 - `qemu/evidence/hardware_capture_486_qemu_stress_report.md`
 - `qemu/evidence/hardware_capture_probe.log`
 - `qemu/evidence/hardware_perf_report.md`
@@ -152,6 +157,7 @@ python3 scripts/build_dosbox_bundle.py --self-test
 python3 scripts/build_hardware_transfer.py --self-test
 python3 scripts/evaluate_assistant_kdb_binary.py
 python3 scripts/evaluate_assistant_kdb_term_index.py
+python3 scripts/benchmark_assistant_recall.py
 python3 scripts/build_preview_release.py --self-test
 python3 scripts/verify_preview_artifacts.py --self-test
 python3 scripts/verify_workspace_tracking.py

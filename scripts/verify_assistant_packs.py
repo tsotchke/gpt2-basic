@@ -17,6 +17,9 @@ DEFAULT_EVIDENCE_DIR = ROOT / "qemu" / "evidence"
 DEFAULT_STRESS_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_486.log"
 DEFAULT_STRESS_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_stress_compile_486.log"
 DEFAULT_STRESS_REPORT = ROOT / "qemu" / "evidence" / "assistant_stress_report.md"
+DEFAULT_RECALL_LOG = ROOT / "qemu" / "evidence" / "assistant_recall_486.log"
+DEFAULT_RECALL_COMPILE_LOG = ROOT / "qemu" / "evidence" / "assistant_recall_compile_486.log"
+DEFAULT_RECALL_REPORT = ROOT / "qemu" / "evidence" / "assistant_recall_benchmark.md"
 DEFAULT_RAW_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_raw_prompt_eval.md"
 DEFAULT_GENERALIST_PROMPT_REPORT = ROOT / "qemu" / "evidence" / "assistant_generalist_prompt_eval.md"
 DEFAULT_RETRIEVAL_REPORT = ROOT / "qemu" / "evidence" / "assistant_pack_retrieval_eval.md"
@@ -36,6 +39,8 @@ KDB_BINARY_MAX_SCAN_RATIO = 0.65
 KDB_TERM_INDEX_MIN_CASES = 42
 KDB_TERM_INDEX_MAX_ROW_RATIO = 0.35
 STRESS_REPLY_COUNT = 50
+RECALL_CASE_COUNT = 42
+RECALL_MAX_AVERAGE_MS = 250
 
 
 @dataclass(frozen=True)
@@ -173,6 +178,8 @@ def verify_source() -> None:
         "AssistSaveMemoryFacts",
         "AssistGuardProbe",
         "AssistStressProbe",
+        "AssistRecallProbe",
+        "AssistEmitRecallCase",
         "AssistPrepareGenerationPrompt",
         "AssistPrefillPrompt",
         "AssistVisibleToken",
@@ -195,6 +202,9 @@ def verify_source() -> None:
         "AssistCanonicalQuery",
         'prompt = "User: " + canonical_query',
         'command_line = "--stress-probe"',
+        'command_line = "--recall-probe"',
+        "ASSIST_BEGIN|suite=recall-probe|version=1",
+        "ASSIST_RECALL",
         '"|query=" + AssistSafeText(query)',
         '"|canonical=" + AssistSafeText(canonical_query)',
         '"|memory=" + AssistSafeText(memory_context)',
@@ -231,6 +241,7 @@ def verify_pack_quality(
     kdb_index_report: Path,
     kdb_binary_report: Path,
     kdb_term_index_report: Path,
+    recall_report: Path,
 ) -> None:
     pack_by_id = {pack.pack_id: pack for pack in packs}
     raw_report = read(raw_prompt_report)
@@ -320,6 +331,16 @@ def verify_pack_quality(
         f"kdb_term_index_eval_pass_rate={kdb_term_passed}/{kdb_term_total}",
     )
     require(term_ratio <= KDB_TERM_INDEX_MAX_ROW_RATIO, f"kdb_term_index_row_ratio={term_ratio:.3f}")
+    recall_text = read(recall_report)
+    require("Status: `PASS`" in recall_text, "assistant_recall_benchmark_not_pass")
+    recall_count_match = re.search(r"Recall case count:\s+`(\d+)`", recall_text)
+    require(recall_count_match is not None, "assistant_recall_case_count_missing")
+    recall_count = int(recall_count_match.group(1))
+    average_match = re.search(r"Average retrieval time:\s+`(\d+) ms`", recall_text)
+    require(average_match is not None, "assistant_recall_average_missing")
+    recall_average_ms = int(average_match.group(1))
+    require(recall_count >= RECALL_CASE_COUNT, f"assistant_recall_cases={recall_count}")
+    require(recall_average_ms <= RECALL_MAX_AVERAGE_MS, f"assistant_recall_average_ms={recall_average_ms}")
     for pack_id in ("CHAT", "DOSHELP", "OFFICE"):
         pack = pack_by_id[pack_id]
         report = read(evidence_dir / f"quality_report_assistant_{pack.pack_id.lower()}.md")
@@ -377,6 +398,21 @@ def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report
     require("Source counts:" in report, "stress_report_source_counts")
 
 
+def verify_recall_logs(recall_log: Path, recall_compile_log: Path, recall_report: Path) -> None:
+    recall = read(recall_log)
+    compile_text = read(recall_compile_log)
+    report = read(recall_report)
+    require("ASSIST_COMPILE_OK" in compile_text, "recall_compile_marker_missing")
+    require("ASSIST_BEGIN|suite=recall-probe|version=1" in recall, "recall_begin_marker_missing")
+    require("ASSIST_END|suite=recall-probe|packs=5" in recall, "recall_end_marker_missing")
+    require(recall.count("ASSIST_RECALL|") == RECALL_CASE_COUNT, "recall_case_count_mismatch")
+    require("|query=" in recall and "|answer=" in recall, "recall_structured_answer_missing")
+    require("Status: `PASS`" in report, "recall_report_not_pass")
+    require(f"Recall case count: `{RECALL_CASE_COUNT}`" in report, "recall_report_case_count")
+    require("Average retrieval time:" in report, "recall_report_average_missing")
+    require("Recall modes:" in report, "recall_report_modes_missing")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pack-root", type=Path, default=DEFAULT_PACK_ROOT)
@@ -386,6 +422,9 @@ def main() -> None:
     parser.add_argument("--stress-log", type=Path, default=DEFAULT_STRESS_LOG)
     parser.add_argument("--stress-compile-log", type=Path, default=DEFAULT_STRESS_COMPILE_LOG)
     parser.add_argument("--stress-report", type=Path, default=DEFAULT_STRESS_REPORT)
+    parser.add_argument("--recall-log", type=Path, default=DEFAULT_RECALL_LOG)
+    parser.add_argument("--recall-compile-log", type=Path, default=DEFAULT_RECALL_COMPILE_LOG)
+    parser.add_argument("--recall-report", type=Path, default=DEFAULT_RECALL_REPORT)
     parser.add_argument("--raw-prompt-report", type=Path, default=DEFAULT_RAW_PROMPT_REPORT)
     parser.add_argument("--generalist-prompt-report", type=Path, default=DEFAULT_GENERALIST_PROMPT_REPORT)
     parser.add_argument("--retrieval-report", type=Path, default=DEFAULT_RETRIEVAL_REPORT)
@@ -407,9 +446,11 @@ def main() -> None:
         args.kdb_index_report,
         args.kdb_binary_report,
         args.kdb_term_index_report,
+        args.recall_report,
     )
     verify_qemu_logs(packs, args.assistant_log, args.compile_log)
     verify_stress_logs(args.stress_log, args.stress_compile_log, args.stress_report)
+    verify_recall_logs(args.recall_log, args.recall_compile_log, args.recall_report)
     print(f"PROBE_OK assistant_pack_count={len(packs)}")
     print("PROBE_OK assistant_pack_loader=1")
     print("PROBE_OK assistant_pack_models=1")
@@ -420,11 +461,13 @@ def main() -> None:
     print("PROBE_OK assistant_kdb_index_eval=1")
     print("PROBE_OK assistant_kdb_binary_eval=1")
     print("PROBE_OK assistant_kdb_term_index_eval=1")
+    print("PROBE_OK assistant_recall_benchmark=1")
     print("PROBE_OK assistant_model_switch=1")
     print("PROBE_OK assistant_structured_reply=1")
     print("PROBE_OK assistant_art_slots=1")
     print("PROBE_OK assistant_qemu_evidence=1")
     print("PROBE_OK assistant_stress_evidence=1")
+    print("PROBE_OK assistant_recall_evidence=1")
 
 
 if __name__ == "__main__":

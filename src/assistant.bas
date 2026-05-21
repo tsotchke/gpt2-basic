@@ -160,6 +160,8 @@ DECLARE SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
 DECLARE SUB AssistScriptedDemo()
 DECLARE SUB AssistGuardProbe()
 DECLARE SUB AssistStressProbe()
+DECLARE SUB AssistEmitRecallCase(query AS STRING)
+DECLARE SUB AssistRecallProbe()
 DECLARE SUB AssistInteractive()
 DECLARE SUB AssistMain()
 
@@ -2303,6 +2305,85 @@ SUB AssistStressProbe()
     AssistShutdownModel
 END SUB
 
+SUB AssistEmitRecallCase(query AS STRING)
+    DIM answer AS STRING
+
+    answer = AssistRetrieve(g_assist_active_pack, AssistCanonicalQuery(query))
+    PRINT "ASSIST_RECALL|pack=" + AssistTrimFixed(g_assist_packs(g_assist_active_pack).id) + _
+          "|query=" + AssistSafeText(query) + _
+          "|recall=" + AssistSafeText(g_assist_last_recall_mode) + _
+          "|recall_score=" + LTRIM$(STR$(g_assist_last_recall_score)) + _
+          "|t_retrieve_ms=" + LTRIM$(STR$(g_assist_last_retrieval_ms)) + _
+          "|answer=" + AssistSafeText(answer)
+END SUB
+
+SUB AssistRecallProbe()
+    AssistRenderFrame
+    PRINT "ASSIST_BEGIN|suite=recall-probe|version=1"
+    AssistPrintPackList
+    PRINT
+
+    AssistSelectPack "CHAT"
+    AssistRenderPackStatus
+    AssistEmitRecallCase "how can i ask better questions"
+    AssistEmitRecallCase "what makes this intelligent on a small computer"
+    AssistEmitRecallCase "which pack should i use for writing"
+    AssistEmitRecallCase "can this work without the internet"
+    AssistEmitRecallCase "how do i recover from a bad answer"
+    AssistEmitRecallCase "what proof helps me trust this"
+    AssistEmitRecallCase "how should i compare options"
+    AssistEmitRecallCase "help me plan work in small steps"
+    AssistEmitRecallCase "what should a useful answer look like"
+    AssistEmitRecallCase "can you explain something simply"
+    AssistEmitRecallCase "what can you know without web access"
+    AssistEmitRecallCase "how do i show confidence in an answer"
+
+    AssistSelectPack "DOSHELP"
+    AssistRenderPackStatus
+    AssistEmitRecallCase "what happens before autoexec bat runs"
+    AssistEmitRecallCase "why use 8.3 filenames in batches"
+    AssistEmitRecallCase "how should i prepare files for real hardware"
+    AssistEmitRecallCase "what should i do when cwsdpmi is missing"
+    AssistEmitRecallCase "how do i mount the dosbox bundle"
+    AssistEmitRecallCase "what if the fat image is full"
+    AssistEmitRecallCase "what logs matter from qemu"
+    AssistEmitRecallCase "how do i handle a dos memory error"
+    AssistEmitRecallCase "how should a batch menu work"
+
+    AssistSelectPack "OFFICE"
+    AssistRenderPackStatus
+    AssistEmitRecallCase "how should i write a handoff note"
+    AssistEmitRecallCase "what belongs in a bug report"
+    AssistEmitRecallCase "make a compact release note"
+    AssistEmitRecallCase "what should meeting notes capture"
+    AssistEmitRecallCase "help me write a project plan"
+    AssistEmitRecallCase "how do i track risks"
+    AssistEmitRecallCase "what is a useful test plan"
+    AssistEmitRecallCase "how should i reply to a customer"
+    AssistEmitRecallCase "how do i write user docs"
+
+    AssistSelectPack "DEV"
+    AssistRenderPackStatus
+    AssistEmitRecallCase "how can this feel modern on a 486"
+    AssistEmitRecallCase "what does retrieval first mean"
+    AssistEmitRecallCase "how do i author a pack"
+    AssistEmitRecallCase "what should i check before release"
+    AssistEmitRecallCase "how should we store fast recall data"
+    AssistEmitRecallCase "what should a failure record include"
+
+    AssistSelectPack "PORTABLE"
+    AssistRenderPackStatus
+    AssistEmitRecallCase "what does portable intelligence mean"
+    AssistEmitRecallCase "why is basic useful for teaching ai"
+    AssistEmitRecallCase "how could this move to c or assembly"
+    AssistEmitRecallCase "why do hot swappable weights matter"
+    AssistEmitRecallCase "how should tiny machines store recall"
+    AssistEmitRecallCase "what proof shows this works on old hardware"
+
+    PRINT "ASSIST_END|suite=recall-probe|packs=" + LTRIM$(STR$(g_assist_pack_count))
+    AssistShutdownModel
+END SUB
+
 SUB AssistInteractive()
     DIM command_text AS STRING
     DIM query AS STRING
@@ -2401,6 +2482,12 @@ SUB AssistMain()
     IF command_line = "--stress-probe" THEN
         g_assist_emit_records = 1
         AssistStressProbe
+        RETURN
+    END IF
+
+    IF command_line = "--recall-probe" THEN
+        g_assist_emit_records = 1
+        AssistRecallProbe
         RETURN
     END IF
 
