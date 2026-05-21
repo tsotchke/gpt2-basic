@@ -199,7 +199,7 @@ def write_report(report: Path, paths: dict[str, Path], resolution: str, duration
         "Audience:",
         "",
         "- Engineers evaluating local language models on constrained systems.",
-        "- Retrocomputing, embedded, industrial, archival, and air-gapped operators.",
+        "- Legacy, embedded, industrial, archival, and air-gapped operators.",
         "- Pack authors who need fast local recall, small weights, and auditable behavior.",
         "",
         "Covered functionality:",

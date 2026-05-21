@@ -64,7 +64,7 @@ for physical DOS systems.
 
 Portable machine intelligence in BASIC: a QEMU-verified DOS/486 transformer and
 assistant runtime with fixed-point GPT inference, hot-swappable local model
-packs, sharded recall indexes, and release bundles for retro and constrained
+packs, sharded recall indexes, and release bundles for legacy and constrained
 systems.
 
 ## Release Announcement Draft
@@ -124,11 +124,11 @@ video tooling are not presented as DOS or Windows 95 runtime features.
 
 ## Thumbnail Text Options
 
-- GPT IN DOS
-- AI ON A 486?
+- LOCAL AI IN DOS
+- 486-CLASS TARGET
 - TRANSFORMERS IN BASIC
 - DOS CHAT MODEL
-- REAL INFERENCE, RETRO HARDWARE
+- REAL INFERENCE, LOCAL HARDWARE
 
 ## Press/Contact Placeholder
 
