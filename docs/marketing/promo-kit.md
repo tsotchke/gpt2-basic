@@ -5,24 +5,25 @@ GitHub release, video descriptions, social posts, and a small landing page.
 
 ## One-Line Description
 
-GPT2-BASIC runs small GPT-style transformer models inside DOS using a
-FreeBASIC fixed-point inference runtime.
+GPT2-BASIC runs local GPT-style inference and assistant recall inside DOS using
+a FreeBASIC fixed-point runtime.
 
 ## Short Description
 
-GPT2-BASIC asks a deliberately unreasonable question: what would a transformer
-language model look like if it had to run in a 486-era DOS software stack? The
-project includes host-side training/export tools, a FreeBASIC fixed-point
-runtime, DOS/QEMU evidence, assistant packs, and hardware-transfer tooling for
-physical machines.
+GPT2-BASIC is a portable machine-intelligence runtime for DOS-class systems. It
+includes host-side training/export tools, a FreeBASIC fixed-point transformer,
+hot-loadable local assistant packs, sharded recall indexes, DOS/QEMU evidence,
+and hardware-transfer tooling for physical machines.
 
 ## Longer Description
 
-GPT2-BASIC is an educational retrocomputing AI project. It trains compact
-GPT-style models on a modern host, exports fixed-point weights, and runs the
-inference path inside a DOS FreeBASIC program. The goal is not to compete with
-modern LLMs. The goal is to make the transformer loop visible, constrained,
-and reproducible on hardware and software that were never designed for it.
+GPT2-BASIC is a constrained-system AI project. It trains compact GPT-style
+models on a modern host, exports fixed-point weights, and runs the inference
+path inside a DOS FreeBASIC program. The assistant combines local model output,
+pack-specific golden replies, session memory, binary knowledge records, and
+sharded term indexes. The goal is not to compete with modern hosted LLMs. The
+goal is to make useful local machine intelligence visible, portable, and
+reproducible under severe CPU, memory, storage, and operating-system limits.
 
 The current preview includes a production DOS runtime, curated model artifacts,
 assistant packs, QEMU evidence, quality reports, and a hardware-transfer bundle
@@ -33,10 +34,12 @@ for physical DOS systems.
 - Real fixed-point transformer inference in DOS.
 - FreeBASIC source you can read, build, and inspect.
 - Host-trained, DOS-exported model artifacts.
-- Assistant packs for CHAT, DOSHELP, and OFFICE workflows.
+- Hot-loadable assistant packs for CHAT, DOSHELP, OFFICE, DEV, and PORTABLE
+  workflows.
+- Sharded `KB2T?.TXT` recall indexes for faster local knowledge lookup.
 - QEMU 486DX2/66 evidence plus a path to physical 486 validation.
 - Reproducible preview-release and hardware-transfer zips.
-- Educational focus: modern AI concepts explained through old constraints.
+- Educational focus: modern AI concepts explained through constrained systems.
 - Substrate-portability argument: the runtime is built from primitive
   operations that can be lowered to C or assembly.
 
@@ -51,17 +54,18 @@ for physical DOS systems.
 
 ## Suggested Taglines
 
-- Modern transformer ideas, DOS-era constraints.
-- A tiny GPT-style model running where it has no business running.
-- Real inference. Real mode vibes.
+- Portable local intelligence, built from BASIC and fixed-point math.
+- GPT-style inference and recall for DOS-class machines.
+- Local weights, local recall, local execution.
 - The transformer loop, stripped down to BASIC.
-- AI archaeology from an alternate 1993.
+- Useful assistant behavior under severe constraints.
 
 ## GitHub Repository Blurb
 
-Small GPT-style transformer models exported to a DOS FreeBASIC fixed-point
-runtime, with QEMU evidence, assistant packs, and hardware-transfer tooling for
-486-era machines.
+Portable machine intelligence in BASIC: a QEMU-verified DOS/486 transformer and
+assistant runtime with fixed-point GPT inference, hot-swappable local model
+packs, sharded recall indexes, and release bundles for retro and constrained
+systems.
 
 ## Release Announcement Draft
 
@@ -84,8 +88,9 @@ GPT2-BASIC includes a tiny transformer runtime for DOS in FreeBASIC. It loads
 exported fixed-point weights, runs GPT-style inference, and includes assistant
 packs with reproducible quality evidence.
 
-What if transformer models had landed in the 486 era? GPT2-BASIC is a working
-answer: small, slow, inspectable, and running inside DOS.
+GPT2-BASIC keeps the AI stack local and inspectable: fixed-point weights,
+FreeBASIC source, sharded recall indexes, QEMU evidence, and DOS release
+bundles.
 
 ## Video Description Template
 

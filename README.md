@@ -11,18 +11,52 @@
 #####################################################################
 ```
 
-# 🖥️ GPT-2 in BASIC: AI Meets Retrocomputing
+# GPT2-BASIC: Portable Machine Intelligence in BASIC
 
-*What if transformer models had been invented during the 486 era?*
+GPT2-BASIC is a fixed-point transformer and assistant runtime implemented in
+BASIC for DOS-class machines. It is not a web frontend, an API wrapper, or a
+mock terminal demo. The release build compiles under DOS FreeBASIC, loads local
+model artifacts from disk, performs GPT-style inference with integer arithmetic,
+switches hot-loadable assistant packs, and uses local indexed knowledge files for
+fast recall on constrained systems.
+
+The project is built around a practical claim: language-model inference and
+useful local assistant behavior are portable algorithms. With appropriate
+quantization, storage layout, tokenizer design, and retrieval indexes, the same
+core ideas can run far below the hardware floor normally associated with modern
+LLMs.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
+## ► What It Does
+
+- Runs a DOS GPT-style transformer runtime in FreeBASIC with Q20.12 fixed-point
+  weights and DOS-loadable vocabulary/model files.
+- Provides an assistant shell with multiple local packs for chat, DOS help,
+  office tasks, development notes, and portable-system guidance.
+- Uses hot-swappable local model/knowledge assets rather than network access.
+- Combines tiny model generation, golden replies, session memory, pack retrieval,
+  binary KDB/KB2 records, and sharded `KB2T?.TXT` term indexes.
+- Ships DOSBox, QEMU, hardware-transfer, and launch-kit bundles for release and
+  validation workflows.
+- Includes host and QEMU gates that produce machine-readable evidence instead of
+  relying on screenshots or claims.
+
+This is still a deliberately small model, not a frontier LLM compressed into a
+486. The useful behavior comes from a complete constrained-system design:
+fixed-point inference, compact local weights, curated language packs, indexed
+recall, deterministic validation, and runtime fallbacks that keep answers useful
+when raw generation is weak.
+
 ## ► Project Status
 
 The current production path is the promoted `MODEL_LEXICON_GOLD_V4_S3000`
-checkpoint running inside the DOS `GPT2.EXE` program. The model is
-trained/exported on the host, copied into `C:\MODEL`, and executed by the
-FreeBASIC fixed-point transformer runtime.
+checkpoint running inside the DOS `GPT2.EXE` program. The model is trained and
+exported on the host, copied into `C:\MODEL`, and executed by the FreeBASIC
+fixed-point transformer runtime. The assistant release path also includes five
+pack directories with local model metadata, golden replies, HELP rows, KDB/KB2
+knowledge records, aggregate `KB2TERM.TXT` term indexes, and sharded `KB2T?.TXT`
+term indexes for faster recall.
 
 Verified production surface:
 
@@ -94,32 +128,27 @@ Release mode choice:
 
 ## ► About This Project
 
-This implementation demonstrates that **modern AI concepts like transformers are fundamentally just algorithms** - mathematical operations that can be implemented even on hardware from decades ago. It bridges two worlds typically considered separate: cutting-edge AI and vintage computing.
+This project demonstrates that language-model inference is not intrinsically
+tied to a cloud service, a GPU, Python, or a modern operating system. The
+software here keeps the implementation close to the machine: BASIC source,
+integer math, explicit binary files, simple text indexes, and repeatable DOS
+validation runs.
 
-Think of it as *digital archaeology in reverse* - building tomorrow's technology with yesterday's tools.
+The repository has three audiences:
 
-### ■ Why This Matters
+1. **Constrained-system developers** who want concrete techniques for local AI
+   under severe memory, storage, and CPU limits.
+2. **AI practitioners** who want a readable, inspectable transformer runtime
+   without the usual stack of frameworks and accelerators.
+3. **Retro and embedded-system builders** who want a working assistant runtime,
+   not just a conceptual port.
 
-```
-╔══════════════════════════════════════════════════════════════════╗
-║ "We were so busy asking if LLMs could run on a 486, we didn't    ║
-║  stop to think if they should. The answer, by the way, is yes."  ║
-║                                                                  ║
-║                       — Anonymous DOS Enthusiast                 ║
-╚══════════════════════════════════════════════════════════════════╝
-```
-
-This project serves multiple purposes:
-
-1. **Demystifying Modern AI**: By stripping away the layers of optimization that make modern transformers inscrutable, we expose their fundamental mathematical operations.
-
-2. **Historical "What If?"**: Imagine an alternate timeline where transformers were invented in the early 1990s. How would they have been implemented with the constraints of the era?
-
-3. **Educational Tool**: Learn about both transformer architecture and optimization techniques for constrained environments in an accessible way.
-
-4. **Bridge Between Communities**: Connects retro-computing enthusiasts with modern AI concepts, and helps AI practitioners appreciate the elegance of optimization under constraints.
-
-5. **Practical Local AI**: Provides a working DOS runtime, assistant packs, evidence harnesses, and transfer tooling for constrained and retro systems.
+The important result is not that this tiny model competes with modern hosted
+LLMs. It does not. The important result is that the full loop is real: local
+weights, local tokenizer, local inference, local pack switching, local indexed
+recall, DOS execution, QEMU stress testing, and a physical-machine transfer
+workflow. Physical returned board logs are still pending, so hardware-specific
+speed claims remain QEMU evidence until real-system logs are captured.
 
 ## ► Comprehensive Documentation
 
@@ -133,12 +162,14 @@ This extensive documentation includes:
 - Complete technical explanations of all core innovations and optimization techniques
 - Platform-specific implementation considerations
 - Thorough performance analysis with benchmarking methodology
-- Counterfactual historical analysis of how this implementation might have altered computing history
+- Constrained-system design analysis for DOS-class and embedded targets
 - Educational value and insights for modern edge AI development
 - Future directions and applications
 - Comprehensive academic references
 
-The paper bridges technical implementation details with historical analysis to provide both practical insights and thought-provoking exploration of an alternate AI timeline.
+The paper bridges technical implementation details with historical context to
+show how the same algorithmic ideas can be lowered into much smaller runtime
+environments.
 
 Public release and media:
 

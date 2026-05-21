@@ -46,7 +46,10 @@ class PublicRepoHygieneTests(unittest.TestCase):
 
         self.assertNotIn("**Proof of Concept**", readme)
         self.assertNotIn("Contact: Tsotchke Corporation / project owner", promo)
-        self.assertIn("**Practical Local AI**", readme)
+        self.assertIn("Portable Machine Intelligence in BASIC", readme)
+        self.assertIn("not a frontier LLM", readme)
+        self.assertIn("Physical returned board logs are still pending", readme)
+        self.assertIn("Do not claim physical 486 speed", promo)
 
     def test_substrate_portability_claim_is_qualified(self) -> None:
         substrate = (ROOT / "docs" / "substrate-portability.md").read_text(encoding="utf-8")
