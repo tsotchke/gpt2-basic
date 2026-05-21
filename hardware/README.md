@@ -15,8 +15,11 @@ C:\GPT2\MODEL\GPT2FX.BIN
 C:\GPT2\MODEL\GPT2EXP.BIN
 C:\GPT2\MODEL\VOCAB.BIN
 C:\GPT2\PACKS\PACKS.TXT
+C:\GPT2\PACKS\CHAT\...
 C:\GPT2\PACKS\DOSHELP\...
 C:\GPT2\PACKS\OFFICE\...
+C:\GPT2\PACKS\DEV\...
+C:\GPT2\PACKS\PORTABLE\...
 C:\GPT2\GPT2SRC\ASSIST.BAS
 C:\GPT2\HWVALID.BAT
 C:\GPT2\HWNOTES.TXT
@@ -43,8 +46,13 @@ HWVALID.LOG
 QUAL.LOG
 PERF.LOG
 ASSIST.LOG
+ASTRESS.LOG
 ASSISTC.LOG
 ```
+
+`ASSIST.LOG` is the five-pack scripted assistant proof. `ASTRESS.LOG` is the
+50-reply stress probe for CHAT, DOSHELP, OFFICE, DEV, and PORTABLE on the same
+machine.
 
 Fill in `HWNOTES.TXT` with CPU, clock, RAM, DOS version, storage, cache/turbo
 state, FreeBASIC version, and any setup notes.

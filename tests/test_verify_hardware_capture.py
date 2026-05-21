@@ -16,7 +16,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class VerifyHardwareCaptureTests(unittest.TestCase):
     def test_verify_hardware_capture_self_test_artifacts(self) -> None:
-        artifact_names = ["HWVALID.LOG", "QUAL.LOG", "PERF.LOG", "ASSIST.LOG", "ASSISTC.LOG", "HWNOTES.TXT"]
+        artifact_names = [
+            "HWVALID.LOG",
+            "QUAL.LOG",
+            "PERF.LOG",
+            "ASSIST.LOG",
+            "ASTRESS.LOG",
+            "ASSISTC.LOG",
+            "HWNOTES.TXT",
+        ]
         output = io.StringIO()
 
         with contextlib.redirect_stdout(output):
@@ -84,6 +92,7 @@ class VerifyHardwareCaptureTests(unittest.TestCase):
         self.assertIn("QUAL.LOG", text)
         self.assertIn("PERF.LOG", text)
         self.assertIn("ASSIST.LOG", text)
+        self.assertIn("ASTRESS.LOG", text)
         self.assertIn("ASSISTC.LOG", text)
         self.assertIn("HWNOTES.TXT", text)
         self.assertIn("--require-filled-notes", text)

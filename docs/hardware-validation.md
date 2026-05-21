@@ -9,7 +9,7 @@ the core release gate.
 | Tier | Status | Hardware | Release Role | Required Logs |
 |---|---|---|---|---|
 | 0 | Complete | QEMU 486 profiles | Preview release gate | compile, quality, perf, assistant, vectors |
-| 1 | Next gate | Any working 486-class DOS PC with 32-64 MB RAM | Solid release baseline | `QUAL.LOG`, `PERF.LOG`, `ASSIST.LOG`, `ASSISTC.LOG` |
+| 1 | Next gate | Any working 486-class DOS PC with 32-64 MB RAM | Solid release baseline | `QUAL.LOG`, `PERF.LOG`, `ASSIST.LOG`, `ASTRESS.LOG`, `ASSISTC.LOG` |
 | 2 | Useful | Faster 486DX2/DX4 or comparable late 486 board | Performance confidence | repeated `PERF.LOG`, optional kernel perf |
 | 3 | Optional | Pentium 60/90/133+ | Scaling comparison only | `PERF.LOG`, optional quality confirmation |
 | 4 | Optional | 386 or 486SX no-FPU class system | Compatibility stress test | quality and perf if memory allows |
@@ -56,6 +56,7 @@ That batch file runs the minimum test set:
 GPT2.EXE --quality-all > QUAL.LOG
 GPT2.EXE --perf > PERF.LOG
 ASSIST.EXE --scripted > ASSIST.LOG
+ASSIST.EXE --stress-probe > ASTRESS.LOG
 ```
 
 Also keep the assistant compile log when building on the target:
@@ -106,8 +107,11 @@ verifies the paired `hardware_<machine>_manifest.md` checksum table.
 
 - `QUAL.LOG` shows the same prompt suite completing without runtime failure.
 - `PERF.LOG` contains all `PERF_*` rows and reports runtime memory.
-- `ASSIST.LOG` includes CHAT, DOSHELP, and OFFICE pack records plus per-pack
-  usage instructions.
+- `ASSIST.LOG` includes CHAT, DOSHELP, OFFICE, DEV, and PORTABLE pack records
+  plus per-pack usage instructions.
+- `ASTRESS.LOG` includes `ASSIST_END|suite=stress-probe|packs=5`, exactly 50
+  `ASSIST_REPLY|` rows, no `status=model_unavailable` rows, and records for
+  CHAT, DOSHELP, OFFICE, DEV, and PORTABLE.
 - `ASSISTC.LOG` includes `ASSIST_COMPILE_OK` when target-side compilation is
   attempted.
 - The hardware notes identify machine key, CPU, clock, RAM, DOS version,
@@ -122,6 +126,7 @@ qemu/evidence/hardware_<machine>_capture.log
 qemu/evidence/hardware_<machine>_quality.log
 qemu/evidence/hardware_<machine>_perf.log
 qemu/evidence/hardware_<machine>_assistant.log
+qemu/evidence/hardware_<machine>_assistant_stress.log
 qemu/evidence/hardware_<machine>_assistant_compile.log
 qemu/evidence/hardware_<machine>_notes.md
 qemu/evidence/hardware_<machine>_manifest.md

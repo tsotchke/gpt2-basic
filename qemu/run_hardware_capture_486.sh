@@ -102,6 +102,7 @@ python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     --get-text GPT2/QUAL.LOG "$CAPTURE_DIR/QUAL.LOG" \
     --get-text GPT2/PERF.LOG "$CAPTURE_DIR/PERF.LOG" \
     --get-text GPT2/ASSIST.LOG "$CAPTURE_DIR/ASSIST.LOG" \
+    --get-text GPT2/ASTRESS.LOG "$CAPTURE_DIR/ASTRESS.LOG" \
     --get-text GPT2/ASSISTC.LOG "$CAPTURE_DIR/ASSISTC.LOG" \
     --get-text GPT2/HWNOTES.TXT "$CAPTURE_DIR/HWNOTES.TXT"
 
