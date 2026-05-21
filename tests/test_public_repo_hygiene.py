@@ -48,6 +48,16 @@ class PublicRepoHygieneTests(unittest.TestCase):
         self.assertNotIn("Contact: Tsotchke Corporation / project owner", promo)
         self.assertIn("**Practical Local AI**", readme)
 
+    def test_substrate_portability_claim_is_qualified(self) -> None:
+        substrate = (ROOT / "docs" / "substrate-portability.md").read_text(encoding="utf-8")
+
+        self.assertIn("Minimum Substrate", substrate)
+        self.assertIn("Pure assembly is a valid implementation path.", substrate)
+        self.assertIn("Calculator-class BASIC", substrate)
+        self.assertIn("TI-83 Plus-class system", substrate)
+        self.assertIn("Do not use this yet:", substrate)
+        self.assertIn("Runs on any microprocessor.", substrate)
+
 
 if __name__ == "__main__":
     unittest.main()

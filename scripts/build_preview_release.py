@@ -68,6 +68,7 @@ DOC_FILES = (
     "requirements-promo.txt",
     "docs/dosbox.md",
     "docs/hardware-validation.md",
+    "docs/substrate-portability.md",
     "docs/public-launch.md",
     "docs/marketing/promo-kit.md",
     "docs/marketing/public-demo-script.md",

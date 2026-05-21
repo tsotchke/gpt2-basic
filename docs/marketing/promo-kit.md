@@ -37,12 +37,15 @@ for physical DOS systems.
 - QEMU 486DX2/66 evidence plus a path to physical 486 validation.
 - Reproducible preview-release and hardware-transfer zips.
 - Educational focus: modern AI concepts explained through old constraints.
+- Substrate-portability argument: the runtime is built from primitive
+  operations that can be lowered to C or assembly.
 
 ## What Not To Overclaim
 
 - Do not say it is comparable to a modern LLM.
 - Do not claim physical 486 speed until verified hardware logs are published.
 - Do not say the model is GPT-2 scale; say GPT-style or GPT2-BASIC.
+- Do not claim "any microprocessor" without a port and target evidence.
 - Do not imply the videos are scripted if the assistant is doing real
   inference. Show prompts, waiting, and generated text honestly.
 

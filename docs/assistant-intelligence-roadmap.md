@@ -17,6 +17,10 @@ the 486 as a local agent computer, not just a neural network host.
 - Golden replies, retrieval, memory, and generation are all reported in
   `ASSIST_REPLY` evidence records.
 
+See [`substrate-portability.md`](substrate-portability.md) for the minimum
+runtime-primitives argument behind the BASIC implementation and future C,
+assembly, and Eshkol ports.
+
 ## Design Direction
 
 The target experience is a cartridge-like language system:

@@ -40,6 +40,7 @@ EXPECTED_RELEASE_MODEL_DIRS = {
 REQUIRED_PREVIEW_FILES = (
     "bin/GPT2.EXE",
     "docs/dosbox.md",
+    "docs/substrate-portability.md",
     "docs/releases/v0.1.0-preview.md",
     "assets/gpt2_basic/MODEL/VOCAB.BIN",
     "assets/gpt2_basic/PACKS/CHAT/PACK.INI",
@@ -442,6 +443,7 @@ def self_test() -> None:
         for rel in (
             "bin/GPT2.EXE",
             "docs/dosbox.md",
+            "docs/substrate-portability.md",
             "docs/releases/v0.1.0-preview.md",
             "assets/gpt2_basic/MODEL/VOCAB.BIN",
             "assets/gpt2_basic/PACKS/CHAT/PACK.INI",
