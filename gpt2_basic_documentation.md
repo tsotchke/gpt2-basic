@@ -42,14 +42,14 @@ timing basis until a physical 486/Pentium board is available.
 6. [Performance Analysis](#6-performance-analysis)
    - [6.1 Benchmarking Methodology](#61-benchmarking-methodology)
    - [6.2 Results on Modern Hardware](#62-results-on-modern-hardware)
-   - [6.3 Projected Performance on 1990s Systems](#63-projected-performance-on-1990s-systems)
+   - [6.3 QEMU Era-Profile Performance Evidence](#63-qemu-era-profile-performance-evidence)
    - [6.4 Memory Usage Analysis](#64-memory-usage-analysis)
 7. [Historical Comparison and Design Implications](#7-historical-comparison-and-design-implications)
    - [7.1 Statistical Computing in the 1990s](#71-statistical-computing-in-the-1990s)
    - [7.2 AI Research Trajectory](#72-ai-research-trajectory)
-   - [7.3 Deep Learning Timeline Acceleration](#73-deep-learning-timeline-acceleration)
-   - [7.4 Commercial Applications](#74-commercial-applications)
-   - [7.5 Alternative Hardware Development](#75-alternative-hardware-development)
+   - [7.3 Language-Model Operations Under Constraints](#73-language-model-operations-under-constraints)
+   - [7.4 Release Application Surface](#74-release-application-surface)
+   - [7.5 Hardware Co-Design Pressure Points](#75-hardware-co-design-pressure-points)
 8. [Educational Value](#8-educational-value)
    - [8.1 Demonstrating Transformer Fundamentals](#81-demonstrating-transformer-fundamentals)
    - [8.2 Optimization Techniques for Constrained Environments](#82-optimization-techniques-for-constrained-environments)
@@ -67,9 +67,9 @@ timing basis until a physical 486/Pentium board is available.
     - [C. Retrocomputing Community Engagement](#c-retrocomputing-community-engagement)
       - [C.1 Demoscene Potential](#c1-demoscene-potential)
       - [C.2 Vintage Computing Preservation](#c2-vintage-computing-preservation)
-    - [D. Training Considerations](#d-training-considerations)
-      - [D.1 Theoretical Training Approaches](#d1-theoretical-training-approaches)
-      - [D.2 Training Time Estimations](#d2-training-time-estimations)
+    - [D. Training and Export Considerations](#d-training-and-export-considerations)
+      - [D.1 Host-Side Training Boundary](#d1-host-side-training-boundary)
+      - [D.2 Target-Side Adaptation](#d2-target-side-adaptation)
     - [E. Open Source and Community Development](#e-open-source-and-community-development)
       - [E.1 Open Source Framework](#e1-open-source-framework)
       - [E.2 Educational Curriculum](#e2-educational-curriculum)
@@ -1942,50 +1942,49 @@ Table 5 shows end-to-end generation performance for different model configuratio
 
 These results demonstrate that our optimizations provide significant benefits, particularly for larger models. The block-sparse implementation actually improves performance for larger contexts by reducing cache misses, despite the additional computation overhead.
 
-### 6.3 Projected Performance on 1990s Systems
+### 6.3 QEMU Era-Profile Performance Evidence
 
-Based on our modern benchmarks and known performance ratios between modern CPUs and 486-era processors, we projected performance for various 1990s hardware configurations. These projections account for differences in CPU speed, memory bandwidth, and cache characteristics.
+The current release no longer relies on host-to-486 scaling estimates for its
+main performance claim. The timing rows below come from DOS `GPT2.EXE --perf`
+runs under the repository's QEMU era-speed profiles. These are repeatable
+emulator measurements, not cycle-accurate proof for a specific physical
+motherboard.
 
-#### Performance Scaling Methodology
+| Profile | Tokens/sec | 70-token generation | 100-token generation |
+|---------|-----------:|--------------------:|---------------------:|
+| QEMU 386dx-33 no-FPU | 0.31 | 228.1 seconds | 325.8 seconds |
+| QEMU 486sx-25 no-FPU | 0.61 | 114.0 seconds | 162.9 seconds |
+| QEMU 486dx-33 | 1.23 | 57.0 seconds | 81.4 seconds |
+| QEMU 486dx2-66 --perf | 2.46 | 28.4 seconds | 40.6 seconds |
+| QEMU 486dx4-100 | 4.91 | 14.2 seconds | 20.4 seconds |
+| QEMU pentium-60 | 4.92 | 14.2 seconds | 20.3 seconds |
+| QEMU pentium-133 | 9.85 | 7.1 seconds | 10.2 seconds |
+| Host-speed QEMU --perf | 43.55 | 1.6 seconds | 2.3 seconds |
 
-We used a scaling model based on both CPU frequency and architectural efficiency:
+*Table 6: Measured QEMU era-profile performance for the promoted runtime*
 
-```
-projected_time = modern_time * (modern_frequency / target_frequency) * architecture_factor
-```
+The measured 486DX2/66 full-resident path generates at 2.46 tokens/sec in QEMU.
+The q4/log token+head release mode trades memory for speed at 2.12 tokens/sec,
+and the streamed-head fallback lowers runtime memory further while measuring
+0.81 tokens/sec. Physical board timing remains pending until the same DOS logs
+are returned from real hardware.
 
-Where `architecture_factor` accounts for differences in instruction execution efficiency, cache performance, and memory bandwidth. We derived these factors from published benchmarks of the era (Byte Magazine, 1994; PC Magazine, 1995).
+#### Storage and I/O Impact
 
-#### Projected Results for Common Systems
+The storage-sensitive release paths are now measured at the runtime level rather
+than estimated by disk formulas:
 
-Table 6 shows projected performance for common 486-era systems.
+| Mode | Runtime Memory | QEMU 486DX2/66 |
+|------|---------------:|---------------:|
+| Full resident Q20.12 | 2,055,940 bytes | 2.46 tok/s |
+| q4 token+head resident | 974,724 bytes | 2.12 tok/s |
+| q4 streamed output head | 616,324 bytes | 0.81 tok/s |
 
-| System | CPU | RAM | Tokens per Second | 100-Token Generation Time |
-|--------|-----|-----|-------------------|---------------------------|
-| 486SX/25 | 25 MHz, no FPU | 4 MB | 0.01-0.02 | 83-166 minutes |
-| 486DX/33 | 33 MHz, FPU | 8 MB | 0.02-0.03 | 55-83 minutes |
-| 486DX2/66 | 66 MHz, FPU | 16 MB | 0.04-0.07 | 23-41 minutes |
-| 486DX4/100 | 100 MHz, FPU | 32 MB | 0.06-0.10 | 16-27 minutes |
-| Pentium 60 | 60 MHz | 16 MB | 0.09-0.15 | 11-18 minutes |
-| Pentium 133 | 133 MHz | 32 MB | 0.20-0.33 | 5-8 minutes |
+*Table 7: Measured memory/speed tradeoff for release modes*
 
-*Table 6: Projected performance on 1990s hardware*
-
-These projections suggest that while generation would be slow by modern standards, it would be within practical limits for demonstration and educational purposes, particularly on higher-end 486 systems or entry-level Pentium systems.
-
-#### Disk I/O Impact
-
-For configurations using disk streaming, disk I/O has a significant impact:
-
-| System | Hard Drive | Disk I/O Impact |
-|--------|------------|-----------------|
-| 486DX2/66 with standard IDE | 10 ms seek, 1 MB/s transfer | +30% generation time |
-| 486DX2/66 with fast IDE | 9 ms seek, 3 MB/s transfer | +15% generation time |
-| 486DX4/100 with fast SCSI | 8 ms seek, 5 MB/s transfer | +10% generation time |
-
-*Table 7: Impact of disk I/O on generation time*
-
-These results highlight the importance of both disk performance and efficient parameter streaming for practical deployment on 486-era systems.
+These results show the practical tradeoff: streaming and compressed artifacts
+open lower-memory targets, but the full-resident fixed-point path remains the
+fastest current release mode.
 
 ### 6.4 Memory Usage Analysis
 
@@ -2143,147 +2142,84 @@ Figure 6 illustrates this potential redirection of research focus.
 ```
 *Figure 6: Actual AI research timeline with a constrained-system design lens*
 
-### 7.3 Deep Learning Timeline Acceleration
+### 7.3 Language-Model Operations Under Constraints
 
-The emergence of deep learning as a dominant paradigm in AI occurred primarily in the late 2000s and early 2010s, with key developments including:
-
-- The use of GPUs for neural network training (Raina et al., 2009; Ciresan et al., 2010)
-- Deep belief networks and unsupervised pre-training (Hinton et al., 2006)
-- Convolutional neural networks for image recognition (Krizhevsky et al., 2012)
-- Sequence-to-sequence models for machine translation (Sutskever et al., 2014)
-- Attention mechanisms and transformers (Bahdanau et al., 2014; Vaswani et al., 2017)
-
-GPT2-BASIC shows which transformer-style operations can be made explicit and
-small enough for a DOS-class runtime when training, export, quantization, and
-pack construction happen on the host.
-
-#### Design Pressure Points
+The emergence of deep learning as a dominant paradigm in AI occurred primarily
+in the late 2000s and early 2010s, with key developments including GPU training,
+convolutional networks, sequence-to-sequence models, attention mechanisms, and
+transformers. GPT2-BASIC does not revise that history. It documents which parts
+of a modern language-model system can be reduced into a DOS-class runtime when
+training, export, quantization, and pack construction happen on the host.
 
 Under 486-class constraints, several design pressures become visible:
 
-1. **Attention Mechanisms**: Attention is mathematically simple but expensive
-   enough that context size, cache layout, and fixed-point exp tables matter.
+1. **Attention Cost**: Attention is mathematically simple but expensive enough
+   that context size, cache layout, and fixed-point exp tables matter.
 
 2. **Host-Side Preparation**: Training and pack construction remain host-side
    jobs; the DOS target consumes exported artifacts.
 
-3. **Hardware-Software Co-design**: The runtime benefits from kernels and file
+3. **Hardware-Software Fit**: The runtime benefits from kernels and file
    formats that match the target's memory and disk behavior.
 
 4. **Recall Before Generation**: A tiny model is more useful when paired with
    local knowledge records and fast indexes.
 
-Table 12 presents historical milestones next to the kinds of constrained-system
-questions GPT2-BASIC exposes.
+| Pressure Point | Release Mechanism |
+|----------------|-------------------|
+| CPU cost | Q20.12 fixed-point kernels and optional head shortlist |
+| Memory pressure | q4 token/head artifacts and streamed-head fallback |
+| Vocabulary size | DOS-loadable lexicon vocabulary |
+| Weak raw generation | golden replies, retrieval, and fallback rules |
+| Slow full search | KDB/KB2 buckets and sharded `KB2T?.TXT` term indexes |
 
-| Development | Actual Year | Counterfactual Year | Acceleration |
-|-------------|-------------|---------------------|--------------|
-| Neural Network Renaissance | 2006 | 1995 | 11 years |
-| Attention Mechanisms | 2014 | 1997 | 17 years |
-| Transformer Architecture | 2017 | 2000 | 17 years |
-| BERT/Contextual Representations | 2018 | 2005 | 13 years |
-| GPT-3 Scale Models | 2020 | 2010 | 10 years |
+*Table 12: Constrained-system design pressures and release mechanisms*
 
-*Table 12: Potential acceleration of deep learning timeline*
+### 7.4 Release Application Surface
 
-#### Technical Bottlenecks Addressed
+The current release application surface is deliberately narrow and evidence
+gated. It covers local inference, assistant shell behavior, pack switching,
+indexed knowledge recall, session memory, USER.TXT note import, release bundle
+validation, and hardware-transfer rehearsal under QEMU.
 
-Our implementation potentially addresses several technical bottlenecks that delayed the emergence of transformers:
+| Application Area | Current Release Surface |
+|------------------|-------------------------|
+| Local text generation | Compact GPT-style fixed-point runtime |
+| Conversational assistant | CHAT pack with golden replies, model output, memory, and retrieval |
+| DOS help | DOSHELP pack with local troubleshooting and setup notes |
+| Office workflows | OFFICE pack for short local productivity prompts |
+| Development notes | DEV pack with compact technical recall |
+| Portability guidance | PORTABLE pack for BASIC/C/assembly/substrate notes |
 
-1. **Computational Efficiency**: The optimizations we developed (fixed-point arithmetic, sparse attention, etc.) might have made transformer-like models practical on available hardware much earlier.
+*Table 13: Current evidence-gated application surface*
 
-2. **Memory Constraints**: Our techniques for memory-efficient operation might have overcome a critical limitation that prevented earlier exploration of large neural networks.
+The release does not claim broad modern assistant ability. It claims a concrete
+local loop: exported weights, DOS execution, pack selection, local recall,
+bounded replies, QEMU stress evidence, and a path for physical-machine return
+logs.
 
-3. **Training Data**: While our implementation focuses on inference, the techniques developed could have been adapted for more efficient training, potentially enabling earlier experiments with larger datasets.
+### 7.5 Hardware Co-Design Pressure Points
 
-However, it's important to note that some bottlenecks would have remained, particularly the availability of large text corpora for training and the conceptual advances in architecture design.
+GPT2-BASIC highlights hardware features that matter for local inference
+workloads on constrained machines:
 
-### 7.4 Commercial Applications
+1. **Integer Multiply and Accumulation**: Fixed-point matrix/vector kernels
+   depend on predictable integer multiply, shifts, and accumulation.
 
-If transformer models had been implementable on 486-era hardware, several commercial applications might have emerged earlier than they did historically.
+2. **Memory Bandwidth and Layout**: Tensor layout, tokenizer tables, and KDB/KB2
+   records determine how much work can stay sequential.
 
-#### Potential Early Applications
+3. **Disk Access Patterns**: Streaming fallback modes depend on predictable
+   local file access and small bounded records.
 
-1. **Enhanced Word Processors**: Word processors like WordPerfect or Microsoft Word might have incorporated text completion or suggestion features decades before they actually appeared.
+4. **Branch and Loop Simplicity**: BASIC and C ports benefit from small kernels,
+   explicit loops, and file contracts that can be checked independently.
 
-2. **Intelligent Assistants**: Simple natural language interfaces might have emerged for DOS or early Windows, predating assistants like Clippy with more sophisticated language understanding.
+5. **Validation Hooks**: Constrained targets need logs, checksums, and simple
+   return-file workflows because interactive debugging is limited.
 
-3. **Enhanced Translation Software**: Products like Power Translator or Globalink might have incorporated neural machine translation features, significantly improving their quality.
-
-4. **Document Summarization**: Automated tools for summarizing documents might have become available for business applications, enhancing productivity software.
-
-5. **Early Chatbots**: Text-based conversational systems with more sophisticated response generation might have been feasible for customer service or entertainment applications.
-
-Table 13 compares actual commercial AI applications of the 1990s with potential transformer-enabled alternatives.
-
-| Application Area | Actual 1990s Technology | Potential Transformer Alternative |
-|------------------|--------------------------|-----------------------------------|
-| Word Processing | Grammar checking, thesaurus | Text completion, style suggestions |
-| Translation | Rule-based systems (Globalink) | Neural translation (limited but better) |
-| Information Retrieval | Boolean search, basic ranking | Semantic search, query understanding |
-| Customer Service | Expert systems, decision trees | Simple conversational AI |
-| Entertainment | Text adventures, simple NPCs | More dynamic text generation in games |
-
-*Table 13: Comparison of actual and potential commercial applications*
-
-#### Business Impact
-
-The availability of transformer-like models in the 1990s might have shifted business computing in several ways:
-
-1. **NLP as a Standard Feature**: Natural language processing capabilities might have become standard features in business software much earlier.
-
-2. **Different Software Leaders**: Companies that successfully incorporated these capabilities might have gained competitive advantages, potentially altering the business software landscape.
-
-3. **Earlier AI Services Industry**: An industry providing AI services around language understanding and generation might have emerged a decade or more before it actually did.
-
-4. **Altered Internet Development**: As the web emerged in the mid-1990s, transformer-based language models might have influenced its development, potentially leading to more semantically aware web technologies earlier.
-
-### 7.5 Alternative Hardware Development
-
-Perhaps the most significant long-term impact of early transformer implementations would have been on hardware development trajectories. The demonstration that neural networks with millions of parameters could provide valuable capabilities would likely have created demand for hardware better suited to these computations.
-
-#### Potential Hardware Evolution
-
-1. **Earlier SIMD Extensions**: The x86 architecture might have incorporated SIMD instructions specifically designed for neural network operations earlier than MMX (1997) and SSE (1999) actually appeared.
-
-2. **Fixed-Point DSPs**: Digital Signal Processors with enhanced fixed-point arithmetic units might have been marketed specifically for neural network applications.
-
-3. **Neural Network Coprocessors**: Specialized hardware accelerators for neural network computation might have emerged as add-in cards for PCs, similar to how 3D accelerators developed in the mid-1990s.
-
-4. **Memory Architecture Changes**: The streaming parameter approach might have influenced memory system design, with hardware support for efficient streaming of large datasets.
-
-Figure 7 illustrates this potential alternative hardware evolution.
-
-```
-                         Actual Hardware Evolution
-┌───────────┐     ┌───────────┐     ┌───────────┐     ┌───────────┐     ┌───────────┐
-│ 486 / x86 │────►│MMX/3DNow! │────►│ SSE/SSE2  │────►│ Multi-core│────►│ GPUs for  │
-│ 1989-1995 │     │ 1997-1999 │     │ 1999-2004 │     │ 2005-2010 │     │ AI (2010+)│
-└───────────┘     └───────────┘     └───────────┘     └───────────┘     └───────────┘
-
-
-                    Hardware Co-Design Pressure Points
-┌───────────┐     ┌───────────┐     ┌────────────┐     ┌────────────┐     ┌───────────┐
-│ 486 / x86 │────►│Neural Ext.│────►│Neural      │────►│ AI-focused │────►│ Integrated│
-│ 1989-1995 │     │ 1995-1998 │     │Coprocessors│     │ CPUs       │     │AI Systems │
-└───────────┘     └───────────┘     │ 1998-2002  │     │ 2002-2008  │     │ 2008+     │
-                                    └────────────┘     └────────────┘     └───────────┘
-```
-*Figure 7: Hardware pressure points exposed by local inference workloads*
-
-#### Specific Technical Influences
-
-GPT2-BASIC highlights hardware features that matter for this class of workload:
-
-1. **Fixed-Point Units**: Hardware support for efficient Q16.16 (or similar) fixed-point arithmetic might have become standard, including specialized multiplication and division units.
-
-2. **Block-Sparse Operations**: Hardware accelerators for sparse matrix operations might have been developed earlier, potentially influencing GPU architecture design.
-
-3. **Memory Streaming**: Enhanced DMA controllers or specialized memory management units for streaming large datasets might have emerged.
-
-4. **Bit Manipulation**: The SIMD-like bit manipulation techniques we developed might have inspired dedicated hardware instructions for similar operations.
-
-As neural network applications demonstrated their commercial value, hardware manufacturers would likely have responded with increasingly specialized solutions, potentially accelerating the AI hardware revolution by a decade or more.
+These pressure points are implementation guidance, not predictions about
+hardware history.
 
 ## 8. Educational Value
 
@@ -2707,32 +2643,39 @@ This project also contributes to computing preservation efforts:
 
 3. **Historical Context**: Providing a bridge between historical computing and modern AI concepts for educational purposes.
 
-## D. Training Considerations
+## D. Training and Export Considerations
 
-While our implementation focuses on inference, future extensions could explore training approaches compatible with 486-era constraints:
+The release boundary is explicit: GPT2-BASIC trains and exports model artifacts
+on the host, then runs inference and assistant recall on the DOS target.
+Target-side training is not part of the current production claim.
 
-### D.1 Theoretical Training Approaches
+### D.1 Host-Side Training Boundary
 
-1. **Distributed Training**: A network of 486 computers could theoretically divide the training task, similar to early distributed neural network training efforts (Dean et al., 2012).
+1. **Full Training**: Full model training remains a host-side operation. The
+   generated artifacts are then exported into DOS-loadable binary and text
+   formats.
 
-2. **Incremental Learning**: Training could proceed incrementally, with parameters updated in small batches over extended periods (days or weeks).
+2. **Pack Model Training**: Assistant pack-local models are also trained on the
+   host, then copied with their pack metadata, HELP rows, KDB/KB2 records, and
+   term indexes.
 
-3. **Transfer Learning**: Pre-training could occur on more powerful systems, with fine-tuning implemented on 486 hardware.
+3. **Validation Before Shipping**: Host-side training results must pass quality,
+   fixed-point parity, release-manifest, and QEMU evidence gates before being
+   treated as release assets.
 
-### D.2 Training Time Estimations
+### D.2 Target-Side Adaptation
 
-Based on our performance analysis, we can estimate training times for a simplified model:
+The current target-side adaptation mechanisms are deliberately lightweight:
 
-| Training Approach | Hardware | Estimated Time for 1 Epoch |
-|-------------------|----------|---------------------------|
-| Full training | 486DX4/100 | ~6-12 months |
-| Incremental (1K examples) | 486DX4/100 | ~2-4 weeks |
-| Fine-tuning only | 486DX4/100 | ~1-2 weeks |
-| Distributed (10 machines) | 486DX2/66 network | ~3-6 weeks |
+| Mechanism | Runs on DOS target | Purpose |
+|-----------|--------------------|---------|
+| Session memory | Yes | Remember small facts during one assistant session |
+| Pack switching | Yes | Hot-load local model/knowledge context |
+| USER.TXT note import | Yes | Add local facts without retraining |
+| KDB/KB2 recall | Yes | Retrieve curated local knowledge |
+| Weight training | No | Host-side operation |
 
-*Table 14: Estimated training times for a small model (100K parameters)*
-
-These estimates highlight why training would have been impractical on 486-era hardware, explaining why such models would not have emerged organically during that period despite their theoretical implementability.
+*Table 14: Production training boundary and lightweight target adaptation*
 
 ## E. Open Source and Community Development
 

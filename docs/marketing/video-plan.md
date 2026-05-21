@@ -19,7 +19,8 @@ Target length: 4 to 6 minutes.
    - Suggested caption: `Real fixed-point inference in DOS`.
 
 2. Project thesis, 30 seconds
-   - Explain the alternate-history question.
+   - Explain the constrained-system thesis: local weights, local execution,
+     local recall, no network service.
    - Show README title and source tree.
    - Make the honest scale claim: tiny GPT-style model, not modern LLM scale.
 
