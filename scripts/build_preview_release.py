@@ -107,6 +107,7 @@ SELECTED_EVIDENCE_NAMES = {
     "exported_model_quality_inventory.md",
     "gold_curriculum_v5_clean_repair_report.md",
     "hardware_capture_486_qemu_probe.log",
+    "hardware_capture_486_qemu_stress_report.md",
     "hardware_capture_probe.log",
     "hardware_performance_matrix.md",
     "hardware_perf_report.md",

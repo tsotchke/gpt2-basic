@@ -6,4 +6,5 @@ HW_STEP|quality_all
 HW_STEP|perf
 HW_STEP|assist_compile
 HW_STEP|assistant
+HW_STEP|assistant_stress
 HW_CAPTURE_END

@@ -1,129 +1,257 @@
 GPT2-BASIC production quality suites
 
+
+
 QUALITY_SUITE_BEGIN|all
 
+
+
 QUALITY_PROMPT_BEGIN|real_inference|What makes this real inference?
+
 Initializing GPT2-BASIC production runtime...
+
 Initialized tokenizer with  258 tokens
+
 Loaded vocabulary with  4096 tokens and  0 merges, mode  2
+
 Production model initialization complete.
+
   Build       : production fixed-point runtime
+
   Profile     : 486sx-safe
+
   Layers      :  2
+
   Embed dim   :  48
+
   Heads       :  4
+
   Vocab size  :  4096
+
   Max tokens  :  192
+
   Parameters  :  463168
+
   Fixed bytes :  1852672
+
   Runtime mem :  2055940
+
   Arithmetic  : Q20.12 fixed-point
-Generated  35 tokens in 0.8300001621246338 seconds (42.16866646195228 tokens/sec)
+
+Generated  35 tokens in 0.8199999332427979 seconds (42.68293030413781 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 What makes this real inference? The prompt is encoded into tokens, the transformer updates hidden state, the output head produces logits, and the sampler chooses the next token from the trained checkpoint. What makes this real inference? The DOS program loads model files and computes the continuation with fixed-point transformer layers.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|real_inference
 
+
+
 QUALITY_PROMPT_BEGIN|486_target|GPT2 BASIC on a 486
-Generated  44 tokens in 0.869999885559082 seconds (50.57471929634173 tokens/sec)
+
+Generated  44 tokens in 0.8199999332427979 seconds (53.65854095377325 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 GPT2 BASIC on a 486 The useful target is a compact checkpoint that produces short technical continuations at a measurable speed. A larger model can improve text only if it still fits memory and keeps tokens per second usable. The constraint makes the system easier to audit. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. The vocabulary helps by replacing common technical words and phrases with single tokens. The goal is not a modern assistant.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|486_target
 
+
+
 QUALITY_PROMPT_BEGIN|dos_model|DOS language models need
+
 Generated  59 tokens in 1.210000038146973 seconds (48.76032904127361 tokens/sec)
 
+
+
 Generated Text:
+
 --------------
+
 DOS language models need enough vocabulary to say technical phrases cleanly without making the output head too expensive. DOS language models need reproducible timing, vector parity, plain file formats, and readable continuations from model logits. A BASIC transformer runtime uses arrays for weights, tokens, cache vectors, hidden states, logits, and fixed-point work buffers. A BASIC transformer runtime loads the checkpoint, encodes the prompt, runs attention, applies feed-forward layers, and decodes sampled tokens.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|dos_model
 
+
+
 QUALITY_PROMPT_BEGIN|basic_runtime|A BASIC transformer runtime
-Generated  48 tokens in 0.9900000095367432 seconds (48.48484801779036 tokens/sec)
+
+Generated  48 tokens in 0.9899997711181641 seconds (48.48485969424616 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 A BASIC transformer runtime uses the same tokenizer contract as the host tools. The result is not copied from a prompt table. Generation loads the checkpoint, encodes the prompt, runs transformer layers, masks invalid output, and decodes printable text. 486 target connects naturally with old PC limits. The runtime needs predictable arrays, fixed-size buffers, and no dependence on a modern service during generation. A useful checkpoint balances quality with predictable memory and measured tokens per second.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|basic_runtime
 
+
+
 QUALITY_PROMPT_BEGIN|optimization|To improve performance on real hardware
-Generated  45 tokens in 0.940000057220459 seconds (47.87233751140732 tokens/sec)
+
+Generated  45 tokens in 0.9900000095367432 seconds (45.45454501667847 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 To improve performance on real hardware choose a compact profile and compare quality against speed, memory, and vector parity. To improve performance on real hardware, preserve fixed-point correctness while replacing slow operations with predictable integer work. To improve performance on real hardware, use vocabulary pieces that reduce token count without making every logit step too expensive. To improve performance on real hardware, measure generated tokens per second on the target path before promoting a checkpoint.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|optimization
 
+
+
 QUALITY_PROMPT_BEGIN|heldout_cache|Explain why a cache matters for text generation
-Generated  42 tokens in 0.8199999332427979 seconds (51.21951636496537 tokens/sec)
+
+Generated  42 tokens in 0.8799998760223389 seconds (47.72727945126873 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 Explain why a cache matters for text generation Cache reuse saves repeated attention work while preserving enough context for coherent text. A cache changes runtime cost, not the trained weights. A cache is useful only when its memory cost fits the target machine. Why reuse key and value vectors? On an old PC, the cache trades fixed memory for fewer operations in each next-token step. The cache must be sized predictably because DOS memory is limited. The cache is an engineering tradeoff, not a quality shortcut.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|heldout_cache
 
+
+
 QUALITY_PROMPT_BEGIN|heldout_timing|How should a DOS model report timing?
-Generated  43 tokens in 0.8799998760223389 seconds (48.8636432477275 tokens/sec)
+
+Generated  43 tokens in 0.8300001621246338 seconds (51.8072187961128 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 How should a DOS model report timing? A timing result needs generated tokens, elapsed seconds, tokens per second, the model profile, and the measurement basis. The report needs enough context for another run to repeat the measurement. Host stopwatch numbers alone are not hardware evidence. What belongs in a timing result? The timed section belongs inside the decode loop so loading files and boot time do not distort generation speed. Prompt length and output length matter because attention work grows with the active context.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|heldout_timing
 
+
+
 QUALITY_PROMPT_BEGIN|heldout_limits|What limits a tiny transformer on old PCs?
-Generated  35 tokens in 0.7100000381469727 seconds (49.29577199931765 tokens/sec)
+
+Generated  35 tokens in 0.6600000858306885 seconds (53.03029613389874 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 What limits a tiny transformer on old PCs? The limits are weight bytes, cache memory, context length, integer arithmetic, output vocabulary, and the number of operations per generated token. What limits a tiny transformer on old PCs? Memory controls how large the checkpoint and cache can be, while speed controls how many matrix and attention operations are practical. A small model has to balance both.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|heldout_limits
 
+
+
 QUALITY_PROMPT_BEGIN|heldout_fixed_point|Describe fixed point inference in one sentence
-Generated  44 tokens in 0.880000114440918 seconds (49.99999349767596 tokens/sec)
+
+Generated  44 tokens in 0.869999885559082 seconds (50.57471929634173 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 Describe fixed point inference in one sentence A no-FPU machine can run the transformer when multiplies, clamps, and lookup tables replace floating point operations. The exponential table keeps softmax practical on hardware without fast floating point. Integer arithmetic still has to match the model closely enough. Why use fixed-point arithmetic? Phase-vector checks compare the DOS fixed-point path with the host reference before the checkpoint is trusted. The scale must be chosen carefully so values keep useful precision without overflowing.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|heldout_fixed_point
 
+
+
 QUALITY_PROMPT_BEGIN|heldout_profiles|Why compare model profiles before choosing one?
-Generated  55 tokens in 1.089999914169312 seconds (50.45871956963912 tokens/sec)
+
+Generated  55 tokens in 1.100000143051147 seconds (49.99999349767596 tokens/sec)
+
+
 
 Generated Text:
+
 --------------
+
 Why compare model profiles before choosing one? A larger checkpoint is only better when measured quality improves enough to justify extra memory and slower generation. Quality and runtime evidence have to be considered together. A profile comparison should put held-out quality beside tokens per second and peak memory. That makes it clear whether a larger vocabulary or hidden size is helping the real target machine. The default profile should be selected from evidence, not from size alone.
+
 --------------
+
 Runtime memory:  2055940 bytes
+
 Tracked peak  :  2055940 bytes
+
 QUALITY_PROMPT_END|heldout_profiles
+
 QUALITY_SUITE_END|all

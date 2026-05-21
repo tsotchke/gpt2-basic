@@ -8,15 +8,24 @@ import re
 import tempfile
 from pathlib import Path
 
+try:
+    from scripts import stress_assistant_behavior
+except ImportError:  # pragma: no cover - used when run as scripts/foo.py
+    import stress_assistant_behavior  # type: ignore
+
 
 DEFAULT_FILES = {
     "capture": "HWVALID.LOG",
     "quality": "QUAL.LOG",
     "perf": "PERF.LOG",
     "assistant": "ASSIST.LOG",
+    "assistant_stress": "ASTRESS.LOG",
     "assistant_compile": "ASSISTC.LOG",
     "notes": "HWNOTES.TXT",
 }
+EXPECTED_ASSISTANT_PACKS = ("CHAT", "DOSHELP", "OFFICE", "DEV", "PORTABLE")
+EXPECTED_ASSISTANT_PACK_COUNT = len(EXPECTED_ASSISTANT_PACKS)
+EXPECTED_STRESS_REPLIES = len(stress_assistant_behavior.EXPECTED_CASES)
 NOTE_FIELDS = (
     "Machine key:",
     "CPU:",
@@ -83,12 +92,33 @@ def verify_assistant_log(path: Path, required: bool) -> int:
     if not text:
         return 0
     require("ASSIST_BEGIN|suite=pack-shell|version=1" in text, "assistant_begin_missing")
-    require("ASSIST_END|packs=" in text, "assistant_end_missing")
-    for pack_id in ("DOSHELP", "OFFICE"):
+    require(f"ASSIST_END|packs={EXPECTED_ASSISTANT_PACK_COUNT}" in text, "assistant_end_missing")
+    for pack_id in EXPECTED_ASSISTANT_PACKS:
         require(f"ASSIST_PACK|id={pack_id}" in text, f"assistant_pack_missing={pack_id}")
         require(f"ASSIST_MODEL|pack={pack_id}" in text, f"assistant_model_missing={pack_id}")
         require(f"ASSIST_REPLY|pack={pack_id}" in text, f"assistant_reply_missing={pack_id}")
     return count_matches(r"^ASSIST_REPLY\|", text)
+
+
+def verify_assistant_stress_log(path: Path, required: bool) -> int:
+    text = read(path, required=required)
+    if not text:
+        return 0
+    require("ASSIST_BEGIN|suite=stress-probe|version=1" in text, "assistant_stress_begin_missing")
+    require(
+        f"ASSIST_END|suite=stress-probe|packs={EXPECTED_ASSISTANT_PACK_COUNT}" in text,
+        "assistant_stress_end_missing",
+    )
+    require("status=model_unavailable" not in text, "assistant_stress_model_unavailable")
+    require("|query=" in text and "|answer=" in text, "assistant_stress_structured_answer_missing")
+    for pack_id in EXPECTED_ASSISTANT_PACKS:
+        require(f"ASSIST_PACK|id={pack_id}" in text, f"assistant_stress_pack_missing={pack_id}")
+        require(f"ASSIST_REPLY|pack={pack_id}" in text, f"assistant_stress_reply_missing={pack_id}")
+    reply_count = count_matches(r"^ASSIST_REPLY\|", text)
+    require(reply_count == EXPECTED_STRESS_REPLIES, f"assistant_stress_reply_count={reply_count}")
+    records = stress_assistant_behavior.parse_records(text)
+    stress_assistant_behavior.validate_records(records)
+    return reply_count
 
 
 def verify_assistant_compile_log(path: Path, required: bool) -> bool:
@@ -146,9 +176,25 @@ def self_test() -> None:
         )
         (root / "ASSIST.LOG").write_text(
             "ASSIST_BEGIN|suite=pack-shell|version=1\n"
-            "ASSIST_PACK|id=DOSHELP\nASSIST_MODEL|pack=DOSHELP\nASSIST_REPLY|pack=DOSHELP\n"
-            "ASSIST_PACK|id=OFFICE\nASSIST_MODEL|pack=OFFICE\nASSIST_REPLY|pack=OFFICE\n"
-            "ASSIST_END|packs=2\n",
+            + "".join(
+                f"ASSIST_PACK|id={pack_id}\nASSIST_MODEL|pack={pack_id}\nASSIST_REPLY|pack={pack_id}\n"
+                for pack_id in EXPECTED_ASSISTANT_PACKS
+            )
+            + f"ASSIST_END|packs={EXPECTED_ASSISTANT_PACK_COUNT}\n",
+            encoding="ascii",
+        )
+        stress_lines = [
+            "ASSIST_BEGIN|suite=stress-probe|version=1",
+            *[f"ASSIST_PACK|id={pack_id}" for pack_id in EXPECTED_ASSISTANT_PACKS],
+        ]
+        for case in stress_assistant_behavior.EXPECTED_CASES:
+            stress_lines.append(
+                f"ASSIST_REPLY|pack={case.pack}|intent=general_chat|ui=text|query={case.query}|"
+                f"source=retrieval|recall=kb2_term|answer={case.terms[0]} check passed."
+            )
+        stress_lines.append(f"ASSIST_END|suite=stress-probe|packs={EXPECTED_ASSISTANT_PACK_COUNT}")
+        (root / "ASTRESS.LOG").write_text(
+            "\n".join(stress_lines) + "\n",
             encoding="ascii",
         )
         (root / "ASSISTC.LOG").write_text("ASSIST_COMPILE_OK\n", encoding="ascii")
@@ -180,6 +226,10 @@ def verify_capture(
     quality_count = verify_quality_log(capture_dir / DEFAULT_FILES["quality"])
     perf_count = verify_perf_log(capture_dir / DEFAULT_FILES["perf"])
     assistant_count = verify_assistant_log(capture_dir / DEFAULT_FILES["assistant"], require_assistant)
+    assistant_stress_count = verify_assistant_stress_log(
+        capture_dir / DEFAULT_FILES["assistant_stress"],
+        require_assistant,
+    )
     assistant_compiled = verify_assistant_compile_log(capture_dir / DEFAULT_FILES["assistant_compile"], require_assistant)
     notes_present = verify_notes(
         capture_dir / DEFAULT_FILES["notes"],
@@ -192,6 +242,8 @@ def verify_capture(
     print(f"PROBE_OK hardware_perf_log={DEFAULT_FILES['perf']}")
     if require_assistant or assistant_count:
         print(f"PROBE_OK hardware_assistant_log={DEFAULT_FILES['assistant']}")
+    if require_assistant or assistant_stress_count:
+        print(f"PROBE_OK hardware_assistant_stress_log={DEFAULT_FILES['assistant_stress']}")
     if require_assistant or assistant_compiled:
         print(f"PROBE_OK hardware_assistant_compile_log={DEFAULT_FILES['assistant_compile']}")
     if require_notes or notes_present:
@@ -200,6 +252,8 @@ def verify_capture(
     print(f"PROBE_OK hardware_perf_runs={perf_count}")
     if require_assistant or assistant_count:
         print(f"PROBE_OK hardware_assistant_replies={assistant_count}")
+    if require_assistant or assistant_stress_count:
+        print(f"PROBE_OK hardware_assistant_stress_replies={assistant_stress_count}")
     if require_assistant or assistant_compiled:
         print("PROBE_OK hardware_assistant_compile=1")
     if require_notes or notes_present:

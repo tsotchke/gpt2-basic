@@ -105,6 +105,7 @@ REQUIRED_MANIFEST_MARKERS = (
     "`KB2TERM.TXT` term indexes",
     "per-pack `USAGE.TXT`",
     "qemu/evidence/run_main_486.log",
+    "qemu/evidence/hardware_capture_486_qemu_stress_report.md",
     "qemu/evidence/workspace_tracking_probe.log",
 )
 REQUIRED_HARDWARE_FILES = (

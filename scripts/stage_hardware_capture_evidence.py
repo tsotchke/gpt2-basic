@@ -25,6 +25,7 @@ STAGED_FILES = (
     ("quality", "QUAL.LOG", "quality.log"),
     ("perf", "PERF.LOG", "perf.log"),
     ("assistant", "ASSIST.LOG", "assistant.log"),
+    ("assistant_stress", "ASTRESS.LOG", "assistant_stress.log"),
     ("assistant_compile", "ASSISTC.LOG", "assistant_compile.log"),
 )
 
@@ -271,9 +272,27 @@ def write_sample_capture(root: Path) -> None:
     )
     (root / "ASSIST.LOG").write_text(
         "ASSIST_BEGIN|suite=pack-shell|version=1\n"
-        "ASSIST_PACK|id=DOSHELP\nASSIST_MODEL|pack=DOSHELP\nASSIST_REPLY|pack=DOSHELP\n"
-        "ASSIST_PACK|id=OFFICE\nASSIST_MODEL|pack=OFFICE\nASSIST_REPLY|pack=OFFICE\n"
-        "ASSIST_END|packs=2\n",
+        + "".join(
+            f"ASSIST_PACK|id={pack_id}\nASSIST_MODEL|pack={pack_id}\nASSIST_REPLY|pack={pack_id}\n"
+            for pack_id in verify_hardware_capture.EXPECTED_ASSISTANT_PACKS
+        )
+        + f"ASSIST_END|packs={verify_hardware_capture.EXPECTED_ASSISTANT_PACK_COUNT}\n",
+        encoding="ascii",
+    )
+    stress_lines = [
+        "ASSIST_BEGIN|suite=stress-probe|version=1",
+        *[f"ASSIST_PACK|id={pack_id}" for pack_id in verify_hardware_capture.EXPECTED_ASSISTANT_PACKS],
+    ]
+    for case in verify_hardware_capture.stress_assistant_behavior.EXPECTED_CASES:
+        stress_lines.append(
+            f"ASSIST_REPLY|pack={case.pack}|intent=general_chat|ui=text|query={case.query}|"
+            f"source=retrieval|recall=kb2_term|answer={case.terms[0]} check passed."
+        )
+    stress_lines.append(
+        f"ASSIST_END|suite=stress-probe|packs={verify_hardware_capture.EXPECTED_ASSISTANT_PACK_COUNT}"
+    )
+    (root / "ASTRESS.LOG").write_text(
+        "\n".join(stress_lines) + "\n",
         encoding="ascii",
     )
     (root / "ASSISTC.LOG").write_text("ASSIST_COMPILE_OK\n", encoding="ascii")
@@ -322,7 +341,7 @@ def self_test() -> None:
             (evidence / "hardware_486dx2_66_dos622_manifest.md").exists(),
             "self_test_missing_manifest",
         )
-        require(len(written) == 7, "self_test_staged_count")
+        require(len(written) == 8, "self_test_staged_count")
     print("PROBE_OK hardware_stage_self_test=1")
 
 

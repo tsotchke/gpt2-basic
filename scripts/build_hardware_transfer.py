@@ -203,6 +203,7 @@ def return_instructions() -> str:
         "  QUAL.LOG\n"
         "  PERF.LOG\n"
         "  ASSIST.LOG\n"
+        "  ASTRESS.LOG\n"
         "  ASSISTC.LOG\n"
         "  HWNOTES.TXT\n"
         "\n"
