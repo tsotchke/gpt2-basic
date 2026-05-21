@@ -1,0 +1,36 @@
+name: Software improvement
+description: Track non-hardware improvements to GPT2-BASIC runtime, packs, storage, or evidence.
+title: "[Software]: "
+labels: ["enhancement", "release-follow-up"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What software behavior, capability, or evidence should improve?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Files, packs, scripts, or release artifacts likely affected.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence gate
+      description: Commands, reports, or QEMU logs that should prove the improvement.
+      render: shell
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundaries
+      options:
+        - label: This does not claim new physical hardware validation.
+          required: true
+        - label: Public docs and release notes stay clear about QEMU versus physical evidence.
+          required: true

@@ -25,6 +25,21 @@ See [`substrate-portability.md`](substrate-portability.md) for the minimum
 runtime-primitives argument behind the BASIC implementation and future C,
 assembly, and Eshkol ports.
 
+## Current Evidence Baseline
+
+- CHAT pack quality: `PASS 160/160`, average `0.999`.
+- Raw direct prompt gate: `PASS 83/83`.
+- Generalist conversational prompt gate: `PASS 24/24`.
+- Consistency gate: `PASS 498/498` variants across `83/83` groups.
+- Pack retrieval, KDB index, KDB binary, and KB2 term-index gates: `PASS 42/42`.
+- Usefulness workflow gate: `PASS 37/37` tasks across `9/9` workflows.
+- QEMU assistant stress gate: `PASS 50/50` replies across five packs.
+- Runtime bundle verification: preview, DOSBox, hardware-transfer, and launch-kit
+  zips rebuild with sidecar checksums and without host-only training corpora.
+
+Physical 486-class validation remains outside this roadmap pass and is tracked
+separately in public issues #1 and #2.
+
 ## Design Direction
 
 The target experience is a cartridge-like language system:
@@ -64,9 +79,23 @@ significant query words before falling back to the full KDB.
 
 ## Next Milestones
 
-- Add more domain packs for hardware repair, programming, and offline reference
-  manuals using the same generated KDB/KB2 contract.
-- Compare recall-probe timing on QEMU and physical hardware, then decide
-  whether the next storage step should be topic shards or offset tables.
-- Add persistent memory slots beyond name, goal, style, and problem.
-- Add a measured recall benchmark in QEMU and on physical 486 hardware.
+1. Build a denser binary term index for local recall:
+   https://github.com/tsotchke/gpt2-basic/issues/37
+2. Add latency and recall-budget gates to the assistant harness:
+   https://github.com/tsotchke/gpt2-basic/issues/41
+3. Add an inspectable persistent conversation database:
+   https://github.com/tsotchke/gpt2-basic/issues/38
+4. Add a pack intent router for assistant queries:
+   https://github.com/tsotchke/gpt2-basic/issues/39
+5. Add larger programming and offline-reference domain packs:
+   https://github.com/tsotchke/gpt2-basic/issues/40
+6. Define Windows 95 and OS/2 assistant shell parity:
+   https://github.com/tsotchke/gpt2-basic/issues/42
+7. Repair and promote smaller model profiles under strict gates:
+   https://github.com/tsotchke/gpt2-basic/issues/43
+8. Prototype a C or assembly fixed-point kernel compatibility path:
+   https://github.com/tsotchke/gpt2-basic/issues/44
+
+The ordering is deliberate: recall density and latency budgets should come
+before larger packs, and persistent memory plus routing should land before
+native shell ports so every shell can target the same behavior.

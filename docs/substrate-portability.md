@@ -123,6 +123,11 @@ Eshkol belongs above that layer: orchestration, richer local workflows,
 tooling, and interfaces. GPT2-BASIC supplies the minimum-substrate witness.
 C and assembly supply the production portability path.
 
+The first scoped compatibility task is public issue #44:
+https://github.com/tsotchke/gpt2-basic/issues/44. It should start with one
+fixed-point kernel and preserve the existing vector/evidence contract before
+claiming any broader port.
+
 ## Proof Obligations
 
 To claim a new substrate, the project should provide evidence for:
