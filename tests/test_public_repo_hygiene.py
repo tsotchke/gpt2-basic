@@ -8,9 +8,16 @@ ROOT = Path(__file__).resolve().parents[1]
 TEXT_SUFFIXES = {".cast", ".log", ".md", ".txt"}
 PUBLIC_TEXT_ROOTS = (
     ROOT / "README.md",
+    ROOT / "gpt2_basic_documentation.md",
     ROOT / "docs",
     ROOT / "qemu" / "evidence",
     ROOT / "promo" / "renders",
+)
+PUBLIC_COPY_FILES = (
+    ROOT / "README.md",
+    ROOT / "gpt2_basic_documentation.md",
+    ROOT / "docs" / "marketing" / "promo-kit.md",
+    ROOT / "docs" / "marketing" / "video-plan.md",
 )
 
 
@@ -50,6 +57,26 @@ class PublicRepoHygieneTests(unittest.TestCase):
         self.assertIn("not a frontier LLM", readme)
         self.assertIn("Physical returned board logs are still pending", readme)
         self.assertIn("Do not claim physical 486 speed", promo)
+
+    def test_public_copy_avoids_novelty_demo_framing(self) -> None:
+        banned = (
+            "ai meets retrocomputing",
+            "digital archaeology",
+            "alternate history",
+            "counterfactual",
+            "where it has no business",
+            "real mode vibes",
+            "groundbreaking",
+            "proof of concept",
+        )
+        offenders: list[str] = []
+        for path in PUBLIC_COPY_FILES:
+            text = path.read_text(encoding="utf-8", errors="ignore").lower()
+            for phrase in banned:
+                if phrase in text:
+                    offenders.append(f"{path.relative_to(ROOT)}:{phrase}")
+
+        self.assertEqual([], offenders)
 
     def test_substrate_portability_claim_is_qualified(self) -> None:
         substrate = (ROOT / "docs" / "substrate-portability.md").read_text(encoding="utf-8")

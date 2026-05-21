@@ -704,7 +704,11 @@ until we can repeat the same commands on a physical PC.
 ```
 ## ► Technical Innovations
 
-Our implementation includes several innovative techniques that would have been considered groundbreaking optimizations in the 486 era. For complete technical details, see the [core innovations section](gpt2_basic_documentation.md#4-core-innovations) in our technical documentation:
+The implementation combines several constrained-system techniques: fixed-point
+weights, compact tokenizer files, optional compressed tensor artifacts, KV decode
+caching, head shortlists, streaming fallbacks, and local recall indexes. For
+complete technical details, see the [core innovations section](gpt2_basic_documentation.md#4-core-innovations)
+in the technical documentation:
 
 ### ■ Current Fixed-Point Weight Format
 
