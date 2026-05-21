@@ -9,14 +9,14 @@ The visible DOS session uses era-accurate DOS commands only; Python, ffmpeg, and
 - Cast: `promo/renders/gpt2_basic_assistant_showcase.cast`
 - GIF intermediate: `promo/renders/gpt2_basic_assistant_showcase.gif`
 - Resolution: `1920x1080`
-- Duration seconds: `173.200000`
+- Duration seconds: `168.566667`
 - Final frame hold seconds: `12`
-- MP4 SHA-256: `54af5236f373e690ea5bbf7a557a3ae2926f4b68033454d29a58ac65bd93ff90`
+- MP4 SHA-256: `e29292f29c5c1ce771014dd85e400aa67e01ad56164d3b4e2d87edafe4b1e362`
 
 Audience:
 
 - Engineers evaluating local language models on constrained systems.
-- Retrocomputing, embedded, industrial, archival, and air-gapped operators.
+- Legacy, embedded, industrial, archival, and air-gapped operators.
 - Pack authors who need fast local recall, small weights, and auditable behavior.
 
 Covered functionality:

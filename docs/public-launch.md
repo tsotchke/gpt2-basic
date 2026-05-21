@@ -20,8 +20,12 @@ The CHAT assistant pack currently has:
 
 - Model profile: `486dx2-usable`
 - Shape: `3L 64D 4H ctx192 hidden256 vocab4096`
-- Fixed-point quality gate: `48/48`, average `1.000`
-- Two-sentence CHAT outputs in the generated quality report
+- Fixed-point CHAT pack quality gate: `160/160`, average `0.999`
+- Raw direct prompt gate: `83/83`
+- Generalist conversational prompt gate: `24/24`
+- Consistency gate: `498/498` variants across `83/83` prompt groups
+- Pack retrieval and KDB/KB2 recall gates: `42/42`
+- QEMU assistant stress gate: `50/50` replies across five packs
 - Training performed on Apple Metal/MPS, fixed-point evaluation on CPU
 - Runtime artifacts validated by `scripts/model_report.py --strict`
 

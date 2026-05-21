@@ -176,7 +176,7 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
 
     term.title("Who This Is For", "Product demonstration, not personal branding")
     term.line("For engineers evaluating useful local language models on constrained systems.", WHITE, 0.09)
-    term.line("For retrocomputing, embedded, industrial, archival, and air-gapped environments.", WHITE, 0.09)
+    term.line("For legacy, embedded, industrial, archival, and air-gapped environments.", WHITE, 0.09)
     term.line("For pack authors who need fast local recall, small weights, and auditable behavior.", WHITE, 0.09)
     term.line("This is not a cloud demo or a personal release: it shows what the product can do.", YELLOW, 0.09)
     term.sleep(1.2)

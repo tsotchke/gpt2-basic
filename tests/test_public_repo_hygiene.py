@@ -18,6 +18,9 @@ PUBLIC_COPY_FILES = (
     ROOT / "gpt2_basic_documentation.md",
     ROOT / "docs" / "marketing" / "promo-kit.md",
     ROOT / "docs" / "marketing" / "video-plan.md",
+    ROOT / "qemu" / "evidence" / "assistant_showcase_video.md",
+    ROOT / "scripts" / "build_assistant_showcase_video.py",
+    ROOT / "scripts" / "play_assistant_showcase_terminal.py",
 )
 
 

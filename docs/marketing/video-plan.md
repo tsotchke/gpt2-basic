@@ -41,8 +41,9 @@ Target length: 4 to 6 minutes.
 
 5. Evidence segment, 45 seconds
    - Show `qemu/evidence/quality_report_assistant_chat.md`.
-   - Show `48/48`, average `1.000`.
-   - Show model report status OK.
+   - Show CHAT quality `160/160`, average `0.999`.
+   - Show raw/generalist/consistency gates: `83/83`, `24/24`, and `498/498`.
+   - Show assistant stress `50/50` across five packs and model report status OK.
    - Explain QEMU evidence versus pending physical-hardware timing.
 
 6. Release/package segment, 30 seconds
@@ -178,7 +179,7 @@ Use precise language:
 - Say "GPT-style" instead of "GPT-2 scale".
 - Say "QEMU 486 path" unless physical hardware is on screen.
 - Say "small model" and "real fixed-point inference".
-- Say "assistant pack" for CHAT, DOSHELP, and OFFICE.
+- Say "assistant pack" for CHAT, DOSHELP, OFFICE, DEV, and PORTABLE.
 
 Do not hide the latency. The wait is part of the story.
 

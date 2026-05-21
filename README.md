@@ -140,7 +140,7 @@ The repository has three audiences:
    under severe memory, storage, and CPU limits.
 2. **AI practitioners** who want a readable, inspectable transformer runtime
    without the usual stack of frameworks and accelerators.
-3. **Retro and embedded-system builders** who want a working assistant runtime,
+3. **Legacy and embedded-system builders** who want a working assistant runtime,
    not just a conceptual port.
 
 The important result is not that this tiny model competes with modern hosted

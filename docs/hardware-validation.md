@@ -152,7 +152,7 @@ mismatches so evidence filenames cannot drift away from the machine notes.
 Start with whatever 486-class hardware is easiest to borrow, buy, or assemble.
 A Pentium can wait until after the 486 baseline is captured. Useful sources are:
 
-- local retro-computing groups or repair shops
+- local legacy-computing groups or repair shops
 - eBay or marketplace listings for tested 486 boards or complete systems
 - university surplus or electronics recyclers
 - friends with old industrial PCs, DOS tooling rigs, or ISA test benches
