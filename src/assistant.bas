@@ -45,6 +45,8 @@ CONST ASSIST_KDB2_HEADER_BYTES = 64
 CONST ASSIST_KDB2_TERMS_BYTES = 160
 CONST ASSIST_KDB2_TITLE_BYTES = 64
 CONST ASSIST_KDB2_BODY_BYTES = 192
+CONST ASSIST_KDB2_RECORD_BYTES = ASSIST_KDB2_TERMS_BYTES + ASSIST_KDB2_TITLE_BYTES + ASSIST_KDB2_BODY_BYTES
+CONST ASSIST_MAX_TERM_CANDIDATES = 64
 
 TYPE AssistantPack
     id AS STRING * 32
@@ -134,6 +136,11 @@ DECLARE SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRI
 DECLARE FUNCTION AssistKdbBucketPath(kdb_path AS STRING, bucket_char AS STRING) AS STRING
 DECLARE SUB AssistScanBucketedKdb(kdb_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistKdbV2BucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS STRING
+DECLARE FUNCTION AssistKdbV2TermPath(kdb_bin_path AS STRING) AS STRING
+DECLARE FUNCTION AssistTermCandidateSeen(candidate_ids() AS LONG, candidate_count AS INTEGER, row_id AS LONG) AS INTEGER
+DECLARE SUB AssistAddTermCandidate(candidate_ids() AS LONG, BYREF candidate_count AS INTEGER, row_id AS LONG)
+DECLARE SUB AssistScoreBinaryKdbRecord(file_num AS INTEGER, row_offset AS LONG, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+DECLARE SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE SUB AssistScanBucketedKdbV2(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
@@ -197,7 +204,13 @@ FUNCTION AssistElapsedMs(start_time AS DOUBLE) AS LONG
 
     end_time = TIMER
     delta = end_time - start_time
-    IF delta < 0 THEN delta = delta + 86400.0
+    IF delta < 0 THEN
+        IF delta < -1.0 THEN
+            delta = delta + 86400.0
+        ELSE
+            delta = 0.0
+        END IF
+    END IF
     RETURN CLNG(delta * 1000.0)
 END FUNCTION
 
@@ -1123,19 +1136,211 @@ FUNCTION AssistKdbV2BucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS
     RETURN prefix + "KB2" + bucket + ".BIN"
 END FUNCTION
 
+FUNCTION AssistKdbV2TermPath(kdb_bin_path AS STRING) AS STRING
+    DIM i AS INTEGER
+    DIM last_sep AS INTEGER
+    DIM ch AS STRING
+    DIM prefix AS STRING
+
+    kdb_bin_path = AssistTrimFixed(kdb_bin_path)
+
+    last_sep = 0
+    FOR i = 1 TO LEN(kdb_bin_path)
+        ch = MID$(kdb_bin_path, i, 1)
+        IF ch = "\" OR ch = "/" THEN last_sep = i
+    NEXT i
+
+    IF last_sep > 0 THEN
+        prefix = LEFT$(kdb_bin_path, last_sep)
+    ELSE
+        prefix = ""
+    END IF
+    RETURN prefix + "KB2TERM.TXT"
+END FUNCTION
+
+FUNCTION AssistTermCandidateSeen(candidate_ids() AS LONG, candidate_count AS INTEGER, row_id AS LONG) AS INTEGER
+    DIM i AS INTEGER
+
+    FOR i = 0 TO candidate_count - 1
+        IF candidate_ids(i) = row_id THEN RETURN 1
+    NEXT i
+    RETURN 0
+END FUNCTION
+
+SUB AssistAddTermCandidate(candidate_ids() AS LONG, BYREF candidate_count AS INTEGER, row_id AS LONG)
+    IF row_id <= 0 THEN RETURN
+    IF candidate_count >= ASSIST_MAX_TERM_CANDIDATES THEN RETURN
+    IF AssistTermCandidateSeen(candidate_ids(), candidate_count, row_id) <> 0 THEN RETURN
+    candidate_ids(candidate_count) = row_id
+    candidate_count = candidate_count + 1
+END SUB
+
+SUB AssistScoreBinaryKdbRecord(file_num AS INTEGER, row_offset AS LONG, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+    DIM terms_field AS STRING * ASSIST_KDB2_TERMS_BYTES
+    DIM title_field AS STRING * ASSIST_KDB2_TITLE_BYTES
+    DIM body_field AS STRING * ASSIST_KDB2_BODY_BYTES
+    DIM key_text AS STRING
+    DIM title_text AS STRING
+    DIM body_text AS STRING
+    DIM row_score AS INTEGER
+
+    GET #file_num, row_offset, terms_field
+    GET #file_num, row_offset + ASSIST_KDB2_TERMS_BYTES, title_field
+    GET #file_num, row_offset + ASSIST_KDB2_TERMS_BYTES + ASSIST_KDB2_TITLE_BYTES, body_field
+    key_text = LCASE$(AssistTrimFixed(terms_field))
+    title_text = AssistTrimFixed(title_field)
+    body_text = AssistTrimFixed(body_field)
+    row_score = AssistRetrievalScore(query_lower, key_text, title_text, body_text)
+    IF row_score > 0 THEN row_score = row_score + score_bonus
+    IF row_score > best_score THEN
+        best_score = row_score
+        best_text = title_text + ": " + body_text
+    END IF
+END SUB
+
+SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+    DIM i AS INTEGER
+    DIM j AS INTEGER
+    DIM word_text AS STRING
+    DIM ch AS STRING
+    DIM terms AS STRING
+    DIM term_path AS STRING
+    DIM term_file AS INTEGER
+    DIM line_text AS STRING
+    DIM pipe_pos AS INTEGER
+    DIM term_text AS STRING
+    DIM ids_text AS STRING
+    DIM comma_pos AS INTEGER
+    DIM id_part AS STRING
+    DIM candidate_ids(0 TO ASSIST_MAX_TERM_CANDIDATES - 1) AS LONG
+    DIM candidate_count AS INTEGER
+    DIM row_id AS LONG
+    DIM file_num AS INTEGER
+    DIM header AS STRING * ASSIST_KDB2_HEADER_BYTES
+    DIM row_bytes AS LONG
+    DIM file_bytes AS LONG
+    DIM row_count AS LONG
+    DIM row_offset AS LONG
+    DIM term_file_open AS INTEGER
+    DIM bin_file_open AS INTEGER
+
+    kdb_bin_path = AssistTrimFixed(kdb_bin_path)
+    IF kdb_bin_path = "" OR DIR(kdb_bin_path) = "" THEN RETURN
+
+    terms = ","
+    word_text = ""
+    query_lower = LCASE$(TRIM$(query_lower))
+
+    FOR i = 1 TO LEN(query_lower) + 1
+        IF i <= LEN(query_lower) THEN
+            ch = MID$(query_lower, i, 1)
+        ELSE
+            ch = " "
+        END IF
+
+        IF (ch >= "a" AND ch <= "z") OR (ch >= "0" AND ch <= "9") THEN
+            word_text = word_text + ch
+        ELSE
+            IF LEN(word_text) >= 3 AND AssistIsRetrievalStopword(word_text) = 0 THEN
+                IF INSTR(terms, "," + word_text + ",") = 0 THEN
+                    terms = terms + word_text + ","
+                END IF
+            END IF
+            word_text = ""
+        END IF
+    NEXT i
+
+    IF terms = "," THEN RETURN
+
+    term_path = AssistKdbV2TermPath(kdb_bin_path)
+    IF term_path = "" OR DIR(term_path) = "" THEN RETURN
+
+    term_file = FREEFILE
+    ON ERROR GOTO assist_scan_term_index_error
+    OPEN term_path FOR INPUT AS #term_file
+    term_file_open = 1
+    ON ERROR GOTO 0
+    WHILE NOT EOF(term_file)
+        LINE INPUT #term_file, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" THEN
+            pipe_pos = INSTR(line_text, "|")
+            IF pipe_pos > 1 THEN
+                term_text = LCASE$(TRIM$(LEFT$(line_text, pipe_pos - 1)))
+                IF INSTR(terms, "," + term_text + ",") > 0 THEN
+                    ids_text = TRIM$(MID$(line_text, pipe_pos + 1))
+                    WHILE ids_text <> ""
+                        comma_pos = INSTR(ids_text, ",")
+                        IF comma_pos > 0 THEN
+                            id_part = LEFT$(ids_text, comma_pos - 1)
+                            ids_text = MID$(ids_text, comma_pos + 1)
+                        ELSE
+                            id_part = ids_text
+                            ids_text = ""
+                        END IF
+                        row_id = VAL(TRIM$(id_part))
+                        AssistAddTermCandidate candidate_ids(), candidate_count, row_id
+                    WEND
+                END IF
+            END IF
+        END IF
+    WEND
+    CLOSE #term_file
+    term_file_open = 0
+
+    IF candidate_count = 0 THEN RETURN
+
+    file_num = FREEFILE
+    ON ERROR GOTO assist_scan_term_index_error
+    OPEN kdb_bin_path FOR BINARY AS #file_num
+    bin_file_open = 1
+    ON ERROR GOTO 0
+
+    file_bytes = LOF(file_num)
+    row_bytes = ASSIST_KDB2_RECORD_BYTES
+    IF file_bytes < ASSIST_KDB2_HEADER_BYTES OR row_bytes <= 0 THEN
+        CLOSE #file_num
+        RETURN
+    END IF
+    IF (file_bytes - ASSIST_KDB2_HEADER_BYTES) MOD row_bytes <> 0 THEN
+        CLOSE #file_num
+        RETURN
+    END IF
+
+    GET #file_num, 1, header
+    IF LEFT$(header, 4) <> "KDB2" THEN
+        CLOSE #file_num
+        RETURN
+    END IF
+
+    row_count = (file_bytes - ASSIST_KDB2_HEADER_BYTES) \ row_bytes
+    FOR j = 0 TO candidate_count - 1
+        row_id = candidate_ids(j)
+        IF row_id >= 1 AND row_id <= row_count THEN
+            row_offset = ASSIST_KDB2_HEADER_BYTES + 1 + ((row_id - 1) * row_bytes)
+            AssistScoreBinaryKdbRecord file_num, row_offset, query_lower, score_bonus, best_text, best_score
+        END IF
+    NEXT j
+
+    CLOSE #file_num
+    bin_file_open = 0
+    RETURN
+
+assist_scan_term_index_error:
+    ON ERROR GOTO 0
+    IF term_file_open <> 0 THEN CLOSE #term_file
+    IF bin_file_open <> 0 THEN CLOSE #file_num
+    RETURN
+END SUB
+
 SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
     DIM file_num AS INTEGER
     DIM header AS STRING * ASSIST_KDB2_HEADER_BYTES
-    DIM row AS AssistantKdbV2Record
     DIM row_bytes AS LONG
     DIM file_bytes AS LONG
     DIM row_count AS LONG
     DIM row_index AS LONG
     DIM row_offset AS LONG
-    DIM key_text AS STRING
-    DIM title_text AS STRING
-    DIM body_text AS STRING
-    DIM row_score AS INTEGER
 
     kdb_bin_path = AssistTrimFixed(kdb_bin_path)
     IF kdb_bin_path = "" OR DIR(kdb_bin_path) = "" THEN RETURN
@@ -1146,7 +1351,7 @@ SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score
     ON ERROR GOTO 0
 
     file_bytes = LOF(file_num)
-    row_bytes = LEN(row)
+    row_bytes = ASSIST_KDB2_RECORD_BYTES
     IF file_bytes < ASSIST_KDB2_HEADER_BYTES OR row_bytes <= 0 THEN
         CLOSE #file_num
         RETURN
@@ -1165,16 +1370,7 @@ SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score
     row_count = (file_bytes - ASSIST_KDB2_HEADER_BYTES) \ row_bytes
     FOR row_index = 1 TO row_count
         row_offset = ASSIST_KDB2_HEADER_BYTES + 1 + ((row_index - 1) * row_bytes)
-        GET #file_num, row_offset, row
-        key_text = LCASE$(AssistTrimFixed(row.terms))
-        title_text = AssistTrimFixed(row.title)
-        body_text = AssistTrimFixed(row.body)
-        row_score = AssistRetrievalScore(query_lower, key_text, title_text, body_text)
-        IF row_score > 0 THEN row_score = row_score + score_bonus
-        IF row_score > best_score THEN
-            best_score = row_score
-            best_text = title_text + ": " + body_text
-        END IF
+        AssistScoreBinaryKdbRecord file_num, row_offset, query_lower, score_bonus, best_text, best_score
     NEXT row_index
 
     CLOSE #file_num
@@ -1259,8 +1455,13 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 
     IF kdb_bin_path <> "" AND DIR(kdb_bin_path) <> "" THEN
         before_score = best_score
-        AssistScanBucketedKdbV2 kdb_bin_path, q, 0, best_text, best_score
-        IF best_score > before_score THEN g_assist_last_recall_mode = "kb2_bucket"
+        AssistScanBinaryKdbTermIndex kdb_bin_path, q, 0, best_text, best_score
+        IF best_score > before_score THEN g_assist_last_recall_mode = "kb2_term"
+        IF best_score < 8 THEN
+            before_score = best_score
+            AssistScanBucketedKdbV2 kdb_bin_path, q, 0, best_text, best_score
+            IF best_score > before_score THEN g_assist_last_recall_mode = "kb2_bucket"
+        END IF
         IF best_score < 8 THEN
             before_score = best_score
             AssistScanBinaryKdbFile kdb_bin_path, q, 0, best_text, best_score

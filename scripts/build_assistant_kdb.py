@@ -58,6 +58,7 @@ STOPWORDS = {
 BUCKET_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 BUCKET_NAME_RE = re.compile(r"^KDB[0-9A-Z]\.TXT$")
 KDB2_BUCKET_NAME_RE = re.compile(r"^KB2(?:ALL|[0-9A-Z])\.BIN$")
+KDB2_TERM_INDEX_NAME_RE = re.compile(r"^(?:KB2TERM|KB2T[0-9A-Z])\.TXT$")
 
 KDB2_MAGIC = "KDB2"
 KDB2_HEADER_BYTES = 64
@@ -67,6 +68,8 @@ KDB2_BODY_BYTES = 192
 KDB2_RECORD_BYTES = KDB2_TERMS_BYTES + KDB2_TITLE_BYTES + KDB2_BODY_BYTES
 KDB2_FULL_NAME = "KB2ALL.BIN"
 KDB2_INDEX_NAME = "KB2IDX.TXT"
+KDB2_TERM_INDEX_NAME = "KB2TERM.TXT"
+KDB2_TERM_INDEX_ID_LIMIT = 96
 
 
 @dataclass(frozen=True)
@@ -223,6 +226,35 @@ def render_kdb2_index(pack: PackContract) -> str:
     return "\n".join(lines) + "\n"
 
 
+def term_index_rows(pack: PackContract) -> dict[str, list[int]]:
+    index: dict[str, list[int]] = {}
+    for row_id, row in enumerate(kdb_rows(pack), start=1):
+        seen_terms: set[str] = set()
+        for word in words(row.terms):
+            term = word.strip(".:-")
+            if len(term) < 3 or term in STOPWORDS or term in seen_terms:
+                continue
+            if term[0].upper() not in BUCKET_CHARS:
+                continue
+            seen_terms.add(term)
+            ids = index.setdefault(term, [])
+            if len(ids) < KDB2_TERM_INDEX_ID_LIMIT:
+                ids.append(row_id)
+    return index
+
+
+def render_kdb2_term_index_files(pack: PackContract) -> dict[str, str]:
+    terms = term_index_rows(pack)
+    lines = [
+        "# term|row_ids",
+        "# Generated KB2 term index. Rebuild with scripts/build_assistant_kdb.py --write.",
+    ]
+    for term in sorted(terms):
+        ids = ",".join(str(row_id) for row_id in terms[term])
+        lines.append(f"{term}|{ids}")
+    return {KDB2_TERM_INDEX_NAME: "\n".join(lines) + "\n"}
+
+
 def render_bucket_files(pack: PackContract) -> dict[str, str]:
     return {
         bucket_name(bucket): render_bucket(bucket, rows)
@@ -246,6 +278,14 @@ def stale_kdb2_files(pack: PackContract, expected_names: set[str]) -> list[Path]
     return stale
 
 
+def stale_kdb2_term_index_files(pack: PackContract, expected_names: set[str]) -> list[Path]:
+    stale: list[Path] = []
+    for path in pack.kdb_path.parent.iterdir():
+        if KDB2_TERM_INDEX_NAME_RE.fullmatch(path.name.upper()) and path.name.upper() not in expected_names:
+            stale.append(path)
+    return stale
+
+
 def write_or_check(pack_root: Path, write: bool) -> int:
     failures: list[str] = []
     for pack in load_all_pack_contracts(pack_root):
@@ -261,6 +301,8 @@ def write_or_check(pack_root: Path, write: bool) -> int:
         kdb2_index_target = pack.kdb_bin_index_path
         kdb2_bucket_files = render_kdb2_bucket_files(pack)
         expected_kdb2_names = {KDB2_FULL_NAME, *{name.upper() for name in kdb2_bucket_files}}
+        kdb2_term_index_files = render_kdb2_term_index_files(pack)
+        expected_term_index_names = {name.upper() for name in kdb2_term_index_files}
         if write:
             target.write_text(expected, encoding="ascii")
             index_target.write_text(expected_index, encoding="ascii")
@@ -274,12 +316,19 @@ def write_or_check(pack_root: Path, write: bool) -> int:
                 (target.parent / name).write_bytes(payload)
             for stale in stale_kdb2_files(pack, expected_kdb2_names):
                 stale.unlink()
+            for name, text in kdb2_term_index_files.items():
+                (target.parent / name).write_text(text, encoding="ascii")
+            for stale in stale_kdb2_term_index_files(pack, expected_term_index_names):
+                stale.unlink()
             bucket_entries = sum(text.count("\n") - 2 for text in bucket_files.values())
+            term_entries = sum(text.count("\n") - 2 for text in kdb2_term_index_files.values())
             print(
                 "WROTE_ASSISTANT_KDB|"
                 f"pack={pack.pack_id}|path={target}|rows={len(kdb_rows(pack))}|"
                 f"buckets={len(bucket_files)}|bucket_entries={bucket_entries}|"
-                f"kdb2_bytes={len(expected_kdb2_full) + sum(len(payload) for payload in kdb2_bucket_files.values())}"
+                f"term_entries={term_entries}|"
+                f"kdb2_bytes={len(expected_kdb2_full) + sum(len(payload) for payload in kdb2_bucket_files.values())}|"
+                f"term_index_bytes={sum(len(text.encode('ascii')) for text in kdb2_term_index_files.values())}"
             )
             continue
         current = target.read_text(encoding="ascii") if target.exists() else ""
@@ -298,6 +347,12 @@ def write_or_check(pack_root: Path, write: bool) -> int:
             for name, payload in kdb2_bucket_files.items()
             if not (target.parent / name).exists() or (target.parent / name).read_bytes() != payload
         ]
+        stale_term_index = stale_kdb2_term_index_files(pack, expected_term_index_names)
+        term_index_mismatches = [
+            name
+            for name, text in kdb2_term_index_files.items()
+            if not (target.parent / name).exists() or (target.parent / name).read_text(encoding="ascii") != text
+        ]
         if (
             current != expected
             or current_index != expected_index
@@ -307,14 +362,19 @@ def write_or_check(pack_root: Path, write: bool) -> int:
             or stale_files
             or kdb2_bucket_mismatches
             or stale_kdb2
+            or term_index_mismatches
+            or stale_term_index
         ):
             failures.append(pack.pack_id)
             print(f"ASSISTANT_KDB_STALE|pack={pack.pack_id}|path={target}")
         else:
+            term_entries = sum(text.count("\n") - 2 for text in kdb2_term_index_files.values())
             print(
                 "ASSISTANT_KDB_OK|"
                 f"pack={pack.pack_id}|rows={len(kdb_rows(pack))}|buckets={len(bucket_files)}|"
-                f"kdb2_bytes={len(expected_kdb2_full) + sum(len(payload) for payload in kdb2_bucket_files.values())}"
+                f"term_entries={term_entries}|"
+                f"kdb2_bytes={len(expected_kdb2_full) + sum(len(payload) for payload in kdb2_bucket_files.values())}|"
+                f"term_index_bytes={sum(len(text.encode('ascii')) for text in kdb2_term_index_files.values())}"
             )
     if failures:
         print("ASSISTANT_KDB_CHECK_FAILED|packs=" + ",".join(failures))
@@ -346,6 +406,9 @@ def self_test() -> None:
     assert "KB2B.BIN" in binary_buckets
     binary_index = render_kdb2_index(pack)
     assert "B|" in binary_index
+    term_index = render_kdb2_term_index_files(pack)
+    assert KDB2_TERM_INDEX_NAME in term_index
+    assert "better|" in term_index[KDB2_TERM_INDEX_NAME]
     print("PROBE_OK assistant_kdb_self_test=1")
 
 

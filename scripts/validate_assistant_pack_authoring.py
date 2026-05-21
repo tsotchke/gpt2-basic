@@ -18,6 +18,7 @@ from build_assistant_kdb import (
     render_kdb2_bucket_files,
     render_kdb2_full,
     render_kdb2_index,
+    render_kdb2_term_index_files,
 )
 
 
@@ -68,6 +69,11 @@ def validate_pack_authoring(pack_root: Path) -> None:
             bucket_path = pack.kdb_bin_path.parent / name
             if not bucket_path.exists() or bucket_path.read_bytes() != expected_payload:
                 raise PackContractError(f"{name} is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
+        expected_term_indexes = render_kdb2_term_index_files(pack)
+        for name, expected_text in expected_term_indexes.items():
+            index_path = pack.kdb_bin_path.parent / name
+            if not index_path.exists() or index_path.read_text(encoding="ascii") != expected_text:
+                raise PackContractError(f"{name} is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
         parse_help_rows(pack.help_path)
         parse_help_rows(pack.knowledge_path)
         parse_help_rows(pack.kdb_path)
@@ -81,6 +87,7 @@ def validate_pack_authoring(pack_root: Path) -> None:
             f"idx={len(pack.kdb_index_rows)}|"
             f"bucket_entries={sum(len(text.splitlines()) - 2 for text in expected_buckets.values())}|"
             f"kdb2_entries={sum((len(payload) - KDB2_HEADER_BYTES) // KDB2_RECORD_BYTES for payload in expected_kdb2_buckets.values())}|"
+            f"term_entries={sum(len(text.splitlines()) - 2 for text in expected_term_indexes.values())}|"
             f"user={user_rows}"
         )
     print("PROBE_OK assistant_pack_authoring=1")

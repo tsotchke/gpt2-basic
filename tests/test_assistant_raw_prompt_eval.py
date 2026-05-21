@@ -88,6 +88,16 @@ class AssistantRawPromptEvalTests(unittest.TestCase):
 
         self.assertIn("PROBE_OK assistant_kdb_binary_eval_self_test=1", result.stdout)
 
+    def test_assistant_kdb_term_index_eval_self_test(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "evaluate_assistant_kdb_term_index.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_kdb_term_index_eval_self_test=1", result.stdout)
+
     def test_assistant_kdb_builder_self_test(self) -> None:
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "build_assistant_kdb.py"), "--self-test"],
