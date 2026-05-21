@@ -1,0 +1,3 @@
+# terms|title|body
+# Generated KDB bucket D. Rebuild with scripts/build_assistant_kdb.py --write.
+domain weight loading hot swappable weights load behavior tiny resident shell without rebuilding whole runtime|domain weight loading|Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.

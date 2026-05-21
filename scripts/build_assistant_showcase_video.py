@@ -209,6 +209,7 @@ def write_report(report: Path, paths: dict[str, Path], resolution: str, duration
         "- DOSHELP pack for CONFIG.SYS, AUTOEXEC.BAT, DPMI, conventional memory, and batch-file help.",
         "- OFFICE pack for rewriting, summarizing, status updates, release wording, and clearer notes.",
         "- DEV pack for retrieval-first architecture, pack authoring, release checks, and modern 486 assistant design.",
+        "- PORTABLE pack for BASIC teaching, C/assembly/Eshkol ports, hot-swappable weights, compact recall, and old-hardware proof.",
         "- KB2 binary recall, KDB fallback, USER.TXT note import, source/timing provenance, tests, QEMU evidence, and release hashes.",
         "- DOS-era command presentation: ASSIST.EXE, TYPE, EDIT, MANIFEST.TXT, ASTRESS.LOG, and 8.3-compatible paths.",
         "",

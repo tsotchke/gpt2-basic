@@ -1,9 +1,9 @@
 # Assistant KDB Index Evaluation
 
 Status: `PASS`
-Indexed recall pass rate: `36/36`
-Candidate rows scanned: `812/1551`
-Candidate scan ratio: `0.524`
+Indexed recall pass rate: `42/42`
+Candidate rows scanned: `858/1617`
+Candidate scan ratio: `0.531`
 
 This gate mirrors the DOS bucket fast path before the full KDB fallback.
 
@@ -45,3 +45,9 @@ This gate mirrors the DOS bucket fast path before the full KDB fallback.
 | DEV | what should i check before release | C,B,R | 14/23 | PASS |  | Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag. |
 | DEV | how should we store fast recall data | S,F,R,D | 16/23 | PASS |  | High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster. |
 | DEV | what should a failure record include | F,R,I | 12/23 | PASS |  | Failure record: Record the command, input, expected result, actual result, log path, and next experiment. |
+| PORTABLE | what does portable intelligence mean | D,P,I,M | 11/11 | PASS |  | portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network. |
+| PORTABLE | why is basic useful for teaching ai | B,U,T | 4/11 | PASS |  | basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable. |
+| PORTABLE | how could this move to c or assembly | M,A | 8/11 | PASS |  | runtime ports: The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist. |
+| PORTABLE | why do hot swappable weights matter | H,S,W,M | 8/11 | PASS |  | domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime. |
+| PORTABLE | how should tiny machines store recall | T,M,S,R | 6/11 | PASS |  | tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering. |
+| PORTABLE | what proof shows this works on old hardware | P,S,W,O,H | 9/11 | PASS |  | old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files. |

@@ -128,7 +128,7 @@ terminal demonstration should use DOS-compatible commands such as `ASSIST.EXE`,
 `TYPE`, `EDIT`, `DIR`, and batch files.
 
 This video is the broad GPT2-BASIC assistant walkthrough. It covers CHAT,
-DOSHELP, OFFICE, and DEV packs; `/capabilities`, `/limits`, and `/sources`;
+DOSHELP, OFFICE, DEV, and PORTABLE packs; `/capabilities`, `/limits`, and `/sources`;
 session memory; KB2 term-index and binary recall; USER.TXT note import; source/timing
 provenance; QEMU stress evidence; unit tests; and release hashes.
 

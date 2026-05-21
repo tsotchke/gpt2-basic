@@ -1,0 +1,5 @@
+# key|title|body
+# Generated help rows from scripts/create_assistant_pack.py.
+about portable intelligence|Portable Intelligence overview|Portable Intelligence answers from local notes, USER.TXT, and generated KB2 recall.
+use portable intelligence|Using Portable Intelligence|Ask one short question. The pack searches local recall first, then gives a concise answer.
+limits portable intelligence|Portable Intelligence limits|Answers are offline and local. Add machine-specific facts to USER.TXT.

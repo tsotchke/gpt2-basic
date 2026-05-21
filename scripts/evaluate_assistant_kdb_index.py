@@ -142,7 +142,8 @@ def self_test() -> None:
     buckets = query_buckets("how can this feel modern on a 486")
     assert buckets == ("F", "M", "4")
     pack = {pack.pack_id: pack for pack in load_all_pack_contracts()}["DEV"]
-    result = retrieve_from_index(pack, CASES[-6])
+    case = next(case for case in CASES if case.pack == "DEV" and case.query == "how can this feel modern on a 486")
+    result = retrieve_from_index(pack, case)
     assert result.reason is None
     assert result.candidate_rows < result.full_rows
     report = markdown_report([result])

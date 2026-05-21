@@ -1,11 +1,11 @@
 # Assistant Capability And Functionality Report
 
-Date: 2026-05-20
+Date: 2026-05-21
 Status: `PASS`
 
 ## Runtime Capability
 
-- Runs under FreeDOS/QEMU 486 with four assistant packs: `CHAT`, `DOSHELP`, `OFFICE`, and `DEV`.
+- Runs under FreeDOS/QEMU 486 with five assistant packs: `CHAT`, `DOSHELP`, `OFFICE`, `DEV`, and `PORTABLE`.
 - Supports hot pack switching through `PACKS.TXT` and each pack's `PACK.INI`.
 - Supports pack-local model paths, pack-local art assets, pack-local golden rows, pack-local help/knowledge rows, and editable `USER.TXT` notes.
 - Uses retrieval-first answering before model synthesis: golden rows, compiled knowledge recall, session memory, and fallback checks are all explicit in `ASSIST_REPLY`.
@@ -24,23 +24,24 @@ Status: `PASS`
   - `DOSHELP`: 26 rows, 21 buckets, 55488 binary bytes, 2193 term-index bytes.
   - `OFFICE`: 27 rows, 20 buckets, 57504 binary bytes, 2458 term-index bytes.
   - `DEV`: 23 rows, 23 buckets, 49376 binary bytes, 2375 term-index bytes.
-- Binary recall evaluation: `PASS 36/36`.
-- Binary candidate row scan ratio: `0.524`.
-- Binary candidate byte ratio: `0.669`.
-- Term-index recall evaluation: `PASS 36/36`.
-- Term-index candidate row scan ratio: `0.140`.
-- Term-index candidate byte ratio: `0.305`.
+  - `PORTABLE`: 11 rows, 16 buckets, 23968 binary bytes, 1292 term-index bytes.
+- Binary recall evaluation: `PASS 42/42`.
+- Binary candidate row scan ratio: `0.531`.
+- Binary candidate byte ratio: `0.689`.
+- Term-index recall evaluation: `PASS 42/42`.
+- Term-index candidate row scan ratio: `0.145`.
+- Term-index candidate byte ratio: `0.315`.
 
 ## Language Coverage
 
 - Raw direct model prompt gate: `PASS 83/83`.
 - Generalist conversational prompt gate: `PASS 24/24`.
 - Consistency gate: `PASS 498/498 variants, 83/83 groups`.
-- Pack retrieval gate: `PASS 36/36`.
-- Usefulness workflow gate: `PASS 31/31 tasks, 8/8 workflows`.
-- KDB text index gate: `PASS 36/36`.
-- KDB binary gate: `PASS 36/36`.
-- KDB term-index gate: `PASS 36/36`.
+- Pack retrieval gate: `PASS 42/42`.
+- Usefulness workflow gate: `PASS 37/37 tasks, 9/9 workflows`.
+- KDB text index gate: `PASS 42/42`.
+- KDB binary gate: `PASS 42/42`.
+- KDB term-index gate: `PASS 42/42`.
 
 Covered categories include:
 
@@ -48,20 +49,23 @@ Covered categories include:
 - Troubleshooting, debugging, release checks, DPMI/CWSDPMI, CONFIG.SYS, AUTOEXEC.BAT, FAT image limits, QEMU logs, and real-hardware copy preparation.
 - Rewriting, summarizing, shortening, release notes, status updates, handoff notes, bug reports, meeting notes, risk registers, project plans, customer replies, and user docs.
 - Developer-pack guidance for retrieval-first design, authoring packs, fast recall storage, release checks, failure records, and modern 486 assistant architecture.
+- Portable-intelligence guidance for BASIC teaching, C/assembly/Eshkol ports,
+  hot-swappable weights, compact recall, and old-hardware proof.
 
 Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
 setup and repair, hardware transfer and emulator evidence, office handoffs,
-planning and risk, developer pack authoring, and fast local recall architecture.
+planning and risk, developer pack authoring, fast local recall architecture,
+and portable intelligence.
 
 ## DOS/QEMU Stress Result
 
-- Scripted QEMU assistant run: `PASS`, reached `ASSIST_END|packs=4`.
-- Stress QEMU run: `PASS`, reached `ASSIST_END|suite=stress-probe|packs=4`.
-- Stress replies: `44`.
-- Stress source mix: `golden=26 retrieval=10 model=0 fallback=0 memory=8`.
-- Average total reply time in the stress report: `132 ms`.
-- Average retrieval time in the stress report: `81 ms`.
-- Recall modes in the stress report: `kb2_term=40 kb2_bucket=3 none=1`.
+- Scripted QEMU assistant run: `PASS`, reached `ASSIST_END|packs=5`.
+- Stress QEMU run: `PASS`, reached `ASSIST_END|suite=stress-probe|packs=5`.
+- Stress replies: `50`.
+- Stress source mix: `golden=26 retrieval=16 model=0 fallback=0 memory=8`.
+- Average total reply time in the stress report: `134 ms`.
+- Average retrieval time in the stress report: `80 ms`.
+- Recall modes in the stress report: `kb2_term=46 kb2_bucket=3 none=1`.
 - Visible-answer validation: `PASS`.
 
 ## Authoring And Import

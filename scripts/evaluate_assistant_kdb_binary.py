@@ -191,7 +191,8 @@ def self_test() -> None:
     rows = read_kdb2_rows(pack.kdb_bin_path)
     assert rows
     assert rows[0].title
-    result = retrieve_from_binary(pack, CASES[-6])
+    case = next(case for case in CASES if case.pack == "DEV" and case.query == "how can this feel modern on a 486")
+    result = retrieve_from_binary(pack, case)
     assert result.reason is None
     assert result.candidate_rows < result.full_rows
     report = markdown_report([result])

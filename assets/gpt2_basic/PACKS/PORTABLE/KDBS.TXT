@@ -1,0 +1,6 @@
+# terms|title|body
+# Generated KDB bucket S. Rebuild with scripts/build_assistant_kdb.py --write.
+educational ports start retrieval small deterministic replies before adding neural generation|educational ports|Educational ports should start with retrieval and small deterministic replies before adding neural generation.
+portable meaning intelligence means small local model weights retrieval memory run old machines without network|portable meaning|Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.
+runtime ports same assistant contract reimplemented assembly eshkol calculator basic files arrays loops exist|runtime ports|The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist.
+tiny machine recall machines store compact indexed rows slow processors scan fewer bytes before answering|tiny machine recall|Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.

@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `529 files, 119,713,162 bytes`
+Package status: `579 files, 119,790,797 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -32,7 +32,7 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 - `bin/GPT2.EXE` when current QEMU evidence includes the compiled DOS binary.
 - `assets/gpt2_basic/MODEL*` for the release models listed above.
-- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, and DEV packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, `KB2TERM.TXT` term indexes, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.
+- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, DEV, and PORTABLE packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, `KB2TERM.TXT` term indexes, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.
 - `src`, `scripts`, `tests`, selected `qemu` helpers, and `data/domain_curriculum` for rebuild and repair iteration.
 - `docs/dosbox.md` and `scripts/build_dosbox_bundle.py` for the DOSBox convenience package.
 - Selected QEMU and quality evidence under `qemu/evidence`.

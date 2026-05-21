@@ -36,6 +36,11 @@ The self-test builds a temporary `HWREPAIR` pack, registers it, validates it
 with the shared pack contract, and confirms the generated `KB2TERM.TXT` file
 exists.
 
+`PORTABLE` is the first shipped pack generated through this workflow. Its
+source notes live in `data/assistant_pack_notes/portable`, it shares
+`PACKS\CHAT\MODEL`, and it contributes six additional retrieval/usefulness/KDB
+cases to the assistant harness.
+
 ## Operator Command
 
 ```sh

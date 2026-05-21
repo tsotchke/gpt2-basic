@@ -13,7 +13,8 @@ the 486 as a local agent computer, not just a neural network host.
   recall pages used by the DOS fast path.
 - `USER.TXT` is a local override file users can edit on the target machine.
 - `ASSIST.MEM` persists core memory facts across interactive sessions.
-- `DEV` demonstrates a domain pack that reuses CHAT weights with its own KDB.
+- `DEV` and `PORTABLE` demonstrate domain packs that reuse CHAT weights with
+  their own KDB/KB2 recall surfaces.
 - `scripts/create_assistant_pack.py` creates a complete lightweight pack from
   a folder of ASCII notes, including generated KB2 binary recall and term
   indexes.
@@ -53,11 +54,14 @@ falling back to the full KDB.
   writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated
   `KDB.TXT` buckets, compiled `KB2*.BIN` pages, and `KB2TERM.TXT`, while
   sharing `PACKS\CHAT\MODEL` by default.
+- Lightweight domain pack without retraining: `PORTABLE` ships portable
+  intelligence notes generated from `data/assistant_pack_notes/portable` and
+  shares the CHAT model.
 
 ## Next Milestones
 
-- Add more domain packs without retraining by sharing the CHAT model and using
-  domain-specific `KDB.TXT` files.
+- Add more domain packs for hardware repair, programming, and offline reference
+  manuals using the same generated KDB/KB2 contract.
 - Measure binary KDB scan time in QEMU and on real hardware, then decide
   whether the next storage step should be topic shards or offset tables.
 - Add persistent memory slots beyond name, goal, style, and problem.

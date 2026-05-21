@@ -1,0 +1,1 @@
+BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.

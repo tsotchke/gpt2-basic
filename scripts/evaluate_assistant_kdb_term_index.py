@@ -186,7 +186,8 @@ def run_eval(report: Path, max_row_ratio: float) -> int:
 def self_test() -> None:
     assert query_terms("how can this feel modern on a 486") == ("feel", "modern", "486")
     pack = {pack.pack_id: pack for pack in load_all_pack_contracts()}["DEV"]
-    result = retrieve_from_term_index(pack, CASES[-6])
+    case = next(case for case in CASES if case.pack == "DEV" and case.query == "how can this feel modern on a 486")
+    result = retrieve_from_term_index(pack, case)
     assert result.reason is None
     assert 0 < result.candidate_rows < result.full_rows
     report = markdown_report([result])

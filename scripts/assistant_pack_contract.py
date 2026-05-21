@@ -354,7 +354,7 @@ def load_all_pack_contracts(pack_root: Path = DEFAULT_PACK_ROOT) -> tuple[PackCo
 def self_test() -> None:
     packs = load_all_pack_contracts(DEFAULT_PACK_ROOT)
     by_id = {pack.pack_id: pack for pack in packs}
-    for expected in ("CHAT", "DOSHELP", "OFFICE", "DEV"):
+    for expected in ("CHAT", "DOSHELP", "OFFICE", "DEV", "PORTABLE"):
         if expected not in by_id:
             raise PackContractError(f"missing expected pack: {expected}")
     chat = by_id["CHAT"]

@@ -298,7 +298,7 @@ That is the scripted evidence path: it compiles the optional `ASSIST.EXE`
 utility, loads `PACKS\PACKS.TXT`, discovers pack-local `PACK.INI` metadata,
 switches the active model path per pack, retrieves pack notes, and emits
 structured `ASSIST_*` records to `qemu/evidence/assistant_486.log`. The first
-packs are `CHAT`, `DOSHELP`, `OFFICE`, and `DEV`.
+packs are `CHAT`, `DOSHELP`, `OFFICE`, `DEV`, and `PORTABLE`.
 
 Run the real interactive QEMU demo with:
 
@@ -310,7 +310,9 @@ This opens a QEMU window instead of a scripted evidence run. The DOS assistant
 stays open until you type `/quit`. It starts in `/pack CHAT`, which is the
 normal conversation pack. Use `/about` for current-pack instructions, `/packs`
 to list packs, `/pack DOSHELP` for DOS/486 questions, `/pack OFFICE` for
-writing tasks, and `/history`, `/up`, and `/down` for the in-DOS transcript.
+writing tasks, `/pack DEV` for pack authoring, `/pack PORTABLE` for portable
+intelligence notes, and `/history`, `/up`, and `/down` for the in-DOS
+transcript.
 The active pack model loads before the first `>` prompt is displayed, and a
 new pack model loads immediately after `/pack NAME`, so the first question does
 not pay the model-load cost.
@@ -366,9 +368,10 @@ The consistency gate expands those prompts to 498 phrasing variants and requires
 every variant group to pass after wrapper and punctuation canonicalization.
 The DOS assistant itself keeps interactive generation bounded to 64 tokens with
 early sentence stopping, while the scripted 486 stress probe exercises
-retrieval, golden, memory, and guarded model reply paths across 44 prompts,
+retrieval, golden, memory, and guarded model reply paths across 50 prompts,
 including broader small-talk prompts for music, boredom, relaxation,
-friendship, food, goals, discussion topics, and improvement. The
+friendship, food, goals, discussion topics, improvement, and the PORTABLE
+pack's BASIC/C/assembly/substrate recall. The
 assistant keeps structured session memory for the user's name, current goal,
 answer style, known problem, and previous turn; use `/memory`, `/remember
 KEY=VALUE`, and `/forget` in the shell. `SPRITE=` and `ICONS=` fields are

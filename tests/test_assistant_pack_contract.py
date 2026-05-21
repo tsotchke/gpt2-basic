@@ -24,7 +24,7 @@ class AssistantPackContractTests(unittest.TestCase):
         packs = load_all_pack_contracts(ROOT / "assets" / "gpt2_basic" / "PACKS")
         by_id = {pack.pack_id: pack for pack in packs}
 
-        self.assertEqual([pack.pack_id for pack in packs], ["CHAT", "DOSHELP", "OFFICE", "DEV"])
+        self.assertEqual([pack.pack_id for pack in packs], ["CHAT", "DOSHELP", "OFFICE", "DEV", "PORTABLE"])
         self.assertEqual(by_id["CHAT"].model_value, r"PACKS\CHAT\MODEL")
         self.assertIn("cancel", by_id["CHAT"].actions)
         self.assertGreaterEqual(len(by_id["CHAT"].help_rows), 3)

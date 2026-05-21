@@ -168,6 +168,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
         self.assertIn("make this clearer: the artifact uploaded but the tag was stale", text)
         self.assertIn('AssistSelectPack "DEV"', text)
         self.assertIn("how can this feel modern on a 486", text)
+        self.assertIn('AssistSelectPack "PORTABLE"', text)
+        self.assertIn("what does portable intelligence mean", text)
         self.assertIn("what does retrieval first mean", text)
         self.assertIn("how do i author a pack", text)
         self.assertIn('"|query=" + AssistSafeText(query)', text)

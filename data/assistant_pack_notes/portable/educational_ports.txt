@@ -1,0 +1,1 @@
+Educational ports should start with retrieval and small deterministic replies before adding neural generation.

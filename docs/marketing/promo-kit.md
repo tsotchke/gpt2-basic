@@ -107,7 +107,7 @@ Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 
 This long-form terminal demonstration is for engineers, operators, pack
 authors, and constrained-system evaluators. It shows the current GPT2-BASIC
-assistant stack: hot-loadable CHAT, DOSHELP, OFFICE, and DEV packs; session
+assistant stack: hot-loadable CHAT, DOSHELP, OFFICE, DEV, and PORTABLE packs; session
 memory; KB2 term-index and binary recall; USER.TXT note import; source/timing provenance; QEMU
 stress evidence; and release verification.
 
