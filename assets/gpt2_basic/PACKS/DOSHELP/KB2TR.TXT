@@ -1,0 +1,14 @@
+# term|row_ids
+# Generated KB2 term shard R. Rebuild with scripts/build_assistant_kdb.py --write.
+real|11,13,22
+rehearsal|12
+remove|20
+required|17
+rerun|18
+resident|3
+result|21
+return.txt|22
+reversible|24
+run|12,19,21,22
+running|14
+runs|3,7,13,20

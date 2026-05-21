@@ -1,0 +1,5 @@
+# term|row_ids
+# Generated KB2 term shard E. Rebuild with scripts/build_assistant_kdb.py --write.
+educational|6
+eshkol|10
+exist|10

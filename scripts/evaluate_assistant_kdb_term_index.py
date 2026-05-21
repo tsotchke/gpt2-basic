@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from assistant_pack_contract import HelpRow, PackContract, load_all_pack_contracts
-from build_assistant_kdb import KDB2_RECORD_BYTES, KDB2_TERM_INDEX_NAME, STOPWORDS
+from build_assistant_kdb import BUCKET_CHARS, KDB2_RECORD_BYTES, KDB2_TERM_INDEX_NAME, STOPWORDS, kdb2_term_bucket_name
 from evaluate_assistant_kdb_binary import read_kdb2_rows
 from evaluate_assistant_pack_retrieval import CASES, RetrievalCase, retrieval_score, validate
 
@@ -22,6 +22,7 @@ DEFAULT_REPORT = ROOT / "qemu" / "evidence" / "assistant_kdb_term_index_eval.md"
 class KdbTermIndexResult:
     case: RetrievalCase
     terms: tuple[str, ...]
+    index_files: tuple[str, ...]
     full_rows: int
     candidate_rows: int
     term_index_bytes: int
@@ -53,30 +54,63 @@ def read_term_index_bucket(path: Path) -> dict[str, tuple[int, ...]]:
     return rows
 
 
-def term_candidate_rows(pack: PackContract, terms: tuple[str, ...]) -> tuple[list[int], int]:
+def primary_term_buckets(terms: tuple[str, ...], limit: int = 1) -> tuple[str, ...]:
+    ranked: list[tuple[int, str]] = []
+    seen: set[str] = set()
+    for term in terms:
+        if not term or term[0].upper() not in BUCKET_CHARS:
+            continue
+        bucket = term[0].upper()
+        if bucket in seen:
+            continue
+        seen.add(bucket)
+        ranked.append((len(term), bucket))
+    ranked.sort(reverse=True)
+    return tuple(bucket for _length, bucket in ranked[:limit])
+
+
+def term_candidate_rows(pack: PackContract, terms: tuple[str, ...]) -> tuple[list[int], int, tuple[str, ...]]:
     candidates: list[int] = []
     seen: set[int] = set()
     opened_bytes = 0
+    opened_files: list[str] = []
     term_set = set(terms)
-    index_path = pack.kdb_bin_path.parent / KDB2_TERM_INDEX_NAME
-    if not index_path.exists():
-        return candidates, opened_bytes
-    opened_bytes += index_path.stat().st_size
-    for term, row_ids in read_term_index_bucket(index_path).items():
-        if term not in term_set:
-            continue
-        for row_id in row_ids:
-            if row_id in seen:
-                continue
-            seen.add(row_id)
-            candidates.append(row_id)
-    return candidates, opened_bytes
+    buckets = primary_term_buckets(terms)
+    for bucket in buckets:
+        index_path = pack.kdb_bin_path.parent / kdb2_term_bucket_name(bucket)
+        if index_path.exists():
+            opened_bytes += index_path.stat().st_size
+            opened_files.append(index_path.name)
+            for term, row_ids in read_term_index_bucket(index_path).items():
+                if term not in term_set:
+                    continue
+                for row_id in row_ids:
+                    if row_id in seen:
+                        continue
+                    seen.add(row_id)
+                    candidates.append(row_id)
+        if len(candidates) >= 2:
+            break
+    if not candidates:
+        index_path = pack.kdb_bin_path.parent / KDB2_TERM_INDEX_NAME
+        if index_path.exists():
+            opened_bytes += index_path.stat().st_size
+            opened_files.append(index_path.name)
+            for term, row_ids in read_term_index_bucket(index_path).items():
+                if term not in term_set:
+                    continue
+                for row_id in row_ids:
+                    if row_id in seen:
+                        continue
+                    seen.add(row_id)
+                    candidates.append(row_id)
+    return candidates, opened_bytes, tuple(opened_files)
 
 
 def retrieve_from_term_index(pack: PackContract, case: RetrievalCase) -> KdbTermIndexResult:
     terms = query_terms(case.query)
     full_rows = read_kdb2_rows(pack.kdb_bin_path)
-    candidate_ids, term_index_bytes = term_candidate_rows(pack, terms)
+    candidate_ids, term_index_bytes, index_files = term_candidate_rows(pack, terms)
     best_row: HelpRow | None = None
     best_score = 0
     for row_id in candidate_ids:
@@ -91,6 +125,7 @@ def retrieve_from_term_index(pack: PackContract, case: RetrievalCase) -> KdbTerm
         return KdbTermIndexResult(
             case,
             terms,
+            index_files,
             len(full_rows),
             len(candidate_ids),
             term_index_bytes,
@@ -105,6 +140,7 @@ def retrieve_from_term_index(pack: PackContract, case: RetrievalCase) -> KdbTerm
     return KdbTermIndexResult(
         case,
         terms,
+        index_files,
         len(full_rows),
         len(candidate_ids),
         term_index_bytes,
@@ -136,18 +172,19 @@ def markdown_report(results: list[KdbTermIndexResult]) -> str:
         f"Term-index plus record bytes touched: `{candidate_bytes}/{full_bytes}`",
         f"Candidate byte ratio: `{byte_ratio:.3f}`",
         "",
-        "This gate mirrors the DOS KB2TERM.TXT inverted-index fast path before KB2 bucket fallback.",
+        "This gate mirrors the DOS strongest KB2T?.TXT shard fast path before KB2TERM.TXT and KB2 bucket fallback.",
         "",
-        "| Pack | Query | Terms | Rows | Bytes | Status | Reason | Answer |",
-        "|---|---|---|---:|---:|---|---|---|",
+        "| Pack | Query | Terms | Index Files | Rows | Bytes | Status | Reason | Answer |",
+        "|---|---|---|---|---:|---:|---|---|---|",
     ]
     for result in results:
         touched = result.term_index_bytes + result.candidate_record_bytes
         lines.append(
-            "| {pack} | {query} | {terms} | {rows} | {bytes_} | {status} | {reason} | {answer} |".format(
+            "| {pack} | {query} | {terms} | {files} | {rows} | {bytes_} | {status} | {reason} | {answer} |".format(
                 pack=result.case.pack,
                 query=result.case.query.replace("|", "/"),
                 terms=",".join(result.terms),
+                files=",".join(result.index_files),
                 rows=f"{result.candidate_rows}/{result.full_rows}",
                 bytes_=f"{touched}/{result.full_bytes}",
                 status="PASS" if result.reason is None else "FAIL",
@@ -185,11 +222,13 @@ def run_eval(report: Path, max_row_ratio: float) -> int:
 
 def self_test() -> None:
     assert query_terms("how can this feel modern on a 486") == ("feel", "modern", "486")
+    assert primary_term_buckets(("feel", "modern", "486")) == ("M",)
     pack = {pack.pack_id: pack for pack in load_all_pack_contracts()}["DEV"]
     case = next(case for case in CASES if case.pack == "DEV" and case.query == "how can this feel modern on a 486")
     result = retrieve_from_term_index(pack, case)
     assert result.reason is None
     assert 0 < result.candidate_rows < result.full_rows
+    assert any(name.startswith("KB2T") and name != KDB2_TERM_INDEX_NAME for name in result.index_files)
     report = markdown_report([result])
     assert "Status: `PASS`" in report
     print("PROBE_OK assistant_kdb_term_index_eval_self_test=1")

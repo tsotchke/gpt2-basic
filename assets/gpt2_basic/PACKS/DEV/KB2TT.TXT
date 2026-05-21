@@ -1,0 +1,16 @@
+# term|row_ids
+# Generated KB2 term shard T. Rebuild with scripts/build_assistant_kdb.py --write.
+tag|4
+target|4,18
+terms|16
+test|1,2
+tests|3,4,23
+text|13
+thing|1
+timing|17
+tokens|18
+topic|21
+transient|15
+transitions|22
+triage|8
+trust|23

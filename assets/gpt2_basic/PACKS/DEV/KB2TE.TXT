@@ -1,0 +1,9 @@
+# term|row_ids
+# Generated KB2 term shard E. Rebuild with scripts/build_assistant_kdb.py --write.
+edge|3
+error|1
+every|23
+evidence|5,10,17,23
+exact|16
+expected|20
+experiment|20

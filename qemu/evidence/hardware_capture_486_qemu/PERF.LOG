@@ -40,10 +40,10 @@ PERF_MODEL|profile=486sx-safe|layers=2|emb=48|heads=4|ctx=192|vocab=4096|params=
 
 PERF_RUN|name=real_inference|prompt_tokens=3|generated_tokens=35|seconds=0.7699999809265137|tokens_per_sec=45.45454658048919|last_token=48
 
-PERF_RUN|name=486_target|prompt_tokens=2|generated_tokens=44|seconds=0.9300000667572021|tokens_per_sec=47.3118245608548|last_token=1218
+PERF_RUN|name=486_target|prompt_tokens=2|generated_tokens=44|seconds=0.869999885559082|tokens_per_sec=50.57471929634173|last_token=1218
 
-PERF_RUN|name=basic_runtime|prompt_tokens=4|generated_tokens=48|seconds=0.9300000667572021|tokens_per_sec=51.61289952093251|last_token=941
+PERF_RUN|name=basic_runtime|prompt_tokens=4|generated_tokens=48|seconds=0.9900000095367432|tokens_per_sec=48.48484801779036|last_token=941
 
-PERF_SUMMARY|runs=3|tokens=127|seconds=2.630000114440918|tokens_per_sec=48.28897128280068
+PERF_SUMMARY|runs=3|tokens=127|seconds=2.629999876022339|tokens_per_sec=48.28897566036284
 
 PERF_END

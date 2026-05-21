@@ -1,0 +1,18 @@
+# term|row_ids
+# Generated KB2 term shard B. Rebuild with scripts/build_assistant_kdb.py --write.
+bad|58
+because|12
+becomes|55
+before|14,15
+better|23,52
+blocking|69
+blocks|67
+bored|39
+boredom|39
+break|69
+breathe|41
+brief|64,78
+browse|19,31
+bug|10
+bundled|54
+but|38,51

@@ -8,7 +8,7 @@ token meaning small piece text model reads writes|Token meaning|A token is a sma
 long question prompt limit short prompts work better dos demo|Long prompt limit|Short prompts work better in this DOS demo.
 game meaning play rules|Game meaning|A game is play with rules.
 improve practice help one small thing day|Practice help|Practice one small thing each day.
-ask better prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
+ask better questions prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
 intelligence practical assistant combines retrieval memory rules tiny local model produce useful dos answers|Practical intelligence|The assistant combines retrieval, memory, rules, and a tiny local model to produce useful DOS answers.
 trust proof evidence comes visible files local weights reproducible tests qemu hardware logs|Trust evidence|Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs.
 learn topic learning pick one simple question answer ask follow-up example|Learning a topic|Pick one simple question, answer it, then ask a follow-up or example.

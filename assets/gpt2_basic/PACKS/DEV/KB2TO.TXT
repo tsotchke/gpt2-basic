@@ -1,0 +1,8 @@
+# term|row_ids
+# Generated KB2 term shard O. Rebuild with scripts/build_assistant_kdb.py --write.
+one|1
+only|11
+output|16
+override|14
+owner|8
+ownership|3

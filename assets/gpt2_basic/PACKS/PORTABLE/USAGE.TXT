@@ -5,8 +5,9 @@ Purpose:
 
 How it works:
   The pack shares a small model by default, then retrieves concise local
-  rows from KB2TERM.TXT term indexes, compiled KB2*.BIN pages, generated
-  KDB.TXT buckets, bundled KNOW.TXT notes, and editable USER.TXT notes.
+  rows from KB2T?.TXT shard indexes, aggregate KB2TERM.TXT, compiled KB2*.BIN
+  pages, generated KDB.TXT buckets, bundled KNOW.TXT notes, and editable
+  USER.TXT notes.
 
 How to use it:
   Type /pack PORTABLE, then ask one short question about the notes.

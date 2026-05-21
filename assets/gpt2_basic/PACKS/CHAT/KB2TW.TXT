@@ -1,0 +1,16 @@
+# term|row_ids
+# Generated KB2 term shard W. Rebuild with scripts/build_assistant_kdb.py --write.
+want|44
+web|74
+weights|11,19,22,54,57,63
+weird|13
+welcome|32
+without|12,55,74
+woke|17
+words|7,71
+work|15,23,63,69
+working|61
+worry|40
+writes|18
+writing|62
+wrong|58

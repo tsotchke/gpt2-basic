@@ -1,0 +1,6 @@
+# term|row_ids
+# Generated KB2 term shard A. Rebuild with scripts/build_assistant_kdb.py --write.
+assembly|20
+assistant|5
+autoexec|3,17
+autoexec.bat|3,7,17

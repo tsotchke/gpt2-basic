@@ -114,7 +114,9 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         kdb_index_text = read(pack_dir / "KDBIDX.TXT")
         kdb_bin = pack_dir / "KB2ALL.BIN"
         kdb_bin_index_text = read(pack_dir / "KB2IDX.TXT")
-        kdb_term_index_files = sorted(pack_dir.glob("KB2TERM.TXT"))
+        kdb_term_index_files = sorted(
+            path for path in pack_dir.glob("KB2T*.TXT") if path.name.upper().startswith("KB2T")
+        )
         read(pack_dir / "USER.TXT")
         require(f"ID={pack_id}" in ini.upper(), f"pack_id_mismatch={pack_id}")
         for key in ("TITLE=", "MODEL=", "PERSONA=", "HELP=", "KNOW=", "KDB=", "KDBIDX=", "KDBBIN=", "KDBBIDX=", "USER=", "USAGE=", "SPRITE=", "ICONS=", "ACTIONS="):
@@ -126,7 +128,8 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
         require(kdb_bin.exists() and kdb_bin.stat().st_size > 64, f"missing_kdb_binary={pack_id}")
         require(kdb_bin.read_bytes().startswith(b"KDB2|V=1|"), f"bad_kdb_binary_header={pack_id}")
         require("|" in kdb_bin_index_text and "KB2" in kdb_bin_index_text, f"missing_kdb_binary_index_rows={pack_id}")
-        require(kdb_term_index_files, f"missing_kdb_term_index={pack_id}")
+        require((pack_dir / "KB2TERM.TXT").exists(), f"missing_kdb_term_index={pack_id}")
+        require(any(path.name.upper() != "KB2TERM.TXT" for path in kdb_term_index_files), f"missing_kdb_term_shards={pack_id}")
         require(any("|" in read(path) for path in kdb_term_index_files), f"empty_kdb_term_index={pack_id}")
         usage_text = read(pack_dir / values["USAGE"])
         for marker in ("Purpose:", "How it works:", "How to use it:", "Good prompts:", "Actions:"):

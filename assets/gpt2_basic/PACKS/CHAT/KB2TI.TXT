@@ -1,0 +1,13 @@
+# term|row_ids
+# Generated KB2 term shard I. Rebuild with scripts/build_assistant_kdb.py --write.
+idea|5,60
+ideas|48
+identity|35
+improve|47
+includes|65
+inference|11,50
+inferred|72
+input|75
+inside|17,30
+intelligence|56
+internet|19,74

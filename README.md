@@ -334,8 +334,9 @@ python3 scripts/validate_assistant_pack_authoring.py
 ```
 
 The generator writes `PACK.INI`, authoring files, generated text KDB buckets,
-compiled KB2 binary recall pages, and `KB2TERM.TXT`; by default the new pack
-shares `PACKS\CHAT\MODEL` and `CHAT` art instead of shipping another model.
+compiled KB2 binary recall pages, aggregate `KB2TERM.TXT`, and sharded
+`KB2T?.TXT` term indexes; by default the new pack shares `PACKS\CHAT\MODEL`
+and `CHAT` art instead of shipping another model.
 The current CHAT pack uses a pack-local 4096-token sentence-piece lexicon
 checkpoint trained on broader casual English dialogue. `CHAT\TOKBASE.TXT`
 is the tokenizer-basis corpus, including `CHAT\LEXICON.TSV` grammar words and

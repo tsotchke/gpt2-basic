@@ -17,7 +17,7 @@ Generated files:
 - `USAGE.TXT`
 - `KDB.TXT`, `KDBIDX.TXT`, and `KDB?.TXT` text recall buckets
 - `KB2ALL.BIN`, `KB2IDX.TXT`, and `KB2?.BIN` fixed-width binary recall pages
-- `KB2TERM.TXT` term index
+- Aggregate `KB2TERM.TXT` and sharded `KB2T?.TXT` term indexes
 
 The default pack shares `PACKS\CHAT\MODEL`, `CHAT.SPR`, and `CHAT.ICN`, so a
 new domain can behave like a language cartridge without adding another model
@@ -33,8 +33,8 @@ PROBE_OK assistant_pack_create_self_test=1
 ```
 
 The self-test builds a temporary `HWREPAIR` pack, registers it, validates it
-with the shared pack contract, and confirms the generated `KB2TERM.TXT` file
-exists.
+with the shared pack contract, and confirms both the generated `KB2TERM.TXT`
+file and at least one `KB2T?.TXT` shard exist.
 
 `PORTABLE` is the first shipped pack generated through this workflow. Its
 source notes live in `data/assistant_pack_notes/portable`, it shares

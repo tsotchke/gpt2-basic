@@ -1,0 +1,11 @@
+# term|row_ids
+# Generated KB2 term shard O. Rebuild with scripts/build_assistant_kdb.py --write.
+office|62
+offline|31,63
+old|12,25,64
+one|5,7,10,15,16,17,20,21,24,30,33,39,40,47,52,53,59,60,66,67,68,71
+only|27,67
+open|34
+options|68
+output|13,28
+overwhelmed|21

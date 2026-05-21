@@ -1,0 +1,6 @@
+# term|row_ids
+# Generated KB2 term shard H. Rebuild with scripts/build_assistant_kdb.py --write.
+handoff|15
+happened|6
+has|1
+headers|19

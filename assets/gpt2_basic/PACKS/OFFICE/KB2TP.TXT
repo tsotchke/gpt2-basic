@@ -1,0 +1,15 @@
+# term|row_ids
+# Generated KB2 term shard P. Rebuild with scripts/build_assistant_kdb.py --write.
+paragraphs|3,11
+pass|25
+phrases|5
+plainly|9
+plan|17,25
+polite|2,7,13,22
+prerequisites|24
+preserve|4,13,19
+professional|1,2
+project|17
+proof|9
+prose|1
+purpose|3

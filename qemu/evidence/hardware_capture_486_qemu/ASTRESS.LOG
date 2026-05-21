@@ -56,7 +56,7 @@ ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lex
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=why did my answer repeat itself|canonical=why did my answer repeat itself|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=If I repeat, reset the prompt and ask one shorter question.|memory=|generated=|answer=If I repeat, reset the prompt and ask one shorter question.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=why did my answer repeat itself|canonical=why did my answer repeat itself|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=If I repeat, reset the prompt and ask one shorter question.|memory=|generated=|answer=If I repeat, reset the prompt and ask one shorter question.
 
 Answer: If I repeat, reset the prompt and ask one shorter question.
 
@@ -74,11 +74,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=tell me why this old computer model matters|canonical=tell me why this old computer model matters|source=retrieval|recall=kb2_term|recall_score=63|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.|golden=|memory=Context: previous question was why did my answer repeat itself; previous answer was If I repeat, reset the prompt and ask one shorter question.|generated=|answer=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=tell me why this old computer model matters|canonical=tell me why this old computer model matters|source=retrieval|recall=kb2_term|recall_score=63|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.|golden=|memory=Context: previous question was why did my answer repeat itself; previous answer was If I repeat, reset the prompt and ask one shorter question.|generated=|answer=Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.
 
 Answer: Old hardware: The demo matters because a tiny local model can run on old DOS-style hardware without a network.
 
-Source: retrieval / kb2_term ( 110 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -92,81 +92,9 @@ Source: retrieval / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|canonical=make a tiny plan for fixing a bug|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was tell me why this old computer model matters; previous answer was Old hardware: The demo matters because a tiny local model can run on old.|generated=|answer=Check the first error, change one thing, then test again.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=make a tiny plan for fixing a bug|canonical=make a tiny plan for fixing a bug|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Debug plan: Start with the failing command, expected result, and first error line, then test one small fix.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was tell me why this old computer model matters; previous answer was Old hardware: The demo matters because a tiny local model can run on old.|generated=|answer=Check the first error, change one thing, then test again.
 
 Answer: Check the first error, change one thing, then test again.
-
-Source: golden / kb2_term ( 110 ms)
-
-[ chat,ask,idea,explain,cancel ]
-
-
-
-+------------------------------------------------------------+
-
-| Assistant                                                  |
-
-+------------------------------------------------------------+
-
-ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
-
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is the difference between a prompt and an answer|canonical=what is the difference between a prompt and an answer|source=retrieval|recall=kb2_term|recall_score=30|t_retrieve_ms=110|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=170|actions=chat,ask,idea,explain,cancel|retrieval=Explain mode: Use plain words, one example, and a short answer that fits the prompt.|golden=|memory=Context: previous question was make a tiny plan for fixing a bug; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Explain mode: Use plain words, one example, and a short answer that fits the prompt.
-
-Answer: Explain mode: Use plain words, one example, and a short answer that fits the prompt.
-
-Source: retrieval / kb2_term ( 110 ms)
-
-[ chat,ask,idea,explain,cancel ]
-
-
-
-+------------------------------------------------------------+
-
-| Assistant                                                  |
-
-+------------------------------------------------------------+
-
-ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
-
-ASSIST_REPLY|pack=CHAT|intent=explain|ui=text|query=can you explain what local inference means|canonical=can you explain what local inference means|source=golden|recall=kb2_term|recall_score=57|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=explain,example,more,cancel|retrieval=Local inference: Local inference means the DOS program reads model weights and produces the answer on this machine.|golden=Local inference means the DOS program reads model weights and produces the answer on this machine.|memory=Context: previous question was what is the difference between a prompt and an answer; previous answer was Explain mode: Use plain words, one example, and a short answer that fits.|generated=|answer=Local inference means the DOS program reads model weights and produces the answer on this machine.
-
-Answer: Local inference means the DOS program reads model weights and produces the answer on this machine.
-
-Source: golden / kb2_term ( 110 ms)
-
-[ explain,example,more,cancel ]
-
-
-
-+------------------------------------------------------------+
-
-| Assistant                                                  |
-
-+------------------------------------------------------------+
-
-ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
-
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel stuck debugging this|canonical=i feel stuck debugging this|source=golden|recall=kb2_bucket|recall_score=15|t_retrieve_ms=270|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=270|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was can you explain what local inference means; previous answer was Local inference means the DOS program reads model weights and produces t.|generated=|answer=Check the first error, change one thing, then test again.
-
-Answer: Check the first error, change one thing, then test again.
-
-Source: golden / kb2_bucket ( 270 ms)
-
-[ chat,ask,idea,explain,cancel ]
-
-
-
-+------------------------------------------------------------+
-
-| Assistant                                                  |
-
-+------------------------------------------------------------+
-
-ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
-
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if the answer sounds weird|canonical=what should i do if the answer sounds weird|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=Retry with a shorter prompt or switch packs.|memory=Context: previous question was i feel stuck debugging this; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Retry with a shorter prompt or switch packs.
-
-Answer: Retry with a shorter prompt or switch packs.
 
 Source: golden / kb2_term ( 50 ms)
 
@@ -182,7 +110,79 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=give me a status update about a delayed release|canonical=give me a status update about a delayed release|source=retrieval|recall=kb2_term|recall_score=39|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.|golden=|memory=Context: previous question was what should i do if the answer sounds weird; previous answer was Retry with a shorter prompt or switch packs.|generated=|answer=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is the difference between a prompt and an answer|canonical=what is the difference between a prompt and an answer|source=retrieval|recall=kb2_term|recall_score=30|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Explain mode: Use plain words, one example, and a short answer that fits the prompt.|golden=|memory=Context: previous question was make a tiny plan for fixing a bug; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Explain mode: Use plain words, one example, and a short answer that fits the prompt.
+
+Answer: Explain mode: Use plain words, one example, and a short answer that fits the prompt.
+
+Source: retrieval / kb2_term ( 60 ms)
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=explain|ui=text|query=can you explain what local inference means|canonical=can you explain what local inference means|source=golden|recall=kb2_term|recall_score=57|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=explain,example,more,cancel|retrieval=Local inference: Local inference means the DOS program reads model weights and produces the answer on this machine.|golden=Local inference means the DOS program reads model weights and produces the answer on this machine.|memory=Context: previous question was what is the difference between a prompt and an answer; previous answer was Explain mode: Use plain words, one example, and a short answer that fits.|generated=|answer=Local inference means the DOS program reads model weights and produces the answer on this machine.
+
+Answer: Local inference means the DOS program reads model weights and produces the answer on this machine.
+
+Source: golden / kb2_term ( 0 ms)
+
+[ explain,example,more,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel stuck debugging this|canonical=i feel stuck debugging this|source=golden|recall=kb2_bucket|recall_score=15|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=Check the first error, change one thing, then test again.|memory=Context: previous question was can you explain what local inference means; previous answer was Local inference means the DOS program reads model weights and produces t.|generated=|answer=Check the first error, change one thing, then test again.
+
+Answer: Check the first error, change one thing, then test again.
+
+Source: golden / kb2_bucket ( 50 ms)
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if the answer sounds weird|canonical=what should i do if the answer sounds weird|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=Retry with a shorter prompt or switch packs.|memory=Context: previous question was i feel stuck debugging this; previous answer was Check the first error, change one thing, then test again.|generated=|answer=Retry with a shorter prompt or switch packs.
+
+Answer: Retry with a shorter prompt or switch packs.
+
+Source: golden / kb2_term ( 60 ms)
+
+[ chat,ask,idea,explain,cancel ]
+
+
+
++------------------------------------------------------------+
+
+| Assistant                                                  |
+
++------------------------------------------------------------+
+
+ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
+
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=give me a status update about a delayed release|canonical=give me a status update about a delayed release|source=retrieval|recall=kb2_term|recall_score=39|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.|golden=|memory=Context: previous question was what should i do if the answer sounds weird; previous answer was Retry with a shorter prompt or switch packs.|generated=|answer=Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
 
 Answer: Release status: Check the tag target, release assets, checksums, and test result before calling the release done.
 
@@ -200,11 +200,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can you browse the internet from dos|canonical=can you browse the internet from dos|source=golden|recall=kb2_term|recall_score=45|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.|golden=I cannot browse the internet from DOS.|memory=Context: previous question was give me a status update about a delayed release; previous answer was Release status: Check the tag target, release assets, checksums, and tes.|generated=|answer=I cannot browse the internet from DOS.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can you browse the internet from dos|canonical=can you browse the internet from dos|source=golden|recall=kb2_term|recall_score=45|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.|golden=I cannot browse the internet from DOS.|memory=Context: previous question was give me a status update about a delayed release; previous answer was Release status: Check the tag target, release assets, checksums, and tes.|generated=|answer=I cannot browse the internet from DOS.
 
 Answer: I cannot browse the internet from DOS.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -218,11 +218,11 @@ Source: golden / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can we talk about games|canonical=can we talk about games|source=golden|recall=kb2_term|recall_score=15|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=Yes, games are a fine topic.|memory=Context: previous question was can you browse the internet from dos; previous answer was I cannot browse the internet from DOS.|generated=|answer=Yes, games are a fine topic.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=can we talk about games|canonical=can we talk about games|source=golden|recall=kb2_term|recall_score=15|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=Yes, games are a fine topic.|memory=Context: previous question was can you browse the internet from dos; previous answer was I cannot browse the internet from DOS.|generated=|answer=Yes, games are a fine topic.
 
 Answer: Yes, games are a fine topic.
 
-Source: golden / kb2_term ( 50 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -236,11 +236,11 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i am tired|canonical=i am tired|source=golden|recall=none|recall_score=0|t_retrieve_ms=270|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=330|actions=chat,ask,idea,explain,cancel|retrieval=|golden=Rest if you can.|memory=Context: previous question was can we talk about games; previous answer was Yes, games are a fine topic.|generated=|answer=Rest if you can.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i am tired|canonical=i am tired|source=golden|recall=none|recall_score=0|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=|golden=Rest if you can.|memory=Context: previous question was can we talk about games; previous answer was Yes, games are a fine topic.|generated=|answer=Rest if you can.
 
 Answer: Rest if you can.
 
-Source: golden / none ( 270 ms)
+Source: golden / none ( 110 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -254,11 +254,11 @@ Source: golden / none ( 270 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel lonely|canonical=i feel lonely|source=golden|recall=kb2_bucket|recall_score=15|t_retrieve_ms=110|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=160|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=I can keep you company briefly.|memory=Context: previous question was i am tired; previous answer was Rest if you can.|generated=|answer=I can keep you company briefly.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i feel lonely|canonical=i feel lonely|source=golden|recall=kb2_bucket|recall_score=15|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=I can keep you company briefly.|memory=Context: previous question was i am tired; previous answer was Rest if you can.|generated=|answer=I can keep you company briefly.
 
 Answer: I can keep you company briefly.
 
-Source: golden / kb2_bucket ( 110 ms)
+Source: golden / kb2_bucket ( 50 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -272,11 +272,11 @@ Source: golden / kb2_bucket ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=do you enjoy music|canonical=do you enjoy music|source=retrieval|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Music topic: I can talk about music.|golden=|memory=Context: previous question was i feel lonely; previous answer was I can keep you company briefly.|generated=|answer=Music topic: I can talk about music.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=do you enjoy music|canonical=do you enjoy music|source=retrieval|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Music topic: I can talk about music.|golden=|memory=Context: previous question was i feel lonely; previous answer was I can keep you company briefly.|generated=|answer=Music topic: I can talk about music.
 
 Answer: Music topic: I can talk about music.
 
-Source: retrieval / kb2_term ( 60 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -290,11 +290,11 @@ Source: retrieval / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if i am bored|canonical=what should i do if i am bored|source=golden|recall=kb2_term|recall_score=18|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Boredom help: Try one small project.|golden=Try one small project.|memory=Context: previous question was do you enjoy music; previous answer was Music topic: I can talk about music.|generated=|answer=Try one small project.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what should i do if i am bored|canonical=what should i do if i am bored|source=golden|recall=kb2_term|recall_score=18|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Boredom help: Try one small project.|golden=Try one small project.|memory=Context: previous question was do you enjoy music; previous answer was Music topic: I can talk about music.|generated=|answer=Try one small project.
 
 Answer: Try one small project.
 
-Source: golden / kb2_term ( 60 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -308,11 +308,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how do i relax for a minute|canonical=how do i relax for a minute|source=golden|recall=kb2_term|recall_score=33|t_retrieve_ms=60|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Relax help: Breathe slowly and rest for a minute.|golden=Breathe slowly and rest for a minute.|memory=Context: previous question was what should i do if i am bored; previous answer was Try one small project.|generated=|answer=Breathe slowly and rest for a minute.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how do i relax for a minute|canonical=how do i relax for a minute|source=golden|recall=kb2_term|recall_score=33|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Relax help: Breathe slowly and rest for a minute.|golden=Breathe slowly and rest for a minute.|memory=Context: previous question was what should i do if i am bored; previous answer was Try one small project.|generated=|answer=Breathe slowly and rest for a minute.
 
 Answer: Breathe slowly and rest for a minute.
 
-Source: golden / kb2_term ( 60 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -326,11 +326,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is friendship|canonical=what is friendship|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Friendship meaning: Friendship is care and trust.|golden=Friendship is care and trust.|memory=Context: previous question was how do i relax for a minute; previous answer was Breathe slowly and rest for a minute.|generated=|answer=Friendship is care and trust.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is friendship|canonical=what is friendship|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Friendship meaning: Friendship is care and trust.|golden=Friendship is care and trust.|memory=Context: previous question was how do i relax for a minute; previous answer was Breathe slowly and rest for a minute.|generated=|answer=Friendship is care and trust.
 
 Answer: Friendship is care and trust.
 
-Source: golden / kb2_term ( 60 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -344,11 +344,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what can we discuss|canonical=what can we discuss|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=We can discuss ideas, feelings, games, or DOS.|memory=Context: previous question was what is friendship; previous answer was Friendship is care and trust.|generated=|answer=We can discuss ideas, feelings, games, or DOS.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what can we discuss|canonical=what can we discuss|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Discussion topics: We can discuss ideas, feelings, games, music, or DOS.|golden=We can discuss ideas, feelings, games, or DOS.|memory=Context: previous question was what is friendship; previous answer was Friendship is care and trust.|generated=|answer=We can discuss ideas, feelings, games, or DOS.
 
 Answer: We can discuss ideas, feelings, games, or DOS.
 
-Source: golden / kb2_term ( 60 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -362,11 +362,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is your favorite food|canonical=what is your favorite food|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=50|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=100|actions=chat,ask,idea,explain,cancel|retrieval=Food topic: I do not eat, but I can talk about food.|golden=I do not eat, but I can talk about food.|memory=Context: previous question was what can we discuss; previous answer was We can discuss ideas, feelings, games, or DOS.|generated=|answer=I do not eat, but I can talk about food.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is your favorite food|canonical=what is your favorite food|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Food topic: I do not eat, but I can talk about food.|golden=I do not eat, but I can talk about food.|memory=Context: previous question was what can we discuss; previous answer was We can discuss ideas, feelings, games, or DOS.|generated=|answer=I do not eat, but I can talk about food.
 
 Answer: I do not eat, but I can talk about food.
 
-Source: golden / kb2_term ( 50 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -380,11 +380,11 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is a goal|canonical=what is a goal|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=60|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Goal meaning: A goal is something you want to reach.|golden=A goal is something you want to reach.|memory=Context: previous question was what is your favorite food; previous answer was I do not eat, but I can talk about food.|generated=|answer=A goal is something you want to reach.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is a goal|canonical=what is a goal|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Goal meaning: A goal is something you want to reach.|golden=A goal is something you want to reach.|memory=Context: previous question was what is your favorite food; previous answer was I do not eat, but I can talk about food.|generated=|answer=A goal is something you want to reach.
 
 Answer: A goal is something you want to reach.
 
-Source: golden / kb2_term ( 60 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -398,11 +398,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how do i improve|canonical=how do i improve|source=golden|recall=kb2_term|recall_score=12|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Practice help: Practice one small thing each day.|golden=Practice one small thing each day.|memory=Context: previous question was what is a goal; previous answer was A goal is something you want to reach.|generated=|answer=Practice one small thing each day.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how do i improve|canonical=how do i improve|source=golden|recall=kb2_term|recall_score=12|t_retrieve_ms=0|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Practice help: Practice one small thing each day.|golden=Practice one small thing each day.|memory=Context: previous question was what is a goal; previous answer was A goal is something you want to reach.|generated=|answer=Practice one small thing each day.
 
 Answer: Practice one small thing each day.
 
-Source: golden / kb2_term ( 60 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -416,11 +416,11 @@ Source: golden / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=my name is Operator|canonical=my name is Operator|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Worry help: Name the worry, then choose one step.|golden=|memory=Context: user name is Operator; previous question was how do i improve; previous answer was Practice one small thing each day.|generated=|answer=I will remember your name is Operator.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=my name is Operator|canonical=my name is Operator|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Worry help: Name the worry, then choose one step.|golden=|memory=Context: user name is Operator; previous question was how do i improve; previous answer was Practice one small thing each day.|generated=|answer=I will remember your name is Operator.
 
 Answer: I will remember your name is Operator.
 
-Source: memory / kb2_term ( 110 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -434,11 +434,11 @@ Source: memory / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is my name|canonical=what is my name|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Worry help: Name the worry, then choose one step.|golden=|memory=Context: user name is Operator; previous question was my name is Operator; previous answer was I will remember your name is Operator.|generated=|answer=Your name is Operator.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what is my name|canonical=what is my name|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=0|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Worry help: Name the worry, then choose one step.|golden=|memory=Context: user name is Operator; previous question was my name is Operator; previous answer was I will remember your name is Operator.|generated=|answer=Your name is Operator.
 
 Answer: Your name is Operator.
 
-Source: memory / kb2_term ( 110 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -452,11 +452,11 @@ Source: memory / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=we are working on the DOSBox assistant|canonical=we are working on the DOSBox assistant|source=memory|recall=kb2_term|recall_score=30|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Memory use: Tell me facts with phrases like my name is, we are working on, or I prefer.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; previous question was what is my name; previous answer was Your name is Operator.|generated=|answer=I will remember we are working on the DOSBox assistant.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=we are working on the DOSBox assistant|canonical=we are working on the DOSBox assistant|source=memory|recall=kb2_term|recall_score=30|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Memory use: Tell me facts with phrases like my name is, we are working on, or I prefer.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; previous question was what is my name; previous answer was Your name is Operator.|generated=|answer=I will remember we are working on the DOSBox assistant.
 
 Answer: I will remember we are working on the DOSBox assistant.
 
-Source: memory / kb2_term ( 110 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -470,11 +470,11 @@ Source: memory / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what are we working on|canonical=what are we working on|source=memory|recall=kb2_term|recall_score=30|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Memory use: Tell me facts with phrases like my name is, we are working on, or I prefer.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; previous question was we are working on the DOSBox assistant; previous answer was I will remember we are working on the DOSBox assistant.|generated=|answer=We are working on the DOSBox assistant.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what are we working on|canonical=what are we working on|source=memory|recall=kb2_term|recall_score=30|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Memory use: Tell me facts with phrases like my name is, we are working on, or I prefer.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; previous question was we are working on the DOSBox assistant; previous answer was I will remember we are working on the DOSBox assistant.|generated=|answer=We are working on the DOSBox assistant.
 
 Answer: We are working on the DOSBox assistant.
 
-Source: memory / kb2_term ( 110 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -488,11 +488,11 @@ Source: memory / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i prefer short answers|canonical=i prefer short answers|source=memory|recall=kb2_term|recall_score=30|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Hardware limits: Old hardware favors short prompts, brief answers, small models, and retrieval from text files.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what are we working on; previous answer was We are working on the DOSBox assistant.|generated=|answer=I will remember you prefer short answers.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=i prefer short answers|canonical=i prefer short answers|source=memory|recall=kb2_term|recall_score=30|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Hardware limits: Old hardware favors short prompts, brief answers, small models, and retrieval from text files.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what are we working on; previous answer was We are working on the DOSBox assistant.|generated=|answer=I will remember you prefer short answers.
 
 Answer: I will remember you prefer short answers.
 
-Source: memory / kb2_term ( 110 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -506,11 +506,11 @@ Source: memory / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how should you answer me|canonical=how should you answer me|source=memory|recall=kb2_term|recall_score=21|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was i prefer short answers; previous answer was I will remember you prefer short answers.|generated=|answer=I should answer short answers.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=how should you answer me|canonical=how should you answer me|source=memory|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was i prefer short answers; previous answer was I will remember you prefer short answers.|generated=|answer=I should answer short answers.
 
 Answer: I should answer short answers.
 
-Source: memory / kb2_term ( 110 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -524,11 +524,11 @@ Source: memory / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what did i just ask|canonical=what did i just ask|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=chat,ask,idea,explain,cancel|retrieval=Repeat control: If I repeat, ask a shorter question or switch packs.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how should you answer me; previous answer was I should answer short answers.|generated=|answer=You just asked: how should you answer me.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what did i just ask|canonical=what did i just ask|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Repeat control: If I repeat, ask a shorter question or switch packs.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how should you answer me; previous answer was I should answer short answers.|generated=|answer=You just asked: how should you answer me.
 
 Answer: You just asked: how should you answer me.
 
-Source: memory / kb2_term ( 60 ms)
+Source: memory / kb2_term ( 0 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -542,11 +542,11 @@ Source: memory / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what do you remember|canonical=what do you remember|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=chat,ask,idea,explain,cancel|retrieval=Session memory: I remember only small facts during this session.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what did i just ask; previous answer was You just asked: how should you answer me.|generated=|answer=Memory: name=Operator; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=what do you remember|canonical=what do you remember|source=memory|recall=kb2_term|recall_score=15|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=chat,ask,idea,explain,cancel|retrieval=Session memory: I remember only small facts during this session.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what did i just ask; previous answer was You just asked: how should you answer me.|generated=|answer=Memory: name=Operator; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask.
 
 Answer: Memory: name=Operator; goal=the DOSBox assistant; style=short answers; last_user=what did i just ask.
 
-Source: memory / kb2_term ( 60 ms)
+Source: memory / kb2_term ( 50 ms)
 
 [ chat,ask,idea,explain,cancel ]
 
@@ -584,11 +584,11 @@ ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how do i keep conventional memory free|canonical=how do i keep conventional memory free|source=retrieval|recall=kb2_term|recall_score=54|t_retrieve_ms=170|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=170|actions=show_config,explain_xms,more,cancel|retrieval=Conventional memory: Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what do you remember; previous answer was Memory: name=Operator; goal=the DOSBox assistant; style=short answers; l.|generated=|answer=Conventional memory: Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how do i keep conventional memory free|canonical=how do i keep conventional memory free|source=retrieval|recall=kb2_term|recall_score=54|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=show_config,explain_xms,more,cancel|retrieval=Conventional memory: Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what do you remember; previous answer was Memory: name=Operator; goal=the DOSBox assistant; style=short answers; l.|generated=|answer=Conventional memory: Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
 
 Answer: Conventional memory: Keep drivers high, trim TSR programs, and preserve low memory for old DOS programs.
 
-Source: retrieval / kb2_term ( 170 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -602,11 +602,11 @@ Source: retrieval / kb2_term ( 170 ms)
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=my autoexec is too long what should i change|canonical=my autoexec is too long what should i change|source=retrieval|recall=kb2_term|recall_score=36|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how do i keep conventional memory free; previous answer was Conventional memory: Keep drivers high, trim TSR programs, and preserve .|generated=|answer=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=my autoexec is too long what should i change|canonical=my autoexec is too long what should i change|source=retrieval|recall=kb2_term|recall_score=36|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how do i keep conventional memory free; previous answer was Conventional memory: Keep drivers high, trim TSR programs, and preserve .|generated=|answer=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
 
 Answer: AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -620,11 +620,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how should i clean autoexec.bat|canonical=how should i clean autoexec.bat|source=golden|recall=kb2_term|recall_score=42|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.|golden=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was my autoexec is too long what should i change; previous answer was AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT .|generated=|answer=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=how should i clean autoexec.bat|canonical=how should i clean autoexec.bat|source=golden|recall=kb2_term|recall_score=42|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=show_config,explain_xms,more,cancel|retrieval=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.|golden=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was my autoexec is too long what should i change; previous answer was AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT .|generated=|answer=Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
 Answer: Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when needed.
 
-Source: golden / kb2_term ( 50 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -638,11 +638,11 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_batch|ui=text|query=write a batch command that checks for model files|canonical=write a batch command that checks for model files|source=retrieval|recall=kb2_term|recall_score=66|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=write_batch,explain_command,more,cancel|retrieval=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how should i clean autoexec.bat; previous answer was Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when ne.|generated=|answer=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_batch|ui=text|query=write a batch command that checks for model files|canonical=write a batch command that checks for model files|source=retrieval|recall=kb2_term|recall_score=66|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=write_batch,explain_command,more,cancel|retrieval=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how should i clean autoexec.bat; previous answer was Keep AUTOEXEC BAT short, trim PATH, and load resident tools only when ne.|generated=|answer=Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.
 
 Answer: Batch file help: In a batch file, use IF EXIST checks, clear status messages, and 8.3 DOS-compatible names for model files.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ write_batch,explain_command,more,cancel ]
 
@@ -656,11 +656,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=general_chat|ui=text|query=why does protected mode need a dpmi host|canonical=why does protected mode need a dpmi host|source=retrieval|recall=kb2_term|recall_score=87|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=show_config,explain_xms,write_batch,cancel|retrieval=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was write a batch command that checks for model files; previous answer was Batch file help: In a batch file, use IF EXIST checks, clear status mess.|generated=|answer=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
+ASSIST_REPLY|pack=DOSHELP|intent=general_chat|ui=text|query=why does protected mode need a dpmi host|canonical=why does protected mode need a dpmi host|source=retrieval|recall=kb2_term|recall_score=87|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=show_config,explain_xms,write_batch,cancel|retrieval=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was write a batch command that checks for model files; previous answer was Batch file help: In a batch file, use IF EXIST checks, clear status mess.|generated=|answer=DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
 
 Answer: DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI.EXE beside the program.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 60 ms)
 
 [ show_config,explain_xms,write_batch,cancel ]
 
@@ -674,11 +674,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=what does config.sys do|canonical=what does config.sys do|source=retrieval|recall=kb2_term|recall_score=42|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was why does protected mode need a dpmi host; previous answer was DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI..|generated=|answer=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=what does config.sys do|canonical=what does config.sys do|source=retrieval|recall=kb2_term|recall_score=42|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was why does protected mode need a dpmi host; previous answer was DPMI host: Protected-mode DOS programs need a DPMI host such as CWSDPMI..|generated=|answer=CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
 Answer: CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as the safe CONFIG SYS baseline.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ show_config,explain_xms,more,cancel ]
 
@@ -716,11 +716,11 @@ ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=le
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=make this sentence sound professional: the release broke|canonical=make this sentence sound professional: the release broke|source=golden|recall=kb2_term|recall_score=18|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|golden=Use direct, polite, professional wording, name the release problem, and end with the next action.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what does config.sys do; previous answer was CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as.|generated=|answer=Use direct, polite, professional wording, name the release problem, and end with the next action.
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=make this sentence sound professional: the release broke|canonical=make this sentence sound professional: the release broke|source=golden|recall=kb2_term|recall_score=18|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=rewrite,shorten,formalize,cancel|retrieval=Professional tone: Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|golden=Use direct, polite, professional wording, name the release problem, and end with the next action.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what does config.sys do; previous answer was CONFIG.SYS example: Use HIMEM, DOS HIGH UMB, FILES 30, and BUFFERS 20 as.|generated=|answer=Use direct, polite, professional wording, name the release problem, and end with the next action.
 
 Answer: Use direct, polite, professional wording, name the release problem, and end with the next action.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 50 ms)
 
 [ rewrite,shorten,formalize,cancel ]
 
@@ -734,11 +734,11 @@ Source: golden / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize this: tests passed but the tag was stale|canonical=summarize this: tests passed but the tag was stale|source=golden|recall=kb2_term|recall_score=15|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=summarize,bullets,shorten,cancel|retrieval=Clarity action: State what happened, why it matters, and the next action; keep artifact, tag, checksum, and test details concrete.|golden=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was make this sentence sound professional: the release broke; previous answer was Use direct, polite, professional wording, name the release problem, and .|generated=|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize this: tests passed but the tag was stale|canonical=summarize this: tests passed but the tag was stale|source=golden|recall=kb2_term|recall_score=15|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=summarize,bullets,shorten,cancel|retrieval=Clarity action: State what happened, why it matters, and the next action; keep artifact, tag, checksum, and test details concrete.|golden=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was make this sentence sound professional: the release broke; previous answer was Use direct, polite, professional wording, name the release problem, and .|generated=|answer=Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
 Answer: Summary: tests passed, the tag was stale, and the next action is to refresh the tag.
 
-Source: golden / kb2_term ( 50 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ summarize,bullets,shorten,cancel ]
 
@@ -752,11 +752,11 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize: tests passed but dosbox needed a helper file|canonical=summarize: tests passed but dosbox needed a helper file|source=golden|recall=kb2_bucket|recall_score=15|t_retrieve_ms=270|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=270|actions=summarize,bullets,shorten,cancel|retrieval=Test plan: Define scope, cases, expected results, evidence files, and pass or fail criteria.|golden=Summary: tests passed, DOSBox needed a helper file. Include it.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize this: tests passed but the tag was stale; previous answer was Summary: tests passed, the tag was stale, and the next action is to refr.|generated=|answer=Summary: tests passed, DOSBox needed a helper file. Include it.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=summarize: tests passed but dosbox needed a helper file|canonical=summarize: tests passed but dosbox needed a helper file|source=golden|recall=kb2_bucket|recall_score=15|t_retrieve_ms=60|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=summarize,bullets,shorten,cancel|retrieval=Test plan: Define scope, cases, expected results, evidence files, and pass or fail criteria.|golden=Summary: tests passed, DOSBox needed a helper file. Include it.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize this: tests passed but the tag was stale; previous answer was Summary: tests passed, the tag was stale, and the next action is to refr.|generated=|answer=Summary: tests passed, DOSBox needed a helper file. Include it.
 
 Answer: Summary: tests passed, DOSBox needed a helper file. Include it.
 
-Source: golden / kb2_bucket ( 270 ms)
+Source: golden / kb2_bucket ( 60 ms)
 
 [ summarize,bullets,shorten,cancel ]
 
@@ -770,11 +770,11 @@ Source: golden / kb2_bucket ( 270 ms)
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=shorten: we need to verify the release before publishing|canonical=shorten: we need to verify the release before publishing|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=summarize,bullets,shorten,cancel|retrieval=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.|golden=Short version: verify the release before publishing.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize: tests passed but dosbox needed a helper file; previous answer was Summary: tests passed, DOSBox needed a helper file. Include it.|generated=|answer=Short version: verify the release before publishing.
+ASSIST_REPLY|pack=OFFICE|intent=office_summary|ui=text|query=shorten: we need to verify the release before publishing|canonical=shorten: we need to verify the release before publishing|source=golden|recall=kb2_term|recall_score=21|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=summarize,bullets,shorten,cancel|retrieval=Shorten action: Shortening should keep the original intent and remove qualifiers, duplicate phrases, and low-value background.|golden=Short version: verify the release before publishing.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was summarize: tests passed but dosbox needed a helper file; previous answer was Summary: tests passed, DOSBox needed a helper file. Include it.|generated=|answer=Short version: verify the release before publishing.
 
 Answer: Short version: verify the release before publishing.
 
-Source: golden / kb2_term ( 50 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ summarize,bullets,shorten,cancel ]
 
@@ -788,11 +788,11 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|canonical=write a polite status update about a delayed build|source=golden|recall=kb2_term|recall_score=51|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=Use direct, polite, concrete wording, include the current blocker, and end with the next action.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was shorten: we need to verify the release before publishing; previous answer was Short version: verify the release before publishing.|generated=|answer=Use direct, polite, concrete wording, include the current blocker, and end with the next action.
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=write a polite status update about a delayed build|canonical=write a polite status update about a delayed build|source=golden|recall=kb2_term|recall_score=51|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Status update: Use direct polite wording, include the current blocker, and end with the next action or timing.|golden=Use direct, polite, concrete wording, include the current blocker, and end with the next action.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was shorten: we need to verify the release before publishing; previous answer was Short version: verify the release before publishing.|generated=|answer=Use direct, polite, concrete wording, include the current blocker, and end with the next action.
 
 Answer: Use direct, polite, concrete wording, include the current blocker, and end with the next action.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 60 ms)
 
 [ rewrite,shorten,summarize,formalize,cancel ]
 
@@ -806,11 +806,11 @@ Source: golden / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|canonical=make this clearer: the artifact uploaded but the tag was stale|source=golden|recall=kb2_term|recall_score=30|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Clarity action: State what happened, why it matters, and the next action; keep artifact, tag, checksum, and test details concrete.|golden=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was write a polite status update about a delayed build; previous answer was Use direct, polite, concrete wording, include the current blocker, and e.|generated=|answer=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
+ASSIST_REPLY|pack=OFFICE|intent=general_chat|ui=text|query=make this clearer: the artifact uploaded but the tag was stale|canonical=make this clearer: the artifact uploaded but the tag was stale|source=golden|recall=kb2_term|recall_score=30|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=rewrite,shorten,summarize,formalize,cancel|retrieval=Clarity action: State what happened, why it matters, and the next action; keep artifact, tag, checksum, and test details concrete.|golden=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was write a polite status update about a delayed build; previous answer was Use direct, polite, concrete wording, include the current blocker, and e.|generated=|answer=State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 
 Answer: State that the artifact uploaded, the tag was stale, and the next action is to refresh the tag.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ rewrite,shorten,summarize,formalize,cancel ]
 
@@ -848,11 +848,11 @@ ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexi
 
 ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=how can this feel modern on a 486|canonical=how can this feel modern on a 486|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=debug,test,release,explain,cancel|retrieval=Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|golden=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was make this clearer: the artifact uploaded but the tag was stale; previous answer was State that the artifact uploaded, the tag was stale, and the next action.|generated=|answer=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=how can this feel modern on a 486|canonical=how can this feel modern on a 486|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=debug,test,release,explain,cancel|retrieval=Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|golden=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was make this clearer: the artifact uploaded but the tag was stale; previous answer was State that the artifact uploaded, the tag was stale, and the next action.|generated=|answer=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
 
 Answer: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
 
-Source: golden / kb2_term ( 50 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ debug,test,release,explain,cancel ]
 
@@ -866,11 +866,11 @@ Source: golden / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=what does retrieval first mean|canonical=what does retrieval first mean|source=retrieval|recall=kb2_term|recall_score=36|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=debug,test,release,explain,cancel|retrieval=Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how can this feel modern on a 486; previous answer was Use small hot-loaded weights, compact retrieval databases, persistent me.|generated=|answer=Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
+ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=what does retrieval first mean|canonical=what does retrieval first mean|source=retrieval|recall=kb2_term|recall_score=36|t_retrieve_ms=0|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=debug,test,release,explain,cancel|retrieval=Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how can this feel modern on a 486; previous answer was Use small hot-loaded weights, compact retrieval databases, persistent me.|generated=|answer=Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
 
 Answer: Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
 
-Source: retrieval / kb2_term ( 60 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ debug,test,release,explain,cancel ]
 
@@ -884,11 +884,11 @@ Source: retrieval / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=how do i author a pack|canonical=how do i author a pack|source=golden|recall=kb2_term|recall_score=39|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=debug,test,release,explain,cancel|retrieval=Pack authoring: Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.|golden=Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what does retrieval first mean; previous answer was Retrieval first: Answer from KDB, USER notes, memory, and golden rows be.|generated=|answer=Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates.
+ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=how do i author a pack|canonical=how do i author a pack|source=golden|recall=kb2_term|recall_score=39|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=debug,test,release,explain,cancel|retrieval=Pack authoring: Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.|golden=Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what does retrieval first mean; previous answer was Retrieval first: Answer from KDB, USER notes, memory, and golden rows be.|generated=|answer=Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates.
 
 Answer: Write HELP and KNOW rows, rebuild KDB, run the validator, then run retrieval and QEMU gates.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ debug,test,release,explain,cancel ]
 
@@ -902,11 +902,11 @@ Source: golden / kb2_term ( 110 ms)
 
 ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=what should i check before release|canonical=what should i check before release|source=golden|recall=kb2_term|recall_score=42|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=110|actions=debug,test,release,explain,cancel|retrieval=Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag.|golden=Verify tests, logs, artifact names, checksums, release notes, and the target tag.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how do i author a pack; previous answer was Write HELP and KNOW rows, rebuild KDB, run the validator, then run retri.|generated=|answer=Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=what should i check before release|canonical=what should i check before release|source=golden|recall=kb2_term|recall_score=42|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=debug,test,release,explain,cancel|retrieval=Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag.|golden=Verify tests, logs, artifact names, checksums, release notes, and the target tag.|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how do i author a pack; previous answer was Write HELP and KNOW rows, rebuild KDB, run the validator, then run retri.|generated=|answer=Verify tests, logs, artifact names, checksums, release notes, and the target tag.
 
 Answer: Verify tests, logs, artifact names, checksums, release notes, and the target tag.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 0 ms)
 
 [ debug,test,release,explain,cancel ]
 
@@ -952,11 +952,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=PORTABLE|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=why is basic useful for teaching ai|canonical=why is basic useful for teaching ai|source=retrieval|recall=kb2_term|recall_score=57|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=explain,compare,teach,validate,cancel|retrieval=basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what does portable intelligence mean; previous answer was portable meaning: Portable intelligence means small local model weights,.|generated=|answer=basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.
+ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=why is basic useful for teaching ai|canonical=why is basic useful for teaching ai|source=retrieval|recall=kb2_term|recall_score=57|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=explain,compare,teach,validate,cancel|retrieval=basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was what does portable intelligence mean; previous answer was portable meaning: Portable intelligence means small local model weights,.|generated=|answer=basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.
 
 Answer: basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ explain,compare,teach,validate,cancel ]
 
@@ -988,11 +988,11 @@ Source: retrieval / kb2_term ( 60 ms)
 
 ASSIST_MODEL|pack=PORTABLE|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=why do hot swappable weights matter|canonical=why do hot swappable weights matter|source=retrieval|recall=kb2_term|recall_score=45|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=explain,compare,teach,validate,cancel|retrieval=domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how could this move to c or assembly; previous answer was runtime ports: The same assistant contract can be reimplemented in C, as.|generated=|answer=domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.
+ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=why do hot swappable weights matter|canonical=why do hot swappable weights matter|source=retrieval|recall=kb2_term|recall_score=45|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=explain,compare,teach,validate,cancel|retrieval=domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how could this move to c or assembly; previous answer was runtime ports: The same assistant contract can be reimplemented in C, as.|generated=|answer=domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.
 
 Answer: domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ explain,compare,teach,validate,cancel ]
 
@@ -1006,11 +1006,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=PORTABLE|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=how should tiny machines store recall|canonical=how should tiny machines store recall|source=retrieval|recall=kb2_term|recall_score=72|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=explain,compare,teach,validate,cancel|retrieval=tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was why do hot swappable weights matter; previous answer was domain weight loading: Hot swappable weights load domain behavior into a.|generated=|answer=tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.
+ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=how should tiny machines store recall|canonical=how should tiny machines store recall|source=retrieval|recall=kb2_term|recall_score=72|t_retrieve_ms=0|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=explain,compare,teach,validate,cancel|retrieval=tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was why do hot swappable weights matter; previous answer was domain weight loading: Hot swappable weights load domain behavior into a.|generated=|answer=tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.
 
 Answer: tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.
 
-Source: retrieval / kb2_term ( 50 ms)
+Source: retrieval / kb2_term ( 0 ms)
 
 [ explain,compare,teach,validate,cancel ]
 
@@ -1024,11 +1024,11 @@ Source: retrieval / kb2_term ( 50 ms)
 
 ASSIST_MODEL|pack=PORTABLE|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=what proof shows this works on old hardware|canonical=what proof shows this works on old hardware|source=retrieval|recall=kb2_term|recall_score=63|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=60|actions=explain,compare,teach,validate,cancel|retrieval=old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how should tiny machines store recall; previous answer was tiny machine recall: Tiny machines should store recall as compact indexe.|generated=|answer=old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.
+ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=what proof shows this works on old hardware|canonical=what proof shows this works on old hardware|source=retrieval|recall=kb2_term|recall_score=63|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=explain,compare,teach,validate,cancel|retrieval=old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.|golden=|memory=Context: user name is Operator; current goal is the DOSBox assistant; answer style is short answers; previous question was how should tiny machines store recall; previous answer was tiny machine recall: Tiny machines should store recall as compact indexe.|generated=|answer=old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.
 
 Answer: old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.
 
-Source: retrieval / kb2_term ( 60 ms)
+Source: retrieval / kb2_term ( 50 ms)
 
 [ explain,compare,teach,validate,cancel ]
 

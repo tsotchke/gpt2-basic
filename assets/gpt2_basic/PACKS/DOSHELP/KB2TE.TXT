@@ -1,0 +1,8 @@
+# term|row_ids
+# Generated KB2 term shard E. Rebuild with scripts/build_assistant_kdb.py --write.
+emulator|21
+error|23
+evidence|21
+example|2
+executable|26
+exist|4,14

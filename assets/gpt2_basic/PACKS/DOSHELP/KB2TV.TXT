@@ -1,0 +1,6 @@
+# term|row_ids
+# Generated KB2 term shard V. Rebuild with scripts/build_assistant_kdb.py --write.
+validate|24
+validation|22
+values|16
+variables|17

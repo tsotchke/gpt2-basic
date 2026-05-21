@@ -16,8 +16,8 @@ the 486 as a local agent computer, not just a neural network host.
 - `DEV` and `PORTABLE` demonstrate domain packs that reuse CHAT weights with
   their own KDB/KB2 recall surfaces.
 - `scripts/create_assistant_pack.py` creates a complete lightweight pack from
-  a folder of ASCII notes, including generated KB2 binary recall and term
-  indexes.
+  a folder of ASCII notes, including generated KB2 binary recall, aggregate
+  term indexes, and sharded term indexes.
 - Golden replies, retrieval, memory, and generation are all reported in
   `ASSIST_REPLY` evidence records.
 
@@ -44,16 +44,18 @@ The DOS runtime should avoid scanning large prose files when possible.
 `KDB.TXT` stores compact terms next to the answer text as the readable source
 of generated recall. `KB2ALL.BIN` and `KB2?.BIN` store the same rows as
 fixed-width binary records, so the shell can scan bounded records without
-line parsing. `KDBIDX.TXT` and `KB2IDX.TXT` list generated bucket shards, and
-the shell scans only the buckets suggested by significant query words before
-falling back to the full KDB.
+line parsing. `KB2T?.TXT` shards map significant terms to likely KB2 row IDs
+before the shell opens binary records. `KDBIDX.TXT` and `KB2IDX.TXT` list
+generated bucket shards, and the shell scans only the buckets suggested by
+significant query words before falling back to the full KDB.
 
 ## Completed Milestones
 
 - Pack generator from a folder of notes: `scripts/create_assistant_pack.py`
   writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated
-  `KDB.TXT` buckets, compiled `KB2*.BIN` pages, and `KB2TERM.TXT`, while
-  sharing `PACKS\CHAT\MODEL` by default.
+  `KDB.TXT` buckets, compiled `KB2*.BIN` pages, aggregate `KB2TERM.TXT`, and
+  sharded `KB2T?.TXT` term indexes, while sharing `PACKS\CHAT\MODEL` by
+  default.
 - Lightweight domain pack without retraining: `PORTABLE` ships portable
   intelligence notes generated from `data/assistant_pack_notes/portable` and
   shares the CHAT model.

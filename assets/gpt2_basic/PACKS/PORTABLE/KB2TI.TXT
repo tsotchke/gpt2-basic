@@ -1,0 +1,7 @@
+# term|row_ids
+# Generated KB2 term shard I. Rebuild with scripts/build_assistant_kdb.py --write.
+indexed|11
+inspectable|4
+integer|4,7
+intelligence|1,2,3,4,9
+interface|7

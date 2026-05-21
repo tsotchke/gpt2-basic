@@ -1,0 +1,10 @@
+# term|row_ids
+# Generated KB2 term shard L. Rebuild with scripts/build_assistant_kdb.py --write.
+lead|9
+likelihood|18
+limits|9,27
+line|3
+list|9,17
+lives|15
+logs|10
+low-value|5

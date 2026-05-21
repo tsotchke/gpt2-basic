@@ -1,0 +1,12 @@
+# term|row_ids
+# Generated KB2 term shard L. Rebuild with scripts/build_assistant_kdb.py --write.
+large|14
+let|5
+line|15
+lines|14
+load|1
+loading|23
+loads|3,7,17
+local|13
+logs|21,22
+low|8

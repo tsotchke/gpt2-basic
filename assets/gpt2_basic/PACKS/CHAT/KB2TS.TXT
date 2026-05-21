@@ -1,0 +1,28 @@
+# term|row_ids
+# Generated KB2 term shard S. Rebuild with scripts/build_assistant_kdb.py --write.
+say|52,72
+session|27,54,76
+setup|62
+short|7,17,23,33,53,60,64,71
+shorter|9,13,28,58
+signal|13
+simple|24,59,71
+simply|71
+slow|50
+slowly|41
+small|10,15,18,21,27,39,47,50,55,64,66,69
+small-computer|55
+smallest|16
+something|44
+start|10,16
+starting|1
+status|2,14,36,75
+stay|73
+step|16,21,40,45,52,66,68,69
+steps|16,69
+story|17,60
+strange|13
+suggested|45
+summarize|70
+switch|9,13,58,62
+switching|62

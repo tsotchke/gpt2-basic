@@ -51,13 +51,13 @@ discuss discussion topics ideas feelings games music dos|Discussion topics|We ca
 life meaning topic comes care choices people around|Meaning topic|Meaning comes from care, choices, and the people around you.
 slow inference small dos takes time|Slow inference|Small DOS inference takes time.
 unusual demo but real|Unusual demo|It is unusual, but it is real.
-ask better prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
+ask better questions prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
 follow follow-up help ask one short question continue last answer|Follow-up help|Ask one short follow-up question so I can continue from the last answer.
 local knowledge answer model weights pack files session memory bundled notes|Local knowledge|I answer from local model weights, pack files, session memory, and bundled notes.
 useful small computer small-computer usefulness tiny local model becomes more retrieval memory quick focused help without network|Small-computer usefulness|A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network.
 intelligence practical assistant combines retrieval memory rules tiny local model produce useful dos answers|Practical intelligence|The assistant combines retrieval, memory, rules, and a tiny local model to produce useful DOS answers.
 trust proof evidence comes visible files local weights reproducible tests qemu hardware logs|Trust evidence|Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs.
-mistake recovery answer wrong ask shorter question switch packs give exact error|Mistake recovery|If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
+mistake recovery recover bad answer wrong ask shorter question switch packs give exact error|Mistake recovery|If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
 learn topic learning pick one simple question answer ask follow-up example|Learning a topic|Pick one simple question, answer it, then ask a follow-up or example.
 creative idea help ask one joke story plan name keep prompt short|Creative help|Ask for one joke, story, plan, name, or idea and keep the prompt short.
 memory tell facts phrases like name are working prefer|Memory use|Tell me facts with phrases like my name is, we are working on, or I prefer.

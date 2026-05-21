@@ -1,0 +1,14 @@
+# term|row_ids
+# Generated KB2 term shard F. Rebuild with scripts/build_assistant_kdb.py --write.
+facts|13
+factual|27
+fail|25
+fields|19
+files|25
+filler|2,13
+first|12
+fixed|27
+follow-up|16
+formal|3
+formula|20
+free|2

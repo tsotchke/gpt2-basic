@@ -11,11 +11,11 @@ thanks are welcome|Thanks|You are welcome.
 confused clarify request ask one short question|Clarify request|Ask one short question.
 name assistant identity gpt2-basic|Assistant identity|I am GPT2-BASIC.
 advice meaning suggested next step|Advice meaning|Advice is a suggested next step.
-ask better prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
+ask better questions prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
 follow follow-up help ask one short question continue last answer|Follow-up help|Ask one short follow-up question so I can continue from the last answer.
 local knowledge answer model weights pack files session memory bundled notes|Local knowledge|I answer from local model weights, pack files, session memory, and bundled notes.
 intelligence practical assistant combines retrieval memory rules tiny local model produce useful dos answers|Practical intelligence|The assistant combines retrieval, memory, rules, and a tiny local model to produce useful DOS answers.
-mistake recovery answer wrong ask shorter question switch packs give exact error|Mistake recovery|If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
+mistake recovery recover bad answer wrong ask shorter question switch packs give exact error|Mistake recovery|If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
 creative idea help ask one joke story plan name keep prompt short|Creative help|Ask for one joke, story, plan, name, or idea and keep the prompt short.
 offline work means answer must come local files memory model weights|Offline work|Offline means the answer must come from local files, memory, and model weights.
 clarify question request ask one direct only missing detail blocks useful answer|Clarify a request|Ask one direct question only when a missing detail blocks a useful answer.

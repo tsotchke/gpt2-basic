@@ -1,0 +1,26 @@
+# term|row_ids
+# Generated KB2 term shard P. Rebuild with scripts/build_assistant_kdb.py --write.
+pack|19,54,62,76,77
+packs|9,13,58
+pass|75
+people|49
+phrases|61
+pick|16,59
+piece|18
+plain|7,71
+plan|10,16,60,69
+planning|69
+play|43
+plus|22
+practical|56,68
+practice|47
+prefer|61
+privacy|73
+produce|56
+produces|11
+program|11
+project|39
+prompt|6,7,17,23,28,60,71,74
+prompts|23,52,64,73
+proof|57,65
+put|76

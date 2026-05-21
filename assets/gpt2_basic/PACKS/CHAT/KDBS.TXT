@@ -17,7 +17,6 @@ relax help breathe slowly rest minute|Relax help|Breathe slowly and rest for a m
 goal meaning something want reach|Goal meaning|A goal is something you want to reach.
 advice meaning suggested next step|Advice meaning|Advice is a suggested next step.
 slow inference small dos takes time|Slow inference|Small DOS inference takes time.
-ask better prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
 useful small computer small-computer usefulness tiny local model becomes more retrieval memory quick focused help without network|Small-computer usefulness|A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network.
 pack switch switching chat conversation doshelp dos setup office writing tasks|Pack switching|Use CHAT for conversation, DOSHELP for DOS setup, and OFFICE for writing tasks.
 next step task feels large choose one small action test result|Next step|When the task feels large, choose one small next action and test the result.
