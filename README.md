@@ -148,6 +148,7 @@ Public release and media:
 - [Video production plan](docs/marketing/video-plan.md)
 - [Public demo script](docs/marketing/public-demo-script.md)
 - [Promotional copy kit](docs/marketing/promo-kit.md)
+- [Substrate portability argument](docs/substrate-portability.md)
 - [DOSBox integration](docs/dosbox.md)
 - Launch handoff kit: `gpt2-basic-launch-kit.zip` on the preview release
 ```
