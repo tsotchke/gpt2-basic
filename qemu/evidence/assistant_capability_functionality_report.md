@@ -33,6 +33,7 @@ Status: `PASS`
 - Generalist conversational prompt gate: `PASS 24/24`.
 - Consistency gate: `PASS 498/498 variants, 83/83 groups`.
 - Pack retrieval gate: `PASS 36/36`.
+- Usefulness workflow gate: `PASS 31/31 tasks, 8/8 workflows`.
 - KDB text index gate: `PASS 36/36`.
 - KDB binary gate: `PASS 36/36`.
 
@@ -42,6 +43,10 @@ Covered categories include:
 - Troubleshooting, debugging, release checks, DPMI/CWSDPMI, CONFIG.SYS, AUTOEXEC.BAT, FAT image limits, QEMU logs, and real-hardware copy preparation.
 - Rewriting, summarizing, shortening, release notes, status updates, handoff notes, bug reports, meeting notes, risk registers, project plans, customer replies, and user docs.
 - Developer-pack guidance for retrieval-first design, authoring packs, fast recall storage, release checks, failure records, and modern 486 assistant architecture.
+
+Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
+setup and repair, hardware transfer and emulator evidence, office handoffs,
+planning and risk, developer pack authoring, and fast local recall architecture.
 
 ## DOS/QEMU Stress Result
 

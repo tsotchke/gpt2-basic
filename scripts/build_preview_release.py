@@ -100,6 +100,7 @@ SELECTED_EVIDENCE_NAMES = {
     "assistant_stress_486.log",
     "assistant_stress_compile_486.log",
     "assistant_stress_report.md",
+    "assistant_usefulness_eval.md",
     "compile_main_486.log",
     "exported_model_quality_inventory.md",
     "gold_curriculum_v5_clean_repair_report.md",

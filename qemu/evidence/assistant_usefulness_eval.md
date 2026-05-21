@@ -1,0 +1,41 @@
+# Assistant Usefulness Evaluation
+
+Status: `PASS`
+Task pass rate: `31/31`
+Workflow coverage: `8/8`
+
+This gate groups assistant behavior into operator workflows. It checks whether local packs can produce actionable answers from local recall without network access.
+
+| Workflow | Pack | Operator Task | Status | Reason | Outcome | Source | Score | Answer |
+|---|---|---|---|---|---|---|---:|---|
+| operator prompts | CHAT | how can i ask better questions | PASS |  | Prompt repair gives a next actionable step. | KDB | 33 | Better prompts: Say the goal, give one detail, and ask for the next useful step. |
+| operator prompts | CHAT | how should i compare options | PASS |  | Comparison answer names options and tradeoffs. | KDB | 39 | Compare options: Name the options, list one tradeoff for each, then choose the practical next step. |
+| operator prompts | CHAT | help me plan work in small steps | PASS |  | Planning answer narrows work to small verified steps. | KDB | 66 | Planning work: Break the job into small steps, do the blocking step first, and verify each result. |
+| operator prompts | CHAT | what should a useful answer look like | PASS |  | Answer quality is brief, concrete, and bounded. | KDB | 42 | Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on. |
+| trust and offline limits | CHAT | what makes this intelligent on a small computer | PASS |  | Explains intelligence as retrieval, memory, and tiny model behavior. | KDB | 36 | Small-computer usefulness: A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network. |
+| trust and offline limits | CHAT | can this work without the internet | PASS |  | Names local files and offline model behavior. | KDB | 33 | Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files. |
+| trust and offline limits | CHAT | what proof helps me trust this | PASS |  | Points to visible local weights, tests, and logs. | KDB | 36 | Trust evidence: Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs. |
+| trust and offline limits | CHAT | how do i show confidence in an answer | PASS |  | Separates known, inferred, and uncertain claims. | KDB | 36 | Answer confidence: Say what is known from local files, what is inferred, and what remains uncertain. |
+| dos setup and repair | DOSHELP | what happens before autoexec bat runs | PASS |  | Explains boot order and config files. | KDB | 57 | AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools. |
+| dos setup and repair | DOSHELP | why use 8.3 filenames in batches | PASS |  | Explains DOS-compatible short names. | KDB | 24 | DOS filenames: Use 8.3 filenames for maximum DOS compatibility and predictable batch files. |
+| dos setup and repair | DOSHELP | what should i do when cwsdpmi is missing | PASS |  | Gives the protected-mode dependency fix. | KDB | 39 | Missing CWSDPMI: If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command. |
+| dos setup and repair | DOSHELP | how do i mount the dosbox bundle | PASS |  | Gives a mount and profile path. | KDB | 54 | DOSBox mount: Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile. |
+| dos setup and repair | DOSHELP | what if the fat image is full | PASS |  | Explains removing training files or growing disk space. | KDB | 60 | FAT image full: Remove host-only training files or grow the disk image when FAT image assembly runs out of space. |
+| dos setup and repair | DOSHELP | how do i handle a dos memory error | PASS |  | Names conventional memory and resident-program pressure. | KDB | 57 | DOS memory error: Free conventional memory by unloading TSRs, loading drivers high, or using a smaller profile. |
+| hardware transfer and emulator evidence | DOSHELP | how should i prepare files for real hardware | PASS |  | Lists the files required for physical DOS testing. | KDB | 48 | Hardware copy: Copy GPT2, MODEL, PACKS, CWSDPMI, and batch files together before testing on real DOS. |
+| hardware transfer and emulator evidence | DOSHELP | what logs matter from qemu | PASS |  | Identifies compile/run/evidence logs as emulator proof. | KDB | 39 | QEMU logs: Capture compile logs, run logs, and copied evidence files before trusting an emulator result. |
+| office handoffs | OFFICE | how should i write a handoff note | PASS |  | Produces a handoff structure with evidence and next work. | KDB | 36 | Handoff note: Say what is done, what remains, where evidence lives, and who owns the next action. |
+| office handoffs | OFFICE | what belongs in a bug report | PASS |  | Lists expected, actual, repro steps, and logs. | KDB | 36 | Bug report shape: Include expected behavior, actual behavior, reproduction steps, logs, and the suspected area. |
+| office handoffs | OFFICE | make a compact release note | PASS |  | Keeps release notes to change, proof, and limits. | KDB | 36 | Release note shape: Lead with what changed, list proof, then state any known limits plainly. |
+| office handoffs | OFFICE | what should meeting notes capture | PASS |  | Tracks decisions, owners, dates, and actions. | KDB | 51 | Meeting notes: Capture decisions, owners, dates, open questions, and follow-up actions. |
+| office handoffs | OFFICE | how should i reply to a customer | PASS |  | Avoids overpromising and gives status plus next step. | KDB | 36 | Customer reply: Acknowledge the issue, give the current status, state the next action, and avoid overpromising. |
+| office handoffs | OFFICE | how do i write user docs | PASS |  | Frames docs around goal, prerequisites, steps, and troubleshooting. | KDB | 51 | User docs: Write the task goal, prerequisites, exact steps, expected result, and troubleshooting note. |
+| planning and risk | OFFICE | help me write a project plan | PASS |  | Names milestones, owners, and risks. | KDB | 36 | Project plan: List the goal, milestones, owners, risks, and the next checkpoint. |
+| planning and risk | OFFICE | how do i track risks | PASS |  | Captures impact, likelihood, mitigation, and owner. | KDB | 24 | Risk register: For each risk, record impact, likelihood, mitigation, owner, and review date. |
+| planning and risk | OFFICE | what is a useful test plan | PASS |  | Defines scope, cases, expected result, and criteria. | KDB | 36 | Test plan: Define scope, cases, expected results, evidence files, and pass or fail criteria. |
+| developer pack authoring | DEV | how can this feel modern on a 486 | PASS |  | Ties modern feel to weights, retrieval, memory, and synthesis. | KDB | 36 | Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies. |
+| developer pack authoring | DEV | what does retrieval first mean | PASS |  | Explains KDB, USER notes, memory, and synthesis order. | KDB | 36 | Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize. |
+| developer pack authoring | DEV | how do i author a pack | PASS |  | Names HELP, KNOW, KDB, and validation. | KDB | 39 | Pack authoring: Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates. |
+| developer pack authoring | DEV | what should i check before release | PASS |  | Names tests, logs, checksums, and tag. | KDB | 42 | Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag. |
+| fast local recall architecture | DEV | how should we store fast recall data | PASS |  | Favors compact keyworded DOS-friendly recall storage. | KDB | 45 | High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster. |
+| fast local recall architecture | DEV | what should a failure record include | PASS |  | Captures command, input, expected, actual, and log. | KDB | 39 | Failure record: Record the command, input, expected result, actual result, log path, and next experiment. |
