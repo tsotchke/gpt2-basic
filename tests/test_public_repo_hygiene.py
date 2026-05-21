@@ -28,7 +28,10 @@ def public_text_files() -> list[Path]:
 
 class PublicRepoHygieneTests(unittest.TestCase):
     def test_public_text_avoids_local_operator_paths(self) -> None:
-        offender_pattern = re.compile(r"/Users/[^/\s]+/Desktop/gpt2-basic")
+        slash = "/"
+        offender_pattern = re.compile(
+            re.escape(slash.join(("", "Users", ""))) + r"[^/\s]+/Desktop/gpt2-basic"
+        )
         offenders: list[str] = []
         for path in public_text_files():
             text = path.read_text(encoding="utf-8", errors="ignore")
