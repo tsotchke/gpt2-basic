@@ -77,6 +77,7 @@ DOC_FILES = (
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     ".github/ISSUE_TEMPLATE/config.yml",
     ".github/ISSUE_TEMPLATE/hardware_validation.yml",
+    ".github/ISSUE_TEMPLATE/software_improvement.yml",
     ".github/workflows/preview-release.yml",
 )
 TREE_DIRS = ("src", "scripts", "tests", "data/domain_curriculum", "data/assistant_pack_notes", "hardware")

@@ -138,3 +138,15 @@ scale. That honesty makes the demo stronger.
    https://github.com/tsotchke/gpt2-basic/issues/2
 3. Improve real-hardware interaction ergonomics: quiet prefill, compact prompts,
    optional continue mode, and smaller output-shortlist sweeps.
+
+Non-hardware follow-up is tracked separately so software work can continue
+without waiting for physical captures:
+
+- Dense recall storage: https://github.com/tsotchke/gpt2-basic/issues/37
+- Persistent conversation database: https://github.com/tsotchke/gpt2-basic/issues/38
+- Pack intent router: https://github.com/tsotchke/gpt2-basic/issues/39
+- Larger domain packs: https://github.com/tsotchke/gpt2-basic/issues/40
+- Latency and recall budgets: https://github.com/tsotchke/gpt2-basic/issues/41
+- Windows 95 and OS/2 shell parity: https://github.com/tsotchke/gpt2-basic/issues/42
+- Smaller model-profile repair queue: https://github.com/tsotchke/gpt2-basic/issues/43
+- C or assembly fixed-point kernel compatibility: https://github.com/tsotchke/gpt2-basic/issues/44
