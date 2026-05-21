@@ -111,6 +111,8 @@ stress evidence; and release verification.
 The video is recorded from a real terminal with `asciinema` and rendered from
 checked QEMU assistant evidence. It is still honest about the constraint: this
 is a tiny local DOS model with retrieval-first intelligence, not a frontier LLM.
+The visible DOS prompt uses era-accurate commands only; host-side Python and
+video tooling are not presented as DOS or Windows 95 runtime features.
 
 ## Thumbnail Text Options
 

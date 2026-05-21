@@ -105,7 +105,7 @@ handles ffmpeg builds that do not include the optional `drawtext` filter.
 
 The current long-form capability demonstration is built from real terminal output
 recorded with `asciinema`, rendered with `agg`, and converted to MP4 with
-ffmpeg:
+ffmpeg on the host:
 
 ```sh
 python3 scripts/build_assistant_showcase_video.py --force
@@ -120,6 +120,12 @@ Output:
 This is not a personal release video or a fast teaser. It is for engineers,
 operators, pack authors, and constrained-system evaluators who need to see the
 actual terminal behavior, evidence, and limits clearly.
+
+The visible DOS session must stay era-accurate. Do not show `python3`, virtual
+environments, Unix shell commands, package managers, or internet tooling at the
+`C:\GPT2>` prompt. Host-side verification may be mentioned in reports, but the
+terminal demonstration should use DOS-compatible commands such as `ASSIST.EXE`,
+`TYPE`, `EDIT`, `DIR`, and batch files.
 
 This video is the broad GPT2-BASIC assistant walkthrough. It covers CHAT,
 DOSHELP, OFFICE, and DEV packs; `/capabilities`, `/limits`, and `/sources`;

@@ -3,14 +3,15 @@
 Status: `PASS`
 
 This video is a real terminal capability demonstration rendered from checked GPT2-BASIC QEMU assistant evidence.
+The visible DOS session uses era-accurate DOS commands only; Python, ffmpeg, and asciinema are host-side build tools.
 
 - MP4: `promo/renders/gpt2_basic_assistant_showcase_1080p.mp4`
 - Cast: `promo/renders/gpt2_basic_assistant_showcase.cast`
 - GIF intermediate: `promo/renders/gpt2_basic_assistant_showcase.gif`
 - Resolution: `1920x1080`
-- Duration seconds: `160.200000`
+- Duration seconds: `149.466667`
 - Final frame hold seconds: `12`
-- MP4 SHA-256: `5275bc996f405afb3f7a95c937a909e5ab5db5ea4f5e72df825b4a2cd8c192dd`
+- MP4 SHA-256: `d367130631761030ba829cb446941689372fb28f5d9cd938694f750c06e5caac`
 
 Audience:
 
@@ -26,3 +27,4 @@ Covered functionality:
 - OFFICE pack for rewriting, summarizing, status updates, release wording, and clearer notes.
 - DEV pack for retrieval-first architecture, pack authoring, release checks, and modern 486 assistant design.
 - KB2 binary recall, KDB fallback, USER.TXT note import, source/timing provenance, tests, QEMU evidence, and release hashes.
+- DOS-era command presentation: ASSIST.EXE, TYPE, EDIT, MANIFEST.TXT, ASTRESS.LOG, and 8.3-compatible paths.

@@ -186,6 +186,7 @@ def write_report(report: Path, paths: dict[str, Path], resolution: str, duration
         "Status: `PASS`",
         "",
         "This video is a real terminal capability demonstration rendered from checked GPT2-BASIC QEMU assistant evidence.",
+        "The visible DOS session uses era-accurate DOS commands only; Python, ffmpeg, and asciinema are host-side build tools.",
         "",
         f"- MP4: `{display_path(paths['mp4'])}`",
         f"- Cast: `{display_path(paths['cast'])}`",
@@ -209,6 +210,7 @@ def write_report(report: Path, paths: dict[str, Path], resolution: str, duration
         "- OFFICE pack for rewriting, summarizing, status updates, release wording, and clearer notes.",
         "- DEV pack for retrieval-first architecture, pack authoring, release checks, and modern 486 assistant design.",
         "- KB2 binary recall, KDB fallback, USER.TXT note import, source/timing provenance, tests, QEMU evidence, and release hashes.",
+        "- DOS-era command presentation: ASSIST.EXE, TYPE, EDIT, MANIFEST.TXT, ASTRESS.LOG, and 8.3-compatible paths.",
         "",
     ]
     report.write_text("\n".join(lines), encoding="ascii")

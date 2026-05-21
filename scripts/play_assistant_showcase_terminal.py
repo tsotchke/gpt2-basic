@@ -266,41 +266,42 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
         "OFFICE: 27 rows, 20 buckets.",
         "DEV: 23 rows, 23 buckets.",
     ])
-    term.command("python3 scripts/evaluate_assistant_kdb_binary.py", [
-        "PROBE_OK assistant_kdb_binary_eval_cases=36",
-        "ASSISTANT_KDB_BINARY_EVAL|pass=36|total=36|row_scan_ratio=0.524",
-        "PROBE_OK assistant_kdb_binary_eval_pass=1",
+    term.command("TYPE PACKS\\CHAT\\KDBA.TXT", [
+        "answer repeat itself|Repeat control|If I repeat, reset the prompt and ask one shorter question.",
+        "local inference means|Local inference|Local inference means the DOS program reads model weights.",
+        "browse internet from dos|Network limit|I cannot browse the internet from DOS.",
     ])
 
-    term.title("Pack authoring and local notes", "Extend behavior without retraining the whole system")
-    term.command("python3 scripts/import_assistant_notes.py notes.txt --pack CHAT --target user", [
-        "Dry-run by default: previews note rows before writing USER.TXT.",
-        "--target user keeps notes machine-local.",
-        "--target know --rebuild-kdb updates bundled KNOW.TXT and regenerates KDB/KB2.",
+    term.title("Pack authoring and local notes", "Plain ASCII files, DOS-editable at runtime")
+    term.command("TYPE PACKS\\CHAT\\USER.TXT", [
+        "# Local notes stay on this machine.",
+        "# Edit with DOS EDIT, COPY, or any plain text editor.",
+        "site policy|Local note|Answer from local policy before model synthesis.",
     ])
-    term.command("python3 scripts/validate_assistant_pack_authoring.py", [
-        "PROBE_OK assistant_pack_authoring_required_files=1",
-        "PROBE_OK assistant_pack_authoring_kdb_binary=1",
-        "PROBE_OK assistant_pack_authoring_model_refs=1",
+    term.command("EDIT PACKS\\CHAT\\USER.TXT", [
+        "HELP.TXT, KNOW.TXT, GOLDEN.TXT, and USER.TXT are plain ASCII.",
+        "Pack rebuilds are host-side, but USER.TXT notes are DOS-readable immediately.",
+        "ASSIST.EXE checks USER.TXT before falling back to model synthesis.",
     ])
 
-    term.title("Full proof harness", "Current production evidence")
-    term.command("python3 scripts/verify_assistant_packs.py", [
-        "PROBE_OK assistant_pack_count=4",
-        "PROBE_OK assistant_generalist_prompt_eval=1",
-        "PROBE_OK assistant_kdb_binary_eval=1",
-        "PROBE_OK assistant_qemu_evidence=1",
-        "PROBE_OK assistant_stress_evidence=1",
+    term.title("DOS-side proof", "Era-accurate commands shown inside the guest")
+    term.command("ASSIST.EXE --stress-probe", [
+        "ASSIST_BEGIN|suite=stress-probe|version=1",
+        "ASSIST_REPLY|pack=CHAT|source=memory|recall=kdb_text_bucket|answer=Your name is Operator.",
+        "ASSIST_REPLY|pack=DOSHELP|source=retrieval|answer=Keep drivers high and trim TSR programs.",
+        "ASSIST_REPLY|pack=OFFICE|source=golden|answer=Summary: tests passed, the tag was stale.",
+        "ASSIST_REPLY|pack=DEV|source=retrieval|answer=Retrieval first answers from KDB, USER notes, and memory.",
+        "ASSIST_END|suite=stress-probe|packs=4",
     ])
-    term.command(".venv-torch311/bin/python -m unittest discover tests", [
-        "Ran 94 tests in 3.076s",
-        "OK",
+    term.command("TYPE ASTRESS.LOG", [
+        "Reply count: 44",
+        "Source counts: golden=26 retrieval=10 model=0 fallback=0 memory=8",
+        "Visible answers: PASS",
     ])
-    term.command("LC_ALL=C LANG=C shasum -a 256 -c release sidecars", [
-        "gpt2-basic-preview.zip: OK",
-        "gpt2-basic-dosbox.zip: OK",
-        "gpt2-basic-hardware-transfer.zip: OK",
-        "gpt2-basic-launch-kit.zip: OK",
+    term.command("TYPE MANIFEST.TXT", [
+        "GPT2.EXE, ASSIST.EXE, CWSDPMI.EXE, MODEL, and PACKS copied.",
+        "Runtime packs omit host-only training corpora.",
+        "Ready for DOSBox, QEMU, or transfer to a physical DOS machine.",
     ])
 
     term.title("GPT2-BASIC", "A practical local assistant path for 486-era and constrained systems")
@@ -325,6 +326,10 @@ def self_test() -> None:
         require(prompt in queries, f"self_test_missing={prompt}")
     capability_text = DEFAULT_CAPABILITY_REPORT.read_text(encoding="ascii", errors="ignore")
     require("Stress replies" in "\n".join(capability_lines(capability_text)), "self_test_capability_lines")
+    source_text = Path(__file__).read_text(encoding="ascii").split("def self_test", 1)[0]
+    for forbidden in ("python", ".venv", "LC_ALL", "shasum", "bash", "curl"):
+        snippet = 'term.command("' + forbidden
+        require(snippet not in source_text, f"self_test_host_command_in_dos={snippet}")
     print("PROBE_OK assistant_showcase_terminal_self_test=1")
 
 
