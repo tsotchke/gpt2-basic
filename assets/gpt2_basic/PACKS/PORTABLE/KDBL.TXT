@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket L. Rebuild with scripts/build_assistant_kdb.py --write.
+limits portable intelligence answers are offline local add machine-specific facts user.txt|Portable Intelligence limits|Answers are offline and local. Add machine-specific facts to USER.TXT.
+domain weight loading hot swappable weights load behavior tiny resident shell without rebuilding whole runtime|domain weight loading|Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.

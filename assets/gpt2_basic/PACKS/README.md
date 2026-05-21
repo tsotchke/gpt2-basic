@@ -107,3 +107,18 @@ Good prompts:
 - `What should I check before release?`
 - `How can this feel modern on a 486?`
 - `What is retrieval first?`
+
+## PORTABLE
+
+Use `PORTABLE` for portable-intelligence architecture, BASIC/C/assembly ports,
+hot-swappable weights, high-velocity recall, and proof requirements for old or
+small machines. It shares `PACKS\CHAT\MODEL` and `CHAT` art but carries its own
+`PORTABLE\KB2*.BIN` recall pages generated from
+`data/assistant_pack_notes/portable`.
+
+Good prompts:
+
+- `What does portable intelligence mean?`
+- `Why is BASIC useful for teaching AI?`
+- `How could this move to C or assembly?`
+- `How should tiny machines store recall?`

@@ -1,8 +1,8 @@
 # Assistant Usefulness Evaluation
 
 Status: `PASS`
-Task pass rate: `31/31`
-Workflow coverage: `8/8`
+Task pass rate: `37/37`
+Workflow coverage: `9/9`
 
 This gate groups assistant behavior into operator workflows. It checks whether local packs can produce actionable answers from local recall without network access.
 
@@ -39,3 +39,9 @@ This gate groups assistant behavior into operator workflows. It checks whether l
 | developer pack authoring | DEV | what should i check before release | PASS |  | Names tests, logs, checksums, and tag. | KDB | 42 | Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag. |
 | fast local recall architecture | DEV | how should we store fast recall data | PASS |  | Favors compact keyworded DOS-friendly recall storage. | KDB | 45 | High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster. |
 | fast local recall architecture | DEV | what should a failure record include | PASS |  | Captures command, input, expected, actual, and log. | KDB | 39 | Failure record: Record the command, input, expected result, actual result, log path, and next experiment. |
+| portable intelligence | PORTABLE | what does portable intelligence mean | PASS |  | Frames intelligence as local weights, retrieval, memory, and offline operation. | KDB | 57 | portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network. |
+| portable intelligence | PORTABLE | why is basic useful for teaching ai | PASS |  | Explains BASIC as an inspectable learner implementation surface. | KDB | 57 | basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable. |
+| portable intelligence | PORTABLE | how could this move to c or assembly | PASS |  | Names C, assembly, Eshkol, files, arrays, and loops as the portable contract. | KDB | 15 | runtime ports: The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist. |
+| portable intelligence | PORTABLE | why do hot swappable weights matter | PASS |  | Explains domain behavior without rebuilding the resident runtime. | KDB | 45 | domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime. |
+| portable intelligence | PORTABLE | how should tiny machines store recall | PASS |  | Keeps recall compact and indexed to reduce scanned bytes. | KDB | 72 | tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering. |
+| portable intelligence | PORTABLE | what proof shows this works on old hardware | PASS |  | Requires logs, tests, QEMU or hardware captures, and visible source. | KDB | 63 | old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files. |

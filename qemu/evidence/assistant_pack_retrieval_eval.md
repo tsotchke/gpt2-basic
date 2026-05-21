@@ -1,7 +1,7 @@
 # Assistant Pack Retrieval Evaluation
 
 Status: `PASS`
-Retrieval pass rate: `36/36`
+Retrieval pass rate: `42/42`
 
 This gate checks local KDB retrieval for useful paraphrases before model generation.
 
@@ -43,3 +43,9 @@ This gate checks local KDB retrieval for useful paraphrases before model generat
 | DEV | what should i check before release | KDB | 42 | PASS |  | Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag. |
 | DEV | how should we store fast recall data | KDB | 45 | PASS |  | High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster. |
 | DEV | what should a failure record include | KDB | 39 | PASS |  | Failure record: Record the command, input, expected result, actual result, log path, and next experiment. |
+| PORTABLE | what does portable intelligence mean | KDB | 57 | PASS |  | portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network. |
+| PORTABLE | why is basic useful for teaching ai | KDB | 57 | PASS |  | basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable. |
+| PORTABLE | how could this move to c or assembly | KDB | 15 | PASS |  | runtime ports: The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist. |
+| PORTABLE | why do hot swappable weights matter | KDB | 45 | PASS |  | domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime. |
+| PORTABLE | how should tiny machines store recall | KDB | 72 | PASS |  | tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering. |
+| PORTABLE | what proof shows this works on old hardware | KDB | 63 | PASS |  | old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files. |

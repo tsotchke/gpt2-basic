@@ -1,0 +1,1 @@
+Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.

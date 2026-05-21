@@ -2197,6 +2197,11 @@ SUB AssistScriptedDemo()
     AssistPrintPackUsage g_assist_active_pack
     AssistRenderReply "How can this feel modern on a 486?", 0
 
+    AssistSelectPack "PORTABLE"
+    AssistRenderPackStatus
+    AssistPrintPackUsage g_assist_active_pack
+    AssistRenderReply "What does portable intelligence mean?", 0
+
     PRINT "ASSIST_END|packs=" + LTRIM$(STR$(g_assist_pack_count))
     AssistShutdownModel
 END SUB
@@ -2283,6 +2288,16 @@ SUB AssistStressProbe()
     AssistRenderReply "what does retrieval first mean", 1
     AssistRenderReply "how do i author a pack", 1
     AssistRenderReply "what should i check before release", 1
+
+    AssistSelectPack "PORTABLE"
+    AssistRenderPackStatus
+    AssistPreloadActivePackModel
+    AssistRenderReply "what does portable intelligence mean", 1
+    AssistRenderReply "why is basic useful for teaching ai", 1
+    AssistRenderReply "how could this move to c or assembly", 1
+    AssistRenderReply "why do hot swappable weights matter", 1
+    AssistRenderReply "how should tiny machines store recall", 1
+    AssistRenderReply "what proof shows this works on old hardware", 1
 
     PRINT "ASSIST_END|suite=stress-probe|packs=" + LTRIM$(STR$(g_assist_pack_count))
     AssistShutdownModel

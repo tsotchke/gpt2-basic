@@ -66,6 +66,12 @@ EXPECTED_CASES = (
     StressCase("DEV", "what does retrieval first mean", ("kdb", "user", "memory")),
     StressCase("DEV", "how do i author a pack", ("help", "know", "kdb", "validator")),
     StressCase("DEV", "what should i check before release", ("tests", "logs", "checksums", "tag")),
+    StressCase("PORTABLE", "what does portable intelligence mean", ("local", "model", "retrieval", "memory")),
+    StressCase("PORTABLE", "why is basic useful for teaching ai", ("basic", "arrays", "files", "integer")),
+    StressCase("PORTABLE", "how could this move to c or assembly", ("c", "assembly", "eshkol", "arrays")),
+    StressCase("PORTABLE", "why do hot swappable weights matter", ("weights", "domain", "runtime")),
+    StressCase("PORTABLE", "how should tiny machines store recall", ("compact", "indexed", "rows", "bytes")),
+    StressCase("PORTABLE", "what proof shows this works on old hardware", ("logs", "tests", "qemu", "hardware")),
 )
 
 ALLOWED_SOURCES = {"golden", "retrieval", "model", "fallback", "memory"}

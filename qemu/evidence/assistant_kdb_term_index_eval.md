@@ -1,11 +1,11 @@
 # Assistant KDB Term Index Evaluation
 
 Status: `PASS`
-Term-index recall pass rate: `36/36`
-Candidate rows scored: `217/1551`
-Candidate row ratio: `0.140`
-Term-index plus record bytes touched: `197741/647520`
-Candidate byte ratio: `0.305`
+Term-index recall pass rate: `42/42`
+Candidate rows scored: `234/1617`
+Candidate row ratio: `0.145`
+Term-index plus record bytes touched: `212565/675360`
+Candidate byte ratio: `0.315`
 
 This gate mirrors the DOS KB2TERM.TXT inverted-index fast path before KB2 bucket fallback.
 
@@ -47,3 +47,9 @@ This gate mirrors the DOS KB2TERM.TXT inverted-index fast path before KB2 bucket
 | DEV | what should i check before release | check,before,release | 4/23 | 4039/9632 | PASS |  | Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag. |
 | DEV | how should we store fast recall data | store,fast,recall,data | 3/23 | 3623/9632 | PASS |  | High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster. |
 | DEV | what should a failure record include | failure,record,include | 4/23 | 4039/9632 | PASS |  | Failure record: Record the command, input, expected result, actual result, log path, and next experiment. |
+| PORTABLE | what does portable intelligence mean | does,portable,intelligence,mean | 5/11 | 3372/4640 | PASS |  | portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network. |
+| PORTABLE | why is basic useful for teaching ai | basic,useful,teaching | 2/11 | 2124/4640 | PASS |  | basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable. |
+| PORTABLE | how could this move to c or assembly | move,assembly | 1/11 | 1708/4640 | PASS |  | runtime ports: The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist. |
+| PORTABLE | why do hot swappable weights matter | hot,swappable,weights,matter | 2/11 | 2124/4640 | PASS |  | domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime. |
+| PORTABLE | how should tiny machines store recall | tiny,machines,store,recall | 5/11 | 3372/4640 | PASS |  | tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering. |
+| PORTABLE | what proof shows this works on old hardware | proof,shows,works,old,hardware | 2/11 | 2124/4640 | PASS |  | old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files. |

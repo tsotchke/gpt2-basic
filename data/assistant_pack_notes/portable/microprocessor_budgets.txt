@@ -1,0 +1,1 @@
+Microprocessor targets need strict budgets for RAM, storage, integer operations, context length, and interface latency.

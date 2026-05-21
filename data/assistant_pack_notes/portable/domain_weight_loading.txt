@@ -1,0 +1,1 @@
+Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.

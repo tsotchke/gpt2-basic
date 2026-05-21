@@ -153,7 +153,7 @@ def capability_lines(report: str) -> list[str]:
         "Recall: KB2 binary pages, text KDB fallback, golden rows, USER.TXT notes.",
         "Memory: remembers small session facts such as name, goal, style, and last prompt.",
         "Provenance: every reply reports source, recall mode, score, and timing fields.",
-        "Stress replies: " + parse_metric(report, "Stress replies", "44") + ".",
+        "Stress replies: " + parse_metric(report, "Stress replies", "50") + ".",
         "Stress source mix: " + parse_metric(report, "Stress source mix", "golden=26 retrieval=10 memory=8") + ".",
     ]
 
@@ -170,7 +170,7 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
     term.command("ASSIST", [
         "ASSIST_COMPILE_OK",
         "ASSIST_BEGIN|suite=showcase|version=1",
-        "Available packs: CHAT DOSHELP OFFICE DEV",
+        "Available packs: CHAT DOSHELP OFFICE DEV PORTABLE",
         "Loaded model: PACKS\\CHAT\\MODEL (486dx2-usable)",
     ])
 
@@ -259,12 +259,26 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
         rows,
     )
 
+    show_prompt_group(
+        term,
+        "PORTABLE: intelligence on constrained substrates",
+        "PORTABLE",
+        [
+            "what does portable intelligence mean",
+            "why is basic useful for teaching ai",
+            "how could this move to c or assembly",
+            "how should tiny machines store recall",
+        ],
+        rows,
+    )
+
     term.title("High-velocity local recall", "KB2 binary pages plus readable KDB fallback")
     term.command("TYPE PACKS\\CHAT\\KB2IDX.TXT", [
         "CHAT: 78 rows, 23 buckets, KB2ALL.BIN + KB2?.BIN pages.",
         "DOSHELP: 26 rows, 21 buckets.",
         "OFFICE: 27 rows, 20 buckets.",
         "DEV: 23 rows, 23 buckets.",
+        "PORTABLE: 11 rows, 16 buckets.",
     ])
     term.command("TYPE PACKS\\CHAT\\KDBA.TXT", [
         "answer repeat itself|Repeat control|If I repeat, reset the prompt and ask one shorter question.",
@@ -291,11 +305,12 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
         "ASSIST_REPLY|pack=DOSHELP|source=retrieval|answer=Keep drivers high and trim TSR programs.",
         "ASSIST_REPLY|pack=OFFICE|source=golden|answer=Summary: tests passed, the tag was stale.",
         "ASSIST_REPLY|pack=DEV|source=retrieval|answer=Retrieval first answers from KDB, USER notes, and memory.",
-        "ASSIST_END|suite=stress-probe|packs=4",
+        "ASSIST_REPLY|pack=PORTABLE|source=retrieval|answer=Portable intelligence means small local weights and recall.",
+        "ASSIST_END|suite=stress-probe|packs=5",
     ])
     term.command("TYPE ASTRESS.LOG", [
-        "Reply count: 44",
-        "Source counts: golden=26 retrieval=10 model=0 fallback=0 memory=8",
+        "Reply count: 50",
+        "Source counts include PORTABLE retrieval plus CHAT session memory.",
         "Visible answers: PASS",
     ])
     term.command("TYPE MANIFEST.TXT", [
@@ -310,18 +325,19 @@ def play_showcase(stress_report: Path, capability_report: Path, speed: float) ->
     term.line("What comes next: bigger packs, persistent on-disk memory, better routing, and tighter latency budgets.", WHITE)
     term.line("Audience: builders and operators who need useful language tooling where modern cloud systems cannot run.", WHITE)
     term.line()
-    term.line("ASSIST_END|suite=showcase|packs=4", GREEN)
+    term.line("ASSIST_END|suite=showcase|packs=5", GREEN)
     term.sleep(8.0)
 
 
 def self_test() -> None:
     rows = parse_stress_report(DEFAULT_STRESS_REPORT)
     queries = row_by_query(rows)
-    require(len(rows) >= 40, "self_test_rows")
+    require(len(rows) >= 50, "self_test_rows")
     for prompt in (
         "can you explain what local inference means",
         "what do you remember",
         "how can this feel modern on a 486",
+        "what does portable intelligence mean",
     ):
         require(prompt in queries, f"self_test_missing={prompt}")
     capability_text = DEFAULT_CAPABILITY_REPORT.read_text(encoding="ascii", errors="ignore")

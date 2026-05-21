@@ -1,0 +1,4 @@
+# terms|title|body
+# Generated KDB bucket U. Rebuild with scripts/build_assistant_kdb.py --write.
+portable intelligence using ask one short question pack searches local recall first gives concise answer|Using Portable Intelligence|Ask one short question. The pack searches local recall first, then gives a concise answer.
+basic teaching useful machine intelligence because plain arrays files integer arithmetic make mechanism inspectable|basic teaching|BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.

@@ -79,7 +79,7 @@ DOC_FILES = (
     ".github/ISSUE_TEMPLATE/hardware_validation.yml",
     ".github/workflows/preview-release.yml",
 )
-TREE_DIRS = ("src", "scripts", "tests", "data/domain_curriculum", "hardware")
+TREE_DIRS = ("src", "scripts", "tests", "data/domain_curriculum", "data/assistant_pack_notes", "hardware")
 QEMU_FILE_SUFFIXES = (".sh", ".bat", ".py")
 SELECTED_EVIDENCE_NAMES = {
     "GPT2.EXE",
@@ -408,7 +408,7 @@ def write_manifest(
             "",
             "- `bin/GPT2.EXE` when current QEMU evidence includes the compiled DOS binary.",
             "- `assets/gpt2_basic/MODEL*` for the release models listed above.",
-            "- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, and DEV packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, `KB2TERM.TXT` term indexes, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.",
+            "- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, DEV, and PORTABLE packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, `KB2TERM.TXT` term indexes, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.",
             "- `src`, `scripts`, `tests`, selected `qemu` helpers, and `data/domain_curriculum` for rebuild and repair iteration.",
             "- `docs/dosbox.md` and `scripts/build_dosbox_bundle.py` for the DOSBox convenience package.",
             "- Selected QEMU and quality evidence under `qemu/evidence`.",

@@ -92,6 +92,12 @@ CASES: tuple[RetrievalCase, ...] = (
     RetrievalCase("DEV", "what should i check before release", ("tests", "logs", "checksums", "tag"), 3),
     RetrievalCase("DEV", "how should we store fast recall data", ("compact", "keyword", "dos", "faster"), 3),
     RetrievalCase("DEV", "what should a failure record include", ("command", "input", "expected", "actual", "log"), 4),
+    RetrievalCase("PORTABLE", "what does portable intelligence mean", ("local", "model", "retrieval", "memory", "network"), 3),
+    RetrievalCase("PORTABLE", "why is basic useful for teaching ai", ("basic", "arrays", "files", "integer", "inspectable"), 3),
+    RetrievalCase("PORTABLE", "how could this move to c or assembly", ("c", "assembly", "eshkol", "files", "arrays"), 3),
+    RetrievalCase("PORTABLE", "why do hot swappable weights matter", ("hot-swappable", "weights", "domain", "runtime"), 3),
+    RetrievalCase("PORTABLE", "how should tiny machines store recall", ("compact", "indexed", "rows", "bytes"), 3),
+    RetrievalCase("PORTABLE", "what proof shows this works on old hardware", ("logs", "tests", "qemu", "hardware", "source"), 3),
 )
 
 

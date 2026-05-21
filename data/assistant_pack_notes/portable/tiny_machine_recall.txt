@@ -1,0 +1,1 @@
+Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.

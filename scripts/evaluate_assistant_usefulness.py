@@ -66,6 +66,12 @@ USEFULNESS_CASES: tuple[UsefulnessCase, ...] = (
     UsefulnessCase("developer pack authoring", "DEV", "what should i check before release", "Names tests, logs, checksums, and tag.", ("tests", "logs", "checksums", "tag")),
     UsefulnessCase("fast local recall architecture", "DEV", "how should we store fast recall data", "Favors compact keyworded DOS-friendly recall storage.", ("compact", "keyword", "dos", "faster")),
     UsefulnessCase("fast local recall architecture", "DEV", "what should a failure record include", "Captures command, input, expected, actual, and log.", ("command", "input", "expected", "actual", "log"), 4),
+    UsefulnessCase("portable intelligence", "PORTABLE", "what does portable intelligence mean", "Frames intelligence as local weights, retrieval, memory, and offline operation.", ("local", "model", "retrieval", "memory", "network")),
+    UsefulnessCase("portable intelligence", "PORTABLE", "why is basic useful for teaching ai", "Explains BASIC as an inspectable learner implementation surface.", ("basic", "arrays", "files", "integer", "inspectable")),
+    UsefulnessCase("portable intelligence", "PORTABLE", "how could this move to c or assembly", "Names C, assembly, Eshkol, files, arrays, and loops as the portable contract.", ("c", "assembly", "eshkol", "files", "arrays"), 3),
+    UsefulnessCase("portable intelligence", "PORTABLE", "why do hot swappable weights matter", "Explains domain behavior without rebuilding the resident runtime.", ("hot-swappable", "weights", "domain", "runtime")),
+    UsefulnessCase("portable intelligence", "PORTABLE", "how should tiny machines store recall", "Keeps recall compact and indexed to reduce scanned bytes.", ("compact", "indexed", "rows", "bytes")),
+    UsefulnessCase("portable intelligence", "PORTABLE", "what proof shows this works on old hardware", "Requires logs, tests, QEMU or hardware captures, and visible source.", ("logs", "tests", "qemu", "hardware", "source")),
 )
 
 

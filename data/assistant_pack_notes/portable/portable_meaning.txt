@@ -1,0 +1,1 @@
+Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.

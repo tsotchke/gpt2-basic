@@ -1,0 +1,10 @@
+# key|title|body
+# Generated knowledge rows from source notes.
+basic teaching useful machine intelligence|basic teaching|BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.
+domain weight loading hot swappable weights|domain weight loading|Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.
+educational ports start retrieval small|educational ports|Educational ports should start with retrieval and small deterministic replies before adding neural generation.
+microprocessor budgets targets need strict|microprocessor budgets|Microprocessor targets need strict budgets for RAM, storage, integer operations, context length, and interface latency.
+old hardware proof needs local logs repeatable|old hardware proof|Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.
+portable meaning intelligence means small|portable meaning|Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.
+runtime ports same assistant contract can|runtime ports|The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist.
+tiny machine recall machines store compact|tiny machine recall|Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.

@@ -26,16 +26,16 @@ DEFAULT_KDB_BINARY_REPORT = ROOT / "qemu" / "evidence" / "assistant_kdb_binary_e
 DEFAULT_KDB_TERM_INDEX_REPORT = ROOT / "qemu" / "evidence" / "assistant_kdb_term_index_eval.md"
 RAW_PROMPT_MIN_CASES = 83
 GENERALIST_PROMPT_MIN_CASES = 24
-RETRIEVAL_MIN_CASES = 36
-USEFULNESS_MIN_CASES = 30
-USEFULNESS_MIN_WORKFLOWS = 8
-KDB_INDEX_MIN_CASES = 36
+RETRIEVAL_MIN_CASES = 42
+USEFULNESS_MIN_CASES = 37
+USEFULNESS_MIN_WORKFLOWS = 9
+KDB_INDEX_MIN_CASES = 42
 KDB_INDEX_MAX_SCAN_RATIO = 0.65
-KDB_BINARY_MIN_CASES = 36
+KDB_BINARY_MIN_CASES = 42
 KDB_BINARY_MAX_SCAN_RATIO = 0.65
-KDB_TERM_INDEX_MIN_CASES = 36
+KDB_TERM_INDEX_MIN_CASES = 42
 KDB_TERM_INDEX_MAX_ROW_RATIO = 0.35
-STRESS_REPLY_COUNT = 44
+STRESS_REPLY_COUNT = 50
 
 
 @dataclass(frozen=True)
@@ -96,7 +96,7 @@ def verify_pack_files(pack_root: Path) -> list[PackInfo]:
     ids = pack_ids(pack_root)
     require(len(ids) >= 3, "pack_count_lt_3")
     require(ids[0] == "CHAT", "chat_pack_not_default")
-    for expected in ("CHAT", "DOSHELP", "OFFICE", "DEV"):
+    for expected in ("CHAT", "DOSHELP", "OFFICE", "DEV", "PORTABLE"):
         require(expected in ids, f"missing_pack={expected}")
     packs: list[PackInfo] = []
     for pack_id in ids:
@@ -351,11 +351,13 @@ def verify_qemu_logs(packs: list[PackInfo], assistant_log: Path, compile_log: Pa
     require("DOSHELP pack" in assist, "doshelp_usage_missing")
     require("OFFICE pack" in assist, "office_usage_missing")
     require("DEV pack" in assist, "dev_usage_missing")
+    require("PORTABLE pack" in assist, "portable_usage_missing")
     require("You are a small friendly DOS conversation assistant. User:" not in assist, "chat_prompt_echo_in_log")
     require("ASSIST_REPLY|pack=CHAT|intent=general_chat" in assist, "chat_reply_missing")
     require("ASSIST_REPLY|pack=DOSHELP|intent=dos_memory" in assist, "doshelp_reply_missing")
     require("ASSIST_REPLY|pack=OFFICE|intent=office_rewrite" in assist, "office_reply_missing")
     require("ASSIST_REPLY|pack=DEV|intent=general_chat" in assist, "dev_reply_missing")
+    require("ASSIST_REPLY|pack=PORTABLE|intent=general_chat" in assist, "portable_reply_missing")
     require("status=model_unavailable" not in assist, "model_unavailable_in_assistant_log")
 
 
@@ -365,7 +367,7 @@ def verify_stress_logs(stress_log: Path, stress_compile_log: Path, stress_report
     report = read(stress_report)
     require("ASSIST_COMPILE_OK" in compile_text, "stress_compile_marker_missing")
     require("ASSIST_BEGIN|suite=stress-probe|version=1" in stress, "stress_begin_marker_missing")
-    require("ASSIST_END|suite=stress-probe|packs=4" in stress, "stress_end_marker_missing")
+    require("ASSIST_END|suite=stress-probe|packs=5" in stress, "stress_end_marker_missing")
     require(stress.count("ASSIST_REPLY|") == STRESS_REPLY_COUNT, "stress_reply_count_mismatch")
     require("status=model_unavailable" not in stress, "model_unavailable_in_stress_log")
     require("|query=" in stress and "|answer=" in stress, "stress_structured_answer_missing")

@@ -1,0 +1,22 @@
+PORTABLE pack
+
+Purpose:
+  Use this pack for portable intelligence questions backed by local notes.
+
+How it works:
+  The pack shares a small model by default, then retrieves concise local
+  rows from KB2TERM.TXT term indexes, compiled KB2*.BIN pages, generated
+  KDB.TXT buckets, bundled KNOW.TXT notes, and editable USER.TXT notes.
+
+How to use it:
+  Type /pack PORTABLE, then ask one short question about the notes.
+  Edit USER.TXT for machine-local overrides, or rebuild the pack from
+  source notes when bundled knowledge changes.
+
+Good prompts:
+  basic teaching useful machine intelligence
+  domain weight loading hot swappable weights
+  educational ports start retrieval small
+
+Actions:
+  explain, compare, teach, validate, cancel
