@@ -119,7 +119,7 @@ This project serves multiple purposes:
 
 4. **Bridge Between Communities**: Connects retro-computing enthusiasts with modern AI concepts, and helps AI practitioners appreciate the elegance of optimization under constraints.
 
-5. **Proof of Concept**: Demonstrates that with careful engineering, significant AI models can run on extremely limited hardware.
+5. **Practical Local AI**: Provides a working DOS runtime, assistant packs, evidence harnesses, and transfer tooling for constrained and retro systems.
 
 ## ► Comprehensive Documentation
 

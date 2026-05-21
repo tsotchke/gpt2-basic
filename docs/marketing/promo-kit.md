@@ -127,5 +127,5 @@ video tooling are not presented as DOS or Windows 95 runtime features.
 Project: GPT2-BASIC
 Repository: https://github.com/tsotchke/gpt2-basic
 Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
-Contact: Tsotchke Corporation / project owner
+Contact: GitHub issues or repository maintainer contact
 License: MIT
