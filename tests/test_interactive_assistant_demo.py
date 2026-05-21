@@ -231,6 +231,8 @@ class InteractiveAssistantDemoTests(unittest.TestCase):
 
         self.assertIn("best_score", text)
         self.assertIn("AssistRetrievalScore", text)
+        self.assertIn("AssistScanBinaryKdbTermIndex kdb_bin_path", text)
+        self.assertIn('g_assist_last_recall_mode = "kb2_term"', text)
         self.assertIn("AssistScanBucketedKdbV2 kdb_bin_path", text)
         self.assertIn("AssistScanBinaryKdbFile kdb_bin_path", text)
         self.assertIn("AssistScanBucketedKdb kdb_path", text)
