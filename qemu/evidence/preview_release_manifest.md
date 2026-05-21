@@ -5,7 +5,7 @@ Generated: `2026-05-12`
 Package tree: `gpt2-basic-preview`
 Package zip: `gpt2-basic-preview.zip`
 Package checksums: `SHA256SUMS.txt`; zip sidecar: `gpt2-basic-preview.zip.sha256`
-Package status: `592 files, 119,965,348 bytes`
+Package status: `705 files, 120,009,447 bytes`
 
 This is an iterative preview payload. It ships only strict-quality release models and assistant packs; rejected repair attempts and old candidates remain repo evidence only.
 
@@ -24,15 +24,15 @@ This is an iterative preview payload. It ships only strict-quality release model
 
 | Pack Model | Shape | Quality | Size |
 |---|---|---|---|
-| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 160/160 avg 0.999 (float, assistant-pack) | 69 files / 83,451,478 B |
-| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 63 files / 4,082,583 B |
-| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 61 files / 4,232,232 B |
+| `ASSISTANT_CHAT` | `3L 64D 4H ctx192 h256 v4096` | PASS 160/160 avg 0.999 (float, assistant-pack) | 92 files / 83,458,115 B |
+| `ASSISTANT_DOSHELP` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 85 files / 4,086,870 B |
+| `ASSISTANT_OFFICE` | `2L 48D 4H ctx192 h192 v4096` | PASS 4/4 avg 1.000 (float, assistant-pack) | 84 files / 4,236,884 B |
 
 ## Included Runtime Surface
 
 - `bin/GPT2.EXE` when current QEMU evidence includes the compiled DOS binary.
 - `assets/gpt2_basic/MODEL*` for the release models listed above.
-- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, DEV, and PORTABLE packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, `KB2TERM.TXT` term indexes, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.
+- `assets/gpt2_basic/PACKS` with CHAT, DOSHELP, OFFICE, DEV, and PORTABLE packs, per-pack `USAGE.TXT`, generated `KDB.TXT`/`KDBIDX.TXT` recall files, compiled `KB2*.BIN` recall pages, aggregate `KB2TERM.TXT` and sharded `KB2T?.TXT` term indexes, editable `USER.TXT`, pack-local models where available, and sprite/icon slots.
 - `src`, `scripts`, `tests`, selected `qemu` helpers, and `data/domain_curriculum` for rebuild and repair iteration.
 - `docs/dosbox.md` and `scripts/build_dosbox_bundle.py` for the DOSBox convenience package.
 - Selected QEMU and quality evidence under `qemu/evidence`.

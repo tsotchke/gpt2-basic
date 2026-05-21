@@ -1,0 +1,4 @@
+# term|row_ids
+# Generated KB2 term shard D. Rebuild with scripts/build_assistant_kdb.py --write.
+deterministic|6
+domain|5

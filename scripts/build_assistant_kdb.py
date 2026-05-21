@@ -122,6 +122,10 @@ def kdb2_bucket_name(bucket: str) -> str:
     return f"KB2{bucket.upper()}.BIN"
 
 
+def kdb2_term_bucket_name(bucket: str) -> str:
+    return f"KB2T{bucket.upper()}.TXT"
+
+
 def row_buckets(row: KdbRow, limit: int = 4) -> tuple[str, ...]:
     buckets: list[str] = []
     seen: set[str] = set()
@@ -245,14 +249,33 @@ def term_index_rows(pack: PackContract) -> dict[str, list[int]]:
 
 def render_kdb2_term_index_files(pack: PackContract) -> dict[str, str]:
     terms = term_index_rows(pack)
-    lines = [
+    files: dict[str, str] = {}
+    aggregate_lines = [
         "# term|row_ids",
         "# Generated KB2 term index. Rebuild with scripts/build_assistant_kdb.py --write.",
     ]
     for term in sorted(terms):
         ids = ",".join(str(row_id) for row_id in terms[term])
-        lines.append(f"{term}|{ids}")
-    return {KDB2_TERM_INDEX_NAME: "\n".join(lines) + "\n"}
+        aggregate_lines.append(f"{term}|{ids}")
+    files[KDB2_TERM_INDEX_NAME] = "\n".join(aggregate_lines) + "\n"
+
+    for bucket in BUCKET_CHARS:
+        shard_terms = [
+            term
+            for term in sorted(terms)
+            if term and term[0].upper() == bucket
+        ]
+        if not shard_terms:
+            continue
+        lines = [
+            "# term|row_ids",
+            f"# Generated KB2 term shard {bucket}. Rebuild with scripts/build_assistant_kdb.py --write.",
+        ]
+        for term in shard_terms:
+            ids = ",".join(str(row_id) for row_id in terms[term])
+            lines.append(f"{term}|{ids}")
+        files[kdb2_term_bucket_name(bucket)] = "\n".join(lines) + "\n"
+    return files
 
 
 def render_bucket_files(pack: PackContract) -> dict[str, str]:
@@ -409,6 +432,8 @@ def self_test() -> None:
     term_index = render_kdb2_term_index_files(pack)
     assert KDB2_TERM_INDEX_NAME in term_index
     assert "better|" in term_index[KDB2_TERM_INDEX_NAME]
+    assert "KB2TB.TXT" in term_index
+    assert "better|" in term_index["KB2TB.TXT"]
     print("PROBE_OK assistant_kdb_self_test=1")
 
 

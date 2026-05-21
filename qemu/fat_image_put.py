@@ -219,7 +219,19 @@ class FATImage:
                 return offset
         if is_root:
             raise IOError("root directory is full")
-        raise IOError("subdirectory is full")
+        return self.cluster_offset(self.extend_directory(cluster))
+
+    def extend_directory(self, cluster: int | None) -> int:
+        if cluster is None:
+            raise IOError("root directory is full")
+        chain = self.cluster_chain(cluster)
+        if not chain:
+            raise IOError("subdirectory has no cluster chain")
+        new_cluster = self.alloc_clusters(1)[0]
+        self.fat_set(chain[-1], new_cluster)
+        self.fat_set(new_cluster, self.end_marker)
+        self._write_at(self.cluster_offset(new_cluster), b"\x00" * self.cluster_size)
+        return new_cluster
 
     def write_entry(self, dir_cluster: int | None, name: str, attr: int, start_cluster: int, size: int) -> None:
         slot = self.free_slot(dir_cluster)
@@ -373,6 +385,12 @@ def self_test() -> None:
                 pass
             else:
                 raise AssertionError("put_tree left stale file in replacement directory")
+            many_source = tmp_path / "many"
+            many_source.mkdir()
+            for index in range(24):
+                (many_source / f"F{index:02d}.TMP").write_bytes(f"many {index}\n".encode("ascii"))
+            put_tree(image, many_source, "MANY")
+            assert image.read_file("MANY/F23.TMP") == b"many 23\n"
         finally:
             image.close()
     print("trace_scope fat_image_contract")
@@ -387,6 +405,7 @@ def self_test() -> None:
     print("trace FATImage.list_dir")
     print("trace FATImage.find_entry")
     print("trace FATImage.free_slot")
+    print("trace FATImage.extend_directory")
     print("trace FATImage.write_entry")
     print("trace FATImage.mkdir_at")
     print("trace FATImage.resolve_parent")

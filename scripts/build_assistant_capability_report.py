@@ -99,13 +99,14 @@ def pack_stats(pack_root: Path) -> list[PackStats]:
             if path.name.upper() != "KB2ALL.BIN"
         ]
         all_kb2_files = list(root.glob("KB2*.BIN"))
+        term_index_files = list(root.glob("KB2T*.TXT"))
         rows.append(
             PackStats(
                 pack_id=pack_id,
                 rows=kdb_row_count(root / "KDB.TXT"),
                 buckets=len(kb2_files),
                 binary_bytes=sum(path.stat().st_size for path in all_kb2_files),
-                term_index_bytes=(root / "KB2TERM.TXT").stat().st_size,
+                term_index_bytes=sum(path.stat().st_size for path in term_index_files),
             )
         )
     return rows
@@ -187,9 +188,9 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
         "## Recall And Storage",
         "",
         "- Text KDB remains the readable source/fallback format: `KDB.TXT`, `KDBIDX.TXT`, and `KDB?.TXT`.",
-        "- Compiled KB2 recall ships for each pack: `KB2ALL.BIN`, `KB2IDX.TXT`, `KB2?.BIN`, and `KB2TERM.TXT`.",
+        "- Compiled KB2 recall ships for each pack: `KB2ALL.BIN`, `KB2IDX.TXT`, `KB2?.BIN`, aggregate `KB2TERM.TXT`, and sharded `KB2T?.TXT` term indexes.",
         "- KB2 files use fixed-width records for 486-friendly sequential reads and avoid reparsing large text rows during recall.",
-        "- `KB2TERM.TXT` is a compact per-pack inverted term index. The DOS runtime scores likely row IDs first, then falls back to binary buckets and finally text KDB recall.",
+        "- `KB2T?.TXT` shards are compact per-pack inverted term indexes. The DOS runtime opens the strongest relevant term shard first, then falls back to `KB2TERM.TXT`, binary buckets, and finally text KDB recall.",
         "- Current compiled KB2 payload sizes:",
         *stats_lines,
         f"- Binary recall evaluation: `PASS {report_line(kdb_binary, 'Binary recall pass rate')}`.",
@@ -248,7 +249,7 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
         "- `--target user` writes machine-local notes without changing bundled pack knowledge.",
         "- `--target know --rebuild-kdb` updates bundled pack knowledge and regenerates KDB/KB2 artifacts.",
         "- `scripts/create_assistant_pack.py` can create a complete lightweight pack from a folder of ASCII notes, sharing `PACKS\\CHAT\\MODEL` by default.",
-        "- The pack generator writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated KDB buckets, compiled KB2 pages, and `KB2TERM.TXT`.",
+        "- The pack generator writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated KDB buckets, compiled KB2 pages, aggregate `KB2TERM.TXT`, and `KB2T?.TXT` shards.",
         "- Authoring validator checks required pack files, source rows, generated text KDB, generated binary KDB, and model references.",
         "",
         "## Release Payload",
@@ -270,7 +271,7 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
         "",
         "## Next Production Targets",
         "",
-        "- Convert `KB2TERM.TXT` into an even denser binary term index once the text format has stabilized under real authoring changes.",
+        "- Convert the `KB2T?.TXT` shard rows into an even denser binary term index once the text format has stabilized under real authoring changes.",
         "- Add larger domain packs with the same KB2 contract, especially hardware repair, programming, office workflows, and offline reference manuals.",
         "- Add a compact on-disk conversation database so memory persists across sessions while remaining inspectable and editable.",
         "- Add a pack-selection router so the shell can recommend or switch packs from query intent.",

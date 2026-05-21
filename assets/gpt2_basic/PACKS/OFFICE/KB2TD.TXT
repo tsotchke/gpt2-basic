@@ -1,0 +1,14 @@
+# term|row_ids
+# Generated KB2 term shard D. Rebuild with scripts/build_assistant_kdb.py --write.
+date|18,21
+dates|4,16,19
+decision|11,23
+decisions|4,16
+define|25
+details|6
+direct|2,7,12,22
+docs|24
+done|15
+dropping|4
+due|21
+duplicate|5

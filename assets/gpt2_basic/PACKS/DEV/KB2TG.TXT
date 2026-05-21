@@ -1,0 +1,9 @@
+# term|row_ids
+# Generated KB2 term shard G. Rebuild with scripts/build_assistant_kdb.py --write.
+gate|16
+gates|10,19
+generated|18,23
+goal|7
+golden|12
+good|5
+grows|21

@@ -18,6 +18,7 @@ asking|5
 asset|65
 assets|14,29
 assistant|3,35,56,77
+bad|58
 because|12
 becomes|55
 before|14,15
@@ -212,12 +213,12 @@ proof|57,65
 put|76
 qemu|57
 question|5,6,9,13,23,24,33,53,58,59,67
-questions|76
+questions|52,76
 quick|55
 reach|44
 reads|11,18
 real|51
-recover|46
+recover|46,58
 recovery|58
 relax|41
 release|14,29,65

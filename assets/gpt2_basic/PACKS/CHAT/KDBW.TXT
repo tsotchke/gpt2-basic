@@ -6,7 +6,6 @@ story short tiny model woke inside dos answered one prompt time|Short story|A ti
 thanks are welcome|Thanks|You are welcome.
 worry help name choose one step|Worry help|Name the worry, then choose one step.
 goal meaning something want reach|Goal meaning|A goal is something you want to reach.
-mistake recovery answer wrong ask shorter question switch packs give exact error|Mistake recovery|If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
 offline work means answer must come local files memory model weights|Offline work|Offline means the answer must come from local files, memory, and model weights.
 plan work planning break job small steps blocking step first verify result|Planning work|Break the job into small steps, do the blocking step first, and verify each result.
 explain simply simple explanation plain words one example short answer fits prompt|Simple explanation|Use plain words, one example, and a short answer that fits the prompt.

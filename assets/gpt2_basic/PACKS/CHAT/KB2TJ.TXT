@@ -1,0 +1,4 @@
+# term|row_ids
+# Generated KB2 term shard J. Rebuild with scripts/build_assistant_kdb.py --write.
+job|69
+joke|60

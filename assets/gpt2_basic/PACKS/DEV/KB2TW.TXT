@@ -1,0 +1,7 @@
+# term|row_ids
+# Generated KB2 term shard W. Rebuild with scripts/build_assistant_kdb.py --write.
+weights|9,11
+wording|22
+worked|5
+workload|6
+write|19

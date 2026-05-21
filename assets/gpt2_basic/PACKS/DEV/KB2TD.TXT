@@ -1,0 +1,11 @@
+# term|row_ids
+# Generated KB2 term shard D. Rebuild with scripts/build_assistant_kdb.py --write.
+data|7,21
+database|13,14
+databases|9
+debug|1
+debugging|1
+design|10
+disk|18
+domain|11
+dos|13,17

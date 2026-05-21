@@ -6,11 +6,12 @@ Purpose:
 
 How it works:
   The pack loads PACKS\OFFICE\MODEL and retrieves writing rules from
-  KB2TERM.TXT term indexes and compiled KB2*.BIN pages before using generated
-  KDB.TXT and KDB?.TXT buckets as readable fallback. KDB.TXT, KDBIDX.TXT,
-  KB2ALL.BIN, KB2IDX.TXT, KB2?.BIN, and KB2TERM.TXT are built from HELP.TXT
-  and KNOW.TXT. USER.TXT can hold local house style notes. It behaves like a small
-  DOS office assistant with action buttons.
+  KB2T?.TXT shard indexes, aggregate KB2TERM.TXT, and compiled KB2*.BIN pages
+  before using generated KDB.TXT and KDB?.TXT buckets as readable fallback.
+  KDB.TXT, KDBIDX.TXT, KB2ALL.BIN, KB2IDX.TXT, KB2?.BIN, KB2TERM.TXT, and
+  KB2T?.TXT are built from HELP.TXT and KNOW.TXT. USER.TXT can hold local
+  house style notes. It behaves like a small DOS office assistant with action
+  buttons.
 
 How to use it:
   Type /pack OFFICE, then paste or describe the text task.

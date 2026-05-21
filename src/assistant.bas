@@ -137,8 +137,10 @@ DECLARE FUNCTION AssistKdbBucketPath(kdb_path AS STRING, bucket_char AS STRING) 
 DECLARE SUB AssistScanBucketedKdb(kdb_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistKdbV2BucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS STRING
 DECLARE FUNCTION AssistKdbV2TermPath(kdb_bin_path AS STRING) AS STRING
+DECLARE FUNCTION AssistKdbV2TermBucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS STRING
 DECLARE FUNCTION AssistTermCandidateSeen(candidate_ids() AS LONG, candidate_count AS INTEGER, row_id AS LONG) AS INTEGER
 DECLARE SUB AssistAddTermCandidate(candidate_ids() AS LONG, BYREF candidate_count AS INTEGER, row_id AS LONG)
+DECLARE SUB AssistScanTermCandidateFile(term_path AS STRING, terms AS STRING, candidate_ids() AS LONG, BYREF candidate_count AS INTEGER)
 DECLARE SUB AssistScoreBinaryKdbRecord(file_num AS INTEGER, row_offset AS LONG, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
@@ -1160,6 +1162,31 @@ FUNCTION AssistKdbV2TermPath(kdb_bin_path AS STRING) AS STRING
     RETURN prefix + "KB2TERM.TXT"
 END FUNCTION
 
+FUNCTION AssistKdbV2TermBucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS STRING
+    DIM i AS INTEGER
+    DIM last_sep AS INTEGER
+    DIM ch AS STRING
+    DIM prefix AS STRING
+    DIM bucket AS STRING
+
+    kdb_bin_path = AssistTrimFixed(kdb_bin_path)
+
+    last_sep = 0
+    FOR i = 1 TO LEN(kdb_bin_path)
+        ch = MID$(kdb_bin_path, i, 1)
+        IF ch = "\" OR ch = "/" THEN last_sep = i
+    NEXT i
+
+    IF last_sep > 0 THEN
+        prefix = LEFT$(kdb_bin_path, last_sep)
+    ELSE
+        prefix = ""
+    END IF
+    bucket = UCASE$(LEFT$(bucket_char, 1))
+    IF bucket = "" THEN bucket = "0"
+    RETURN prefix + "KB2T" + bucket + ".TXT"
+END FUNCTION
+
 FUNCTION AssistTermCandidateSeen(candidate_ids() AS LONG, candidate_count AS INTEGER, row_id AS LONG) AS INTEGER
     DIM i AS INTEGER
 
@@ -1175,6 +1202,59 @@ SUB AssistAddTermCandidate(candidate_ids() AS LONG, BYREF candidate_count AS INT
     IF AssistTermCandidateSeen(candidate_ids(), candidate_count, row_id) <> 0 THEN RETURN
     candidate_ids(candidate_count) = row_id
     candidate_count = candidate_count + 1
+END SUB
+
+SUB AssistScanTermCandidateFile(term_path AS STRING, terms AS STRING, candidate_ids() AS LONG, BYREF candidate_count AS INTEGER)
+    DIM term_file AS INTEGER
+    DIM line_text AS STRING
+    DIM pipe_pos AS INTEGER
+    DIM term_text AS STRING
+    DIM ids_text AS STRING
+    DIM comma_pos AS INTEGER
+    DIM id_part AS STRING
+    DIM row_id AS LONG
+    DIM term_file_open AS INTEGER
+
+    term_path = AssistTrimFixed(term_path)
+    IF term_path = "" OR DIR(term_path) = "" THEN RETURN
+
+    term_file = FREEFILE
+    ON ERROR GOTO assist_scan_term_candidate_error
+    OPEN term_path FOR INPUT AS #term_file
+    term_file_open = 1
+    ON ERROR GOTO 0
+    WHILE NOT EOF(term_file)
+        LINE INPUT #term_file, line_text
+        line_text = TRIM$(line_text)
+        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" THEN
+            pipe_pos = INSTR(line_text, "|")
+            IF pipe_pos > 1 THEN
+                term_text = LCASE$(TRIM$(LEFT$(line_text, pipe_pos - 1)))
+                IF INSTR(terms, "," + term_text + ",") > 0 THEN
+                    ids_text = TRIM$(MID$(line_text, pipe_pos + 1))
+                    WHILE ids_text <> ""
+                        comma_pos = INSTR(ids_text, ",")
+                        IF comma_pos > 0 THEN
+                            id_part = LEFT$(ids_text, comma_pos - 1)
+                            ids_text = MID$(ids_text, comma_pos + 1)
+                        ELSE
+                            id_part = ids_text
+                            ids_text = ""
+                        END IF
+                        row_id = VAL(TRIM$(id_part))
+                        AssistAddTermCandidate candidate_ids(), candidate_count, row_id
+                    WEND
+                END IF
+            END IF
+        END IF
+    WEND
+    CLOSE #term_file
+    RETURN
+
+assist_scan_term_candidate_error:
+    ON ERROR GOTO 0
+    IF term_file_open <> 0 THEN CLOSE #term_file
+    RETURN
 END SUB
 
 SUB AssistScoreBinaryKdbRecord(file_num AS INTEGER, row_offset AS LONG, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
@@ -1207,13 +1287,11 @@ SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, 
     DIM ch AS STRING
     DIM terms AS STRING
     DIM term_path AS STRING
-    DIM term_file AS INTEGER
-    DIM line_text AS STRING
-    DIM pipe_pos AS INTEGER
-    DIM term_text AS STRING
-    DIM ids_text AS STRING
-    DIM comma_pos AS INTEGER
-    DIM id_part AS STRING
+    DIM shard_path AS STRING
+    DIM bucket AS STRING
+    DIM primary_bucket AS STRING
+    DIM word_len AS INTEGER
+    DIM primary_len AS INTEGER
     DIM candidate_ids(0 TO ASSIST_MAX_TERM_CANDIDATES - 1) AS LONG
     DIM candidate_count AS INTEGER
     DIM row_id AS LONG
@@ -1223,7 +1301,6 @@ SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, 
     DIM file_bytes AS LONG
     DIM row_count AS LONG
     DIM row_offset AS LONG
-    DIM term_file_open AS INTEGER
     DIM bin_file_open AS INTEGER
 
     kdb_bin_path = AssistTrimFixed(kdb_bin_path)
@@ -1254,41 +1331,45 @@ SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, 
 
     IF terms = "," THEN RETURN
 
-    term_path = AssistKdbV2TermPath(kdb_bin_path)
-    IF term_path = "" OR DIR(term_path) = "" THEN RETURN
+    primary_bucket = ""
+    primary_len = 0
+    word_text = ""
+    FOR i = 1 TO LEN(query_lower) + 1
+        IF i <= LEN(query_lower) THEN
+            ch = MID$(query_lower, i, 1)
+        ELSE
+            ch = " "
+        END IF
 
-    term_file = FREEFILE
-    ON ERROR GOTO assist_scan_term_index_error
-    OPEN term_path FOR INPUT AS #term_file
-    term_file_open = 1
-    ON ERROR GOTO 0
-    WHILE NOT EOF(term_file)
-        LINE INPUT #term_file, line_text
-        line_text = TRIM$(line_text)
-        IF line_text <> "" AND LEFT$(line_text, 1) <> "#" THEN
-            pipe_pos = INSTR(line_text, "|")
-            IF pipe_pos > 1 THEN
-                term_text = LCASE$(TRIM$(LEFT$(line_text, pipe_pos - 1)))
-                IF INSTR(terms, "," + term_text + ",") > 0 THEN
-                    ids_text = TRIM$(MID$(line_text, pipe_pos + 1))
-                    WHILE ids_text <> ""
-                        comma_pos = INSTR(ids_text, ",")
-                        IF comma_pos > 0 THEN
-                            id_part = LEFT$(ids_text, comma_pos - 1)
-                            ids_text = MID$(ids_text, comma_pos + 1)
-                        ELSE
-                            id_part = ids_text
-                            ids_text = ""
-                        END IF
-                        row_id = VAL(TRIM$(id_part))
-                        AssistAddTermCandidate candidate_ids(), candidate_count, row_id
-                    WEND
+        IF (ch >= "a" AND ch <= "z") OR (ch >= "0" AND ch <= "9") THEN
+            word_text = word_text + ch
+        ELSE
+            IF LEN(word_text) >= 3 AND AssistIsRetrievalStopword(word_text) = 0 THEN
+                bucket = UCASE$(LEFT$(word_text, 1))
+                word_len = LEN(word_text)
+                IF bucket = primary_bucket THEN
+                    IF word_len > primary_len THEN primary_len = word_len
+                ELSEIF word_len > primary_len THEN
+                    primary_bucket = bucket
+                    primary_len = word_len
                 END IF
             END IF
+            word_text = ""
         END IF
-    WEND
-    CLOSE #term_file
-    term_file_open = 0
+    NEXT i
+
+    IF primary_bucket <> "" THEN
+        shard_path = AssistKdbV2TermBucketPath(kdb_bin_path, primary_bucket)
+        IF shard_path <> "" AND DIR(shard_path) <> "" THEN
+            AssistScanTermCandidateFile shard_path, terms, candidate_ids(), candidate_count
+        END IF
+    END IF
+
+    IF candidate_count = 0 THEN
+        term_path = AssistKdbV2TermPath(kdb_bin_path)
+        IF term_path = "" OR DIR(term_path) = "" THEN RETURN
+        AssistScanTermCandidateFile term_path, terms, candidate_ids(), candidate_count
+    END IF
 
     IF candidate_count = 0 THEN RETURN
 
@@ -1330,7 +1411,6 @@ SUB AssistScanBinaryKdbTermIndex(kdb_bin_path AS STRING, query_lower AS STRING, 
 
 assist_scan_term_index_error:
     ON ERROR GOTO 0
-    IF term_file_open <> 0 THEN CLOSE #term_file
     IF bin_file_open <> 0 THEN CLOSE #file_num
     RETURN
 END SUB

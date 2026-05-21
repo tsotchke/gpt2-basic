@@ -2,4 +2,5 @@
 # Generated KDB bucket Q. Rebuild with scripts/build_assistant_kdb.py --write.
 prompt meaning typed question|Prompt meaning|A prompt is your typed question.
 long question prompt limit short prompts work better dos demo|Long prompt limit|Short prompts work better in this DOS demo.
+ask better questions prompts say goal give one detail next useful step|Better prompts|Say the goal, give one detail, and ask for the next useful step.
 clarify question request ask one direct only missing detail blocks useful answer|Clarify a request|Ask one direct question only when a missing detail blocks a useful answer.

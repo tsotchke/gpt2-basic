@@ -1,0 +1,26 @@
+# term|row_ids
+# Generated KB2 term shard C. Rebuild with scripts/build_assistant_kdb.py --write.
+capture|12,21
+change|19
+changes|5
+check|14
+checklist|12
+checkpoint|5
+checks|4
+checksum|25
+checksums|22,25
+choices|24
+clear|4,14
+command|15,18
+commands|3,7
+compare|22,25
+compatibility|10,16
+compile|21,26
+config|2,16
+config.sys|1,2,3,7,16,17
+conventional|1,8,23
+copied|21
+copy|11,18,22
+copy-back|12
+cwsdpmi|11,18,26
+cwsdpmi.exe|6,9,18

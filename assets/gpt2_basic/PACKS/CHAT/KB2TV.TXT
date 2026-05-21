@@ -1,0 +1,5 @@
+# term|row_ids
+# Generated KB2 term shard V. Rebuild with scripts/build_assistant_kdb.py --write.
+verify|69
+vintage|25
+visible|22,57

@@ -1,0 +1,8 @@
+# term|row_ids
+# Generated KB2 term shard P. Rebuild with scripts/build_assistant_kdb.py --write.
+pack|2
+plain|4
+portable|1,2,3,9
+ports|6,10
+processors|11
+proof|8

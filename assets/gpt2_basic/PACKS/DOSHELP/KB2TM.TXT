@@ -1,0 +1,11 @@
+# term|row_ids
+# Generated KB2 term shard M. Rebuild with scripts/build_assistant_kdb.py --write.
+machines|13
+maximum|10
+memory|1,8,23
+menu|24
+messages|4
+missing|18
+model|4,5,11
+modest|1,16
+mount|19

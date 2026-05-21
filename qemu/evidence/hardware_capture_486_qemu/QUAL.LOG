@@ -38,7 +38,7 @@ Production model initialization complete.
 
   Arithmetic  : Q20.12 fixed-point
 
-Generated  35 tokens in 0.7599999904632568 seconds (46.05263215683174 tokens/sec)
+Generated  35 tokens in 0.8199999332427979 seconds (42.68293030413781 tokens/sec)
 
 
 
@@ -82,7 +82,7 @@ QUALITY_PROMPT_END|486_target
 
 QUALITY_PROMPT_BEGIN|dos_model|DOS language models need
 
-Generated  59 tokens in 1.210000038146973 seconds (48.76032904127361 tokens/sec)
+Generated  59 tokens in 1.319999933242798 seconds (44.69697195745817 tokens/sec)
 
 
 
@@ -126,7 +126,7 @@ QUALITY_PROMPT_END|basic_runtime
 
 QUALITY_PROMPT_BEGIN|optimization|To improve performance on real hardware
 
-Generated  45 tokens in 0.929999828338623 seconds (48.38710570558838 tokens/sec)
+Generated  45 tokens in 0.9300000667572021 seconds (48.38709330087423 tokens/sec)
 
 
 
@@ -170,7 +170,7 @@ QUALITY_PROMPT_END|heldout_cache
 
 QUALITY_PROMPT_BEGIN|heldout_timing|How should a DOS model report timing?
 
-Generated  43 tokens in 0.940000057220459 seconds (45.74467806645588 tokens/sec)
+Generated  43 tokens in 0.8799998760223389 seconds (48.8636432477275 tokens/sec)
 
 
 
@@ -192,7 +192,7 @@ QUALITY_PROMPT_END|heldout_timing
 
 QUALITY_PROMPT_BEGIN|heldout_limits|What limits a tiny transformer on old PCs?
 
-Generated  35 tokens in 0.7200000286102295 seconds (48.61110917947918 tokens/sec)
+Generated  35 tokens in 0.7699999809265137 seconds (45.45454658048919 tokens/sec)
 
 
 
@@ -214,7 +214,7 @@ QUALITY_PROMPT_END|heldout_limits
 
 QUALITY_PROMPT_BEGIN|heldout_fixed_point|Describe fixed point inference in one sentence
 
-Generated  44 tokens in 0.869999885559082 seconds (50.57471929634173 tokens/sec)
+Generated  44 tokens in 0.8700001239776611 seconds (50.57470543662794 tokens/sec)
 
 
 
@@ -236,7 +236,7 @@ QUALITY_PROMPT_END|heldout_fixed_point
 
 QUALITY_PROMPT_BEGIN|heldout_profiles|Why compare model profiles before choosing one?
 
-Generated  55 tokens in 1.100000143051147 seconds (49.99999349767596 tokens/sec)
+Generated  55 tokens in 1.099999904632568 seconds (50.00000433488363 tokens/sec)
 
 
 

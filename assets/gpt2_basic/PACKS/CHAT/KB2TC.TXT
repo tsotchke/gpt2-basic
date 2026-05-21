@@ -1,0 +1,30 @@
+# term|row_ids
+# Generated KB2 term shard C. Rebuild with scripts/build_assistant_kdb.py --write.
+calling|14
+cannot|19,31,74
+care|42,49
+change|20
+changing|15
+chat|3,62
+check|2,14,20,22,29
+checklist|29
+checksums|14,29,65,77
+choices|49
+choose|15,21,40,66,68
+clarify|33,67
+clear|5,75
+combines|56
+come|63
+comes|31,49,57
+command|10
+compare|68
+computer|12,25,55
+concrete|78
+confidence|72
+confused|33
+continue|53
+control|9,28
+conversation|1,34,62
+copies|73
+course|15
+creative|60

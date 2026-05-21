@@ -1,0 +1,6 @@
+# term|row_ids
+# Generated KB2 term shard Q. Rebuild with scripts/build_assistant_kdb.py --write.
+qemu|57
+question|5,6,9,13,23,24,33,53,58,59,67
+questions|52,76
+quick|55

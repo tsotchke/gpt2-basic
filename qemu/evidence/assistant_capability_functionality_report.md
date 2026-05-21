@@ -17,23 +17,23 @@ This report is generated from repository evidence files by `scripts/build_assist
 ## Recall And Storage
 
 - Text KDB remains the readable source/fallback format: `KDB.TXT`, `KDBIDX.TXT`, and `KDB?.TXT`.
-- Compiled KB2 recall ships for each pack: `KB2ALL.BIN`, `KB2IDX.TXT`, `KB2?.BIN`, and `KB2TERM.TXT`.
+- Compiled KB2 recall ships for each pack: `KB2ALL.BIN`, `KB2IDX.TXT`, `KB2?.BIN`, aggregate `KB2TERM.TXT`, and sharded `KB2T?.TXT` term indexes.
 - KB2 files use fixed-width records for 486-friendly sequential reads and avoid reparsing large text rows during recall.
-- `KB2TERM.TXT` is a compact per-pack inverted term index. The DOS runtime scores likely row IDs first, then falls back to binary buckets and finally text KDB recall.
+- `KB2T?.TXT` shards are compact per-pack inverted term indexes. The DOS runtime opens the strongest relevant term shard first, then falls back to `KB2TERM.TXT`, binary buckets, and finally text KDB recall.
 - Current compiled KB2 payload sizes:
-  - `CHAT`: 78 rows, 23 buckets, 159616 binary bytes, 4280 term-index bytes.
-  - `DOSHELP`: 26 rows, 21 buckets, 55488 binary bytes, 2193 term-index bytes.
-  - `OFFICE`: 27 rows, 20 buckets, 57504 binary bytes, 2458 term-index bytes.
-  - `DEV`: 23 rows, 23 buckets, 49376 binary bytes, 2375 term-index bytes.
-  - `PORTABLE`: 11 rows, 16 buckets, 23968 binary bytes, 1292 term-index bytes.
+  - `CHAT`: 78 rows, 23 buckets, 159616 binary bytes, 10744 term-index bytes.
+  - `DOSHELP`: 26 rows, 21 buckets, 55488 binary bytes, 6446 term-index bytes.
+  - `OFFICE`: 27 rows, 20 buckets, 57504 binary bytes, 7074 term-index bytes.
+  - `DEV`: 23 rows, 23 buckets, 49376 binary bytes, 6908 term-index bytes.
+  - `PORTABLE`: 11 rows, 16 buckets, 23968 binary bytes, 4644 term-index bytes.
 - Binary recall evaluation: `PASS 42/42`.
 - Binary candidate row scan ratio: `0.531`.
 - Binary candidate byte ratio: `0.688`.
 - Term-index recall evaluation: `PASS 42/42`.
-- Term-index candidate row scan ratio: `0.145`.
-- Term-index candidate byte ratio: `0.315`.
+- Term-index candidate row scan ratio: `0.070`.
+- Term-index candidate byte ratio: `0.105`.
 - QEMU recall benchmark: `PASS 42 cases`.
-- QEMU recall average retrieval time: `61 ms`.
+- QEMU recall average retrieval time: `60 ms`.
 - QEMU recall max retrieval time: `110 ms`.
 - QEMU recall modes: `kb2_term=42`.
 
@@ -59,8 +59,8 @@ Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
 - Stress QEMU run: `PASS`, reached `ASSIST_END|suite=stress-probe|packs=5`.
 - Stress replies: `50`.
 - Stress source mix: `golden=26 retrieval=16 model=0 fallback=0 memory=8`.
-- Average total reply time in the stress report: `134 ms`.
-- Average retrieval time in the stress report: `80 ms`.
+- Average total reply time in the stress report: `121 ms`.
+- Average retrieval time in the stress report: `69 ms`.
 - Recall modes in the stress report: `kb2_bucket=3 kb2_term=46 none=1`.
 - Visible-answer validation: `PASS`.
 
@@ -73,7 +73,7 @@ Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
 - Hardware-capture average total reply time: `28 ms`.
 - Hardware-capture average retrieval time: `24 ms`.
 - Hardware-capture recall benchmark: `PASS 42 cases`.
-- Hardware-capture recall average retrieval time: `82 ms`.
+- Hardware-capture recall average retrieval time: `11 ms`.
 - Physical machine capture status: PENDING: no staged physical `hardware_<machine>_manifest.md` capture is present yet.
 
 ## Authoring And Import
@@ -82,7 +82,7 @@ Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
 - `--target user` writes machine-local notes without changing bundled pack knowledge.
 - `--target know --rebuild-kdb` updates bundled pack knowledge and regenerates KDB/KB2 artifacts.
 - `scripts/create_assistant_pack.py` can create a complete lightweight pack from a folder of ASCII notes, sharing `PACKS\CHAT\MODEL` by default.
-- The pack generator writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated KDB buckets, compiled KB2 pages, and `KB2TERM.TXT`.
+- The pack generator writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated KDB buckets, compiled KB2 pages, aggregate `KB2TERM.TXT`, and `KB2T?.TXT` shards.
 - Authoring validator checks required pack files, source rows, generated text KDB, generated binary KDB, and model references.
 
 ## Release Payload
@@ -104,7 +104,7 @@ Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
 
 ## Next Production Targets
 
-- Convert `KB2TERM.TXT` into an even denser binary term index once the text format has stabilized under real authoring changes.
+- Convert the `KB2T?.TXT` shard rows into an even denser binary term index once the text format has stabilized under real authoring changes.
 - Add larger domain packs with the same KB2 contract, especially hardware repair, programming, office workflows, and offline reference manuals.
 - Add a compact on-disk conversation database so memory persists across sessions while remaining inspectable and editable.
 - Add a pack-selection router so the shell can recommend or switch packs from query intent.

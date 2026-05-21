@@ -38,29 +38,29 @@ ASSIST_PACK|id=CHAT|title=Conversation Pack|model=PACKS\CHAT\MODEL|sprite=PACKS\
 
 
 
-ASSIST_RECALL|pack=CHAT|query=how can i ask better questions|recall=kb2_term|recall_score=33|t_retrieve_ms=110|answer=Better prompts: Say the goal, give one detail, and ask for the next useful step.
+ASSIST_RECALL|pack=CHAT|query=how can i ask better questions|recall=kb2_term|recall_score=45|t_retrieve_ms=0|answer=Better prompts: Say the goal, give one detail, and ask for the next useful step.
 
-ASSIST_RECALL|pack=CHAT|query=what makes this intelligent on a small computer|recall=kb2_term|recall_score=36|t_retrieve_ms=110|answer=Small-computer usefulness: A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network.
+ASSIST_RECALL|pack=CHAT|query=what makes this intelligent on a small computer|recall=kb2_term|recall_score=36|t_retrieve_ms=60|answer=Small-computer usefulness: A tiny local model becomes more useful with retrieval, memory, and quick focused help without a network.
 
-ASSIST_RECALL|pack=CHAT|query=which pack should i use for writing|recall=kb2_term|recall_score=36|t_retrieve_ms=50|answer=Pack switching: Use CHAT for conversation, DOSHELP for DOS setup, and OFFICE for writing tasks.
+ASSIST_RECALL|pack=CHAT|query=which pack should i use for writing|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Pack switching: Use CHAT for conversation, DOSHELP for DOS setup, and OFFICE for writing tasks.
 
-ASSIST_RECALL|pack=CHAT|query=can this work without the internet|recall=kb2_term|recall_score=33|t_retrieve_ms=110|answer=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.
+ASSIST_RECALL|pack=CHAT|query=can this work without the internet|recall=kb2_term|recall_score=33|t_retrieve_ms=0|answer=Network limit: I cannot browse the internet from DOS; I answer from local model weights and pack files.
 
-ASSIST_RECALL|pack=CHAT|query=how do i recover from a bad answer|recall=kb2_term|recall_score=33|t_retrieve_ms=110|answer=Mistake recovery: If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
+ASSIST_RECALL|pack=CHAT|query=how do i recover from a bad answer|recall=kb2_term|recall_score=45|t_retrieve_ms=50|answer=Mistake recovery: If an answer is wrong, ask a shorter question, switch packs, or give the exact error.
 
-ASSIST_RECALL|pack=CHAT|query=what proof helps me trust this|recall=kb2_term|recall_score=36|t_retrieve_ms=60|answer=Trust evidence: Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs.
+ASSIST_RECALL|pack=CHAT|query=what proof helps me trust this|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Trust evidence: Trust proof comes from visible files, local weights, reproducible tests, and QEMU or hardware logs.
 
-ASSIST_RECALL|pack=CHAT|query=how should i compare options|recall=kb2_term|recall_score=39|t_retrieve_ms=110|answer=Compare options: Name the options, list one tradeoff for each, then choose the practical next step.
+ASSIST_RECALL|pack=CHAT|query=how should i compare options|recall=kb2_term|recall_score=39|t_retrieve_ms=0|answer=Compare options: Name the options, list one tradeoff for each, then choose the practical next step.
 
-ASSIST_RECALL|pack=CHAT|query=help me plan work in small steps|recall=kb2_term|recall_score=66|t_retrieve_ms=110|answer=Planning work: Break the job into small steps, do the blocking step first, and verify each result.
+ASSIST_RECALL|pack=CHAT|query=help me plan work in small steps|recall=kb2_term|recall_score=66|t_retrieve_ms=0|answer=Planning work: Break the job into small steps, do the blocking step first, and verify each result.
 
-ASSIST_RECALL|pack=CHAT|query=what should a useful answer look like|recall=kb2_term|recall_score=42|t_retrieve_ms=110|answer=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.
+ASSIST_RECALL|pack=CHAT|query=what should a useful answer look like|recall=kb2_term|recall_score=42|t_retrieve_ms=60|answer=Useful answer: A useful answer should be brief, concrete, honest about limits, and easy to act on.
 
-ASSIST_RECALL|pack=CHAT|query=can you explain something simply|recall=kb2_term|recall_score=24|t_retrieve_ms=50|answer=Simple explanation: Use plain words, one example, and a short answer that fits the prompt.
+ASSIST_RECALL|pack=CHAT|query=can you explain something simply|recall=kb2_term|recall_score=24|t_retrieve_ms=0|answer=Simple explanation: Use plain words, one example, and a short answer that fits the prompt.
 
-ASSIST_RECALL|pack=CHAT|query=what can you know without web access|recall=kb2_term|recall_score=51|t_retrieve_ms=110|answer=No web access: Without internet, I cannot fetch news or live facts; use local notes or give the facts in the prompt.
+ASSIST_RECALL|pack=CHAT|query=what can you know without web access|recall=kb2_term|recall_score=51|t_retrieve_ms=0|answer=No web access: Without internet, I cannot fetch news or live facts; use local notes or give the facts in the prompt.
 
-ASSIST_RECALL|pack=CHAT|query=how do i show confidence in an answer|recall=kb2_term|recall_score=36|t_retrieve_ms=50|answer=Answer confidence: Say what is known from local files, what is inferred, and what remains uncertain.
+ASSIST_RECALL|pack=CHAT|query=how do i show confidence in an answer|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Answer confidence: Say what is known from local files, what is inferred, and what remains uncertain.
 
 Pack : DOSHELP - DOS Help Assistant
 
@@ -76,23 +76,23 @@ ASSIST_PACK|id=DOSHELP|title=DOS Help Assistant|model=PACKS\DOSHELP\MODEL|sprite
 
 
 
-ASSIST_RECALL|pack=DOSHELP|query=what happens before autoexec bat runs|recall=kb2_term|recall_score=57|t_retrieve_ms=110|answer=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
+ASSIST_RECALL|pack=DOSHELP|query=what happens before autoexec bat runs|recall=kb2_term|recall_score=57|t_retrieve_ms=50|answer=AUTOEXEC.BAT hygiene: CONFIG.SYS loads drivers first, then AUTOEXEC.BAT runs commands; keep PATH short and trim resident tools.
 
-ASSIST_RECALL|pack=DOSHELP|query=why use 8.3 filenames in batches|recall=kb2_term|recall_score=24|t_retrieve_ms=60|answer=DOS filenames: Use 8.3 filenames for maximum DOS compatibility and predictable batch files.
+ASSIST_RECALL|pack=DOSHELP|query=why use 8.3 filenames in batches|recall=kb2_term|recall_score=24|t_retrieve_ms=0|answer=DOS filenames: Use 8.3 filenames for maximum DOS compatibility and predictable batch files.
 
-ASSIST_RECALL|pack=DOSHELP|query=how should i prepare files for real hardware|recall=kb2_term|recall_score=48|t_retrieve_ms=110|answer=Hardware copy: Copy GPT2, MODEL, PACKS, CWSDPMI, and batch files together before testing on real DOS.
+ASSIST_RECALL|pack=DOSHELP|query=how should i prepare files for real hardware|recall=kb2_term|recall_score=48|t_retrieve_ms=0|answer=Hardware copy: Copy GPT2, MODEL, PACKS, CWSDPMI, and batch files together before testing on real DOS.
 
-ASSIST_RECALL|pack=DOSHELP|query=what should i do when cwsdpmi is missing|recall=kb2_term|recall_score=39|t_retrieve_ms=50|answer=Missing CWSDPMI: If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command.
+ASSIST_RECALL|pack=DOSHELP|query=what should i do when cwsdpmi is missing|recall=kb2_term|recall_score=39|t_retrieve_ms=0|answer=Missing CWSDPMI: If a protected-mode program fails to start, copy CWSDPMI.EXE beside it and rerun the command.
 
-ASSIST_RECALL|pack=DOSHELP|query=how do i mount the dosbox bundle|recall=kb2_term|recall_score=54|t_retrieve_ms=110|answer=DOSBox mount: Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile.
+ASSIST_RECALL|pack=DOSHELP|query=how do i mount the dosbox bundle|recall=kb2_term|recall_score=54|t_retrieve_ms=0|answer=DOSBox mount: Mount the bundle directory as C:, change to C:\GPT2, then run the batch file for the desired profile.
 
-ASSIST_RECALL|pack=DOSHELP|query=what if the fat image is full|recall=kb2_term|recall_score=60|t_retrieve_ms=60|answer=FAT image full: Remove host-only training files or grow the disk image when FAT image assembly runs out of space.
+ASSIST_RECALL|pack=DOSHELP|query=what if the fat image is full|recall=kb2_term|recall_score=60|t_retrieve_ms=0|answer=FAT image full: Remove host-only training files or grow the disk image when FAT image assembly runs out of space.
 
-ASSIST_RECALL|pack=DOSHELP|query=what logs matter from qemu|recall=kb2_term|recall_score=39|t_retrieve_ms=110|answer=QEMU logs: Capture compile logs, run logs, and copied evidence files before trusting an emulator result.
+ASSIST_RECALL|pack=DOSHELP|query=what logs matter from qemu|recall=kb2_term|recall_score=39|t_retrieve_ms=0|answer=QEMU logs: Capture compile logs, run logs, and copied evidence files before trusting an emulator result.
 
-ASSIST_RECALL|pack=DOSHELP|query=how do i handle a dos memory error|recall=kb2_term|recall_score=57|t_retrieve_ms=50|answer=DOS memory error: Free conventional memory by unloading TSRs, loading drivers high, or using a smaller profile.
+ASSIST_RECALL|pack=DOSHELP|query=how do i handle a dos memory error|recall=kb2_term|recall_score=57|t_retrieve_ms=0|answer=DOS memory error: Free conventional memory by unloading TSRs, loading drivers high, or using a smaller profile.
 
-ASSIST_RECALL|pack=DOSHELP|query=how should a batch menu work|recall=kb2_term|recall_score=36|t_retrieve_ms=170|answer=Batch menu: Offer numbered choices, validate the input, and keep each branch short and reversible.
+ASSIST_RECALL|pack=DOSHELP|query=how should a batch menu work|recall=kb2_term|recall_score=36|t_retrieve_ms=50|answer=Batch menu: Offer numbered choices, validate the input, and keep each branch short and reversible.
 
 Pack : OFFICE - Office Assistant
 
@@ -108,23 +108,23 @@ ASSIST_PACK|id=OFFICE|title=Office Assistant|model=PACKS\OFFICE\MODEL|sprite=PAC
 
 
 
-ASSIST_RECALL|pack=OFFICE|query=how should i write a handoff note|recall=kb2_term|recall_score=36|t_retrieve_ms=50|answer=Handoff note: Say what is done, what remains, where evidence lives, and who owns the next action.
+ASSIST_RECALL|pack=OFFICE|query=how should i write a handoff note|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Handoff note: Say what is done, what remains, where evidence lives, and who owns the next action.
 
-ASSIST_RECALL|pack=OFFICE|query=what belongs in a bug report|recall=kb2_term|recall_score=36|t_retrieve_ms=110|answer=Bug report shape: Include expected behavior, actual behavior, reproduction steps, logs, and the suspected area.
+ASSIST_RECALL|pack=OFFICE|query=what belongs in a bug report|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Bug report shape: Include expected behavior, actual behavior, reproduction steps, logs, and the suspected area.
 
-ASSIST_RECALL|pack=OFFICE|query=make a compact release note|recall=kb2_term|recall_score=36|t_retrieve_ms=60|answer=Release note shape: Lead with what changed, list proof, then state any known limits plainly.
+ASSIST_RECALL|pack=OFFICE|query=make a compact release note|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Release note shape: Lead with what changed, list proof, then state any known limits plainly.
 
-ASSIST_RECALL|pack=OFFICE|query=what should meeting notes capture|recall=kb2_term|recall_score=51|t_retrieve_ms=50|answer=Meeting notes: Capture decisions, owners, dates, open questions, and follow-up actions.
+ASSIST_RECALL|pack=OFFICE|query=what should meeting notes capture|recall=kb2_term|recall_score=51|t_retrieve_ms=0|answer=Meeting notes: Capture decisions, owners, dates, open questions, and follow-up actions.
 
-ASSIST_RECALL|pack=OFFICE|query=help me write a project plan|recall=kb2_term|recall_score=36|t_retrieve_ms=110|answer=Project plan: List the goal, milestones, owners, risks, and the next checkpoint.
+ASSIST_RECALL|pack=OFFICE|query=help me write a project plan|recall=kb2_term|recall_score=36|t_retrieve_ms=60|answer=Project plan: List the goal, milestones, owners, risks, and the next checkpoint.
 
-ASSIST_RECALL|pack=OFFICE|query=how do i track risks|recall=kb2_term|recall_score=24|t_retrieve_ms=60|answer=Risk register: For each risk, record impact, likelihood, mitigation, owner, and review date.
+ASSIST_RECALL|pack=OFFICE|query=how do i track risks|recall=kb2_term|recall_score=24|t_retrieve_ms=0|answer=Risk register: For each risk, record impact, likelihood, mitigation, owner, and review date.
 
-ASSIST_RECALL|pack=OFFICE|query=what is a useful test plan|recall=kb2_term|recall_score=36|t_retrieve_ms=50|answer=Test plan: Define scope, cases, expected results, evidence files, and pass or fail criteria.
+ASSIST_RECALL|pack=OFFICE|query=what is a useful test plan|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Test plan: Define scope, cases, expected results, evidence files, and pass or fail criteria.
 
-ASSIST_RECALL|pack=OFFICE|query=how should i reply to a customer|recall=kb2_term|recall_score=36|t_retrieve_ms=110|answer=Customer reply: Acknowledge the issue, give the current status, state the next action, and avoid overpromising.
+ASSIST_RECALL|pack=OFFICE|query=how should i reply to a customer|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Customer reply: Acknowledge the issue, give the current status, state the next action, and avoid overpromising.
 
-ASSIST_RECALL|pack=OFFICE|query=how do i write user docs|recall=kb2_term|recall_score=51|t_retrieve_ms=60|answer=User docs: Write the task goal, prerequisites, exact steps, expected result, and troubleshooting note.
+ASSIST_RECALL|pack=OFFICE|query=how do i write user docs|recall=kb2_term|recall_score=51|t_retrieve_ms=0|answer=User docs: Write the task goal, prerequisites, exact steps, expected result, and troubleshooting note.
 
 Pack : DEV - Developer Pack
 
@@ -142,15 +142,15 @@ ASSIST_PACK|id=DEV|title=Developer Pack|model=PACKS\CHAT\MODEL|sprite=PACKS\CHAT
 
 ASSIST_RECALL|pack=DEV|query=how can this feel modern on a 486|recall=kb2_term|recall_score=36|t_retrieve_ms=50|answer=Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
 
-ASSIST_RECALL|pack=DEV|query=what does retrieval first mean|recall=kb2_term|recall_score=36|t_retrieve_ms=110|answer=Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
+ASSIST_RECALL|pack=DEV|query=what does retrieval first mean|recall=kb2_term|recall_score=36|t_retrieve_ms=0|answer=Retrieval first: Answer from KDB, USER notes, memory, and golden rows before asking the small model to synthesize.
 
-ASSIST_RECALL|pack=DEV|query=how do i author a pack|recall=kb2_term|recall_score=39|t_retrieve_ms=60|answer=Pack authoring: Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.
+ASSIST_RECALL|pack=DEV|query=how do i author a pack|recall=kb2_term|recall_score=39|t_retrieve_ms=0|answer=Pack authoring: Write HELP and KNOW rows, rebuild KDB, run the authoring validator, then run retrieval and QEMU gates.
 
-ASSIST_RECALL|pack=DEV|query=what should i check before release|recall=kb2_term|recall_score=42|t_retrieve_ms=110|answer=Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag.
+ASSIST_RECALL|pack=DEV|query=what should i check before release|recall=kb2_term|recall_score=42|t_retrieve_ms=0|answer=Release check: Verify tests, logs, artifact names, checksums, release notes, and the target tag.
 
-ASSIST_RECALL|pack=DEV|query=how should we store fast recall data|recall=kb2_term|recall_score=45|t_retrieve_ms=50|answer=High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster.
+ASSIST_RECALL|pack=DEV|query=how should we store fast recall data|recall=kb2_term|recall_score=45|t_retrieve_ms=0|answer=High velocity recall: Compile notes into compact keyword rows so DOS scans less text and reaches the answer faster.
 
-ASSIST_RECALL|pack=DEV|query=what should a failure record include|recall=kb2_term|recall_score=39|t_retrieve_ms=60|answer=Failure record: Record the command, input, expected result, actual result, log path, and next experiment.
+ASSIST_RECALL|pack=DEV|query=what should a failure record include|recall=kb2_term|recall_score=39|t_retrieve_ms=50|answer=Failure record: Record the command, input, expected result, actual result, log path, and next experiment.
 
 Pack : PORTABLE - Portable Intelligence
 
@@ -166,16 +166,16 @@ ASSIST_PACK|id=PORTABLE|title=Portable Intelligence|model=PACKS\CHAT\MODEL|sprit
 
 
 
-ASSIST_RECALL|pack=PORTABLE|query=what does portable intelligence mean|recall=kb2_term|recall_score=57|t_retrieve_ms=110|answer=portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.
+ASSIST_RECALL|pack=PORTABLE|query=what does portable intelligence mean|recall=kb2_term|recall_score=57|t_retrieve_ms=0|answer=portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.
 
-ASSIST_RECALL|pack=PORTABLE|query=why is basic useful for teaching ai|recall=kb2_term|recall_score=57|t_retrieve_ms=50|answer=basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.
+ASSIST_RECALL|pack=PORTABLE|query=why is basic useful for teaching ai|recall=kb2_term|recall_score=57|t_retrieve_ms=0|answer=basic teaching: BASIC is useful for teaching machine intelligence because plain arrays, files, and integer arithmetic make the mechanism inspectable.
 
 ASSIST_RECALL|pack=PORTABLE|query=how could this move to c or assembly|recall=kb2_term|recall_score=15|t_retrieve_ms=60|answer=runtime ports: The same assistant contract can be reimplemented in C, assembly, Eshkol, or calculator BASIC when files, arrays, and loops exist.
 
-ASSIST_RECALL|pack=PORTABLE|query=why do hot swappable weights matter|recall=kb2_term|recall_score=45|t_retrieve_ms=50|answer=domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.
+ASSIST_RECALL|pack=PORTABLE|query=why do hot swappable weights matter|recall=kb2_term|recall_score=45|t_retrieve_ms=0|answer=domain weight loading: Hot swappable weights load domain behavior into a tiny resident shell without rebuilding the whole runtime.
 
-ASSIST_RECALL|pack=PORTABLE|query=how should tiny machines store recall|recall=kb2_term|recall_score=72|t_retrieve_ms=110|answer=tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.
+ASSIST_RECALL|pack=PORTABLE|query=how should tiny machines store recall|recall=kb2_term|recall_score=72|t_retrieve_ms=0|answer=tiny machine recall: Tiny machines should store recall as compact indexed rows so slow processors scan fewer bytes before answering.
 
-ASSIST_RECALL|pack=PORTABLE|query=what proof shows this works on old hardware|recall=kb2_term|recall_score=63|t_retrieve_ms=60|answer=old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.
+ASSIST_RECALL|pack=PORTABLE|query=what proof shows this works on old hardware|recall=kb2_term|recall_score=63|t_retrieve_ms=0|answer=old hardware proof: Proof for old hardware needs local logs, repeatable tests, QEMU or hardware captures, and visible source files.
 
 ASSIST_END|suite=recall-probe|packs=5

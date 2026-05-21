@@ -1,0 +1,24 @@
+# term|row_ids
+# Generated KB2 term shard R. Rebuild with scripts/build_assistant_kdb.py --write.
+reach|44
+reads|11,18
+real|51
+recover|46,58
+recovery|58
+relax|41
+release|14,29,65
+remains|72
+remember|27
+remove|15,70
+repeat|9
+reproducible|57
+request|33,67
+reset|28
+rest|41,46
+result|10,14,66,69,75
+retrieval|55,56,64
+retry|13
+risk|70
+rules|43,56
+run|12,25
+runs|26,30

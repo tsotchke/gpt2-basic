@@ -1,0 +1,5 @@
+# term|row_ids
+# Generated KB2 term shard U. Rebuild with scripts/build_assistant_kdb.py --write.
+useful|4
+user.txt|1,3
+using|2

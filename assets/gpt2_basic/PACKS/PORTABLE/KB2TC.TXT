@@ -1,0 +1,8 @@
+# term|row_ids
+# Generated KB2 term shard C. Rebuild with scripts/build_assistant_kdb.py --write.
+calculator|10
+captures|8
+compact|11
+concise|2
+context|7
+contract|10

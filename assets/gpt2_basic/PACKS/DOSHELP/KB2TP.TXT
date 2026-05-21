@@ -1,0 +1,18 @@
+# term|row_ids
+# Generated KB2 term shard P. Rebuild with scripts/build_assistant_kdb.py --write.
+pack|5
+pack-local|5
+packs|5,11
+path|3,12,15,17,22
+paths|5,7
+physical|12
+pinned|26
+point|5
+predictable|10
+preserve|1,8
+print|14
+profile|19,23
+program|6,15,18
+programs|6,8,9
+protected-mode|6,9,18
+put|15

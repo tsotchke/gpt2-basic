@@ -7,7 +7,8 @@ inside DOS.
 Each pack has human-editable `HELP.TXT` and `KNOW.TXT` files, a generated
 `KDB.TXT` recall database, generated `KDBIDX.TXT`/`KDB?.TXT` bucket sidecars,
 compiled `KB2ALL.BIN`/`KB2IDX.TXT`/`KB2?.BIN` binary recall pages, generated
-`KB2TERM.TXT` term indexes, and a local `USER.TXT` override file. Edit
+aggregate `KB2TERM.TXT` plus sharded `KB2T?.TXT` term indexes, and a local
+`USER.TXT` override file. Edit
 `HELP.TXT` or `KNOW.TXT` on the host, then run:
 
 ```sh
@@ -17,10 +18,11 @@ python3 scripts/validate_assistant_pack_authoring.py
 
 On DOS, users can edit `USER.TXT` directly for local notes without rebuilding
 the pack. Matching `USER.TXT` rows get a retrieval bonus so site-local facts
-can override bundled notes. The DOS shell tries `KB2TERM.TXT` term-index rows
-first, then binary bucket sidecars, then readable `KDB.TXT` fallback when
-needed. The binary `KB2*.BIN` files and `KB2TERM.TXT` indexes are generated
-artifacts; edit `HELP.TXT`, `KNOW.TXT`, or `USER.TXT`, not generated pages.
+can override bundled notes. The DOS shell tries relevant `KB2T?.TXT`
+term-index shards first, then aggregate `KB2TERM.TXT`, binary bucket sidecars,
+and readable `KDB.TXT` fallback when needed. The binary `KB2*.BIN` files and
+`KB2T*.TXT` indexes are generated artifacts; edit `HELP.TXT`, `KNOW.TXT`, or
+`USER.TXT`, not generated pages.
 
 To import a plain ASCII note file into a pack without hand-writing rows:
 
@@ -38,8 +40,9 @@ python3 scripts/validate_assistant_pack_authoring.py
 
 The generated pack shares `PACKS\CHAT\MODEL` and `CHAT` art by default, writes
 `PACK.INI`, `HELP.TXT`, `KNOW.TXT`, `USER.TXT`, `USAGE.TXT`, generated text
-KDB buckets, compiled KB2 binary pages, and `KB2TERM.TXT`, then appends the
-pack to `PACKS.TXT` when `--register` is used.
+KDB buckets, compiled KB2 binary pages, aggregate `KB2TERM.TXT`, and sharded
+`KB2T?.TXT` term indexes, then appends the pack to `PACKS.TXT` when
+`--register` is used.
 
 ## CHAT
 

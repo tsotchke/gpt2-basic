@@ -176,7 +176,7 @@ def render_usage(plan: PackPlan) -> str:
             "",
             "How it works:",
             "  The pack shares a small model by default, then retrieves concise local",
-            "  rows from KB2TERM.TXT term indexes, compiled KB2*.BIN pages, generated",
+            "  rows from KB2TERM.TXT and KB2T?.TXT term indexes, compiled KB2*.BIN pages, generated",
             "  KDB.TXT buckets, bundled KNOW.TXT notes, and editable USER.TXT notes.",
             "",
             "How to use it:",
@@ -359,6 +359,7 @@ def self_test() -> None:
         assert pack.model_value == DEFAULT_MODEL
         assert len(pack.knowledge_rows) == 2
         assert (pack.kdb_bin_path.parent / "KB2TERM.TXT").is_file()
+        assert any(path.name.startswith("KB2T") and path.name != "KB2TERM.TXT" for path in pack.kdb_bin_path.parent.glob("KB2T*.TXT"))
         assert "HWREPAIR" in (pack_root / "PACKS.TXT").read_text(encoding="ascii")
     print("PROBE_OK assistant_pack_create_self_test=1")
 

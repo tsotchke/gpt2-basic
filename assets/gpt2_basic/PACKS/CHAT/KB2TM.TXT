@@ -1,0 +1,18 @@
+# term|row_ids
+# Generated KB2 term shard M. Rebuild with scripts/build_assistant_kdb.py --write.
+machine|11,26,30,73
+matters|12
+meaning|6,18,26,30,42,43,44,45,46,49
+means|11,26,63,73
+memory|27,54,55,56,61,63,76
+mindset|75
+minute|41
+minutes|15
+missing|67
+mistake|58
+mode|7
+model|4,11,12,17,18,19,22,25,26,54,55,56,63,77
+models|64
+more|55
+music|37,48
+must|63
