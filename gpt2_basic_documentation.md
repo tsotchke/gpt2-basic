@@ -1,4 +1,4 @@
-# GPT-2 in BASIC: Implementing Modern Transformer Models on 486-Era Hardware
+# GPT2-BASIC: Fixed-Point Language Models and Local Recall on DOS-Class Systems
 
 ## Current Status Note
 
@@ -44,7 +44,7 @@ timing basis until a physical 486/Pentium board is available.
    - [6.2 Results on Modern Hardware](#62-results-on-modern-hardware)
    - [6.3 Projected Performance on 1990s Systems](#63-projected-performance-on-1990s-systems)
    - [6.4 Memory Usage Analysis](#64-memory-usage-analysis)
-7. [Alternative History: Impact Analysis](#7-alternative-history-impact-analysis)
+7. [Historical Comparison and Design Implications](#7-historical-comparison-and-design-implications)
    - [7.1 Statistical Computing in the 1990s](#71-statistical-computing-in-the-1990s)
    - [7.2 AI Research Trajectory](#72-ai-research-trajectory)
    - [7.3 Deep Learning Timeline Acceleration](#73-deep-learning-timeline-acceleration)
@@ -77,9 +77,20 @@ timing basis until a physical 486/Pentium board is available.
 
 ## 1. Executive Summary
 
-This paper presents a groundbreaking implementation of a scaled-down GPT-2 transformer model in BASIC, optimized to run on 486-era hardware. Bridging the domains of modern artificial intelligence and retrocomputing, this implementation demonstrates that transformer architectures—the foundation of today's most powerful language models—are fundamentally algorithmic systems that could have theoretically been implemented decades earlier, albeit with significant engineering constraints.
+This paper documents GPT2-BASIC, a compact fixed-point transformer and assistant
+runtime implemented in BASIC for DOS-class systems. The implementation
+demonstrates that the core operations behind GPT-style language models can be
+expressed as ordinary file formats, integer arithmetic, tokenizer logic,
+matrix/vector kernels, and deterministic control flow. It also documents the
+local assistant layer built around hot-loadable packs, golden replies, session
+memory, binary knowledge records, and sharded term indexes.
 
-The implementation serves multiple purposes: as an educational resource demonstrating the core mathematical operations underlying transformer models, as a technical proof-of-concept showing that modern AI algorithms can operate on severely constrained hardware, and as a historical thought experiment exploring how large language models might have been approached in the early 1990s computing environment.
+The implementation serves multiple purposes: as an educational resource for the
+core mathematical operations underlying transformer models, as a concrete
+engineering reference for local AI under severe CPU and memory limits, and as a
+release-tested DOS runtime with QEMU evidence and a physical-machine transfer
+workflow. It is not a claim that a tiny 486-class model competes with modern
+hosted LLMs.
 
 Key technical innovations in this implementation include:
 
@@ -103,7 +114,10 @@ the same gate. Sections below describe both the original architecture concepts
 and the realized production subset; `qemu/evidence/domain_training_strategy_report.md`
 is the authoritative implementation ledger.
 
-This paper provides a thorough technical analysis of these innovations, documents the challenges of implementing transformer models on constrained hardware, and explores the counterfactual implications of what might have resulted if such techniques had been available during the 486 era of computing.
+This paper provides a technical analysis of these implementation techniques,
+documents the challenges of running transformer-style inference on constrained
+hardware, and compares the design against the tools and limits of DOS-class
+systems.
 
 ## 2. Historical Background
 
@@ -2025,9 +2039,13 @@ To contextualize our memory usage, Table 10 compares our implementation with oth
 
 This comparison demonstrates that our implementation falls within the memory usage range of commercial software of the era, making it practically deployable on mid-to-high-end 486 systems with 8MB or more of RAM.
 
-## 7. Alternative History: Impact Analysis
+## 7. Historical Comparison and Design Implications
 
-This section explores the counterfactual implications of our implementation—what might have happened if transformer models had been implemented on 486-era hardware in the early 1990s. This analysis examines how the computing landscape, AI research, and commercial applications might have evolved differently.
+This section compares GPT2-BASIC with the statistical computing, AI software,
+and hardware constraints of the early 1990s. The purpose is engineering context:
+which parts of a language-model system map cleanly onto DOS-class constraints,
+which parts require host-side preparation, and which claims still require
+physical hardware evidence.
 
 ### 7.1 Statistical Computing in the 1990s
 
@@ -2114,7 +2132,7 @@ Figure 6 illustrates this potential redirection of research focus.
 └──────────┘└──────────┘└──────────┘└──────────┘└──────────┘└────────────┘└─────────┘
 
 
-                               Counterfactual History
+                         Constrained-System Design Lens
     1990        1995        2000        2005        2010             2015           2020
      │           │           │           │           │                │              │
      ▼           ▼           ▼           ▼           ▼                ▼              ▼
@@ -2123,7 +2141,7 @@ Figure 6 illustrates this potential redirection of research focus.
 │  Systems ││Transformers││ Research ││ Laws     ││ Dominance  ││  Acceleration  ││  LLMs   │
 └──────────┘└────────────┘└──────────┘└──────────┘└────────────┘└────────────────┘└─────────┘
 ```
-*Figure 6: Actual vs. counterfactual AI research timeline*
+*Figure 6: Actual AI research timeline with a constrained-system design lens*
 
 ### 7.3 Deep Learning Timeline Acceleration
 
@@ -2135,21 +2153,28 @@ The emergence of deep learning as a dominant paradigm in AI occurred primarily i
 - Sequence-to-sequence models for machine translation (Sutskever et al., 2014)
 - Attention mechanisms and transformers (Bahdanau et al., 2014; Vaswani et al., 2017)
 
-Our implementation suggests that transformer models could have been technically feasible, albeit at smaller scales, 20+ years earlier than they actually emerged.
+GPT2-BASIC shows which transformer-style operations can be made explicit and
+small enough for a DOS-class runtime when training, export, quantization, and
+pack construction happen on the host.
 
-#### Potential Acceleration Points
+#### Design Pressure Points
 
-In a counterfactual history where transformer models were implemented in the early 1990s, several deep learning advances might have occurred earlier:
+Under 486-class constraints, several design pressures become visible:
 
-1. **Attention Mechanisms**: The fundamental concept of attention, allowing dynamic focus on different parts of an input, might have emerged decades earlier.
+1. **Attention Mechanisms**: Attention is mathematically simple but expensive
+   enough that context size, cache layout, and fixed-point exp tables matter.
 
-2. **Unsupervised Learning Approaches**: The effectiveness of language modeling as a pretraining task might have been discovered earlier, potentially advancing unsupervised learning.
+2. **Host-Side Preparation**: Training and pack construction remain host-side
+   jobs; the DOS target consumes exported artifacts.
 
-3. **Hardware-Software Co-evolution**: The demonstration of transformer models on 486 hardware might have motivated earlier development of neural network accelerators.
+3. **Hardware-Software Co-design**: The runtime benefits from kernels and file
+   formats that match the target's memory and disk behavior.
 
-4. **Scaling Laws**: The relationship between model size, dataset size, and performance might have been observed empirically much earlier, influencing research directions.
+4. **Recall Before Generation**: A tiny model is more useful when paired with
+   local knowledge records and fast indexes.
 
-Table 12 presents a speculative timeline of how deep learning developments might have been accelerated.
+Table 12 presents historical milestones next to the kinds of constrained-system
+questions GPT2-BASIC exposes.
 
 | Development | Actual Year | Counterfactual Year | Acceleration |
 |-------------|-------------|---------------------|--------------|
@@ -2237,18 +2262,18 @@ Figure 7 illustrates this potential alternative hardware evolution.
 └───────────┘     └───────────┘     └───────────┘     └───────────┘     └───────────┘
 
 
-                      Counterfactual Hardware Evolution
+                    Hardware Co-Design Pressure Points
 ┌───────────┐     ┌───────────┐     ┌────────────┐     ┌────────────┐     ┌───────────┐
 │ 486 / x86 │────►│Neural Ext.│────►│Neural      │────►│ AI-focused │────►│ Integrated│
 │ 1989-1995 │     │ 1995-1998 │     │Coprocessors│     │ CPUs       │     │AI Systems │
 └───────────┘     └───────────┘     │ 1998-2002  │     │ 2002-2008  │     │ 2008+     │
                                     └────────────┘     └────────────┘     └───────────┘
 ```
-*Figure 7: Actual vs. counterfactual hardware evolution*
+*Figure 7: Hardware pressure points exposed by local inference workloads*
 
 #### Specific Technical Influences
 
-Our implementation techniques might have directly influenced hardware development:
+GPT2-BASIC highlights hardware features that matter for this class of workload:
 
 1. **Fixed-Point Units**: Hardware support for efficient Q16.16 (or similar) fixed-point arithmetic might have become standard, including specialized multiplication and division units.
 

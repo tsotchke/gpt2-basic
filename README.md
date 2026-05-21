@@ -899,11 +899,17 @@ During the 486 era (early-to-mid 1990s), AI was dominated by:
 - **Statistical Methods**: Hidden Markov Models, Bayesian approaches
 - **Game-Playing Systems**: Deep Blue (chess) was state-of-the-art
 
-This implementation represents a fascinating "alternate history" - what if transformer architecture had been invented during this period? With what techniques would it have been implemented? Our [alternative history impact analysis](gpt2_basic_documentation.md#7-alternative-history-impact-analysis) explores this counterfactual scenario in depth.
+GPT2-BASIC uses constraints from that period as an engineering target rather
+than a nostalgia premise. The relevant question is not whether a 486-class DOS
+machine can imitate a modern hosted model. It cannot. The useful question is
+which pieces of language-model inference, local recall, and assistant behavior
+can be made small, explicit, and reproducible enough to run there. The
+[historical comparison and design implications](gpt2_basic_documentation.md#7-historical-comparison-and-design-implications)
+section covers that context.
 
 ### ■ Comparison to Historical Optimization Techniques
 
-This project employs many techniques that were cutting-edge in the 486 era:
+This project employs techniques that were common or practical in the 486 era:
 
 - **Fixed-point arithmetic**: Used in early 3D engines like Doom and Quake
 - **Lookup tables**: Common in demoscene effects and games
@@ -911,7 +917,8 @@ This project employs many techniques that were cutting-edge in the 486 era:
 - **Block-based processing**: Employed in early multimedia codecs
 - **Assembly optimization**: Essential for any performance-critical software
 
-The difference is that we're applying these vintage techniques to a modern AI architecture, creating a bridge between computing eras.
+The difference is that those constrained-system techniques are applied to a
+local language-model runtime, assistant shell, and indexed recall layer.
 ```
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ```
@@ -1248,18 +1255,29 @@ This project is released under the MIT License. See the [LICENSE](LICENSE) file 
 ```
 ## ► Conclusion
 
-This project stands at the fascinating intersection of modern AI and retrocomputing, demonstrating that the fundamental algorithms powering today's most advanced language models could theoretically have been implemented decades earlier. The current QEMU 486DX2/66 evidence is no longer only theoretical: the promoted fixed-point DOS runtime produces useful short completions at 2.46 tok/s in the full-resident mode, 2.12 tok/s in the low-memory q4/log token+head mode, and 0.81 tok/s in the streamed-head fallback.
+GPT2-BASIC demonstrates a concrete constrained-system path for local language
+model inference and assistant behavior. The current QEMU 486DX2/66 evidence is
+specific and repeatable: the promoted fixed-point DOS runtime produces useful
+short completions at 2.46 tok/s in full-resident mode, 2.12 tok/s in the
+low-memory q4/log token+head mode, and 0.81 tok/s in the streamed-head fallback.
 
-The journey of implementing GPT-2 in BASIC reveals several profound insights:
+The implementation work leaves several practical lessons:
 
-1. **Algorithmic Essence**: When stripped of GPU optimizations and specialized hardware, transformers are revealed to be fundamentally just sequences of mathematical operations—multiplication, addition, and non-linear transformations—that can be implemented on virtually any computing hardware. Our [detailed technical architecture](gpt2_basic_documentation.md#3-technical-architecture) documentation demonstrates this clearly.
+1. **Algorithmic Form**: When stripped of GPU optimizations and specialized
+   frameworks, transformer inference becomes a sequence of explicit operations:
+   token lookup, matrix/vector arithmetic, normalization, attention, logits, and
+   decode control. Our [detailed technical architecture](gpt2_basic_documentation.md#3-technical-architecture)
+   documentation covers that path.
 
-2. **Optimization Artistry**: The constraints of vintage hardware force a return to the lost art of careful optimization. Techniques that were once common knowledge among programmers—fixed-point arithmetic, bit manipulation, assembly optimization—have largely faded from mainstream programming but remain powerful approaches for constrained environments.
+2. **Storage and Recall Matter**: On small machines, useful assistant behavior
+   depends as much on local data layout as on raw generation. GPT2-BASIC uses
+   pack files, binary knowledge records, and sharded term indexes to keep recall
+   fast and inspectable.
 
-3. **Educational Bridge**: This implementation serves as a bridge between eras, helping modern AI practitioners understand the fundamental operations of transformers while teaching vintage computing enthusiasts about contemporary AI concepts. See our [educational value](gpt2_basic_documentation.md#8-educational-value) section for more insights.
+3. **Portability Requires Proof**: The project keeps host tests, QEMU runs,
+   release artifact checks, and hardware-transfer logs in the loop. Physical
+   machine timing is still pending until real returned board logs exist.
 
-This counterfactual implementation also invites us to consider how computing history might have unfolded differently if transformer models had emerged in the early 1990s rather than the late 2010s. Would we have seen earlier development of large language models? Would hardware have evolved differently to accelerate such models? These questions remain fascinating thought experiments.
-
-As we look to the future of AI, this backward-compatible implementation reminds us that the core algorithms driving our most advanced systems are not as mysterious or inaccessible as they might seem. By understanding these fundamentals, we're better positioned to develop the next generation of AI systems, whether they run on quantum computers or on embedded devices with constraints that make a 486 seem powerful by comparison.
-
-In the end, this project stands as both a technical achievement and a reminder that innovation often comes from revisiting fundamental principles under new constraints.
+The broader lesson is straightforward: local machine intelligence is a systems
+problem. Model size matters, but so do numeric representation, file formats,
+memory layout, retrieval strategy, validation, and target-specific tooling.
