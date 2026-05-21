@@ -152,9 +152,9 @@ speed claims remain QEMU evidence until real-system logs are captured.
 
 ## ► Comprehensive Documentation
 
-For a detailed academic analysis of this project, please refer to our technical white paper:
+For a detailed technical analysis of this project, see:
 
-[**GPT-2 in BASIC: Implementing Modern Transformer Models on 486-Era Hardware**](gpt2_basic_documentation.md)
+[**GPT2-BASIC: Fixed-Point Language Models and Local Recall on DOS-Class Systems**](gpt2_basic_documentation.md)
 
 This extensive documentation includes:
 
@@ -1244,10 +1244,10 @@ This project is released under the MIT License. If you use this code or concepts
 ```
 @misc{gpt2_basic,
   author = {tsotchke},
-  title = {GPT-2 in BASIC: Implementing Modern Transformer Models on late 1990s 486-Era Hardware},
-  year = {2025},
+  title = {GPT2-BASIC: Fixed-Point Language Models and Local Recall on DOS-Class Systems},
+  year = {2026},
   howpublished = {\url{https://github.com/tsotchke/gpt2-basic}},
-  note = {Implementation of a scaled-down GPT-2-like transformer model in BASIC optimized for 486-era hardware}
+  note = {DOS FreeBASIC fixed-point transformer and assistant runtime with local model packs and indexed recall}
 }
 ```
 

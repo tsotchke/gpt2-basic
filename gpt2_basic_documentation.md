@@ -64,9 +64,9 @@ timing basis until a physical 486/Pentium board is available.
     - [B. Practical Extensions and Integration](#b-practical-extensions-and-integration)
       - [B.1 Integration with Existing Systems](#b1-integration-with-existing-systems)
       - [B.2 Educational Toolkit Extensions](#b2-educational-toolkit-extensions)
-    - [C. Retrocomputing Community Engagement](#c-retrocomputing-community-engagement)
+    - [C. Constrained and Legacy System Engagement](#c-constrained-and-legacy-system-engagement)
       - [C.1 Demoscene Potential](#c1-demoscene-potential)
-      - [C.2 Vintage Computing Preservation](#c2-vintage-computing-preservation)
+      - [C.2 Legacy System Preservation](#c2-legacy-system-preservation)
     - [D. Training and Export Considerations](#d-training-and-export-considerations)
       - [D.1 Host-Side Training Boundary](#d1-host-side-training-boundary)
       - [D.2 Target-Side Adaptation](#d2-target-side-adaptation)
@@ -197,7 +197,9 @@ Our implementation necessarily scales down the model size and introduces numerou
 
 ### 3.1 System Overview
 
-The GPT-2 in BASIC implementation follows the core architectural principles of transformer models while introducing significant optimizations for constrained hardware. The system architecture is organized into several key components, illustrated in Figure 1.
+GPT2-BASIC follows the core architectural principles of transformer models while
+introducing optimizations for constrained hardware. The system architecture is
+organized into several key components, illustrated in Figure 1.
 
 ```
 ┌───────────────┐  ┌──────────────────┐  ┌───────────────────┐
@@ -2481,11 +2483,15 @@ The current implementation focuses on demonstrating technical feasibility rather
 
 1. **Training Infrastructure**: Extending the system to support fine-tuning on limited hardware, even if at extremely slow rates.
 
-2. **Cross-Platform Implementation**: Developing more comprehensive adaptations for different 1990s platforms beyond DOS.
+2. **Cross-Platform Implementation**: Developing more comprehensive adaptations
+   for constrained platforms beyond DOS.
 
 3. **Hardware Acceleration Exploration**: Experimenting with potential hardware acceleration using contemporary expansion cards or coprocessors.
 
-These future directions represent opportunities for further research and development, continuing to explore the intersection of modern AI algorithms and vintage computing hardware. The project not only demonstrates what was technically possible on 486-era hardware, but also provides insights for modern edge AI development and educational resources for understanding transformer models.
+These future directions represent opportunities for further research and
+development in portable local inference, indexed recall, and constrained-system
+runtime design. The project provides insights for modern edge AI development and
+educational resources for understanding transformer models.
 
 # 10. Addendum: Practical Applications and Modern Relevance
 
@@ -2536,11 +2542,13 @@ Modern microcontrollers like the ARM Cortex-M series (particularly M4/M7) face s
 
 ### B.1 Integration with Existing Systems
 
-The modular design of our implementation allows for integration with other systems, both vintage and modern:
+The modular design allows integration with other legacy and modern systems:
 
 1. **DOS/Windows Integration**: The implementation could be adapted as a TSR (Terminate and Stay Resident) program in DOS or a dynamic library in Windows, providing text generation capabilities to other applications.
 
-2. **Modern Bridge Applications**: Using DOSBox or similar emulation technology, the implementation could serve as a bridge between vintage and modern computing, for example, providing an API that modern applications could access.
+2. **Modern Bridge Applications**: Using DOSBox or similar emulation technology,
+   the implementation could expose the DOS runtime to modern tooling for tests,
+   demos, or controlled experiments.
 
 Sample integration code might look like:
 
@@ -2621,7 +2629,7 @@ SUB VisualizeAttention(attention_matrix AS SparseBlockMatrix)
 END SUB
 ```
 
-## C. Retrocomputing Community Engagement
+## C. Constrained and Legacy System Engagement
 
 ### C.1 Demoscene Potential
 
@@ -2633,13 +2641,14 @@ The demoscene—a community focused on creating technically impressive and artis
 
 3. **Artward Innovation**: Integration with demo effects could create novel generative text art that responds to visuals, music, or user input.
 
-### C.2 Vintage Computing Preservation
+### C.2 Legacy System Preservation
 
 This project also contributes to computing preservation efforts:
 
 1. **Documentation of Optimization Techniques**: Preserving knowledge of low-level optimization techniques that are increasingly rare in modern computing education.
 
-2. **Functional Demonstration**: Showing that vintage hardware remains capable of meaningful computation, encouraging continued preservation efforts.
+2. **Functional Demonstration**: Showing that legacy hardware remains capable
+   of meaningful computation, encouraging continued preservation efforts.
 
 3. **Historical Context**: Providing a bridge between historical computing and modern AI concepts for educational purposes.
 
@@ -2685,7 +2694,8 @@ This implementation could serve as the foundation for an open-source framework f
 
 1. **Modular Components**: The optimization techniques could be packaged as reusable components for other projects.
 
-2. **Cross-Platform Extensions**: The codebase could be expanded to support a wider range of vintage and modern platforms.
+2. **Cross-Platform Extensions**: The codebase could be expanded to support a
+   wider range of legacy, embedded, and modern platforms.
 
 3. **Benchmark Suite**: A standardized benchmark suite could be developed to compare different optimizations across platforms.
 
@@ -2699,7 +2709,9 @@ A curriculum could be developed around this implementation for courses on:
 
 3. **Algorithm Design**: Demonstrating how the same mathematical foundations can be implemented across vastly different hardware generations.
 
-This addendum expands the original documentation by highlighting practical applications, modern connections, and potential extensions of our GPT-2 in BASIC implementation, providing additional context for both technical and historical aspects of the project.
+This addendum expands the documentation by highlighting practical applications,
+modern connections, and potential extensions of GPT2-BASIC, providing additional
+context for the technical and historical aspects of the project.
 
 ## 11. References
 
