@@ -1,7 +1,7 @@
-# GPT2-BASIC Promotional Kit
+# GPT2-BASIC Release Copy Kit
 
-This file contains copy that can be reused for the README, GitHub release,
-video descriptions, social posts, and a small landing page.
+This file contains project-facing copy that can be reused for the README,
+GitHub release, video descriptions, social posts, and a small landing page.
 
 ## One-Line Description
 
@@ -77,9 +77,9 @@ GPT2-BASIC is now running small GPT-style models in DOS. Fixed-point
 transformer inference, FreeBASIC source, assistant packs, QEMU evidence, and a
 hardware-transfer path for real machines.
 
-I built a tiny transformer runtime for DOS in FreeBASIC. It loads exported
-fixed-point weights, runs GPT-style inference, and now has a CHAT assistant
-pack with reproducible quality evidence.
+GPT2-BASIC includes a tiny transformer runtime for DOS in FreeBASIC. It loads
+exported fixed-point weights, runs GPT-style inference, and includes assistant
+packs with reproducible quality evidence.
 
 What if transformer models had landed in the 486 era? GPT2-BASIC is a working
 answer: small, slow, inspectable, and running inside DOS.
@@ -100,6 +100,20 @@ Project goals:
 Repository: https://github.com/tsotchke/gpt2-basic
 Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 
+## Assistant Capability Demonstration Description
+
+This long-form terminal demonstration is for engineers, operators, pack
+authors, and constrained-system evaluators. It shows the current GPT2-BASIC
+assistant stack: hot-loadable CHAT, DOSHELP, OFFICE, and DEV packs; session
+memory; KB2 binary recall; USER.TXT note import; source/timing provenance; QEMU
+stress evidence; and release verification.
+
+The video is recorded from a real terminal with `asciinema` and rendered from
+checked QEMU assistant evidence. It is still honest about the constraint: this
+is a tiny local DOS model with retrieval-first intelligence, not a frontier LLM.
+The visible DOS prompt uses era-accurate commands only; host-side Python and
+video tooling are not presented as DOS or Windows 95 runtime features.
+
 ## Thumbnail Text Options
 
 - GPT IN DOS
@@ -113,5 +127,5 @@ Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
 Project: GPT2-BASIC
 Repository: https://github.com/tsotchke/gpt2-basic
 Release: https://github.com/tsotchke/gpt2-basic/releases/tag/v0.1.0-preview
-Contact: Tsotchke Corporation / project owner
+Contact: GitHub issues or repository maintainer contact
 License: MIT

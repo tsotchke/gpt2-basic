@@ -29,12 +29,17 @@ REQUIRED_INI_KEYS = (
     "KNOW",
     "KDB",
     "KDBIDX",
+    "KDBBIN",
+    "KDBBIDX",
     "USER",
     "USAGE",
     "SPRITE",
     "ICONS",
     "ACTIONS",
 )
+
+KDB2_HEADER_BYTES = 64
+KDB2_RECORD_BYTES = 160 + 64 + 192
 
 REQUIRED_MODEL_FILES = (
     "GPT2CFG.TXT",
@@ -73,6 +78,14 @@ class KdbIndexRow:
 
 
 @dataclass(frozen=True)
+class KdbBinaryIndexRow:
+    bucket: str
+    entries: int
+    filename: str
+    byte_count: int
+
+
+@dataclass(frozen=True)
 class PackContract:
     pack_id: str
     title: str
@@ -82,6 +95,8 @@ class PackContract:
     knowledge_path: Path
     kdb_path: Path
     kdb_index_path: Path
+    kdb_bin_path: Path
+    kdb_bin_index_path: Path
     user_path: Path
     usage_path: Path
     sprite_path: Path
@@ -91,6 +106,7 @@ class PackContract:
     knowledge_rows: tuple[HelpRow, ...]
     kdb_rows: tuple[HelpRow, ...]
     kdb_index_rows: tuple[KdbIndexRow, ...]
+    kdb_bin_index_rows: tuple[KdbBinaryIndexRow, ...]
     ini_values: dict[str, str]
 
 
@@ -204,6 +220,47 @@ def parse_kdb_index_rows(path: Path) -> tuple[KdbIndexRow, ...]:
     return tuple(rows)
 
 
+def parse_kdb_bin_index_rows(path: Path) -> tuple[KdbBinaryIndexRow, ...]:
+    rows: list[KdbBinaryIndexRow] = []
+    for raw in read_ascii(path).splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or line.startswith(";"):
+            continue
+        parts = [part.strip() for part in line.split("|", 3)]
+        if len(parts) != 4 or not all(parts):
+            raise PackContractError(f"invalid KB2IDX.TXT row in {path}: {raw!r}")
+        bucket, entries_text, filename, bytes_text = parts
+        if len(bucket) != 1 or not re.fullmatch(r"[0-9A-Z]", bucket):
+            raise PackContractError(f"invalid KB2IDX bucket in {path}: {raw!r}")
+        if not entries_text.isdigit() or int(entries_text) <= 0:
+            raise PackContractError(f"invalid KB2IDX entry count in {path}: {raw!r}")
+        if not re.fullmatch(r"KB2[0-9A-Z]\.BIN", filename.upper()):
+            raise PackContractError(f"invalid KB2IDX filename in {path}: {raw!r}")
+        if not bytes_text.isdigit() or int(bytes_text) <= KDB2_HEADER_BYTES:
+            raise PackContractError(f"invalid KB2IDX byte count in {path}: {raw!r}")
+        rows.append(KdbBinaryIndexRow(bucket, int(entries_text), filename.upper(), int(bytes_text)))
+    if not rows:
+        raise PackContractError(f"KB2IDX.TXT has no bucket rows: {path}")
+    return tuple(rows)
+
+
+def validate_kdb2_binary(path: Path, expected_rows: int | None = None) -> None:
+    try:
+        payload = path.read_bytes()
+    except FileNotFoundError as exc:
+        raise PackContractError(f"missing KDB2 binary: {path}") from exc
+    if len(payload) < KDB2_HEADER_BYTES:
+        raise PackContractError(f"KDB2 binary too short: {path}")
+    if not payload.startswith(b"KDB2|V=1|"):
+        raise PackContractError(f"KDB2 binary missing header: {path}")
+    body_bytes = len(payload) - KDB2_HEADER_BYTES
+    if body_bytes % KDB2_RECORD_BYTES != 0:
+        raise PackContractError(f"KDB2 binary has partial record: {path}")
+    row_count = body_bytes // KDB2_RECORD_BYTES
+    if expected_rows is not None and row_count != expected_rows:
+        raise PackContractError(f"KDB2 binary row count mismatch: {path}")
+
+
 def validate_usage_file(path: Path) -> None:
     text = read_ascii(path)
     for marker in REQUIRED_USAGE_MARKERS:
@@ -235,6 +292,8 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
     knowledge_path = resolve_pack_value(pack_root, pack_dir, values["KNOW"], "KNOW.TXT")
     kdb_path = resolve_pack_value(pack_root, pack_dir, values["KDB"], "KDB.TXT")
     kdb_index_path = resolve_pack_value(pack_root, pack_dir, values["KDBIDX"], "KDBIDX.TXT")
+    kdb_bin_path = resolve_pack_value(pack_root, pack_dir, values["KDBBIN"], "KB2ALL.BIN")
+    kdb_bin_index_path = resolve_pack_value(pack_root, pack_dir, values["KDBBIDX"], "KB2IDX.TXT")
     user_path = resolve_pack_value(pack_root, pack_dir, values["USER"], "USER.TXT")
     usage_path = resolve_pack_value(pack_root, pack_dir, values["USAGE"], "USAGE.TXT")
     sprite_path = resolve_pack_value(pack_root, pack_dir, values["SPRITE"])
@@ -245,6 +304,13 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
     knowledge_rows = parse_help_rows(knowledge_path)
     kdb_rows = parse_help_rows(kdb_path)
     kdb_index_rows = parse_kdb_index_rows(kdb_index_path) if kdb_index_path.exists() else tuple()
+    kdb_bin_index_rows = parse_kdb_bin_index_rows(kdb_bin_index_path) if kdb_bin_index_path.exists() else tuple()
+    if kdb_bin_path.exists():
+        validate_kdb2_binary(kdb_bin_path, len(kdb_rows))
+    for row in kdb_bin_index_rows:
+        bucket_path = kdb_bin_path.parent / row.filename
+        if bucket_path.exists():
+            validate_kdb2_binary(bucket_path, row.entries)
     validate_usage_file(usage_path)
     if not user_path.is_file():
         raise PackContractError(f"user note template missing: {user_path}")
@@ -261,6 +327,8 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
         knowledge_path=knowledge_path,
         kdb_path=kdb_path,
         kdb_index_path=kdb_index_path,
+        kdb_bin_path=kdb_bin_path,
+        kdb_bin_index_path=kdb_bin_index_path,
         user_path=user_path,
         usage_path=usage_path,
         sprite_path=sprite_path,
@@ -270,6 +338,7 @@ def load_pack_contract(pack_root: Path, pack_id: str) -> PackContract:
         knowledge_rows=knowledge_rows,
         kdb_rows=kdb_rows,
         kdb_index_rows=kdb_index_rows,
+        kdb_bin_index_rows=kdb_bin_index_rows,
         ini_values=values,
     )
 
@@ -299,6 +368,8 @@ def self_test() -> None:
         raise PackContractError("CHAT KDB rows are unexpectedly sparse")
     if len(chat.kdb_index_rows) < 3:
         raise PackContractError("CHAT KDB index rows are unexpectedly sparse")
+    if len(chat.kdb_bin_index_rows) < 3:
+        raise PackContractError("CHAT KDB2 index rows are unexpectedly sparse")
     print(f"PROBE_OK assistant_pack_contract_count={len(packs)}")
     print("PROBE_OK assistant_pack_contract_parser=1")
     print("PROBE_OK assistant_pack_contract_artifacts=1")

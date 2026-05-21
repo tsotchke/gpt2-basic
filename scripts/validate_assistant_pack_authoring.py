@@ -7,7 +7,18 @@ import argparse
 from pathlib import Path
 
 from assistant_pack_contract import PackContractError, parse_help_rows, load_all_pack_contracts
-from build_assistant_kdb import DEFAULT_PACK_ROOT, render_bucket_files, render_index, render_kdb
+from build_assistant_kdb import (
+    DEFAULT_PACK_ROOT,
+    KDB2_FULL_NAME,
+    KDB2_HEADER_BYTES,
+    KDB2_RECORD_BYTES,
+    render_bucket_files,
+    render_index,
+    render_kdb,
+    render_kdb2_bucket_files,
+    render_kdb2_full,
+    render_kdb2_index,
+)
 
 
 def validate_user_file(path: Path) -> int:
@@ -46,6 +57,17 @@ def validate_pack_authoring(pack_root: Path) -> None:
             bucket_path = pack.kdb_path.parent / name
             if not bucket_path.exists() or bucket_path.read_text(encoding="ascii") != expected_text:
                 raise PackContractError(f"{name} is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
+        expected_kdb2 = render_kdb2_full(pack)
+        if not pack.kdb_bin_path.exists() or pack.kdb_bin_path.read_bytes() != expected_kdb2:
+            raise PackContractError(f"{KDB2_FULL_NAME} is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
+        expected_kdb2_index = render_kdb2_index(pack)
+        if not pack.kdb_bin_index_path.exists() or pack.kdb_bin_index_path.read_text(encoding="ascii") != expected_kdb2_index:
+            raise PackContractError(f"KB2IDX.TXT is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
+        expected_kdb2_buckets = render_kdb2_bucket_files(pack)
+        for name, expected_payload in expected_kdb2_buckets.items():
+            bucket_path = pack.kdb_bin_path.parent / name
+            if not bucket_path.exists() or bucket_path.read_bytes() != expected_payload:
+                raise PackContractError(f"{name} is stale for {pack.pack_id}; run scripts/build_assistant_kdb.py --write")
         parse_help_rows(pack.help_path)
         parse_help_rows(pack.knowledge_path)
         parse_help_rows(pack.kdb_path)
@@ -58,6 +80,7 @@ def validate_pack_authoring(pack_root: Path) -> None:
             f"kdb={len(pack.kdb_rows)}|"
             f"idx={len(pack.kdb_index_rows)}|"
             f"bucket_entries={sum(len(text.splitlines()) - 2 for text in expected_buckets.values())}|"
+            f"kdb2_entries={sum((len(payload) - KDB2_HEADER_BYTES) // KDB2_RECORD_BYTES for payload in expected_kdb2_buckets.values())}|"
             f"user={user_rows}"
         )
     print("PROBE_OK assistant_pack_authoring=1")

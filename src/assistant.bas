@@ -41,6 +41,10 @@ CONST ASSIST_HISTORY_MAX = 96
 CONST ASSIST_HISTORY_PAGE = 10
 CONST ASSIST_MEMORY_VALUE_MAX = 72
 CONST ASSIST_MEMORY_FILE = "ASSIST.MEM"
+CONST ASSIST_KDB2_HEADER_BYTES = 64
+CONST ASSIST_KDB2_TERMS_BYTES = 160
+CONST ASSIST_KDB2_TITLE_BYTES = 64
+CONST ASSIST_KDB2_BODY_BYTES = 192
 
 TYPE AssistantPack
     id AS STRING * 32
@@ -51,6 +55,8 @@ TYPE AssistantPack
     knowledge_path AS STRING * 80
     kdb_path AS STRING * 80
     kdb_index_path AS STRING * 80
+    kdb_bin_path AS STRING * 80
+    kdb_bin_index_path AS STRING * 80
     user_path AS STRING * 80
     golden_path AS STRING * 80
     usage_path AS STRING * 80
@@ -58,6 +64,12 @@ TYPE AssistantPack
     icons_path AS STRING * 80
     actions AS STRING * 80
     loaded AS INTEGER
+END TYPE
+
+TYPE AssistantKdbV2Record
+    terms AS STRING * ASSIST_KDB2_TERMS_BYTES
+    title AS STRING * ASSIST_KDB2_TITLE_BYTES
+    body AS STRING * ASSIST_KDB2_BODY_BYTES
 END TYPE
 
 DIM SHARED g_assist_packs(0 TO ASSIST_MAX_PACKS - 1) AS AssistantPack
@@ -75,10 +87,14 @@ DIM SHARED g_assist_memory_problem AS STRING
 DIM SHARED g_assist_memory_last_user AS STRING
 DIM SHARED g_assist_memory_last_answer AS STRING
 DIM SHARED g_assist_memory_persist AS INTEGER
+DIM SHARED g_assist_last_recall_mode AS STRING
+DIM SHARED g_assist_last_recall_score AS INTEGER
+DIM SHARED g_assist_last_retrieval_ms AS LONG
 
 DECLARE FUNCTION AssistTrimFixed(value AS STRING) AS STRING
 DECLARE FUNCTION AssistPathJoin(left_path AS STRING, right_path AS STRING) AS STRING
 DECLARE FUNCTION AssistSafeText(value AS STRING) AS STRING
+DECLARE FUNCTION AssistElapsedMs(start_time AS DOUBLE) AS LONG
 DECLARE FUNCTION AssistVisibleToken(token_id AS INTEGER) AS STRING
 DECLARE SUB AssistAddHistory(line_text AS STRING)
 DECLARE SUB AssistClearHistory()
@@ -97,6 +113,9 @@ DECLARE FUNCTION AssistMemoryReply(query AS STRING) AS STRING
 DECLARE FUNCTION AssistRememberCommand(argument AS STRING) AS STRING
 DECLARE SUB AssistClearMemoryFacts()
 DECLARE SUB AssistPrintMemory()
+DECLARE SUB AssistPrintCapabilities()
+DECLARE SUB AssistPrintLimits()
+DECLARE SUB AssistPrintSources()
 DECLARE FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
 DECLARE FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
 DECLARE SUB AssistLoadPackList()
@@ -114,6 +133,9 @@ DECLARE FUNCTION AssistRetrievalScore(query_lower AS STRING, key_text AS STRING,
 DECLARE SUB AssistScanRetrievalFile(retrieve_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistKdbBucketPath(kdb_path AS STRING, bucket_char AS STRING) AS STRING
 DECLARE SUB AssistScanBucketedKdb(kdb_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+DECLARE FUNCTION AssistKdbV2BucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS STRING
+DECLARE SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+DECLARE SUB AssistScanBucketedKdbV2(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
 DECLARE FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGoldenReply(pack_index AS INTEGER, query AS STRING) AS STRING
 DECLARE FUNCTION AssistGenerate(prompt AS STRING, max_tokens AS INTEGER) AS STRING
@@ -167,6 +189,16 @@ FUNCTION AssistSafeText(value AS STRING) AS STRING
     NEXT i
 
     RETURN result
+END FUNCTION
+
+FUNCTION AssistElapsedMs(start_time AS DOUBLE) AS LONG
+    DIM end_time AS DOUBLE
+    DIM delta AS DOUBLE
+
+    end_time = TIMER
+    delta = end_time - start_time
+    IF delta < 0 THEN delta = delta + 86400.0
+    RETURN CLNG(delta * 1000.0)
 END FUNCTION
 
 FUNCTION AssistVisibleToken(token_id AS INTEGER) AS STRING
@@ -539,6 +571,40 @@ SUB AssistPrintMemory()
     PRINT
 END SUB
 
+SUB AssistPrintCapabilities()
+    PRINT "Capabilities:"
+    PRINT "  Chat with short local answers."
+    PRINT "  Switch packs with /pack NAME."
+    PRINT "  Recall pack notes from KB2*.BIN, KDB.TXT, and USER.TXT."
+    PRINT "  Remember name, goal, style, problem, and recent turns."
+    PRINT "  Explain DOS setup, rewrite office text, and help with release work."
+    PRINT
+END SUB
+
+SUB AssistPrintLimits()
+    PRINT "Limits:"
+    PRINT "  No internet or live facts from DOS."
+    PRINT "  Short prompts work best on 486-class hardware."
+    PRINT "  Pack notes and memory are more reliable than open-ended generation."
+    PRINT "  Use /sources after an answer to see the recall path."
+    PRINT
+END SUB
+
+SUB AssistPrintSources()
+    DIM p AS AssistantPack
+
+    p = g_assist_packs(g_assist_active_pack)
+    PRINT "Current sources:"
+    PRINT "  Pack : "; AssistTrimFixed(p.id); " - "; AssistTrimFixed(p.title)
+    PRINT "  Model: "; AssistTrimFixed(p.model_path)
+    PRINT "  Fast : "; AssistTrimFixed(p.kdb_bin_path)
+    PRINT "  Index: "; AssistTrimFixed(p.kdb_bin_index_path)
+    PRINT "  Text : "; AssistTrimFixed(p.kdb_path)
+    PRINT "  User : "; AssistTrimFixed(p.user_path)
+    PRINT "  Last : "; g_assist_last_recall_mode; " score="; g_assist_last_recall_score; " retrieve_ms="; g_assist_last_retrieval_ms
+    PRINT
+END SUB
+
 FUNCTION AssistReadIniValue(filename AS STRING, key_name AS STRING, default_value AS STRING) AS STRING
     DIM file_num AS INTEGER
     DIM line_text AS STRING
@@ -606,6 +672,12 @@ FUNCTION AssistLoadPack(pack_id AS STRING, pack_index AS INTEGER) AS INTEGER
     value_text = AssistReadIniValue(ini_path, "KDBIDX", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).kdb_index_path = value_text
+    value_text = AssistReadIniValue(ini_path, "KDBBIN", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).kdb_bin_path = value_text
+    value_text = AssistReadIniValue(ini_path, "KDBBIDX", "")
+    IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
+    g_assist_packs(pack_index).kdb_bin_index_path = value_text
     value_text = AssistReadIniValue(ini_path, "USER", "")
     IF value_text <> "" AND INSTR(value_text, "\") = 0 THEN value_text = AssistPathJoin(base_path, value_text)
     g_assist_packs(pack_index).user_path = value_text
@@ -636,6 +708,9 @@ SUB AssistUseBuiltinPack()
     g_assist_packs(0).help_path = ""
     g_assist_packs(0).knowledge_path = ""
     g_assist_packs(0).kdb_path = ""
+    g_assist_packs(0).kdb_index_path = ""
+    g_assist_packs(0).kdb_bin_path = ""
+    g_assist_packs(0).kdb_bin_index_path = ""
     g_assist_packs(0).user_path = ""
     g_assist_packs(0).golden_path = ""
     g_assist_packs(0).usage_path = ""
@@ -1022,15 +1097,155 @@ SUB AssistScanBucketedKdb(kdb_path AS STRING, query_lower AS STRING, score_bonus
     IF any_scanned = 0 THEN AssistScanRetrievalFile kdb_path, query_lower, score_bonus, best_text, best_score
 END SUB
 
+FUNCTION AssistKdbV2BucketPath(kdb_bin_path AS STRING, bucket_char AS STRING) AS STRING
+    DIM i AS INTEGER
+    DIM last_sep AS INTEGER
+    DIM ch AS STRING
+    DIM bucket AS STRING
+    DIM prefix AS STRING
+
+    kdb_bin_path = AssistTrimFixed(kdb_bin_path)
+    bucket = UCASE$(LEFT$(TRIM$(bucket_char), 1))
+    IF bucket = "" THEN RETURN ""
+    IF NOT ((bucket >= "A" AND bucket <= "Z") OR (bucket >= "0" AND bucket <= "9")) THEN RETURN ""
+
+    last_sep = 0
+    FOR i = 1 TO LEN(kdb_bin_path)
+        ch = MID$(kdb_bin_path, i, 1)
+        IF ch = "\" OR ch = "/" THEN last_sep = i
+    NEXT i
+
+    IF last_sep > 0 THEN
+        prefix = LEFT$(kdb_bin_path, last_sep)
+    ELSE
+        prefix = ""
+    END IF
+    RETURN prefix + "KB2" + bucket + ".BIN"
+END FUNCTION
+
+SUB AssistScanBinaryKdbFile(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+    DIM file_num AS INTEGER
+    DIM header AS STRING * ASSIST_KDB2_HEADER_BYTES
+    DIM row AS AssistantKdbV2Record
+    DIM row_bytes AS LONG
+    DIM file_bytes AS LONG
+    DIM row_count AS LONG
+    DIM row_index AS LONG
+    DIM row_offset AS LONG
+    DIM key_text AS STRING
+    DIM title_text AS STRING
+    DIM body_text AS STRING
+    DIM row_score AS INTEGER
+
+    kdb_bin_path = AssistTrimFixed(kdb_bin_path)
+    IF kdb_bin_path = "" OR DIR(kdb_bin_path) = "" THEN RETURN
+
+    file_num = FREEFILE
+    ON ERROR GOTO assist_scan_binary_kdb_error
+    OPEN kdb_bin_path FOR BINARY AS #file_num
+    ON ERROR GOTO 0
+
+    file_bytes = LOF(file_num)
+    row_bytes = LEN(row)
+    IF file_bytes < ASSIST_KDB2_HEADER_BYTES OR row_bytes <= 0 THEN
+        CLOSE #file_num
+        RETURN
+    END IF
+    IF (file_bytes - ASSIST_KDB2_HEADER_BYTES) MOD row_bytes <> 0 THEN
+        CLOSE #file_num
+        RETURN
+    END IF
+
+    GET #file_num, 1, header
+    IF LEFT$(header, 4) <> "KDB2" THEN
+        CLOSE #file_num
+        RETURN
+    END IF
+
+    row_count = (file_bytes - ASSIST_KDB2_HEADER_BYTES) \ row_bytes
+    FOR row_index = 1 TO row_count
+        row_offset = ASSIST_KDB2_HEADER_BYTES + 1 + ((row_index - 1) * row_bytes)
+        GET #file_num, row_offset, row
+        key_text = LCASE$(AssistTrimFixed(row.terms))
+        title_text = AssistTrimFixed(row.title)
+        body_text = AssistTrimFixed(row.body)
+        row_score = AssistRetrievalScore(query_lower, key_text, title_text, body_text)
+        IF row_score > 0 THEN row_score = row_score + score_bonus
+        IF row_score > best_score THEN
+            best_score = row_score
+            best_text = title_text + ": " + body_text
+        END IF
+    NEXT row_index
+
+    CLOSE #file_num
+    RETURN
+
+assist_scan_binary_kdb_error:
+    ON ERROR GOTO 0
+    RETURN
+END SUB
+
+SUB AssistScanBucketedKdbV2(kdb_bin_path AS STRING, query_lower AS STRING, score_bonus AS INTEGER, BYREF best_text AS STRING, BYREF best_score AS INTEGER)
+    DIM i AS INTEGER
+    DIM word_text AS STRING
+    DIM ch AS STRING
+    DIM bucket AS STRING
+    DIM scanned AS STRING
+    DIM bucket_path AS STRING
+    DIM any_scanned AS INTEGER
+
+    kdb_bin_path = AssistTrimFixed(kdb_bin_path)
+    IF kdb_bin_path = "" THEN RETURN
+
+    scanned = ","
+    any_scanned = 0
+    word_text = ""
+    query_lower = LCASE$(TRIM$(query_lower))
+
+    FOR i = 1 TO LEN(query_lower) + 1
+        IF i <= LEN(query_lower) THEN
+            ch = MID$(query_lower, i, 1)
+        ELSE
+            ch = " "
+        END IF
+
+        IF (ch >= "a" AND ch <= "z") OR (ch >= "0" AND ch <= "9") THEN
+            word_text = word_text + ch
+        ELSE
+            IF LEN(word_text) >= 3 AND AssistIsRetrievalStopword(word_text) = 0 THEN
+                bucket = UCASE$(LEFT$(word_text, 1))
+                IF INSTR(scanned, "," + bucket + ",") = 0 THEN
+                    scanned = scanned + bucket + ","
+                    bucket_path = AssistKdbV2BucketPath(kdb_bin_path, bucket)
+                    IF bucket_path <> "" AND DIR(bucket_path) <> "" THEN
+                        AssistScanBinaryKdbFile bucket_path, query_lower, score_bonus, best_text, best_score
+                        any_scanned = 1
+                    END IF
+                END IF
+            END IF
+            word_text = ""
+        END IF
+    NEXT i
+
+    IF any_scanned = 0 THEN AssistScanBinaryKdbFile kdb_bin_path, query_lower, score_bonus, best_text, best_score
+END SUB
+
 FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     DIM help_path AS STRING
     DIM knowledge_path AS STRING
     DIM kdb_path AS STRING
+    DIM kdb_bin_path AS STRING
     DIM user_path AS STRING
     DIM q AS STRING
     DIM best_text AS STRING
     DIM best_score AS INTEGER
+    DIM before_score AS INTEGER
+    DIM start_time AS DOUBLE
 
+    g_assist_last_recall_mode = "none"
+    g_assist_last_recall_score = 0
+    g_assist_last_retrieval_ms = 0
+    start_time = TIMER
     IF pack_index < 0 OR pack_index >= g_assist_pack_count THEN RETURN ""
 
     q = LCASE$(query)
@@ -1039,16 +1254,46 @@ FUNCTION AssistRetrieve(pack_index AS INTEGER, query AS STRING) AS STRING
     help_path = AssistTrimFixed(g_assist_packs(pack_index).help_path)
     knowledge_path = AssistTrimFixed(g_assist_packs(pack_index).knowledge_path)
     kdb_path = AssistTrimFixed(g_assist_packs(pack_index).kdb_path)
+    kdb_bin_path = AssistTrimFixed(g_assist_packs(pack_index).kdb_bin_path)
     user_path = AssistTrimFixed(g_assist_packs(pack_index).user_path)
 
-    IF kdb_path <> "" AND DIR(kdb_path) <> "" THEN
+    IF kdb_bin_path <> "" AND DIR(kdb_bin_path) <> "" THEN
+        before_score = best_score
+        AssistScanBucketedKdbV2 kdb_bin_path, q, 0, best_text, best_score
+        IF best_score > before_score THEN g_assist_last_recall_mode = "kb2_bucket"
+        IF best_score < 8 THEN
+            before_score = best_score
+            AssistScanBinaryKdbFile kdb_bin_path, q, 0, best_text, best_score
+            IF best_score > before_score THEN g_assist_last_recall_mode = "kb2_full"
+        END IF
+        IF best_score < 8 AND kdb_path <> "" AND DIR(kdb_path) <> "" THEN
+            before_score = best_score
+            AssistScanBucketedKdb kdb_path, q, 0, best_text, best_score
+            IF best_score > before_score THEN g_assist_last_recall_mode = "kdb_text_bucket"
+        END IF
+    ELSEIF kdb_path <> "" AND DIR(kdb_path) <> "" THEN
+        before_score = best_score
         AssistScanBucketedKdb kdb_path, q, 0, best_text, best_score
-        IF best_score < 8 THEN AssistScanRetrievalFile kdb_path, q, 0, best_text, best_score
+        IF best_score > before_score THEN g_assist_last_recall_mode = "kdb_text_bucket"
+        IF best_score < 8 THEN
+            before_score = best_score
+            AssistScanRetrievalFile kdb_path, q, 0, best_text, best_score
+            IF best_score > before_score THEN g_assist_last_recall_mode = "kdb_text_full"
+        END IF
     ELSE
+        before_score = best_score
         AssistScanRetrievalFile help_path, q, 0, best_text, best_score
+        IF best_score > before_score THEN g_assist_last_recall_mode = "help"
+        before_score = best_score
         AssistScanRetrievalFile knowledge_path, q, 0, best_text, best_score
+        IF best_score > before_score THEN g_assist_last_recall_mode = "know"
     END IF
+    before_score = best_score
     AssistScanRetrievalFile user_path, q, 12, best_text, best_score
+    IF best_score > before_score THEN g_assist_last_recall_mode = "user"
+
+    g_assist_last_recall_score = best_score
+    g_assist_last_retrieval_ms = AssistElapsedMs(start_time)
 
     IF best_score >= 8 THEN RETURN best_text
     RETURN ""
@@ -1595,17 +1840,31 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     DIM model_path AS STRING
     DIM model_ready AS INTEGER
     DIM reply_source AS STRING
+    DIM total_start AS DOUBLE
+    DIM stage_start AS DOUBLE
+    DIM retrieval_ms AS LONG
+    DIM golden_ms AS LONG
+    DIM memory_ms AS LONG
+    DIM model_ms AS LONG
+    DIM total_ms AS LONG
 
+    total_start = TIMER
     pack_index = g_assist_active_pack
     canonical_query = AssistCanonicalQuery(query)
     IF canonical_query = "" THEN canonical_query = query
     intent_name = AssistClassifyIntent(canonical_query)
     actions = AssistActionsForIntent(intent_name)
+    stage_start = TIMER
     retrieved = AssistRetrieve(pack_index, canonical_query)
+    retrieval_ms = g_assist_last_retrieval_ms
     retrieved_note = retrieved
+    stage_start = TIMER
     golden = AssistGoldenReply(pack_index, canonical_query)
+    golden_ms = AssistElapsedMs(stage_start)
+    stage_start = TIMER
     memory_reply = AssistMemoryReply(canonical_query)
     memory_context = AssistMemoryContext()
+    memory_ms = AssistElapsedMs(stage_start)
     note_text = retrieved_note
     model_path = AssistTrimFixed(g_assist_packs(pack_index).model_path)
     model_ready = 0
@@ -1656,7 +1915,9 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         IF memory_context <> "" THEN prompt = memory_context + " " + prompt
         IF note_text <> "" THEN prompt = prompt + " Note: " + note_text
         prompt = prompt + " Assistant:"
+        stage_start = TIMER
         generated = AssistGenerate(prompt, ASSIST_MAX_REPLY_TOKENS)
+        model_ms = AssistElapsedMs(stage_start)
         IF AssistGeneratedLooksBad(generated, query) = 0 THEN
             bubble = generated
             reply_source = "model"
@@ -1669,6 +1930,7 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
     END IF
 
     IF LEN(bubble) > 360 THEN bubble = LEFT$(bubble, 360)
+    total_ms = AssistElapsedMs(total_start)
 
     IF g_assist_emit_records <> 0 THEN
         PRINT "ASSIST_REPLY|pack=" + AssistTrimFixed(g_assist_packs(pack_index).id) + _
@@ -1677,6 +1939,13 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
               "|query=" + AssistSafeText(query) + _
               "|canonical=" + AssistSafeText(canonical_query) + _
               "|source=" + reply_source + _
+              "|recall=" + AssistSafeText(g_assist_last_recall_mode) + _
+              "|recall_score=" + LTRIM$(STR$(g_assist_last_recall_score)) + _
+              "|t_retrieve_ms=" + LTRIM$(STR$(retrieval_ms)) + _
+              "|t_golden_ms=" + LTRIM$(STR$(golden_ms)) + _
+              "|t_memory_ms=" + LTRIM$(STR$(memory_ms)) + _
+              "|t_model_ms=" + LTRIM$(STR$(model_ms)) + _
+              "|t_total_ms=" + LTRIM$(STR$(total_ms)) + _
               "|actions=" + AssistSafeText(actions) + _
               "|retrieval=" + AssistSafeText(retrieved_note) + _
               "|golden=" + AssistSafeText(golden) + _
@@ -1689,9 +1958,11 @@ SUB AssistRenderReply(query AS STRING, use_generation AS INTEGER)
         PRINT "| Assistant                                                  |"
         PRINT "+------------------------------------------------------------+"
         PRINT bubble
+        PRINT "Source: "; reply_source; " / "; g_assist_last_recall_mode; " ("; retrieval_ms; " ms)"
         PRINT
     ELSE
         PRINT "Answer: "; bubble
+        PRINT "Source: "; reply_source; " / "; g_assist_last_recall_mode; " ("; retrieval_ms; " ms)"
     END IF
     PRINT "[ "; actions; " ]"
     PRINT
@@ -1775,7 +2046,7 @@ SUB AssistStressProbe()
     AssistRenderReply "what is your favorite food", 1
     AssistRenderReply "what is a goal", 1
     AssistRenderReply "how do i improve", 1
-    AssistRenderReply "my name is Tyr", 1
+    AssistRenderReply "my name is Operator", 1
     AssistRenderReply "what is my name", 1
     AssistRenderReply "we are working on the DOSBox assistant", 1
     AssistRenderReply "what are we working on", 1
@@ -1824,7 +2095,8 @@ SUB AssistInteractive()
     AssistPrintPackList
     PRINT
     AssistRenderPackStatus
-    PRINT "Commands: /about, /pack NAME, /packs, /memory, /remember KEY=VALUE, /forget, /u, /d, /home, /end, /h, /clear, /quit"
+    PRINT "Commands: /about, /capabilities, /limits, /sources, /pack NAME, /packs"
+    PRINT "          /memory, /remember KEY=VALUE, /forget, /u, /d, /home, /end, /h, /clear, /quit"
     PRINT "Memory persists in "; ASSIST_MEMORY_FILE; ". Add pack notes in USER.TXT."
     PRINT
     AssistPreloadActivePackModel
@@ -1841,6 +2113,12 @@ SUB AssistInteractive()
             AssistPrintPackList
         ELSEIF LCASE$(command_text) = "/about" THEN
             AssistPrintPackUsage g_assist_active_pack
+        ELSEIF LCASE$(command_text) = "/capabilities" THEN
+            AssistPrintCapabilities
+        ELSEIF LCASE$(command_text) = "/limits" THEN
+            AssistPrintLimits
+        ELSEIF LCASE$(command_text) = "/sources" OR LCASE$(command_text) = "/status" THEN
+            AssistPrintSources
         ELSEIF LCASE$(command_text) = "/memory" THEN
             AssistPrintMemory
         ELSEIF LCASE$(command_text) = "/forget" THEN

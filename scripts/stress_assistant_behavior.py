@@ -42,14 +42,14 @@ EXPECTED_CASES = (
     StressCase("CHAT", "what is your favorite food", ("eat", "food", "talk")),
     StressCase("CHAT", "what is a goal", ("goal", "want", "reach")),
     StressCase("CHAT", "how do i improve", ("practice", "small", "day")),
-    StressCase("CHAT", "my name is Tyr", ("remember", "name", "tyr")),
-    StressCase("CHAT", "what is my name", ("tyr", "name")),
+    StressCase("CHAT", "my name is Operator", ("remember", "name", "operator")),
+    StressCase("CHAT", "what is my name", ("operator", "name")),
     StressCase("CHAT", "we are working on the DOSBox assistant", ("remember", "working", "dosbox", "assistant")),
     StressCase("CHAT", "what are we working on", ("dosbox", "assistant")),
     StressCase("CHAT", "i prefer short answers", ("remember", "short")),
     StressCase("CHAT", "how should you answer me", ("short",)),
     StressCase("CHAT", "what did i just ask", ("how should you answer me",)),
-    StressCase("CHAT", "what do you remember", ("tyr", "dosbox", "short")),
+    StressCase("CHAT", "what do you remember", ("operator", "dosbox", "short")),
     StressCase("DOSHELP", "how do i keep conventional memory free", ("memory", "himem", "dos=high", "umb", "conventional")),
     StressCase("DOSHELP", "my autoexec is too long what should i change", ("autoexec", "path", "resident", "short")),
     StressCase("DOSHELP", "how should i clean autoexec.bat", ("autoexec", "path", "resident", "short")),
@@ -211,7 +211,17 @@ def validate_records(records: list[dict[str, str]]) -> Counter[str]:
     return sources
 
 
+def _int_field(record: dict[str, str], key: str) -> int | None:
+    value = record.get(key, "")
+    if not value.isdigit():
+        return None
+    return int(value)
+
+
 def report_markdown(records: list[dict[str, str]], sources: Counter[str]) -> str:
+    total_timings = [value for record in records if (value := _int_field(record, "t_total_ms")) is not None]
+    retrieval_timings = [value for record in records if (value := _int_field(record, "t_retrieve_ms")) is not None]
+    recall_modes = Counter(record.get("recall", "") for record in records if record.get("recall"))
     lines = [
         "# Assistant Stress Report",
         "",
@@ -219,15 +229,27 @@ def report_markdown(records: list[dict[str, str]], sources: Counter[str]) -> str
         "",
         f"Reply count: `{len(records)}`",
         f"Source counts: `golden={sources['golden']} retrieval={sources['retrieval']} model={sources['model']} fallback={sources['fallback']} memory={sources['memory']}`",
-        "",
-        "| Pack | Source | Query | Answer |",
-        "|---|---|---|---|",
     ]
+    if total_timings:
+        lines.append(f"Average total reply time: `{sum(total_timings) // len(total_timings)} ms`")
+    if retrieval_timings:
+        lines.append(f"Average retrieval time: `{sum(retrieval_timings) // len(retrieval_timings)} ms`")
+    if recall_modes:
+        lines.append("Recall modes: `" + " ".join(f"{mode}={count}" for mode, count in sorted(recall_modes.items())) + "`")
+    lines.extend(
+        [
+            "",
+            "| Pack | Source | Recall | Total ms | Query | Answer |",
+            "|---|---|---|---:|---|---|",
+        ]
+    )
     for record in records:
         lines.append(
-            "| {pack} | {source} | {query} | {answer} |".format(
+            "| {pack} | {source} | {recall} | {total_ms} | {query} | {answer} |".format(
                 pack=record.get("pack", ""),
                 source=record.get("source", ""),
+                recall=record.get("recall", ""),
+                total_ms=record.get("t_total_ms", ""),
                 query=record.get("query", "").replace("|", "/"),
                 answer=record.get("answer", "").replace("|", "/"),
             )

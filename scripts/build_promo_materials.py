@@ -282,9 +282,9 @@ def render_video(ffmpeg: str, cards: list[tuple[Path, float]], output: Path, wor
     concat_path = work_dir / f"{output.stem}_concat.txt"
     lines: list[str] = []
     for card, duration in cards:
-        lines.append(f"file '{card.as_posix()}'")
+        lines.append(f"file '{card.relative_to(work_dir).as_posix()}'")
         lines.append(f"duration {duration:.3f}")
-    lines.append(f"file '{cards[-1][0].as_posix()}'")
+    lines.append(f"file '{cards[-1][0].relative_to(work_dir).as_posix()}'")
     concat_path.write_text("\n".join(lines) + "\n", encoding="ascii")
     subprocess.run(
         [
