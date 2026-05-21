@@ -128,6 +128,16 @@ class AssistantRawPromptEvalTests(unittest.TestCase):
 
         self.assertIn("PROBE_OK assistant_note_import_self_test=1", result.stdout)
 
+    def test_assistant_pack_create_self_test(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "create_assistant_pack.py"), "--self-test"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("PROBE_OK assistant_pack_create_self_test=1", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

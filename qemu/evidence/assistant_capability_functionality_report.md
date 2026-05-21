@@ -70,6 +70,10 @@ planning and risk, developer pack authoring, and fast local recall architecture.
 - Import is dry-run by default.
 - `--target user` writes machine-local notes without changing bundled pack knowledge.
 - `--target know --rebuild-kdb` updates bundled pack knowledge and regenerates KDB/KB2 artifacts.
+- `scripts/create_assistant_pack.py` can create a complete lightweight pack
+  from a folder of ASCII notes, sharing `PACKS\CHAT\MODEL` by default.
+- The pack generator writes `PACK.INI`, authoring files, `USER.TXT`,
+  `USAGE.TXT`, generated KDB buckets, compiled KB2 pages, and `KB2TERM.TXT`.
 - Authoring validator checks required pack files, source rows, generated text KDB, generated binary KDB, and model references.
 
 ## Release Payload

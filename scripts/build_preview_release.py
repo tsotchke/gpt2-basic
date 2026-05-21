@@ -94,6 +94,7 @@ SELECTED_EVIDENCE_NAMES = {
     "assistant_kdb_binary_eval.md",
     "assistant_kdb_index_eval.md",
     "assistant_kdb_term_index_eval.md",
+    "assistant_pack_generator.md",
     "assistant_pack_retrieval_eval.md",
     "assistant_pack_probe.log",
     "assistant_raw_prompt_eval.md",

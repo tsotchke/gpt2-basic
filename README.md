@@ -298,7 +298,7 @@ That is the scripted evidence path: it compiles the optional `ASSIST.EXE`
 utility, loads `PACKS\PACKS.TXT`, discovers pack-local `PACK.INI` metadata,
 switches the active model path per pack, retrieves pack notes, and emits
 structured `ASSIST_*` records to `qemu/evidence/assistant_486.log`. The first
-packs are `CHAT`, `DOSHELP`, and `OFFICE`.
+packs are `CHAT`, `DOSHELP`, `OFFICE`, and `DEV`.
 
 Run the real interactive QEMU demo with:
 
@@ -324,12 +324,22 @@ Each pack has its own `USAGE.TXT`; the repo-level index is
 The shared pack metadata contract for future Windows and OS/2 shells is
 documented in `docs/pack-shell-parity.md` and validated by
 `scripts/assistant_pack_contract.py`.
+Create a new lightweight domain pack from a folder of ASCII notes with:
+
+```sh
+python3 scripts/create_assistant_pack.py --pack HWREPAIR --title "Hardware Repair" --notes-dir notes/hardware --write --register
+python3 scripts/validate_assistant_pack_authoring.py
+```
+
+The generator writes `PACK.INI`, authoring files, generated text KDB buckets,
+compiled KB2 binary recall pages, and `KB2TERM.TXT`; by default the new pack
+shares `PACKS\CHAT\MODEL` and `CHAT` art instead of shipping another model.
 The current CHAT pack uses a pack-local 4096-token sentence-piece lexicon
 checkpoint trained on broader casual English dialogue. `CHAT\TOKBASE.TXT`
 is the tokenizer-basis corpus, including `CHAT\LEXICON.TSV` grammar words and
 response-style phrase endings; `CHAT\TRAIN.TXT` is kept closer to clean
 dialogue so the model does not learn lexicon scaffolding as answer text. Its
-fixed quality suite is `PASS 25/25`, and the manual QEMU probe includes
+assistant pack quality suite is `PASS 160/160`, and the manual QEMU probe includes
 ordinary prompts such as `i am bored`, `tell me a joke`, and `do you like
 music`.
 Train and test every listed assistant pack model with:
@@ -350,13 +360,13 @@ That builds pack corpora from `PACK.INI`, `HELP.TXT`, and optional
 pack-local checkpoint under `PACKS\<ID>\MODEL`, runs `model_report.py`, writes
 pack-specific quality reports, and updates `MODEL=PACKS\<ID>\MODEL`. The
 host quality sweep uses a 96-token reply window. The raw assistant prompt gate
-adds 67 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
+adds 83 original prompts across CHAT, DOSHELP, and OFFICE and rejects label
 leakage, repeated chunks, token soup, truncated endings, and off-topic replies.
-The consistency gate expands those prompts to 402 phrasing variants and requires
+The consistency gate expands those prompts to 498 phrasing variants and requires
 every variant group to pass after wrapper and punctuation canonicalization.
 The DOS assistant itself keeps interactive generation bounded to 64 tokens with
 early sentence stopping, while the scripted 486 stress probe exercises
-retrieval, golden, memory, and guarded model reply paths across 40 prompts,
+retrieval, golden, memory, and guarded model reply paths across 44 prompts,
 including broader small-talk prompts for music, boredom, relaxation,
 friendship, food, goals, discussion topics, and improvement. The
 assistant keeps structured session memory for the user's name, current goal,

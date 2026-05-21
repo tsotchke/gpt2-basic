@@ -14,6 +14,9 @@ the 486 as a local agent computer, not just a neural network host.
 - `USER.TXT` is a local override file users can edit on the target machine.
 - `ASSIST.MEM` persists core memory facts across interactive sessions.
 - `DEV` demonstrates a domain pack that reuses CHAT weights with its own KDB.
+- `scripts/create_assistant_pack.py` creates a complete lightweight pack from
+  a folder of ASCII notes, including generated KB2 binary recall and term
+  indexes.
 - Golden replies, retrieval, memory, and generation are all reported in
   `ASSIST_REPLY` evidence records.
 
@@ -44,9 +47,15 @@ line parsing. `KDBIDX.TXT` and `KB2IDX.TXT` list generated bucket shards, and
 the shell scans only the buckets suggested by significant query words before
 falling back to the full KDB.
 
+## Completed Milestones
+
+- Pack generator from a folder of notes: `scripts/create_assistant_pack.py`
+  writes `PACK.INI`, authoring files, `USER.TXT`, `USAGE.TXT`, generated
+  `KDB.TXT` buckets, compiled `KB2*.BIN` pages, and `KB2TERM.TXT`, while
+  sharing `PACKS\CHAT\MODEL` by default.
+
 ## Next Milestones
 
-- Add a pack generator that creates a complete pack from a folder of notes.
 - Add more domain packs without retraining by sharing the CHAT model and using
   domain-specific `KDB.TXT` files.
 - Measure binary KDB scan time in QEMU and on real hardware, then decide
