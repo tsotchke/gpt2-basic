@@ -68,6 +68,9 @@ class PublicRepoHygieneTests(unittest.TestCase):
             "real mode vibes",
             "groundbreaking",
             "proof of concept",
+            "gpt-2 in basic",
+            "retrocomputing",
+            "vintage computing",
         )
         offenders: list[str] = []
         for path in PUBLIC_COPY_FILES:
