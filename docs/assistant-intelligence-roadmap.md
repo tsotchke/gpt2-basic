@@ -57,12 +57,14 @@ falling back to the full KDB.
 - Lightweight domain pack without retraining: `PORTABLE` ships portable
   intelligence notes generated from `data/assistant_pack_notes/portable` and
   shares the CHAT model.
+- Retrieval-only recall probe: `ASSIST.EXE --recall-probe` measures the KB2/KDB
+  recall path across every shipped pack without model generation.
 
 ## Next Milestones
 
 - Add more domain packs for hardware repair, programming, and offline reference
   manuals using the same generated KDB/KB2 contract.
-- Measure binary KDB scan time in QEMU and on real hardware, then decide
+- Compare recall-probe timing on QEMU and physical hardware, then decide
   whether the next storage step should be topic shards or offset tables.
 - Add persistent memory slots beyond name, goal, style, and problem.
 - Add a measured recall benchmark in QEMU and on physical 486 hardware.

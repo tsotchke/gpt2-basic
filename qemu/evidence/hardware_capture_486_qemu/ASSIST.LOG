@@ -132,7 +132,7 @@ Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 
 ASSIST_MODEL|pack=CHAT|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096
 
-ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=Hello, what can you do?|canonical=Hello, what can you do|source=golden|recall=kb2_term|recall_score=15|t_retrieve_ms=0|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=chat,ask,idea,explain,cancel|retrieval=Starting a conversation: Hello from DOS.|golden=I can chat in DOS.|memory=|generated=|answer=I can chat in DOS.
+ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=Hello, what can you do?|canonical=Hello, what can you do|source=golden|recall=kb2_term|recall_score=15|t_retrieve_ms=110|t_golden_ms=50|t_memory_ms=0|t_model_ms=0|t_total_ms=6640|actions=chat,ask,idea,explain,cancel|retrieval=Starting a conversation: Hello from DOS.|golden=I can chat in DOS.|memory=|generated=|answer=I can chat in DOS.
 
 +------------------------------------------------------------+
 
@@ -142,7 +142,7 @@ ASSIST_REPLY|pack=CHAT|intent=general_chat|ui=text|query=Hello, what can you do?
 
 I can chat in DOS.
 
-Source: golden / kb2_term ( 0 ms)
+Source: golden / kb2_term ( 110 ms)
 
 
 
@@ -228,7 +228,7 @@ Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 
 ASSIST_MODEL|pack=DOSHELP|path=PACKS\DOSHELP\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
 
-ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=How do I tune CONFIG.SYS memory for this assistant?|canonical=How do I tune CONFIG.SYS memory for this assistant|source=golden|recall=kb2_term|recall_score=57|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|memory=Context: previous question was Hello, what can you do; previous answer was I can chat in DOS.|generated=|answer=Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
+ASSIST_REPLY|pack=DOSHELP|intent=dos_memory|ui=text|query=How do I tune CONFIG.SYS memory for this assistant?|canonical=How do I tune CONFIG.SYS memory for this assistant|source=golden|recall=kb2_term|recall_score=57|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=8950|actions=show_config,explain_xms,more,cancel|retrieval=CONFIG.SYS memory: Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|golden=Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.|memory=Context: previous question was Hello, what can you do; previous answer was I can chat in DOS.|generated=|answer=Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and preserve conventional memory.
 
 +------------------------------------------------------------+
 
@@ -324,7 +324,7 @@ Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 
 ASSIST_MODEL|pack=OFFICE|path=PACKS\OFFICE\MODEL|profile=486sx-safe|tokenizer=lexicon|ctx=192|vocab=4096
 
-ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=Rewrite this memo in a professional tone.|canonical=Rewrite this memo in a professional tone|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=110|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=0|actions=rewrite,shorten,formalize,cancel|retrieval=Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.|golden=Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|memory=Context: previous question was How do I tune CONFIG.SYS memory for this assistant; previous answer was Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and p.|generated=|answer=Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
+ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=Rewrite this memo in a professional tone.|canonical=Rewrite this memo in a professional tone|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=60|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=9010|actions=rewrite,shorten,formalize,cancel|retrieval=Rewrite selected text: Use rewrite when the user has selected prose and wants a clearer, shorter, more professional version.|golden=Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.|memory=Context: previous question was How do I tune CONFIG.SYS memory for this assistant; previous answer was Load HIMEM first, use DOS HIGH UMB, keep FILES and BUFFERS modest, and p.|generated=|answer=Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
 
 +------------------------------------------------------------+
 
@@ -334,7 +334,7 @@ ASSIST_REPLY|pack=OFFICE|intent=office_rewrite|ui=text|query=Rewrite this memo i
 
 Keep the message direct, polite, concrete, and free of jokes, filler, or unsupported claims.
 
-Source: golden / kb2_term ( 110 ms)
+Source: golden / kb2_term ( 60 ms)
 
 
 
@@ -420,7 +420,7 @@ Loaded vocabulary with  4096 tokens and  0 merges, mode  2
 
 ASSIST_MODEL|pack=DEV|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096
 
-ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=How can this feel modern on a 486?|canonical=How can this feel modern on a 486|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=100|t_golden_ms=0|t_memory_ms=60|t_model_ms=0|t_total_ms=0|actions=debug,test,release,explain,cancel|retrieval=Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|golden=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|memory=Context: previous question was Rewrite this memo in a professional tone; previous answer was Keep the message direct, polite, concrete, and free of jokes, filler, or.|generated=|answer=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
+ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=How can this feel modern on a 486?|canonical=How can this feel modern on a 486|source=golden|recall=kb2_term|recall_score=36|t_retrieve_ms=50|t_golden_ms=60|t_memory_ms=0|t_model_ms=0|t_total_ms=5760|actions=debug,test,release,explain,cancel|retrieval=Modern 486 LLM path: Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|golden=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.|memory=Context: previous question was Rewrite this memo in a professional tone; previous answer was Keep the message direct, polite, concrete, and free of jokes, filler, or.|generated=|answer=Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
 
 +------------------------------------------------------------+
 
@@ -430,7 +430,7 @@ ASSIST_REPLY|pack=DEV|intent=general_chat|ui=text|query=How can this feel modern
 
 Use small hot-loaded weights, compact retrieval databases, persistent memory, and short synthesis replies.
 
-Source: golden / kb2_term ( 100 ms)
+Source: golden / kb2_term ( 50 ms)
 
 
 
@@ -506,7 +506,7 @@ Actions:
 
 ASSIST_MODEL|pack=PORTABLE|path=PACKS\CHAT\MODEL|profile=486dx2-usable|tokenizer=lexicon|ctx=192|vocab=4096|reuse=1
 
-ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=What does portable intelligence mean?|canonical=What does portable intelligence mean|source=retrieval|recall=kb2_term|recall_score=57|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=60|t_model_ms=0|t_total_ms=170|actions=explain,compare,teach,validate,cancel|retrieval=portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.|golden=|memory=Context: previous question was How can this feel modern on a 486; previous answer was Use small hot-loaded weights, compact retrieval databases, persistent me.|generated=|answer=portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.
+ASSIST_REPLY|pack=PORTABLE|intent=general_chat|ui=text|query=What does portable intelligence mean?|canonical=What does portable intelligence mean|source=retrieval|recall=kb2_term|recall_score=57|t_retrieve_ms=50|t_golden_ms=0|t_memory_ms=0|t_model_ms=0|t_total_ms=50|actions=explain,compare,teach,validate,cancel|retrieval=portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.|golden=|memory=Context: previous question was How can this feel modern on a 486; previous answer was Use small hot-loaded weights, compact retrieval databases, persistent me.|generated=|answer=portable meaning: Portable intelligence means small local model weights, retrieval, and memory can run on old machines without a network.
 
 +------------------------------------------------------------+
 

@@ -32,6 +32,10 @@ This report is generated from repository evidence files by `scripts/build_assist
 - Term-index recall evaluation: `PASS 42/42`.
 - Term-index candidate row scan ratio: `0.145`.
 - Term-index candidate byte ratio: `0.315`.
+- QEMU recall benchmark: `PASS 42 cases`.
+- QEMU recall average retrieval time: `61 ms`.
+- QEMU recall max retrieval time: `110 ms`.
+- QEMU recall modes: `kb2_term=42`.
 
 ## Language Coverage
 
@@ -43,6 +47,7 @@ This report is generated from repository evidence files by `scripts/build_assist
 - KDB text index gate: `PASS 42/42`.
 - KDB binary gate: `PASS 42/42`.
 - KDB term-index gate: `PASS 42/42`.
+- DOS recall benchmark gate: `PASS 42 cases`.
 
 Covered categories include general chat, identity, local inference, offline limits, prompt repair, repeated-answer recovery, troubleshooting, DOS setup, office writing, developer pack authoring, and portable-intelligence concepts.
 
@@ -67,6 +72,8 @@ Usefulness workflows currently cover operator prompts, trust/offline limits, DOS
 - Hardware-capture stress source mix: `golden=26 retrieval=16 model=0 fallback=0 memory=8`.
 - Hardware-capture average total reply time: `28 ms`.
 - Hardware-capture average retrieval time: `24 ms`.
+- Hardware-capture recall benchmark: `PASS 42 cases`.
+- Hardware-capture recall average retrieval time: `82 ms`.
 - Physical machine capture status: PENDING: no staged physical `hardware_<machine>_manifest.md` capture is present yet.
 
 ## Authoring And Import

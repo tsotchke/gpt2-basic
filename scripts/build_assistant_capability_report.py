@@ -142,6 +142,7 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
     consistency = read(evidence_dir / "assistant_consistency_eval.md")
     retrieval = read(evidence_dir / "assistant_pack_retrieval_eval.md")
     usefulness = read(evidence_dir / "assistant_usefulness_eval.md")
+    recall_benchmark = read(evidence_dir / "assistant_recall_benchmark.md")
     kdb_index = read(evidence_dir / "assistant_kdb_index_eval.md")
     kdb_binary = read(evidence_dir / "assistant_kdb_binary_eval.md")
     kdb_term = read(evidence_dir / "assistant_kdb_term_index_eval.md")
@@ -150,6 +151,7 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
 
     stress = parse_stress_report(evidence_dir / "assistant_stress_report.md")
     hardware_stress = parse_stress_report(evidence_dir / "hardware_capture_486_qemu_stress_report.md")
+    hardware_recall = read(evidence_dir / "hardware_capture_486_qemu_recall_report.md")
 
     assistant_packs_match = re.search(r"ASSIST_END\|packs=(\d+)", assistant_log)
     require(assistant_packs_match is not None, "assistant_end_missing")
@@ -196,6 +198,10 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
         f"- Term-index recall evaluation: `PASS {report_line(kdb_term, 'Term-index recall pass rate')}`.",
         f"- Term-index candidate row scan ratio: `{report_line(kdb_term, 'Candidate row ratio')}`.",
         f"- Term-index candidate byte ratio: `{report_line(kdb_term, 'Candidate byte ratio')}`.",
+        f"- QEMU recall benchmark: `PASS {report_line(recall_benchmark, 'Recall case count')} cases`.",
+        f"- QEMU recall average retrieval time: `{report_line(recall_benchmark, 'Average retrieval time')}`.",
+        f"- QEMU recall max retrieval time: `{report_line(recall_benchmark, 'Max retrieval time')}`.",
+        f"- QEMU recall modes: `{report_line(recall_benchmark, 'Recall modes')}`.",
         "",
         "## Language Coverage",
         "",
@@ -207,6 +213,7 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
         f"- KDB text index gate: `PASS {report_line(kdb_index, 'Indexed recall pass rate')}`.",
         f"- KDB binary gate: `PASS {report_line(kdb_binary, 'Binary recall pass rate')}`.",
         f"- KDB term-index gate: `PASS {report_line(kdb_term, 'Term-index recall pass rate')}`.",
+        f"- DOS recall benchmark gate: `PASS {report_line(recall_benchmark, 'Recall case count')} cases`.",
         "",
         "Covered categories include general chat, identity, local inference, offline limits, prompt repair, repeated-answer recovery, troubleshooting, DOS setup, office writing, developer pack authoring, and portable-intelligence concepts.",
         "",
@@ -231,6 +238,8 @@ def build_report(evidence_dir: Path, pack_root: Path, release_assets: Path, gene
         f"- Hardware-capture stress source mix: `{hardware_stress.sources}`.",
         f"- Hardware-capture average total reply time: `{hardware_stress.average_total_ms}`.",
         f"- Hardware-capture average retrieval time: `{hardware_stress.average_retrieval_ms}`.",
+        f"- Hardware-capture recall benchmark: `PASS {report_line(hardware_recall, 'Recall case count')} cases`.",
+        f"- Hardware-capture recall average retrieval time: `{report_line(hardware_recall, 'Average retrieval time')}`.",
         f"- Physical machine capture status: {physical_capture_status(evidence_dir)}",
         "",
         "## Authoring And Import",

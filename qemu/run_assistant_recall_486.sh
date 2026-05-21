@@ -6,9 +6,7 @@ BOOT_IMAGE="$ROOT/qemu/boot-test.img"
 HDD_IMAGE="$ROOT/qemu/gpt2hdd.img"
 MODEL_DIR="${1:-$ROOT/assets/gpt2_basic/MODEL}"
 PACK_DIR="${2:-$ROOT/assets/gpt2_basic/PACKS}"
-GPT2_EXE="${3:-$ROOT/qemu/evidence/GPT2.EXE}"
-CAPTURE_DIR="$ROOT/qemu/evidence/hardware_capture_486_qemu"
-QEMU_TIMEOUT_SECONDS="${QEMU_TIMEOUT_SECONDS:-420}"
+QEMU_TIMEOUT_SECONDS="${QEMU_TIMEOUT_SECONDS:-180}"
 
 if [[ "$MODEL_DIR" != /* ]]; then
     MODEL_DIR="$ROOT/$MODEL_DIR"
@@ -16,8 +14,13 @@ fi
 if [[ "$PACK_DIR" != /* ]]; then
     PACK_DIR="$ROOT/$PACK_DIR"
 fi
-if [[ "$GPT2_EXE" != /* ]]; then
-    GPT2_EXE="$ROOT/$GPT2_EXE"
+
+model_name="$(basename "$MODEL_DIR")"
+model_key="$(printf '%s' "$model_name" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '_' | sed 's/^_*//;s/_*$//')"
+if [[ "$model_key" == "model" ]]; then
+    suffix=""
+else
+    suffix="_$model_key"
 fi
 
 if [[ ! -f "$HDD_IMAGE" ]]; then
@@ -32,17 +35,6 @@ if [[ ! -f "$BOOT_IMAGE" ]]; then
     exit 1
 fi
 
-if [[ ! -f "$GPT2_EXE" ]]; then
-    echo "missing compiled GPT2.EXE: $GPT2_EXE" >&2
-    echo "Run bash qemu/compile_main_486.sh first." >&2
-    exit 1
-fi
-
-if [[ ! -d "$MODEL_DIR" ]]; then
-    echo "missing model directory: $MODEL_DIR" >&2
-    exit 1
-fi
-
 if [[ ! -d "$PACK_DIR" ]]; then
     echo "missing assistant pack directory: $PACK_DIR" >&2
     exit 1
@@ -54,29 +46,22 @@ if pgrep -f qemu-system-i386 >/dev/null 2>&1; then
 fi
 
 python3 "$ROOT/qemu/make_dos_staging.py"
+
 python3 "$ROOT/scripts/model_report.py" --model-dir "$MODEL_DIR" --strict
-
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --remove GPT2 \
-    --put "$GPT2_EXE" GPT2/GPT2.EXE \
-    --put "$ROOT/hardware/HWVALID.BAT" GPT2/HWVALID.BAT \
-    --put "$ROOT/hardware/HWNOTES.TXT" GPT2/HWNOTES.TXT
-
+    --put-tree "$ROOT/qemu/staging/GPT2SRC" GPT2SRC
+python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
+    --put-tree "$MODEL_DIR" MODEL
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
     --exclude-name TRAIN.TXT \
     --exclude-name TOKBASE.TXT \
-    --put-tree "$MODEL_DIR" GPT2/MODEL \
-    --put-tree "$PACK_DIR" GPT2/PACKS \
-    --put-tree "$ROOT/qemu/staging/GPT2SRC" GPT2/GPT2SRC
-
+    --put-tree "$PACK_DIR" PACKS
 python3 "$ROOT/qemu/fat_image_put.py" "$BOOT_IMAGE" \
-    --put "$ROOT/qemu/fdauto_hwvalid.bat" FDAUTO.BAT
+    --put "$ROOT/qemu/fdauto_assist_recall.bat" FDAUTO.BAT
 
-echo "Running GPT2-BASIC hardware-capture rehearsal under QEMU 486."
-echo "Staged DOS path: C:\GPT2"
+echo "Running GPT2-BASIC assistant recall probe under QEMU 486."
 echo "Model directory: $MODEL_DIR"
 echo "Pack directory: $PACK_DIR"
-echo "Executable: $GPT2_EXE"
 echo "If the FreeDOS language menu appears, press Enter for English."
 
 set +e
@@ -95,7 +80,7 @@ qemu_status=0
 elapsed=0
 while kill -0 "$qemu_pid" >/dev/null 2>&1; do
     if [[ "$elapsed" -ge "$QEMU_TIMEOUT_SECONDS" ]]; then
-        echo "QEMU hardware-capture timeout reached; stopping emulator and extracting logs." >&2
+        echo "QEMU recall timeout reached; stopping emulator and extracting logs." >&2
         kill "$qemu_pid" >/dev/null 2>&1
         wait "$qemu_pid"
         qemu_status=143
@@ -114,23 +99,12 @@ if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 143 ]]; then
     exit "$qemu_status"
 fi
 
-mkdir -p "$CAPTURE_DIR"
+mkdir -p "$ROOT/qemu/evidence"
+recall_log="$ROOT/qemu/evidence/assistant_recall_486${suffix}.log"
+compile_log="$ROOT/qemu/evidence/assistant_recall_compile_486${suffix}.log"
 python3 "$ROOT/qemu/fat_image_put.py" "$HDD_IMAGE" \
-    --get-text GPT2/HWVALID.LOG "$CAPTURE_DIR/HWVALID.LOG" \
-    --get-text GPT2/QUAL.LOG "$CAPTURE_DIR/QUAL.LOG" \
-    --get-text GPT2/PERF.LOG "$CAPTURE_DIR/PERF.LOG" \
-    --get-text GPT2/ASSIST.LOG "$CAPTURE_DIR/ASSIST.LOG" \
-    --get-text GPT2/ASTRESS.LOG "$CAPTURE_DIR/ASTRESS.LOG" \
-    --get-text GPT2/ARECALL.LOG "$CAPTURE_DIR/ARECALL.LOG" \
-    --get-text GPT2/ASSISTC.LOG "$CAPTURE_DIR/ASSISTC.LOG" \
-    --get-text GPT2/HWNOTES.TXT "$CAPTURE_DIR/HWNOTES.TXT"
-
-python3 "$ROOT/scripts/verify_hardware_capture.py" \
-    --capture-dir "$CAPTURE_DIR" \
-    > "$ROOT/qemu/evidence/hardware_capture_486_qemu_probe.log"
-python3 "$ROOT/scripts/benchmark_assistant_recall.py" \
-    --log "$CAPTURE_DIR/ARECALL.LOG" \
-    --report "$ROOT/qemu/evidence/hardware_capture_486_qemu_recall_report.md"
-
-echo "wrote $CAPTURE_DIR"
-echo "wrote $ROOT/qemu/evidence/hardware_capture_486_qemu_probe.log"
+    --get-text ARECALL.LOG "$recall_log" \
+    --get-text ARECALLC.LOG "$compile_log"
+python3 "$ROOT/scripts/benchmark_assistant_recall.py" --log "$recall_log"
+echo "wrote $recall_log"
+echo "wrote $compile_log"

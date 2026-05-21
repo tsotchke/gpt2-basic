@@ -47,12 +47,14 @@ QUAL.LOG
 PERF.LOG
 ASSIST.LOG
 ASTRESS.LOG
+ARECALL.LOG
 ASSISTC.LOG
 ```
 
 `ASSIST.LOG` is the five-pack scripted assistant proof. `ASTRESS.LOG` is the
 50-reply stress probe for CHAT, DOSHELP, OFFICE, DEV, and PORTABLE on the same
-machine.
+machine. `ARECALL.LOG` is the retrieval-only recall benchmark for the same pack
+set.
 
 Fill in `HWNOTES.TXT` with CPU, clock, RAM, DOS version, storage, cache/turbo
 state, FreeBASIC version, and any setup notes.

@@ -39,6 +39,7 @@ class StageHardwareCaptureEvidenceTests(unittest.TestCase):
                     "hardware_486dx2_66_dos622_perf.log",
                     "hardware_486dx2_66_dos622_assistant.log",
                     "hardware_486dx2_66_dos622_assistant_stress.log",
+                    "hardware_486dx2_66_dos622_assistant_recall.log",
                     "hardware_486dx2_66_dos622_assistant_compile.log",
                     "hardware_486dx2_66_dos622_notes.md",
                     "hardware_486dx2_66_dos622_manifest.md",
