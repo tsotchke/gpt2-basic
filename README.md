@@ -378,6 +378,11 @@ KEY=VALUE`, and `/forget` in the shell. `SPRITE=` and `ICONS=` fields are
 reserved for Clippy-style
 artwork; the current renderer is a text-mode bubble/action UI so it works
 without VGA.
+Regenerate the evidence-backed capability/functionality report with:
+
+```sh
+python3 scripts/build_assistant_capability_report.py
+```
 
 Run the non-greedy sampling matrix with:
 
