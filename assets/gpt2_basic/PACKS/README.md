@@ -29,6 +29,18 @@ python3 scripts/import_assistant_notes.py --pack DEV --target user notes.txt --w
 python3 scripts/import_assistant_notes.py --pack DEV --target know notes.txt --write --rebuild-kdb
 ```
 
+To create a complete lightweight language pack from a folder of ASCII notes:
+
+```sh
+python3 scripts/create_assistant_pack.py --pack HWREPAIR --title "Hardware Repair" --notes-dir notes/hardware --write --register
+python3 scripts/validate_assistant_pack_authoring.py
+```
+
+The generated pack shares `PACKS\CHAT\MODEL` and `CHAT` art by default, writes
+`PACK.INI`, `HELP.TXT`, `KNOW.TXT`, `USER.TXT`, `USAGE.TXT`, generated text
+KDB buckets, compiled KB2 binary pages, and `KB2TERM.TXT`, then appends the
+pack to `PACKS.TXT` when `--register` is used.
+
 ## CHAT
 
 Use `CHAT` for ordinary conversation. It is first in `PACKS.TXT`, so the
