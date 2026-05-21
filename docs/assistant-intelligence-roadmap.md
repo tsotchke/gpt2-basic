@@ -84,9 +84,9 @@ significant query words before falling back to the full KDB.
 2. Add latency and recall-budget gates to the assistant harness:
    https://github.com/tsotchke/gpt2-basic/issues/41
 3. Add an inspectable persistent conversation database:
-   https://github.com/tsotchke/gpt2-basic/issues/38
-4. Add a pack intent router for assistant queries:
    https://github.com/tsotchke/gpt2-basic/issues/39
+4. Add a pack intent router for assistant queries:
+   https://github.com/tsotchke/gpt2-basic/issues/38
 5. Add larger programming and offline-reference domain packs:
    https://github.com/tsotchke/gpt2-basic/issues/40
 6. Define Windows 95 and OS/2 assistant shell parity:
